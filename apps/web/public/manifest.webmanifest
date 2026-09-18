@@ -1,0 +1,14 @@
+{
+  "name": "Puzzle Hustle",
+  "short_name": "Puzzle Hustle",
+  "description": "Daily, weekly and monthly logic puzzles.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#faf9f8",
+  "theme_color": "#FFA833",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
