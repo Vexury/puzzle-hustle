@@ -218,24 +218,13 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
         </button>
       </div>
 
-      {result ? (
-        <div className="solved-head">
-          <h2>Solved!</h2>
-          <span className="muted">{sizeLabel}</span>
-          <b className="big-time">{formatSeconds(result.seconds)}</b>
-          <span className="muted small">
-            {result.moves} moves · {result.hints === 0 ? 'no hints' : `${result.hints} hint${result.hints === 1 ? '' : 's'}`}
-          </span>
-        </div>
-      ) : (
-        <div className="play-meta">
-          <span className="timer">
-            <Clock /> {formatSeconds(seconds)}
-          </span>
-          <span className="muted small">{sizeLabel}</span>
-          <span className={`diff-pill ${puzzleRef.difficulty}`}>{puzzleRef.difficulty}</span>
-        </div>
-      )}
+      <div className="play-meta">
+        <span className="timer">
+          <Clock /> {formatSeconds(result ? result.seconds : seconds)}
+        </span>
+        <span className="muted small">{sizeLabel}</span>
+        {result ? <span className="diff-pill solved">Solved</span> : <span className={`diff-pill ${puzzleRef.difficulty}`}>{puzzleRef.difficulty}</span>}
+      </div>
 
       {'pieces' in spec ? (
         <ShapesGame
@@ -319,6 +308,16 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           onStateChange={onStateChange}
           viewKey={id}
         />
+      )}
+
+      {result && (
+        <div className="solved-head">
+          <h2>Solved!</h2>
+          <b className="big-time">{formatSeconds(result.seconds)}</b>
+          <span className="muted small">
+            {result.moves} moves · {result.hints === 0 ? 'no hints' : `${result.hints} hint${result.hints === 1 ? '' : 's'}`}
+          </span>
+        </div>
       )}
 
       {result && (

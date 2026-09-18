@@ -63,7 +63,7 @@
   touch-action: none;
 }
 .regions-wrap .actions { width: calc(var(--size) * var(--cell) + 18px); max-width: 100%; }
-.regions-board.solved { border-color: var(--success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 30%, transparent); }
+.regions-board.solved { border-color: var(--success); box-shadow: 0 0 0 5px color-mix(in srgb, var(--success) 45%, transparent); }
 
 .regions-cell {
   position: relative;
@@ -112,3 +112,4 @@
   pointer-events: none;
 }
 .regions-cell.conflict .regions-glyph { fill: var(--danger); stroke: var(--regions-border); }
+.regions-board.solved .regions-glyph { animation: solve-pop 0.8s ease-out both; animation-delay: calc(var(--r, 0) * 70ms); }

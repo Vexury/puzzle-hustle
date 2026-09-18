@@ -194,7 +194,7 @@ export function KakuroGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
             const clue = clues[i];
             const v = state[i]!;
             return (
-              <div key={i} className={cellClass(i)} data-i={i} aria-selected={i === selected}>
+              <div key={i} className={cellClass(i)} data-i={i} aria-selected={i === selected} style={{ '--r': Math.floor(i / cols) } as React.CSSProperties}>
                 {clue && (
                   <>
                     <span className="kakuro-diag" />

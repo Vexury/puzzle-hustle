@@ -420,11 +420,19 @@ p { margin: 0; }
   background: var(--accent-soft);
   color: var(--accent-deep);
 }
+.diff-pill.solved { background: var(--success-soft); color: var(--success); }
 .diff-pill.easy { background: var(--success-soft); color: var(--success); }
 .diff-pill.hard { background: rgba(194, 72, 58, 0.12); color: var(--danger); }
 .diff-pill.genius { background: rgba(124, 92, 191, 0.14); color: #7c5cbf; }
 
-.solved-head { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0 2px; }
+.solved-head { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0 0; animation: solve-rise 0.5s ease-out both; }
+@keyframes solve-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes solve-wave { 0% { filter: brightness(1); } 35% { filter: brightness(1.55) saturate(1.2); } 100% { filter: brightness(1); } }
+@keyframes solve-text { 0% { color: inherit; transform: scale(1); } 35% { color: var(--success); transform: scale(1.22); } 100% { color: inherit; transform: scale(1); } }
+@keyframes solve-pop { 0% { transform: scale(1); filter: brightness(1); } 40% { transform: scale(1.4); filter: brightness(1.6) drop-shadow(0 0 4px var(--success)); } 100% { transform: scale(1); filter: brightness(1); } }
+@keyframes atom-solve { 0% { fill: var(--accent); stroke: var(--accent); } 40% { fill: var(--success); stroke: var(--success); } 100% { fill: var(--accent); stroke: var(--accent); } }
+@keyframes zip-solve { 0% { filter: brightness(1); } 40% { filter: brightness(1.5) drop-shadow(0 0 0.12px var(--success)); } 100% { filter: brightness(1); } }
+@media (prefers-reduced-motion: reduce) { .solved-head, .solved .solve-fx { animation: none !important; } }
 .solved-head h2 { color: var(--success); font-size: var(--fs-xl); }
 .big-time { font-size: 2.4rem; line-height: 1.1; color: var(--accent-deep); }
 .solved-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; }
@@ -447,14 +455,14 @@ p { margin: 0; }
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
 }
-.board.solved { border-color: var(--success); box-shadow: 0 0 0 3px var(--success-soft); }
+.board.solved { border-color: var(--success); box-shadow: 0 0 0 5px color-mix(in srgb, var(--success) 45%, transparent); }
 .atom { fill: transparent; stroke: none; transition: fill 0.12s; }
 .atom.ghost { fill: var(--accent); opacity: 0.22; }
 .inner-area { fill: var(--board-cell); }
 .inner-frame { fill: none; stroke: var(--border-mid); stroke-width: 0.05; pointer-events: none; }
 .atom.lit { fill: var(--accent); stroke: var(--accent); stroke-width: 0.012; }
 .atom.lit.match { animation: atom-pulse 2s ease-in-out infinite; }
-.board.solved .atom.lit.match { animation: none; }
+.board.solved .atom.lit { animation: atom-solve 1s ease-out both; }
 @keyframes atom-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.62; } }
 .grid-line { stroke: var(--board-line); stroke-width: 0.02; fill: none; }
 .piece-outline { fill: none; stroke: var(--text); stroke-width: 0.05; stroke-linejoin: round; opacity: 0.6; transition: opacity 0.12s; }

@@ -231,7 +231,7 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
         {Array.from({ length: rows * cols }, (_, i) => {
           const r = Math.floor(i / cols);
           const c = i % cols;
-          return <div key={i} className={cellClass(r, c, state[i]!)} style={{ gridRow: r + 2, gridColumn: c + 2 }} data-r={r} data-c={c} />;
+          return <div key={i} className={cellClass(r, c, state[i]!)} style={{ gridRow: r + 2, gridColumn: c + 2, '--r': r } as React.CSSProperties} data-r={r} data-c={c} />;
         })}
         </div>
       </div>

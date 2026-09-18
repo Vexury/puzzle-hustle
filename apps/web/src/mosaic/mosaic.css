@@ -33,7 +33,7 @@
   touch-action: none;
   scrollbar-width: thin;
 }
-.mosaic-viewport.solved { border-color: var(--success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 30%, transparent); }
+.mosaic-viewport.solved { border-color: var(--success); box-shadow: 0 0 0 5px color-mix(in srgb, var(--success) 45%, transparent); }
 
 .mosaic-board {
   display: grid;
@@ -92,3 +92,4 @@
 .mosaic-cell.filled .mosaic-clue { color: var(--mosaic-clue-on-fill); }
 .mosaic-cell.done .mosaic-clue { opacity: 0.4; }
 .mosaic-viewport.solved .mosaic-cell.done .mosaic-clue { opacity: 0.25; }
+.mosaic-viewport.solved .mosaic-cell.filled { animation: solve-wave 0.7s ease-out both; animation-delay: calc(var(--r, 0) * 40ms); }

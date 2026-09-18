@@ -209,7 +209,7 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
           const c = i % cols;
           const clue = spec.clues[i]!;
           return (
-            <div key={i} className={cellClass(r, c, state[i]!, clue)} data-r={r} data-c={c}>
+            <div key={i} className={cellClass(r, c, state[i]!, clue)} data-r={r} data-c={c} style={{ '--r': r } as React.CSSProperties}>
               {clue >= 0 && <span className="mosaic-clue">{clue}</span>}
             </div>
           );

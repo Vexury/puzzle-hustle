@@ -220,7 +220,7 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
           const v = state[i]!;
           const color = palette[spec.regions[i]!]!;
           return (
-            <div key={i} className={cellClass(i, v)} data-i={i} style={{ '--region-bg': `var(--region-${color})` } as React.CSSProperties}>
+            <div key={i} className={cellClass(i, v)} data-i={i} style={{ '--region-bg': `var(--region-${color})`, '--r': Math.floor(i / n) } as React.CSSProperties}>
               {v === 1 && <Glyph symbol={symbol} />}
             </div>
           );

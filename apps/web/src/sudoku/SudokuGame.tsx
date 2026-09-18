@@ -217,7 +217,7 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
           const v = values[i]!;
           const notes = state.notes[i]!;
           return (
-            <div key={i} className={cellClass(i)} role="gridcell" aria-selected={i === selected} onPointerDown={() => !solved && setSelected(i)}>
+            <div key={i} className={cellClass(i)} role="gridcell" aria-selected={i === selected} style={{ '--r': Math.floor(i / 9) } as React.CSSProperties} onPointerDown={() => !solved && setSelected(i)}>
               {cage.edges.map((e) => (
                 <span key={e.side} className={`sudoku-cage ${e.side}`} style={{ '--a': e.start, '--b': e.end } as React.CSSProperties} />
               ))}

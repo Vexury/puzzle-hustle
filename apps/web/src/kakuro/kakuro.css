@@ -39,7 +39,7 @@
   touch-action: none;
   scrollbar-width: thin;
 }
-.kakuro-viewport.solved { border-color: var(--success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 30%, transparent); }
+.kakuro-viewport.solved { border-color: var(--success); box-shadow: 0 0 0 5px color-mix(in srgb, var(--success) 45%, transparent); }
 
 .kakuro-board {
   display: grid;
@@ -131,3 +131,4 @@
 .kakuro-key.used { opacity: 0.4; }
 
 .kakuro-wrap .actions { max-width: var(--kakuro-max); }
+.kakuro-viewport.solved .kakuro-value { display: inline-block; animation: solve-text 0.8s ease-out both; animation-delay: calc(var(--r, 0) * 60ms); }

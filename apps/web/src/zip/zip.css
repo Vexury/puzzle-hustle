@@ -20,7 +20,7 @@
   touch-action: none;
   line-height: 0;
 }
-.zip-board.solved { border-color: var(--success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 30%, transparent); }
+.zip-board.solved { border-color: var(--success); box-shadow: 0 0 0 5px color-mix(in srgb, var(--success) 45%, transparent); }
 .zip-wrap .actions { width: calc(var(--size) * var(--cell) + 18px); max-width: 100%; }
 
 .zip-svg {
@@ -96,3 +96,5 @@
   stroke-linecap: round;
   pointer-events: none;
 }
+.zip-board.solved .zip-path { animation: zip-solve 0.9s ease-out both; }
+.zip-board.solved .zip-number.filled { transform-box: fill-box; transform-origin: center; animation: solve-pop 0.8s ease-out both; animation-delay: calc(var(--k, 0) * 50ms); }

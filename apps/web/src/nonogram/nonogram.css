@@ -34,7 +34,7 @@
   touch-action: none;
   scrollbar-width: thin;
 }
-.nono-viewport.solved { border-color: var(--success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 30%, transparent); }
+.nono-viewport.solved { border-color: var(--success); box-shadow: 0 0 0 5px color-mix(in srgb, var(--success) 45%, transparent); }
 
 .nono-board {
   display: grid;
@@ -118,3 +118,6 @@
 .nono-chip.c3 { background: var(--nono-c3); }
 .nono-chip.active { border-color: var(--text); transform: scale(1.12); }
 .nono-chip:disabled { opacity: 0.5; cursor: default; }
+.nono-viewport.solved .nono-cell.f1,
+.nono-viewport.solved .nono-cell.f2,
+.nono-viewport.solved .nono-cell.f3 { animation: solve-wave 0.7s ease-out both; animation-delay: calc(var(--r, 0) * 40ms); }

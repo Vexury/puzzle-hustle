@@ -30,7 +30,7 @@
   box-shadow: var(--shadow);
   overflow: hidden;
 }
-.sudoku-board.solved { border-color: var(--success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 30%, transparent); }
+.sudoku-board.solved { border-color: var(--success); box-shadow: 0 0 0 5px color-mix(in srgb, var(--success) 45%, transparent); }
 
 .sudoku-cell {
   position: relative;
@@ -142,3 +142,4 @@
 
 .sudoku-wrap .actions { max-width: var(--sudoku-max); }
 .sudoku-wrap .actions .btn.active { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.sudoku-board.solved .sudoku-value { display: inline-block; animation: solve-text 0.8s ease-out both; animation-delay: calc(var(--r, 0) * 60ms); }
