@@ -196,10 +196,18 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
           >
             <rect className="inner-area" x={m} y={m} width={inner} height={inner} />
             {[...lit].map((v, i) => {
+              if (v && spec.target[i]) return null;
               const { r, c, dir } = atomFromIndex(size, i);
-              const cls = v ? (spec.target[i] ? 'atom lit match' : 'atom lit') : spec.target[i] ? 'atom ghost' : 'atom';
+              const cls = v ? 'atom lit' : spec.target[i] ? 'atom ghost' : 'atom';
               return <polygon key={i} className={cls} points={atomPolygon(r, c, dir).map((p) => p.join(',')).join(' ')} />;
             })}
+            <g className="match-pulse">
+              {[...lit].map((v, i) => {
+                if (!v || !spec.target[i]) return null;
+                const { r, c, dir } = atomFromIndex(size, i);
+                return <polygon key={i} className="atom lit match" points={atomPolygon(r, c, dir).map((p) => p.join(',')).join(' ')} />;
+              })}
+            </g>
             {Array.from({ length: size + 1 }, (_, i) => (
               <g key={i}>
                 <line className="grid-line" x1={0} y1={i} x2={size} y2={i} />

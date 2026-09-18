@@ -485,7 +485,8 @@ p { margin: 0; }
 .inner-area { fill: var(--board-cell); }
 .inner-frame { fill: none; stroke: var(--border-mid); stroke-width: 0.05; pointer-events: none; }
 .atom.lit { fill: var(--accent); stroke: var(--accent); stroke-width: 0.012; }
-.atom.lit.match { animation: atom-pulse 2s ease-in-out infinite; }
+.match-pulse { animation: atom-pulse 2s ease-in-out infinite; }
+.board.solved .match-pulse { animation: none; }
 .board.solved .atom.lit { animation: atom-solve 1s ease-out both; }
 @keyframes atom-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.62; } }
 .grid-line { stroke: var(--board-line); stroke-width: 0.02; fill: none; }
