@@ -445,6 +445,9 @@ p { margin: 0; }
 .inner-area { fill: var(--board-cell); }
 .inner-frame { fill: none; stroke: var(--border-mid); stroke-width: 0.05; pointer-events: none; }
 .atom.lit { fill: var(--accent); stroke: var(--accent); stroke-width: 0.012; }
+.atom.lit.match { animation: atom-pulse 2.6s ease-in-out infinite; }
+.board.solved .atom.lit.match { animation: none; }
+@keyframes atom-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
 .grid-line { stroke: var(--board-line); stroke-width: 0.02; fill: none; }
 .piece-outline { fill: none; stroke: var(--text); stroke-width: 0.05; stroke-linejoin: round; opacity: 0.6; transition: opacity 0.12s; }
 .piece-outline.dragging { opacity: 1; stroke-width: 0.07; stroke-dasharray: 0.12 0.08; }

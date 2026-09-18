@@ -183,7 +183,7 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
             <rect className="inner-area" x={m} y={m} width={inner} height={inner} />
             {[...lit].map((v, i) => {
               const { r, c, dir } = atomFromIndex(size, i);
-              const cls = v ? 'atom lit' : spec.target[i] ? 'atom ghost' : 'atom';
+              const cls = v ? (spec.target[i] ? 'atom lit match' : 'atom lit') : spec.target[i] ? 'atom ghost' : 'atom';
               return <polygon key={i} className={cls} points={atomPolygon(r, c, dir).map((p) => p.join(',')).join(' ')} />;
             })}
             {Array.from({ length: size + 1 }, (_, i) => (
