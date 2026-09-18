@@ -3,11 +3,29 @@ import { DIFFICULTIES } from '../src/types.ts';
 import { LEVEL_PACK, levelList } from '../src/levels.ts';
 import { SHAPES_VERSION, generateShapes, isSolved } from '../src/shapes/puzzle.ts';
 import { canonicalKey, isUnique } from '../src/shapes/solver.ts';
+import { NONOGRAM_VERSION, generateNonogram } from '../src/nonogram/puzzle.ts';
+import { isLineSolvable, nonogramCanonicalKey } from '../src/nonogram/solver.ts';
 import { decodeRef, encodeRef, levelRef, refId } from '../src/ref.ts';
 
 describe('level pack', () => {
   it('matches the current generator version', () => {
     expect(LEVEL_PACK.versions.shapes).toBe(SHAPES_VERSION);
+    expect(LEVEL_PACK.versions.nonogram).toBe(NONOGRAM_VERSION);
+  });
+
+  it('has 20 distinct, line-solvable, ascending nonogram levels per difficulty', () => {
+    for (const difficulty of DIFFICULTIES) {
+      const list = levelList('nonogram', difficulty);
+      expect(list.length).toBe(20);
+      const keys = new Set<string>();
+      list.forEach((entry, i) => {
+        const spec = generateNonogram(entry.seed, difficulty);
+        expect(isLineSolvable(spec)).toBe(true);
+        keys.add(nonogramCanonicalKey(spec));
+        if (i > 0) expect(entry.score).toBeGreaterThanOrEqual(list[i - 1]!.score);
+      });
+      expect(keys.size).toBe(list.length);
+    }
   });
 
   it('has 20 unique, distinct, ascending levels per difficulty', () => {

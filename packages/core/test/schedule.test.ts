@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { nextPeriodStart, periodKey } from '../src/schedule.ts';
-import { decodeRef, encodeRef, periodRef } from '../src/ref.ts';
+import { decodeRef, encodeRef, periodRef, scheduledRef } from '../src/ref.ts';
 
 describe('periodKey (Europe/Berlin)', () => {
   it('rolls the day at Berlin midnight, not UTC', () => {
@@ -27,6 +27,13 @@ describe('refs', () => {
     const ref = periodRef('weekly', new Date('2026-09-18T10:00:00Z'));
     const decoded = decodeRef(encodeRef(ref));
     expect(decoded).toEqual(ref);
+  });
+
+  it('schedules every type deterministically', () => {
+    const a = scheduledRef('nonogram', 'monthly', '2026-09');
+    const b = scheduledRef('nonogram', 'monthly', '2026-09');
+    expect(a.seed).toBe(b.seed);
+    expect(scheduledRef('shapes', 'weekly', '2026-W38').seed).not.toBe(scheduledRef('shapes', 'weekly', '2026-W39').seed);
   });
 
   it('rejects garbage', () => {

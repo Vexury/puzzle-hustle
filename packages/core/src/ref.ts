@@ -1,8 +1,7 @@
 import { levelEntry } from './levels.ts';
+import { adapter } from './registry.ts';
 import { hashString, randomSeed } from './rng.ts';
 import { PERIOD_DIFFICULTY, periodKey, periodPuzzleType } from './schedule.ts';
-import { generateShapes, type ShapesOptions } from './shapes/puzzle.ts';
-import { isUnique } from './shapes/solver.ts';
 import { isDifficulty, isPeriod, isPuzzleTypeId, type Difficulty, type Period, type PuzzleTypeId } from './types.ts';
 
 export interface PuzzleRef {
@@ -14,19 +13,7 @@ export interface PuzzleRef {
   level?: number;
 }
 
-export const RUNTIME_BUDGET = 3_000_000;
 const PERIOD_ATTEMPTS = 24;
-
-export function periodOptions(period: Period | undefined): ShapesOptions {
-  switch (period) {
-    case 'weekly':
-      return { sizeDelta: 1, pieceDelta: 1 };
-    case 'monthly':
-      return { sizeDelta: 2, pieceDelta: 3 };
-    default:
-      return {};
-  }
-}
 
 const periodCache = new Map<string, PuzzleRef>();
 
@@ -36,21 +23,28 @@ export function periodRef(period: Period, date: Date = new Date()): PuzzleRef {
   const cached = periodCache.get(cacheKey);
   if (cached) return cached;
   const type = periodPuzzleType(period, key);
-  const difficulty = PERIOD_DIFFICULTY[period];
-  let seed = 0;
-  for (let attempt = 0; attempt < PERIOD_ATTEMPTS; attempt++) {
-    seed = hashString(`${type}|${period}|${key}|${attempt}`) % 0xffffffff;
-    if (isUnique(generateShapes(seed, difficulty, periodOptions(period)), RUNTIME_BUDGET)) break;
-  }
-  const ref: PuzzleRef = { type, difficulty, seed, period, key };
+  const ref = { ...scheduledRef(type, period, key), period, key };
   periodCache.set(cacheKey, ref);
   return ref;
 }
 
+export function scheduledRef(type: PuzzleTypeId, period: Period, key: string): PuzzleRef {
+  const difficulty = PERIOD_DIFFICULTY[period];
+  const a = adapter(type);
+  const options = a.options(period);
+  let seed = 0;
+  for (let attempt = 0; attempt < PERIOD_ATTEMPTS; attempt++) {
+    seed = hashString(`${type}|${period}|${key}|${attempt}`) % 0xffffffff;
+    if (a.accepts(seed, difficulty, options)) break;
+  }
+  return { type, difficulty, seed, period, key };
+}
+
 export function randomRef(type: PuzzleTypeId, difficulty: Difficulty): PuzzleRef {
+  const a = adapter(type);
   for (let attempt = 0; attempt < 50; attempt++) {
     const seed = randomSeed();
-    if (isUnique(generateShapes(seed, difficulty), RUNTIME_BUDGET)) return { type, difficulty, seed };
+    if (a.accepts(seed, difficulty, a.options(undefined))) return { type, difficulty, seed };
   }
   return { type, difficulty, seed: randomSeed() };
 }

@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { PUZZLE_META, decodeRef, encodeRef, generateShapes, levelRef, periodOptions, randomRef, refId, type PuzzleRef } from '@puzzle-hustle/core';
+import { PUZZLE_META, decodeRef, encodeRef, generateNonogram, generateShapes, levelRef, nonogramAdapter, randomRef, refId, shapesAdapter, type PuzzleRef } from '@puzzle-hustle/core';
 import { href, navigate, onLinkClick } from '../lib/router.ts';
 import { getSolve, recordSolve, useSolves, type SolveRecord } from '../lib/storage.ts';
 import { capitalize, formatSeconds, periodLabel, puzzleUrl, share, shareText } from '../lib/share.ts';
 import { currentHintProvider } from '../lib/hints.ts';
 import { ShapesGame } from '../shapes/ShapesGame.tsx';
+import { NonogramGame } from '../nonogram/NonogramGame.tsx';
 import { toast } from '../components/Toast.tsx';
 
 export function Play({ params }: { params: URLSearchParams }) {
@@ -25,7 +26,17 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const id = refId(puzzleRef);
   const solves = useSolves();
   const existing = solves[id];
-  const spec = useMemo(() => generateShapes(puzzleRef.seed, puzzleRef.difficulty, periodOptions(puzzleRef.period)), [puzzleRef]);
+  const spec = useMemo(
+    () =>
+      puzzleRef.type === 'nonogram'
+        ? generateNonogram(puzzleRef.seed, puzzleRef.difficulty, nonogramAdapter.options(puzzleRef.period))
+        : generateShapes(puzzleRef.seed, puzzleRef.difficulty, shapesAdapter.options(puzzleRef.period)),
+    [puzzleRef],
+  );
+  const sizeLabel =
+    'pieces' in spec
+      ? `${spec.config.inner}×${spec.config.inner} · ${spec.pieces.length} shapes`
+      : `${spec.config.rows}×${spec.config.cols}${spec.config.colors > 1 ? ` · ${spec.config.colors} colors` : ''}`;
   const [moves, setMoves] = useState(0);
   const [hints, setHints] = useState(0);
   const [seconds, setSeconds] = useState(0);
@@ -76,9 +87,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           <div className="play-meta">
             <span>{periodLabel(puzzleRef)}</span>
             {puzzleRef.period && <span>{capitalize(puzzleRef.difficulty)}</span>}
-            <span>
-              {spec.config.inner}×{spec.config.inner} · {spec.pieces.length} shapes
-            </span>
+            <span>{sizeLabel}</span>
             <span>
               <b>{formatSeconds(result?.seconds ?? seconds)}</b>
             </span>
@@ -90,14 +99,25 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
         </div>
       </div>
 
-      <ShapesGame
-        spec={spec}
-        onMove={onMove}
-        onSolved={onSolved}
-        onHintUsed={() => setHints((h) => h + 1)}
-        requestHint={() => hintProvider.request()}
-        locked={false}
-      />
+      {'pieces' in spec ? (
+        <ShapesGame
+          spec={spec}
+          onMove={onMove}
+          onSolved={onSolved}
+          onHintUsed={() => setHints((h) => h + 1)}
+          requestHint={() => hintProvider.request()}
+          locked={false}
+        />
+      ) : (
+        <NonogramGame
+          spec={spec}
+          onMove={onMove}
+          onSolved={onSolved}
+          onHintUsed={() => setHints((h) => h + 1)}
+          requestHint={() => hintProvider.request()}
+          locked={false}
+        />
+      )}
 
       {result && (
         <div className="result">

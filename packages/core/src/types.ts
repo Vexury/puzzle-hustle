@@ -4,7 +4,7 @@ export type Difficulty = (typeof DIFFICULTIES)[number];
 export const PERIODS = ['daily', 'weekly', 'monthly'] as const;
 export type Period = (typeof PERIODS)[number];
 
-export const PUZZLE_TYPES = ['shapes'] as const;
+export const PUZZLE_TYPES = ['shapes', 'nonogram'] as const;
 export type PuzzleTypeId = (typeof PUZZLE_TYPES)[number];
 
 export interface PuzzleMeta {
@@ -18,6 +18,11 @@ export const PUZZLE_META: Record<PuzzleTypeId, PuzzleMeta> = {
     id: 'shapes',
     name: 'Shapes',
     tagline: 'Slide shapes over each other. Overlaps cancel out. Match the target.',
+  },
+  nonogram: {
+    id: 'nonogram',
+    name: 'Nonogram',
+    tagline: 'Fill cells so every row and column matches its clues.',
   },
 };
 
