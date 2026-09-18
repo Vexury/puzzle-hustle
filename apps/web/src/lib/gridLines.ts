@@ -3,9 +3,9 @@ export function gridBlock(n: number): number {
   return 0;
 }
 
-export function gridLineClasses(r: number, c: number, rows: number, cols: number): string[] {
-  const br = gridBlock(rows);
-  const bc = gridBlock(cols);
+export function gridLineClasses(r: number, c: number, rows: number, cols: number, inner = true): string[] {
+  const br = inner ? gridBlock(rows) : 0;
+  const bc = inner ? gridBlock(cols) : 0;
   const cls: string[] = [];
   if (c === 0) cls.push('first-col');
   if (r === 0) cls.push('first-row');
