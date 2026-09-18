@@ -239,9 +239,11 @@ const REFINE_LIMIT = 48;
 
 function altStarFrequency(spec: RegionsSpec, limit: number): { count: number; freq: Uint16Array } {
   const freq = new Uint16Array(spec.solution.length);
+  const g = globalThis as any; g.__calls++; const t0 = performance.now();
   const { solutions } = enumerateRegionsSolutions(spec, limit, (grid) => {
     for (let i = 0; i < grid.length; i++) if (grid[i] === 1 && spec.solution[i] === 0) freq[i]!++;
   });
+  g.__ms += performance.now() - t0; if (solutions >= limit) g.__cap++;
   return { count: solutions, freq };
 }
 
@@ -261,6 +263,7 @@ function refineUnique(spec: RegionsSpec, rng: Rng, maxSteps: number): boolean {
   const n = spec.config.size;
   let { count, freq } = altStarFrequency(spec, REFINE_LIMIT);
   for (let step = 0; step < maxSteps && count !== 1; step++) {
+    (globalThis as any).__steps++;
     let best: { cell: number; to: number; count: number; freq: Uint16Array } | null = null;
     let tried = 0;
     for (const move of rankedMoves(n, spec, freq, rng)) {
@@ -289,6 +292,7 @@ export function generateRegions(seed: number, config: RegionsConfig, difficulty:
   if (size < stars * 4) throw new Error(`regions grid ${size} too small for ${stars} stars`);
   const rng = new Rng(seed);
   for (let attempt = 0; attempt < 40; attempt++) {
+    (globalThis as any).__attempts++;
     const solution = randomStars(size, stars, rng);
     if (!solution) continue;
     const regions = buildRegions(size, stars, solution, rng);

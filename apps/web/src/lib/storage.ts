@@ -79,6 +79,21 @@ export function clearProgress(id: string) {
   }
 }
 
+export function resetProgress() {
+  try {
+    const doomed: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && (k === KEY || k.startsWith(PROGRESS_PREFIX) || k.startsWith('ph:howto:') || k.startsWith('ph:difficulty:'))) doomed.push(k);
+    }
+    for (const k of doomed) localStorage.removeItem(k);
+  } catch {
+    /* storage unavailable */
+  }
+  cache = {};
+  for (const l of listeners) l();
+}
+
 export function readSetting(key: string): string | null {
   try {
     return localStorage.getItem(key);

@@ -192,6 +192,9 @@ p { margin: 0; }
 .pill:active { transform: scale(0.97); }
 .pill:disabled { opacity: 0.5; cursor: default; transform: none; }
 .pill.outline { background: transparent; color: var(--text); border-color: var(--border-mid); }
+.pill.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+.pill.danger:hover { background: var(--hover-bg); border-color: var(--hover-bg); color: var(--hover-text); }
+.reset-confirm { display: flex; gap: 8px; }
 .pill.outline:hover:not(:disabled) { background: var(--hover-bg); border-color: var(--hover-bg); color: var(--hover-text); }
 .row-card.solved .pill.outline { border-color: var(--success); color: var(--success); }
 .row-card.solved .pill.outline:hover { background: var(--success); border-color: var(--success); color: #fff; }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PUZZLE_META, PUZZLE_TYPES } from '@puzzle-hustle/core';
 import { Flame } from './Daily.tsx';
-import { readSetting, useSolves, writeSetting } from '../lib/storage.ts';
+import { readSetting, resetProgress, useSolves, writeSetting } from '../lib/storage.ts';
 import { formatSeconds } from '../lib/share.ts';
 import { dailyStreaks, totalSolved, typeStats } from '../lib/stats.ts';
 import { useTheme } from '../lib/theme.ts';
@@ -13,6 +13,7 @@ export function Profile() {
   const [theme, toggleTheme] = useTheme();
   const [name, setName] = useState(readSetting('ph:name') ?? '');
   const [editing, setEditing] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
 
   const commitName = () => {
     const v = name.trim().slice(0, 24);
@@ -90,6 +91,34 @@ export function Profile() {
           <button type="button" className="pill outline" onClick={toggleTheme}>
             Switch to {theme === 'dark' ? 'light' : 'dark'}
           </button>
+        </div>
+
+        <div className="card-lg row-between">
+          <span>
+            <b>Reset progress</b>
+            <span className="muted small">{confirmReset ? 'Deletes all solves and streaks on this device.' : 'Start over from zero.'}</span>
+          </span>
+          {confirmReset ? (
+            <span className="reset-confirm">
+              <button type="button" className="pill outline" onClick={() => setConfirmReset(false)}>
+                Keep
+              </button>
+              <button
+                type="button"
+                className="pill danger"
+                onClick={() => {
+                  resetProgress();
+                  setConfirmReset(false);
+                }}
+              >
+                Delete
+              </button>
+            </span>
+          ) : (
+            <button type="button" className="pill outline" onClick={() => setConfirmReset(true)}>
+              Reset
+            </button>
+          )}
         </div>
 
         <p className="muted small center">
