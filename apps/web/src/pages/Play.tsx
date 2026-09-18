@@ -6,7 +6,6 @@ import {
   encodeRef,
   crownsAdapter,
   generateCrowns,
-  generateKakuro,
   generateKiller,
   generateMosaic,
   generateNonogram,
@@ -15,7 +14,6 @@ import {
   generateSudoku,
   generateZip,
   levelRef,
-  kakuroAdapter,
   mosaicAdapter,
   nonogramAdapter,
   periodRef,
@@ -35,7 +33,6 @@ import { HOW_TO } from '../lib/howto.ts';
 import { dailyNumber } from '../lib/stats.ts';
 import { ShapesGame } from '../shapes/ShapesGame.tsx';
 import { NonogramGame } from '../nonogram/NonogramGame.tsx';
-import { KakuroGame } from '../kakuro/KakuroGame.tsx';
 import { ZipGame } from '../zip/ZipGame.tsx';
 import { MosaicGame } from '../mosaic/MosaicGame.tsx';
 import { SudokuGame } from '../sudoku/SudokuGame.tsx';
@@ -78,8 +75,6 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
     () =>
       puzzleRef.type === 'zip'
         ? generateZip(puzzleRef.seed, puzzleRef.difficulty, zipAdapter.options(puzzleRef.period))
-        : puzzleRef.type === 'kakuro'
-        ? generateKakuro(puzzleRef.seed, puzzleRef.difficulty, kakuroAdapter.options(puzzleRef.period))
         : puzzleRef.type === 'crowns'
         ? generateCrowns(puzzleRef.seed, puzzleRef.difficulty, crownsAdapter.options(puzzleRef.period))
         : puzzleRef.type === 'stars'
@@ -100,8 +95,6 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
       ? `${spec.config.inner}×${spec.config.inner}, ${spec.pieces.length} shapes`
       : 'walls' in spec
         ? `${spec.config.size}×${spec.config.size}, ${zipNumberCount(spec)} numbers`
-        : 'runs' in spec
-        ? `${spec.config.rows - 1}×${spec.config.cols - 1}, ${spec.runs.length} sums`
         : 'regions' in spec
         ? `${spec.config.size}×${spec.config.size}, ${spec.config.stars} per line`
         : 'cages' in spec
@@ -260,18 +253,6 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           locked={false}
           initialState={saved?.state}
           onStateChange={onStateChange}
-        />
-      ) : 'runs' in spec ? (
-        <KakuroGame
-          spec={spec}
-          onMove={onMove}
-          onSolved={onSolved}
-          onHintUsed={onHintUsed}
-          requestHint={() => hintProvider.request()}
-          locked={false}
-          initialState={saved?.state}
-          onStateChange={onStateChange}
-          viewKey={id}
         />
       ) : 'cages' in spec ? (
         <SudokuGame

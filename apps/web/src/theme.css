@@ -431,7 +431,7 @@ p { margin: 0; }
 .icon-round:hover { background: var(--hover-bg); color: var(--hover-text); border-color: var(--hover-bg); }
 .icon-round.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-deep); }
 .play-meta { display: flex; align-items: center; gap: 12px; }
-.sudoku-board, .sudoku-pad, .kakuro-board, .kakuro-pad, .nono-board, .mosaic-board, .zip-svg, .timer, .big-time, .stat b, .tile b { font-family: var(--font-num); }
+.sudoku-board, .sudoku-pad, .nono-board, .mosaic-board, .zip-svg, .timer, .big-time, .stat b, .tile b { font-family: var(--font-num); }
 .timer { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: var(--fs-md); }
 .clock { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 .play-meta .muted { flex: 1; }

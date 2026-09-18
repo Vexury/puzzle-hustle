@@ -55,28 +55,6 @@ export function PuzzleIcon({ type, size = 56 }: { type: PuzzleTypeId; size?: num
             3
           </text>
         </svg>
-      ) : type === 'kakuro' ? (
-        <svg viewBox="0 0 40 40">
-          <g className="ic-grid">
-            {[1, 2].map((i) => (
-              <line key={`h${i}`} x1="6" y1={6 + i * 9.33} x2="34" y2={6 + i * 9.33} />
-            ))}
-            {[1, 2].map((i) => (
-              <line key={`v${i}`} x1={6 + i * 9.33} y1="6" x2={6 + i * 9.33} y2="34" />
-            ))}
-          </g>
-          <rect x="6" y="6" width="9.33" height="9.33" className="ic-a" />
-          <line x1="6" y1="6" x2="15.33" y2="15.33" className="ic-cut" />
-          <text x="20" y="14.5" textAnchor="middle" fontSize="7" fontWeight="700" className="ic-text">
-            16
-          </text>
-          <text x="10.7" y="24" textAnchor="middle" fontSize="7" fontWeight="700" className="ic-text">
-            9
-          </text>
-          <text x="29.3" y="33" textAnchor="middle" fontSize="8" fontWeight="700" className="ic-num">
-            7
-          </text>
-        </svg>
       ) : type === 'sudoku' || type === 'killer' ? (
         <svg viewBox="0 0 40 40">
           <g className="ic-grid">
