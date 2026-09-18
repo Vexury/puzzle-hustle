@@ -1,28 +1,40 @@
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { DIFFICULTIES, PUZZLE_TYPES, type Difficulty, type PuzzleTypeId } from '../src/types.ts';
+import { DIFFICULTIES, PUZZLE_TYPES, isPuzzleTypeId, type Difficulty, type PuzzleTypeId } from '../src/types.ts';
 import { adapter } from '../src/registry.ts';
 import type { LevelEntry, LevelPack } from '../src/levels.ts';
 
 const PER_DIFFICULTY = Number(process.argv[2] ?? 20);
-const CANDIDATES = PER_DIFFICULTY * 3;
+const ONLY = process.argv[3];
 const BUDGET = 5_000_000;
 
-const out = fileURLToPath(new URL('../src/levels.json', import.meta.url));
-const levels = {} as Record<PuzzleTypeId, Record<Difficulty, LevelEntry[]>>;
-const versions = {} as Record<PuzzleTypeId, number>;
+if (ONLY !== undefined && !isPuzzleTypeId(ONLY)) throw new Error(`unknown puzzle type ${ONLY}`);
+const types = ONLY ? [ONLY] : [...PUZZLE_TYPES];
 
-for (const type of PUZZLE_TYPES) {
+const out = fileURLToPath(new URL('../src/levels.json', import.meta.url));
+const existing = JSON.parse(readFileSync(out, 'utf-8')) as LevelPack;
+const levels = { ...existing.levels } as Record<PuzzleTypeId, Record<Difficulty, LevelEntry[]>>;
+const versions = { ...existing.versions } as Record<PuzzleTypeId, number>;
+
+for (const type of types) {
   const a = adapter(type);
+  const keepOld = versions[type] === a.version;
   versions[type] = a.version;
-  levels[type] = {} as Record<Difficulty, LevelEntry[]>;
+  levels[type] = { ...(keepOld ? levels[type] : {}) } as Record<Difficulty, LevelEntry[]>;
   for (const difficulty of DIFFICULTIES) {
+    const kept = keepOld ? (levels[type][difficulty] ?? []) : [];
+    const missing = PER_DIFFICULTY - kept.length;
+    if (missing <= 0) {
+      console.log(`${type}/${difficulty}: ${kept.length} levels, nothing to add`);
+      continue;
+    }
     const seen = new Set<string>();
+    for (const entry of kept) seen.add(a.key(entry.seed, difficulty));
     const found: LevelEntry[] = [];
-    let seed = 1000;
+    let seed = kept.reduce((m, e) => Math.max(m, e.seed), 1000);
     let tried = 0;
     const t0 = performance.now();
-    while (found.length < CANDIDATES) {
+    while (found.length < missing * 3) {
       seed++;
       tried++;
       if (!a.accepts(seed, difficulty, a.options(undefined) as never, BUDGET)) continue;
@@ -32,12 +44,12 @@ for (const type of PUZZLE_TYPES) {
       found.push({ seed, score: a.score(seed, difficulty, BUDGET) });
     }
     found.sort((x, y) => x.score - y.score);
-    const step = found.length / PER_DIFFICULTY;
-    const picked = Array.from({ length: PER_DIFFICULTY }, (_, i) => found[Math.floor(i * step)]!);
-    levels[type][difficulty] = picked;
+    const step = found.length / missing;
+    const picked = Array.from({ length: missing }, (_, i) => found[Math.floor(i * step)]!);
+    levels[type][difficulty] = [...kept, ...picked];
     const ms = Math.round(performance.now() - t0);
     console.log(
-      `${type}/${difficulty}: tried ${tried} seeds, ${found.length} unique, picked ${picked.length}, score ${picked[0]!.score} .. ${picked.at(-1)!.score}, ${ms} ms`,
+      `${type}/${difficulty}: kept ${kept.length}, tried ${tried} seeds, added ${picked.length} (score ${picked[0]!.score} .. ${picked.at(-1)!.score}), ${ms} ms`,
     );
   }
 }

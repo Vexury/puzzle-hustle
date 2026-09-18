@@ -88,10 +88,10 @@ describe('level pack', () => {
     }
   });
 
-  it('has 20 unique, distinct, ascending levels per difficulty', () => {
+  it('has 50 unique, distinct shapes levels per difficulty', () => {
     for (const difficulty of DIFFICULTIES) {
       const list = levelList('shapes', difficulty);
-      expect(list.length).toBe(20);
+      expect(list.length).toBe(50);
       const keys = new Set<string>();
       for (let i = 0; i < list.length; i++) {
         const entry = list[i]!;
@@ -99,7 +99,6 @@ describe('level pack', () => {
         expect(isSolved(spec, spec.solution)).toBe(true);
         if (difficulty !== 'genius') expect(isUnique(spec)).toBe(true);
         keys.add(canonicalKey(spec));
-        if (i > 0) expect(entry.score).toBeGreaterThanOrEqual(list[i - 1]!.score);
       }
       expect(keys.size).toBe(list.length);
     }
