@@ -1,20 +1,27 @@
-import { Header } from './components/Header.tsx';
+import { TabBar } from './components/TabBar.tsx';
 import { ToastHost } from './components/Toast.tsx';
 import { useRoute } from './lib/router.ts';
-import { Home } from './pages/Home.tsx';
+import { Daily } from './pages/Daily.tsx';
+import { LevelsIndex, LevelsType } from './pages/Levels.tsx';
 import { Play } from './pages/Play.tsx';
+import { Profile } from './pages/Profile.tsx';
 
 export function App() {
   const route = useRoute();
-  const page = route.path === '/play' ? <Play params={route.params} /> : <Home />;
+  let page: React.ReactNode;
+  let chrome = true;
+  if (route.path === '/play') {
+    page = <Play params={route.params} />;
+    chrome = false;
+  } else if (route.path === '/levels') page = <LevelsIndex />;
+  else if (route.path.startsWith('/levels/')) page = <LevelsType type={route.path.slice('/levels/'.length)} />;
+  else if (route.path === '/profile') page = <Profile />;
+  else page = <Daily />;
+
   return (
-    <div className="app">
-      <Header />
+    <div className={chrome ? 'app' : 'app play-mode'}>
       <main>{page}</main>
-      <footer className="footer">
-        <span>Puzzle Hustle · a Vexury project</span>
-        <a href="https://vexury.dev" target="_blank" rel="noreferrer">vexury.dev</a>
-      </footer>
+      {chrome && <TabBar />}
       <ToastHost />
     </div>
   );
