@@ -40,6 +40,8 @@ export interface NonogramGameProps {
   onHintUsed(): void;
   requestHint(): Promise<boolean>;
   locked: boolean;
+  initialState?: number[] | undefined;
+  onStateChange?(state: number[]): void;
 }
 
 function cellAt(x: number, y: number): { r: number; c: number } | null {
@@ -69,9 +71,9 @@ function ClueList({ clues, done, axis, index }: { clues: Clue[]; done: boolean; 
   );
 }
 
-export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, locked }: NonogramGameProps) {
+export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, locked, initialState, onStateChange }: NonogramGameProps) {
   const { rows, cols, colors } = spec.config;
-  const [state, setState] = useState<NonogramState>(() => emptyState(spec));
+  const [state, setState] = useState<NonogramState>(() => (initialState && initialState.length === emptyState(spec).length ? Uint8Array.from(initialState) : emptyState(spec)));
   const [color, setColor] = useState(1);
   const [flash, setFlash] = useState<number | null>(null);
   const [hintBusy, setHintBusy] = useState(false);
@@ -130,6 +132,7 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
     stateRef.current = next;
     setState(next);
     onMove();
+    onStateChange?.([...next]);
   }
 
   function setCells(cells: number[], value: number) {

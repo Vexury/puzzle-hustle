@@ -45,6 +45,40 @@ export function useSolves(): Record<string, SolveRecord> {
   );
 }
 
+export interface Progress {
+  state: number[];
+  seconds: number;
+  moves: number;
+  hints: number;
+}
+
+const PROGRESS_PREFIX = 'ph:progress:';
+
+export function readProgress(id: string): Progress | null {
+  try {
+    const raw = localStorage.getItem(PROGRESS_PREFIX + id);
+    return raw ? (JSON.parse(raw) as Progress) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function writeProgress(id: string, progress: Progress) {
+  try {
+    localStorage.setItem(PROGRESS_PREFIX + id, JSON.stringify(progress));
+  } catch {
+    /* storage unavailable */
+  }
+}
+
+export function clearProgress(id: string) {
+  try {
+    localStorage.removeItem(PROGRESS_PREFIX + id);
+  } catch {
+    /* storage unavailable */
+  }
+}
+
 export function readSetting(key: string): string | null {
   try {
     return localStorage.getItem(key);

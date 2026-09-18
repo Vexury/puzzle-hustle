@@ -17,7 +17,8 @@ interface Drag {
   value: number;
   r: number;
   c: number;
-  axis: 'row' | 'col' | null;
+  lastR: number;
+  lastC: number;
   applied: boolean;
   timer: ReturnType<typeof setTimeout> | null;
 }
@@ -29,6 +30,8 @@ export interface MosaicGameProps {
   onHintUsed(): void;
   requestHint(): Promise<boolean>;
   locked: boolean;
+  initialState?: number[] | undefined;
+  onStateChange?(state: number[]): void;
 }
 
 function cellAt(x: number, y: number): { r: number; c: number } | null {
@@ -44,9 +47,9 @@ function nextValue(current: number, mark: boolean): number {
   return MOSAIC_MARKED_EMPTY;
 }
 
-export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, locked }: MosaicGameProps) {
+export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, locked, initialState, onStateChange }: MosaicGameProps) {
   const { rows, cols } = spec.config;
-  const [state, setState] = useState<MosaicState>(() => emptyMosaicState(spec));
+  const [state, setState] = useState<MosaicState>(() => (initialState && initialState.length === emptyMosaicState(spec).length ? Uint8Array.from(initialState) : emptyMosaicState(spec)));
   const [flash, setFlash] = useState<number | null>(null);
   const [hintBusy, setHintBusy] = useState(false);
   const stateRef = useRef(state);
@@ -61,6 +64,7 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
     stateRef.current = next;
     setState(next);
     onMove();
+    onStateChange?.([...next]);
   }
 
   function setCells(cells: number[], value: number) {
@@ -85,7 +89,7 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
     const idx = pos.r * cols + pos.c;
     const current = stateRef.current[idx]!;
     const mark = e.button === 2;
-    const d: Drag = { pointerId: e.pointerId, value: nextValue(current, mark), r: pos.r, c: pos.c, axis: null, applied: false, timer: null };
+    const d: Drag = { pointerId: e.pointerId, value: nextValue(current, mark), r: pos.r, c: pos.c, lastR: pos.r, lastC: pos.c, applied: false, timer: null };
     if (!mark && e.pointerType !== 'mouse') {
       d.timer = setTimeout(() => {
         if (d.applied) return;
@@ -101,18 +105,17 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
     const d = drag.current;
     if (!d || d.pointerId !== e.pointerId) return;
     const pos = cellAt(e.clientX, e.clientY);
-    if (!pos || (pos.r === d.r && pos.c === d.c)) return;
+    if (!pos || (pos.r === d.lastR && pos.c === d.lastC)) return;
     clearTimer(d);
-    if (!d.axis) d.axis = pos.r === d.r ? 'row' : 'col';
-    const r = d.axis === 'row' ? d.r : pos.r;
-    const c = d.axis === 'col' ? d.c : pos.c;
     const cells = [d.r * cols + d.c];
-    const steps = d.axis === 'row' ? Math.abs(c - d.c) : Math.abs(r - d.r);
+    const steps = Math.max(Math.abs(pos.r - d.lastR), Math.abs(pos.c - d.lastC));
     for (let s = 1; s <= steps; s++) {
-      const rr = d.axis === 'row' ? d.r : d.r + Math.sign(r - d.r) * s;
-      const cc = d.axis === 'col' ? d.c : d.c + Math.sign(c - d.c) * s;
+      const rr = Math.round(d.lastR + ((pos.r - d.lastR) * s) / steps);
+      const cc = Math.round(d.lastC + ((pos.c - d.lastC) * s) / steps);
       cells.push(rr * cols + cc);
     }
+    d.lastR = pos.r;
+    d.lastC = pos.c;
     d.applied = true;
     setCells(cells, d.value);
   }

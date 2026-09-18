@@ -31,11 +31,17 @@ export interface ShapesGameProps {
   onHintUsed(): void;
   requestHint(): Promise<boolean>;
   locked: boolean;
+  initialState?: number[] | undefined;
+  onStateChange?(state: number[]): void;
 }
 
-export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, locked }: ShapesGameProps) {
+export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, locked, initialState, onStateChange }: ShapesGameProps) {
   const size = spec.config.size;
-  const [state, setState] = useState<ShapesState>(() => [...spec.start]);
+  const [state, setState] = useState<ShapesState>(() =>
+    initialState && initialState.length === spec.pieces.length * 2
+      ? spec.pieces.map((_, i) => ({ r: initialState[i * 2]!, c: initialState[i * 2 + 1]! }))
+      : [...spec.start],
+  );
   const [order, setOrder] = useState<number[]>(() => spec.pieces.map((_, i) => i));
   const [drag, setDrag] = useState<Drag | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
@@ -84,6 +90,7 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
     next[pieceId] = placement;
     setState(next);
     onMove();
+    onStateChange?.(next.flatMap((p) => [p.r, p.c]));
   }
 
   function startDrag(e: React.PointerEvent, pieceId: number) {
@@ -152,6 +159,7 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
     setState([...spec.start]);
     setSelected(null);
     onMove();
+    onStateChange?.(spec.start.flatMap((p) => [p.r, p.c]));
   }
 
   const preview = drag ? dropTarget(drag) : null;

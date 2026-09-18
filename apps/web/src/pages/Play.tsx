@@ -15,7 +15,7 @@ import {
   type PuzzleRef,
 } from '@puzzle-hustle/core';
 import { href, navigate, onLinkClick } from '../lib/router.ts';
-import { getSolve, readSetting, recordSolve, useSolves, writeSetting, type SolveRecord } from '../lib/storage.ts';
+import { clearProgress, getSolve, readProgress, readSetting, recordSolve, useSolves, writeProgress, writeSetting, type SolveRecord } from '../lib/storage.ts';
 import { capitalize, formatSeconds, puzzleUrl, share, shareText } from '../lib/share.ts';
 import { currentHintProvider } from '../lib/hints.ts';
 import { HOW_TO } from '../lib/howto.ts';
@@ -72,10 +72,12 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
       : 'clues' in spec
         ? `${spec.config.rows}×${spec.config.cols}, ${[...spec.clues].filter((c) => c >= 0).length} clues`
         : `${spec.config.rows}×${spec.config.cols}${spec.config.colors > 1 ? `, ${spec.config.colors} colors` : ''}`;
-  const [moves, setMoves] = useState(0);
-  const [hints, setHints] = useState(0);
-  const [seconds, setSeconds] = useState(0);
+  const saved = useMemo(() => (existing ? null : readProgress(id)), [id, existing]);
+  const [moves, setMoves] = useState(saved?.moves ?? 0);
+  const [hints, setHints] = useState(saved?.hints ?? 0);
+  const [seconds, setSeconds] = useState(saved?.seconds ?? 0);
   const startedAt = useRef<number | null>(null);
+  const counters = useRef({ moves: saved?.moves ?? 0, hints: saved?.hints ?? 0 });
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<SolveRecord | undefined>(existing);
   const seenKey = `ph:howto:${puzzleRef.type}`;
@@ -90,23 +92,59 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
     return () => clearInterval(timer);
   }, [running]);
 
+  const elapsedNow = () => (startedAt.current === null ? seconds : Math.floor((Date.now() - startedAt.current) / 1000));
+
   const onMove = () => {
-    setMoves((m) => m + 1);
+    counters.current.moves++;
+    setMoves(counters.current.moves);
     if (startedAt.current === null) {
-      startedAt.current = Date.now();
+      startedAt.current = Date.now() - seconds * 1000;
       setRunning(true);
       writeSetting(seenKey, '1');
     }
   };
 
+  const onHintUsed = () => {
+    counters.current.hints++;
+    setHints(counters.current.hints);
+  };
+
+  const lastState = useRef<number[] | null>(saved?.state ?? null);
+  const resultRef = useRef(result);
+  resultRef.current = result;
+
+  const persist = () => {
+    if (resultRef.current || !lastState.current || startedAt.current === null) return;
+    writeProgress(id, { state: lastState.current, seconds: elapsedNow(), moves: counters.current.moves, hints: counters.current.hints });
+  };
+
+  const onStateChange = (state: number[]) => {
+    lastState.current = state;
+    persist();
+  };
+
+  useEffect(() => {
+    const onHide = () => {
+      if (document.visibilityState === 'hidden') persist();
+    };
+    document.addEventListener('visibilitychange', onHide);
+    window.addEventListener('pagehide', persist);
+    return () => {
+      persist();
+      document.removeEventListener('visibilitychange', onHide);
+      window.removeEventListener('pagehide', persist);
+    };
+  }, []);
+
   const onSolved = () => {
     if (result) return;
     setRunning(false);
-    const elapsed = startedAt.current ? Math.floor((Date.now() - startedAt.current) / 1000) : 0;
-    const record: SolveRecord = { solvedAt: new Date().toISOString(), seconds: elapsed, hints, moves };
+    const elapsed = elapsedNow();
+    const record: SolveRecord = { solvedAt: new Date().toISOString(), seconds: elapsed, hints: counters.current.hints, moves: counters.current.moves };
     setSeconds(elapsed);
     setResult(record);
     recordSolve(id, record);
+    clearProgress(id);
   };
 
   const doShare = async () => {
@@ -160,27 +198,33 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           spec={spec}
           onMove={onMove}
           onSolved={onSolved}
-          onHintUsed={() => setHints((h) => h + 1)}
+          onHintUsed={onHintUsed}
           requestHint={() => hintProvider.request()}
           locked={false}
+          initialState={saved?.state}
+          onStateChange={onStateChange}
         />
       ) : 'clues' in spec ? (
         <MosaicGame
           spec={spec}
           onMove={onMove}
           onSolved={onSolved}
-          onHintUsed={() => setHints((h) => h + 1)}
+          onHintUsed={onHintUsed}
           requestHint={() => hintProvider.request()}
           locked={false}
+          initialState={saved?.state}
+          onStateChange={onStateChange}
         />
       ) : (
         <NonogramGame
           spec={spec}
           onMove={onMove}
           onSolved={onSolved}
-          onHintUsed={() => setHints((h) => h + 1)}
+          onHintUsed={onHintUsed}
           requestHint={() => hintProvider.request()}
           locked={false}
+          initialState={saved?.state}
+          onStateChange={onStateChange}
         />
       )}
 
