@@ -55,7 +55,7 @@
   --text: #e8e4de;
   --text-muted: #8a8580;
   --border: #272421;
-  --border-mid: #3d3830;
+  --border-mid: #6f685c;
   --accent-deep: #FFA833;
   --accent-soft: rgba(255, 168, 51, 0.12);
   --accent-strong: rgba(255, 168, 51, 0.4);
@@ -64,7 +64,7 @@
   --hover-text: #111110;
   --hover-bg: #e8e4de;
   --board-cell: #23211e;
-  --board-line: #3d3830;
+  --board-line: #35322d;
   --success: #5fc47f;
   --success-soft: rgba(95, 196, 127, 0.14);
   --danger: #e0685a;
