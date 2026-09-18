@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { PUZZLE_META, decodeRef, encodeRef, generateShapes, periodOptions, randomSeed, refId, type PuzzleRef } from '@puzzle-hustle/core';
+import { PUZZLE_META, decodeRef, encodeRef, generateShapes, levelRef, periodOptions, randomRef, refId, type PuzzleRef } from '@puzzle-hustle/core';
 import { href, navigate, onLinkClick } from '../lib/router.ts';
 import { getSolve, recordSolve, useSolves, type SolveRecord } from '../lib/storage.ts';
 import { capitalize, formatSeconds, periodLabel, puzzleUrl, share, shareText } from '../lib/share.ts';
@@ -65,7 +65,8 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
     else if (outcome === 'failed') toast('Could not share');
   };
 
-  const another = () => navigate(href(`/play?${encodeRef({ type: puzzleRef.type, difficulty: puzzleRef.difficulty, seed: randomSeed() })}`));
+  const another = () => navigate(href(`/play?${encodeRef(randomRef(puzzleRef.type, puzzleRef.difficulty))}`));
+  const nextLevel = puzzleRef.level ? levelRef(puzzleRef.type, puzzleRef.difficulty, puzzleRef.level + 1) : null;
 
   return (
     <section className="section">
@@ -76,7 +77,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
             <span>{periodLabel(puzzleRef)}</span>
             {puzzleRef.period && <span>{capitalize(puzzleRef.difficulty)}</span>}
             <span>
-              {spec.config.size}×{spec.config.size} · {spec.pieces.length} shapes
+              {spec.config.inner}×{spec.config.inner} · {spec.pieces.length} shapes
             </span>
             <span>
               <b>{formatSeconds(result?.seconds ?? seconds)}</b>
@@ -108,7 +109,12 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           </div>
           <div className="actions">
             <button type="button" className="btn primary" onClick={doShare}>Share result</button>
-            {!puzzleRef.period && <button type="button" className="btn" onClick={another}>Another {capitalize(puzzleRef.difficulty)}</button>}
+            {nextLevel && (
+              <a href={href(`/play?${encodeRef(nextLevel)}`)} className="btn" onClick={onLinkClick}>
+                Level {nextLevel.level}
+              </a>
+            )}
+            {!puzzleRef.period && !puzzleRef.level && <button type="button" className="btn" onClick={another}>Another {capitalize(puzzleRef.difficulty)}</button>}
             <a href={href('/')} className="btn" onClick={onLinkClick}>All puzzles</a>
           </div>
         </div>

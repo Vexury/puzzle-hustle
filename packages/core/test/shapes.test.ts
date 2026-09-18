@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DIFFICULTIES } from '../src/types.ts';
 import { SHAPES, SHAPE_KINDS, atomIndex } from '../src/shapes/shapes.ts';
-import { coverage, fitsBoard, generateShapes, hint, isSolved, litMask, progress, type ShapesState } from '../src/shapes/puzzle.ts';
+import { coverage, fitsBoard, generateShapes, hint, inInner, isSolved, litMask, progress, type ShapesState } from '../src/shapes/puzzle.ts';
 
 describe('shapes', () => {
   it('atoms stay within the declared bounding box and are unique', () => {
@@ -64,7 +64,17 @@ describe('generateShapes', () => {
       for (let seed = 1; seed <= 200; seed++) {
         const spec = generateShapes(seed, difficulty);
         expect(spec.pieces.length).toBe(spec.config.pieceCount);
-        spec.pieces.forEach((p, i) => expect(fitsBoard(spec.config.size, p.kind, spec.solution[i]!)).toBe(true));
+        spec.pieces.forEach((p, i) => {
+          const sol = spec.solution[i]!;
+          const s = SHAPES[p.kind];
+          expect(inInner(spec.config, sol.r, sol.c)).toBe(true);
+          expect(inInner(spec.config, sol.r + s.height - 1, sol.c + s.width - 1)).toBe(true);
+        });
+        for (let a = 0; a < spec.target.length; a++) {
+          if (!spec.target[a]) continue;
+          const cell = Math.floor(a / 4);
+          expect(inInner(spec.config, Math.floor(cell / spec.config.size), cell % spec.config.size)).toBe(true);
+        }
         expect(isSolved(spec, spec.solution)).toBe(true);
         expect(isSolved(spec, spec.start)).toBe(false);
         spec.pieces.forEach((p, i) => expect(fitsBoard(spec.config.size, p.kind, spec.start[i]!)).toBe(true));
@@ -74,7 +84,8 @@ describe('generateShapes', () => {
 
   it('honours the monthly size bump', () => {
     const spec = generateShapes(7, 'genius', { sizeDelta: 2, pieceDelta: 3 });
-    expect(spec.config.size).toBe(8);
+    expect(spec.config.inner).toBe(8);
+    expect(spec.config.size).toBe(10);
     expect(spec.pieces.length).toBe(11);
     expect(isSolved(spec, spec.solution)).toBe(true);
   });

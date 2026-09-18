@@ -15,6 +15,7 @@ export function formatSeconds(total: number): string {
 }
 
 export function periodLabel(ref: PuzzleRef): string {
+  if (ref.level) return `${capitalize(ref.difficulty)} · Level ${ref.level}`;
   if (!ref.period || !ref.key) return capitalize(ref.difficulty);
   return `${capitalize(ref.period)} ${ref.key}`;
 }

@@ -5,15 +5,19 @@ import {
   PUZZLE_META,
   PUZZLE_TYPES,
   encodeRef,
+  levelList,
+  levelRef,
   nextPeriodStart,
   periodRef,
-  randomSeed,
+  randomRef,
   refId,
+  type Difficulty,
   type Period,
   type PuzzleRef,
+  type PuzzleTypeId,
 } from '@puzzle-hustle/core';
 import { href, navigate, onLinkClick } from '../lib/router.ts';
-import { useSolves } from '../lib/storage.ts';
+import { useSolves, type SolveRecord } from '../lib/storage.ts';
 import { capitalize, formatSeconds } from '../lib/share.ts';
 
 function useCountdown(period: Period): string {
@@ -59,6 +63,58 @@ function PeriodCard({ period }: { period: Period }) {
   );
 }
 
+export function unlockedLevel(type: PuzzleTypeId, difficulty: Difficulty, solves: Record<string, SolveRecord>): number {
+  const list = levelList(type, difficulty);
+  for (let i = 1; i <= list.length; i++) {
+    const ref = levelRef(type, difficulty, i);
+    if (ref && !solves[refId(ref)]) return i;
+  }
+  return list.length + 1;
+}
+
+function LevelRow({ type, difficulty }: { type: PuzzleTypeId; difficulty: Difficulty }) {
+  const solves = useSolves();
+  const list = levelList(type, difficulty);
+  const open = unlockedLevel(type, difficulty, solves);
+  const solvedCount = Math.min(open - 1, list.length);
+  return (
+    <div className="level-row">
+      <div className="level-head">
+        <span className="level-name">{capitalize(difficulty)}</span>
+        <span className="muted small">
+          {solvedCount}/{list.length}
+        </span>
+        <button
+          type="button"
+          className="chip"
+          onClick={() => navigate(href(`/play?${encodeRef(randomRef(type, difficulty))}`))}
+        >
+          Random
+        </button>
+      </div>
+      <div className="level-grid">
+        {list.map((_, i) => {
+          const n = i + 1;
+          const ref = levelRef(type, difficulty, n)!;
+          const state = n < open ? 'solved' : n === open ? 'open' : 'locked';
+          if (state === 'locked') {
+            return (
+              <span key={n} className="level-tile locked" aria-label={`Level ${n}, locked`}>
+                {n}
+              </span>
+            );
+          }
+          return (
+            <a key={n} href={href(`/play?${encodeRef(ref)}`)} className={`level-tile ${state}`} onClick={onLinkClick} aria-label={`Level ${n}`}>
+              {n}
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function Home() {
   return (
     <>
@@ -74,31 +130,19 @@ export function Home() {
         </div>
       </section>
 
-      <section className="section">
-        <div className="section-title">
-          <h2>Free play</h2>
-        </div>
-        <div className="cards">
-          {PUZZLE_TYPES.map((type) => (
-            <div key={type} className="card">
-              <span className="title">{PUZZLE_META[type].name}</span>
-              <span className="muted small">{PUZZLE_META[type].tagline}</span>
-              <div className="chips">
-                {DIFFICULTIES.map((d) => (
-                  <button
-                    type="button"
-                    key={d}
-                    className="chip"
-                    onClick={() => navigate(href(`/play?${encodeRef({ type, difficulty: d, seed: randomSeed() })}`))}
-                  >
-                    {capitalize(d)}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {PUZZLE_TYPES.map((type) => (
+        <section key={type} className="section">
+          <div className="section-title">
+            <h2>{PUZZLE_META[type].name}</h2>
+            <span className="muted small">{PUZZLE_META[type].tagline}</span>
+          </div>
+          <div className="levels">
+            {DIFFICULTIES.map((d) => (
+              <LevelRow key={d} type={type} difficulty={d} />
+            ))}
+          </div>
+        </section>
+      ))}
     </>
   );
 }

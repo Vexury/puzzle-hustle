@@ -13,7 +13,6 @@ import {
   type ShapesState,
 } from '@puzzle-hustle/core';
 import { outlinePoints } from './PieceShape.tsx';
-import { TargetView } from './TargetView.tsx';
 
 interface Drag {
   pieceId: number;
@@ -50,6 +49,8 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
   }, [solved, onSolved]);
 
   const lit = litMask(coverage(size, spec.pieces, state));
+  const m = spec.config.margin;
+  const inner = spec.config.inner;
 
   function boardCell(x: number, y: number): { r: number; c: number } | null {
     const el = boardRef.current;
@@ -158,10 +159,6 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
   return (
     <div className="shapes-wrap">
       <div className="shapes">
-        <div className="target-panel">
-          <h3>Target</h3>
-          <TargetView size={size} target={spec.target} />
-        </div>
         <div className="board-panel">
           <svg
             ref={boardRef}
@@ -174,9 +171,11 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
             role="application"
             aria-label="Shapes board"
           >
+            <rect className="inner-area" x={m} y={m} width={inner} height={inner} />
             {[...lit].map((v, i) => {
               const { r, c, dir } = atomFromIndex(size, i);
-              return <polygon key={i} className={v ? 'atom lit' : 'atom'} points={atomPolygon(r, c, dir).map((p) => p.join(',')).join(' ')} />;
+              const cls = v ? 'atom lit' : spec.target[i] ? 'atom ghost' : 'atom';
+              return <polygon key={i} className={cls} points={atomPolygon(r, c, dir).map((p) => p.join(',')).join(' ')} />;
             })}
             {Array.from({ length: size + 1 }, (_, i) => (
               <g key={i}>
@@ -184,6 +183,7 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
                 <line className="grid-line" x1={i} y1={0} x2={i} y2={size} />
               </g>
             ))}
+            <rect className="inner-frame" x={m} y={m} width={inner} height={inner} />
             {order.map((i) => {
               const piece = spec.pieces[i]!;
               const p = drag?.pieceId === i && preview ? preview : state[i]!;

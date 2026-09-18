@@ -2,14 +2,19 @@ import { Rng } from '../rng.ts';
 import type { Difficulty } from '../types.ts';
 import { SHAPES, atomIndex, type ShapeKind } from './shapes.ts';
 
-export const SHAPES_VERSION = 1;
+export const SHAPES_VERSION = 2;
 
-export interface ShapesConfig {
-  size: number;
+export interface ShapesPreset {
+  inner: number;
   pieceCount: number;
   kinds: readonly ShapeKind[];
   minOverlapAtoms: number;
   maxLitRatio: number;
+}
+
+export interface ShapesConfig extends ShapesPreset {
+  size: number;
+  margin: number;
 }
 
 export interface Placement {
@@ -39,11 +44,13 @@ const SMALL: ShapeKind[] = ['sq1', 'tri-nw', 'tri-ne', 'tri-se', 'tri-sw', 'dia1
 const MEDIUM: ShapeKind[] = [...SMALL, 'sq2', 'tri2-nw', 'tri2-ne', 'tri2-se', 'tri2-sw'];
 const ALL: ShapeKind[] = [...MEDIUM, 'dia2'];
 
-export const SHAPES_PRESETS: Record<Difficulty, ShapesConfig> = {
-  easy: { size: 3, pieceCount: 3, kinds: SMALL, minOverlapAtoms: 1, maxLitRatio: 0.8 },
-  medium: { size: 4, pieceCount: 4, kinds: MEDIUM, minOverlapAtoms: 2, maxLitRatio: 0.75 },
-  hard: { size: 5, pieceCount: 6, kinds: MEDIUM, minOverlapAtoms: 6, maxLitRatio: 0.7 },
-  genius: { size: 6, pieceCount: 8, kinds: ALL, minOverlapAtoms: 12, maxLitRatio: 0.7 },
+export const SHAPES_MARGIN = 1;
+
+export const SHAPES_PRESETS: Record<Difficulty, ShapesPreset> = {
+  easy: { inner: 3, pieceCount: 3, kinds: SMALL, minOverlapAtoms: 1, maxLitRatio: 0.8 },
+  medium: { inner: 4, pieceCount: 4, kinds: MEDIUM, minOverlapAtoms: 2, maxLitRatio: 0.75 },
+  hard: { inner: 5, pieceCount: 6, kinds: MEDIUM, minOverlapAtoms: 6, maxLitRatio: 0.7 },
+  genius: { inner: 6, pieceCount: 8, kinds: ALL, minOverlapAtoms: 12, maxLitRatio: 0.7 },
 };
 
 export interface ShapesOptions {
@@ -53,9 +60,16 @@ export interface ShapesOptions {
 
 export function shapesConfig(difficulty: Difficulty, options: ShapesOptions = {}): ShapesConfig {
   const base = SHAPES_PRESETS[difficulty];
-  const size = base.size + (options.sizeDelta ?? 0);
+  const inner = base.inner + (options.sizeDelta ?? 0);
   const pieceCount = base.pieceCount + (options.pieceDelta ?? 0);
-  return { ...base, size, pieceCount, minOverlapAtoms: Math.round(base.minOverlapAtoms * (pieceCount / base.pieceCount)) };
+  return {
+    ...base,
+    inner,
+    margin: SHAPES_MARGIN,
+    size: inner + 2 * SHAPES_MARGIN,
+    pieceCount,
+    minOverlapAtoms: Math.round(base.minOverlapAtoms * (pieceCount / base.pieceCount)),
+  };
 }
 
 export function coverage(size: number, pieces: readonly ShapesPiece[], placements: readonly (Placement | null)[]): Uint8Array {
@@ -82,7 +96,8 @@ export function fitsBoard(size: number, kind: ShapeKind, p: Placement): boolean 
 export function generateShapes(seed: number, difficulty: Difficulty, options: ShapesOptions = {}): ShapesSpec {
   const config = shapesConfig(difficulty, options);
   const rng = new Rng(seed);
-  const kinds = config.kinds.filter((k) => SHAPES[k].width <= config.size);
+  const kinds = config.kinds.filter((k) => SHAPES[k].width <= config.inner);
+  const m = config.margin;
   for (let attempt = 0; attempt < 5000; attempt++) {
     const pieces: ShapesPiece[] = [];
     const solution: Placement[] = [];
@@ -90,29 +105,37 @@ export function generateShapes(seed: number, difficulty: Difficulty, options: Sh
       const kind = rng.pick(kinds);
       const s = SHAPES[kind];
       pieces.push({ id: i, kind });
-      solution.push({ r: rng.int(config.size - s.height + 1), c: rng.int(config.size - s.width + 1) });
+      solution.push({ r: m + rng.int(config.inner - s.height + 1), c: m + rng.int(config.inner - s.width + 1) });
     }
     if (!validCandidate(config, pieces, solution)) continue;
     const target = litMask(coverage(config.size, pieces, solution));
-    const start = startLayout(config.size, pieces, target, rng);
+    const start = startLayout(config, pieces, target, rng);
     return { version: SHAPES_VERSION, seed, difficulty, config, pieces, target, solution, start };
   }
   throw new Error(`could not generate shapes for seed ${seed} / ${difficulty}`);
 }
 
-function startLayout(size: number, pieces: ShapesPiece[], target: Uint8Array, rng: Rng): Placement[] {
+export function inInner(config: ShapesConfig, r: number, c: number): boolean {
+  return r >= config.margin && c >= config.margin && r < config.margin + config.inner && c < config.margin + config.inner;
+}
+
+function startLayout(config: ShapesConfig, pieces: ShapesPiece[], target: Uint8Array, rng: Rng): Placement[] {
+  const size = config.size;
   const order = rng.shuffle(pieces.map((_, i) => i));
   const occupied = new Uint8Array(size * size * 4);
   const start: Placement[] = pieces.map(() => ({ r: 0, c: 0 }));
   for (const i of order) {
     const s = SHAPES[pieces[i]!.kind];
+    const ring: Placement[] = [];
     const free: Placement[] = [];
     for (let r = 0; r + s.height <= size; r++) {
       for (let c = 0; c + s.width <= size; c++) {
-        if (s.atoms.every(([dr, dc, dir]) => occupied[atomIndex(size, r + dr, c + dc, dir)] === 0)) free.push({ r, c });
+        if (!s.atoms.every(([dr, dc, dir]) => occupied[atomIndex(size, r + dr, c + dc, dir)] === 0)) continue;
+        free.push({ r, c });
+        if (s.atoms.every(([dr, dc]) => !inInner(config, r + dr, c + dc))) ring.push({ r, c });
       }
     }
-    const p = free.length > 0 ? rng.pick(free) : { r: rng.int(size - s.height + 1), c: rng.int(size - s.width + 1) };
+    const p = ring.length > 0 ? rng.pick(ring) : free.length > 0 ? rng.pick(free) : { r: rng.int(size - s.height + 1), c: rng.int(size - s.width + 1) };
     start[i] = p;
     for (const [dr, dc, dir] of s.atoms) occupied[atomIndex(size, p.r + dr, p.c + dc, dir)] = 1;
   }
@@ -141,7 +164,7 @@ function validCandidate(config: ShapesConfig, pieces: ShapesPiece[], solution: P
     if (n & 1) lit++;
   }
   if (lit === 0 || overlap < config.minOverlapAtoms) return false;
-  if (lit > config.maxLitRatio * counts.length) return false;
+  if (lit > config.maxLitRatio * config.inner * config.inner * 4) return false;
   for (let i = 0; i < pieces.length; i++) {
     const p = solution[i]!;
     const visible = SHAPES[pieces[i]!.kind].atoms.some(([dr, dc, dir]) => (counts[atomIndex(config.size, p.r + dr, p.c + dc, dir)]! & 1) === 1);

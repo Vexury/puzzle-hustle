@@ -4,3 +4,5 @@ export * from './schedule.ts';
 export * from './ref.ts';
 export * from './shapes/shapes.ts';
 export * from './shapes/puzzle.ts';
+export * from './shapes/solver.ts';
+export * from './levels.ts';
