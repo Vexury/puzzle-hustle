@@ -21,34 +21,45 @@
   -webkit-user-select: none;
 }
 
-.nono-board {
-  --cell: min(calc(200px / var(--cols) + 20px), calc((100cqw - 90px) / var(--cols)));
-  display: grid;
-  grid-template-columns: auto repeat(var(--cols), var(--cell));
-  grid-template-rows: auto repeat(var(--rows), var(--cell));
+.nono-viewport {
+  width: 100%;
+  max-height: calc(100dvh - 250px);
+  min-height: 220px;
+  overflow: auto;
+  overscroll-behavior: contain;
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 8px;
-  max-width: 100%;
   touch-action: none;
+  scrollbar-width: thin;
 }
-.nono-board.solved { border-color: var(--success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 30%, transparent); }
+.nono-viewport.solved { border-color: var(--success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 30%, transparent); }
 
-.nono-corner { grid-column: 1; grid-row: 1; }
+.nono-board {
+  display: grid;
+  grid-template-columns: auto repeat(var(--cols), var(--cell));
+  grid-template-rows: auto repeat(var(--rows), var(--cell));
+  width: max-content;
+  padding: 0 8px 8px 0;
+  --clue-fs: clamp(10px, calc(var(--cell) * 0.5), 14px);
+}
+
+.nono-corner { grid-column: 1; grid-row: 1; position: sticky; top: 0; left: 0; z-index: 3; background: var(--card-bg); }
+.nono-clues.col { position: sticky; top: 0; z-index: 2; background: var(--card-bg); padding-top: 8px; }
+.nono-clues.row { position: sticky; left: 0; z-index: 2; background: var(--card-bg); padding-left: 8px; }
 
 .nono-clues {
   display: flex;
   gap: 2px;
-  font-size: var(--fs-xs);
+  font-size: var(--clue-fs);
   font-weight: 700;
   line-height: 1;
   color: var(--text);
   transition: color 0.15s;
 }
-.nono-clues.col { flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 4px; }
-.nono-clues.row { flex-direction: row; justify-content: flex-end; align-items: center; padding-right: 6px; }
+.nono-clues.col { flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 4px; min-width: var(--cell); }
+.nono-clues.row { flex-direction: row; justify-content: flex-end; align-items: center; padding-right: 6px; min-height: var(--cell); }
 .nono-clues.done { color: var(--text-muted); opacity: 0.6; }
 .nono-clues .clue { display: inline-block; min-width: 1.1em; text-align: center; }
 .nono-clues .clue.c2 { color: var(--nono-c2); }
