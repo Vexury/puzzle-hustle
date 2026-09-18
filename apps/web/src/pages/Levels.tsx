@@ -74,11 +74,14 @@ function LevelGrid({ type }: { type: PuzzleTypeId }) {
   const solves = useSolves();
   const saved = readSetting(`ph:difficulty:${type}`);
   const [difficulty, setDifficulty] = useState<Difficulty>(isDifficulty(saved) ? saved : 'easy');
+  const [slide, setSlide] = useState<'' | ' slide-left' | ' slide-right'>('');
   const list = levelList(type, difficulty);
   const open = unlockedLevel(type, difficulty, solves);
   const stat = typeStats(solves).find((s) => s.type === type)!;
 
   const pick = (d: Difficulty) => {
+    if (d === difficulty) return;
+    setSlide(DIFFICULTIES.indexOf(d) > DIFFICULTIES.indexOf(difficulty) ? ' slide-right' : ' slide-left');
     setDifficulty(d);
     writeSetting(`ph:difficulty:${type}`, d);
   };
@@ -111,7 +114,7 @@ function LevelGrid({ type }: { type: PuzzleTypeId }) {
         })}
       </div>
 
-      <div className="level-grid">
+      <div key={difficulty} className={`level-grid${slide}`}>
         {list.map((_, i) => {
           const n = i + 1;
           const ref = levelRef(type, difficulty, n)!;

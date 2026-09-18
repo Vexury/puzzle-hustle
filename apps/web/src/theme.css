@@ -292,6 +292,11 @@ p { margin: 0; }
 
 .level-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
 @media (min-width: 480px) { .level-grid { grid-template-columns: repeat(4, 1fr); } }
+.level-grid.slide-right { animation: level-slide-right 0.28s ease-out; }
+.level-grid.slide-left { animation: level-slide-left 0.28s ease-out; }
+@keyframes level-slide-right { from { transform: translateX(48px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes level-slide-left { from { transform: translateX(-48px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .level-grid.slide-right, .level-grid.slide-left { animation: none; } }
 .tile {
   display: flex;
   flex-direction: column;
