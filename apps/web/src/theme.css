@@ -135,12 +135,14 @@ p { margin: 0; }
   margin: -6px 0 16px;
   color: var(--text-muted);
 }
-.daily-progress .slots { display: flex; align-items: center; gap: 6px; }
+.daily-progress .slots { display: flex; align-items: center; width: 100%; }
+.daily-progress .cell { flex: 1; display: grid; place-items: center; }
 .daily-progress .streak-zone {
-  display: inline-flex;
+  flex: 4;
+  display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 8px 4px 4px;
+  justify-content: space-around;
+  padding: 4px 0;
   border-radius: 999px;
   background: var(--board-cell);
   border: 1px solid var(--border);

@@ -124,7 +124,11 @@ function DailyProgress({ dailies, solves }: { dailies: PuzzleRef[]; solves: Reco
           {Array.from({ length: Math.min(STREAK_MIN, total) }, (_, i) => slot(i))}
           <Flame />
         </span>
-        {Array.from({ length: Math.max(0, total - STREAK_MIN) }, (_, i) => slot(i + STREAK_MIN))}
+        {Array.from({ length: Math.max(0, total - STREAK_MIN) }, (_, i) => (
+          <span key={i} className="cell">
+            {slot(i + STREAK_MIN)}
+          </span>
+        ))}
       </div>
       <span className="small">
         {solved}/{total} solved · {safe ? 'streak safe' : missing === 1 ? 'one more for your streak' : `${missing} more for your streak`}
