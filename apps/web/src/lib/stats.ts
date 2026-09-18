@@ -1,4 +1,4 @@
-import { PUZZLE_TYPES, levelList, localDateParts, periodKey, type PuzzleTypeId } from '@puzzle-hustle/core';
+import { PUZZLE_TYPES, isoWeek, levelList, localDateParts, periodKey, type PuzzleTypeId } from '@puzzle-hustle/core';
 import type { SolveRecord } from './storage.ts';
 
 export const LAUNCH_DAY = '2026-09-18';
@@ -10,6 +10,24 @@ function dayIndex(key: string): number {
 
 export function dailyNumber(key: string): number {
   return dayIndex(key) - dayIndex(LAUNCH_DAY) + 1;
+}
+
+function isoWeekStartIndex(year: number, week: number): number {
+  const jan4 = Date.UTC(year, 0, 4);
+  const jan4Day = new Date(jan4).getUTCDay() || 7;
+  return Math.floor(jan4 / 86400000) - (jan4Day - 1) + (week - 1) * 7;
+}
+
+export function weeklyNumber(key: string): number {
+  const [y, w] = key.split('-W').map(Number);
+  const launch = isoWeek(localDateParts(new Date(`${LAUNCH_DAY}T12:00:00Z`)));
+  return Math.round((isoWeekStartIndex(y!, w!) - isoWeekStartIndex(launch.year, launch.week)) / 7) + 1;
+}
+
+export function monthlyNumber(key: string): number {
+  const [y, m] = key.split('-').map(Number);
+  const [ly, lm] = LAUNCH_DAY.split('-').map(Number);
+  return (y! - ly!) * 12 + (m! - lm!) + 1;
 }
 
 function keyOfDayIndex(index: number): string {

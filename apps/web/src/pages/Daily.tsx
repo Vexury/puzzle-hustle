@@ -4,7 +4,7 @@ import { PuzzleIcon } from '../components/PuzzleIcon.tsx';
 import { href, onLinkClick } from '../lib/router.ts';
 import { useSolves } from '../lib/storage.ts';
 import { capitalize, formatSeconds } from '../lib/share.ts';
-import { dailyNumber, dailyStreaks, formatDateLong } from '../lib/stats.ts';
+import { dailyNumber, dailyStreaks, formatDateLong, monthlyNumber, weeklyNumber } from '../lib/stats.ts';
 
 export function useCountdown(period: Period): string {
   const [text, setText] = useState('');
@@ -77,10 +77,20 @@ export function Daily() {
         ))}
       </div>
 
-      <h2 className="section-h">Bigger challenges</h2>
+      <h2 className="section-h">Weekly</h2>
+      <p className="muted small section-sub">
+        {weekly.key} · {weekLeft}
+      </p>
       <div className="stack">
-        <ChallengeCard puzzleRef={weekly} label={`Weekly ${weekly.key} · ${weekLeft} ·`} />
-        <ChallengeCard puzzleRef={monthly} label={`Monthly ${monthly.key} · ${monthLeft} ·`} />
+        <ChallengeCard puzzleRef={weekly} label={`Weekly #${weeklyNumber(weekly.key!)} ·`} />
+      </div>
+
+      <h2 className="section-h">Monthly</h2>
+      <p className="muted small section-sub">
+        {monthly.key} · {monthLeft}
+      </p>
+      <div className="stack">
+        <ChallengeCard puzzleRef={monthly} label={`Monthly #${monthlyNumber(monthly.key!)} ·`} />
       </div>
     </>
   );

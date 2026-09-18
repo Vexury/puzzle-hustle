@@ -102,9 +102,11 @@ p { margin: 0; }
 }
 .app.play-mode { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
 
-.page-head { margin: 8px 0 18px; display: flex; flex-direction: column; gap: 6px; }
+.page-head { margin: 8px 0 14px; display: flex; flex-direction: column; gap: 6px; }
 .page-head.compact { margin-top: 4px; }
-.section-h { margin: 26px 0 12px; font-size: var(--fs-md); color: var(--text-muted); font-weight: 700; }
+.section-h { margin: 22px 0 2px; font-size: var(--fs-lg); font-weight: 700; }
+.section-h:first-of-type { margin-top: 0; }
+.section-sub { margin-bottom: 10px; }
 .stack { display: flex; flex-direction: column; gap: 12px; }
 
 .streak {
