@@ -113,7 +113,7 @@ function DailyProgress({ dailies, solves }: { dailies: PuzzleRef[]; solves: Reco
     const d = done[i];
     return (
       <span key={i} className={d ? 'slot on' : 'slot'}>
-        {d && <PuzzleIcon type={d.type} size={28} />}
+        {d && <PuzzleIcon type={d.type} size={36} />}
       </span>
     );
   };
