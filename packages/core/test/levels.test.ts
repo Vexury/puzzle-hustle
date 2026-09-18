@@ -13,6 +13,8 @@ import { REGIONS_VERSION, generateCrowns, generateStars } from '../src/regions/p
 import { isRegionsUnique, regionsCanonicalKey } from '../src/regions/solver.ts';
 import { KAKURO_VERSION, generateKakuro } from '../src/kakuro/puzzle.ts';
 import { isKakuroUnique, kakuroCanonicalKey } from '../src/kakuro/solver.ts';
+import { ZIP_VERSION, generateZip } from '../src/zip/puzzle.ts';
+import { isZipUnique, zipCanonicalKey } from '../src/zip/solver.ts';
 import { decodeRef, encodeRef, levelRef, refId } from '../src/ref.ts';
 
 describe('level pack', () => {
@@ -25,7 +27,23 @@ describe('level pack', () => {
     expect(LEVEL_PACK.versions.crowns).toBe(REGIONS_VERSION);
     expect(LEVEL_PACK.versions.stars).toBe(REGIONS_VERSION);
     expect(LEVEL_PACK.versions.kakuro).toBe(KAKURO_VERSION);
+    expect(LEVEL_PACK.versions.zip).toBe(ZIP_VERSION);
   });
+
+  it('has 20 distinct, unique zip levels for easy and medium', () => {
+    for (const difficulty of ['easy', 'medium'] as const) {
+      const list = levelList('zip', difficulty);
+      expect(list.length).toBe(20);
+      const keys = new Set<string>();
+      list.forEach((entry, i) => {
+        const spec = generateZip(entry.seed, difficulty);
+        expect(isZipUnique(spec)).toBe(true);
+        keys.add(zipCanonicalKey(spec));
+        if (i > 0) expect(entry.score).toBeGreaterThanOrEqual(list[i - 1]!.score);
+      });
+      expect(keys.size).toBe(list.length);
+    }
+  }, 120_000);
 
   it('has 20 distinct, unique kakuro levels for easy and medium', () => {
     for (const difficulty of ['easy', 'medium'] as const) {

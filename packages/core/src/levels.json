@@ -8,7 +8,8 @@
     "stars": 1,
     "sudoku": 1,
     "killer": 1,
-    "kakuro": 1
+    "kakuro": 1,
+    "zip": 1
   },
   "levels": {
     "shapes": {
@@ -2964,6 +2965,172 @@
         {
           "seed": 1043,
           "score": 188
+        }
+      ]
+    },
+    "zip": {
+      "easy": [
+        {
+          "seed": 1017,
+          "score": 38.2
+        },
+        {
+          "seed": 1051,
+          "score": 46.1
+        },
+        {
+          "seed": 1005,
+          "score": 47.2
+        },
+        {
+          "seed": 1052,
+          "score": 47.9
+        },
+        {
+          "seed": 1007,
+          "score": 49.1
+        },
+        {
+          "seed": 1030,
+          "score": 50.9
+        },
+        {
+          "seed": 1059,
+          "score": 51.6
+        },
+        {
+          "seed": 1009,
+          "score": 51.9
+        },
+        {
+          "seed": 1002,
+          "score": 53.1
+        },
+        {
+          "seed": 1021,
+          "score": 53.4
+        },
+        {
+          "seed": 1031,
+          "score": 54.3
+        },
+        {
+          "seed": 1019,
+          "score": 54.6
+        },
+        {
+          "seed": 1025,
+          "score": 55.1
+        },
+        {
+          "seed": 1032,
+          "score": 55.4
+        },
+        {
+          "seed": 1023,
+          "score": 55.9
+        },
+        {
+          "seed": 1034,
+          "score": 56.2
+        },
+        {
+          "seed": 1047,
+          "score": 56.4
+        },
+        {
+          "seed": 1056,
+          "score": 58.1
+        },
+        {
+          "seed": 1011,
+          "score": 59.7
+        },
+        {
+          "seed": 1038,
+          "score": 61.8
+        }
+      ],
+      "medium": [
+        {
+          "seed": 1021,
+          "score": 44.2
+        },
+        {
+          "seed": 1040,
+          "score": 52.6
+        },
+        {
+          "seed": 1024,
+          "score": 53.2
+        },
+        {
+          "seed": 1038,
+          "score": 54.2
+        },
+        {
+          "seed": 1022,
+          "score": 54.8
+        },
+        {
+          "seed": 1029,
+          "score": 57.7
+        },
+        {
+          "seed": 1002,
+          "score": 60
+        },
+        {
+          "seed": 1001,
+          "score": 61
+        },
+        {
+          "seed": 1003,
+          "score": 61.5
+        },
+        {
+          "seed": 1051,
+          "score": 62.1
+        },
+        {
+          "seed": 1044,
+          "score": 62.4
+        },
+        {
+          "seed": 1007,
+          "score": 63.3
+        },
+        {
+          "seed": 1011,
+          "score": 64.4
+        },
+        {
+          "seed": 1048,
+          "score": 64.8
+        },
+        {
+          "seed": 1028,
+          "score": 65.2
+        },
+        {
+          "seed": 1043,
+          "score": 66.9
+        },
+        {
+          "seed": 1012,
+          "score": 68.7
+        },
+        {
+          "seed": 1006,
+          "score": 70.9
+        },
+        {
+          "seed": 1030,
+          "score": 72.5
+        },
+        {
+          "seed": 1052,
+          "score": 75.6
         }
       ]
     }

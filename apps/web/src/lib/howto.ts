@@ -37,6 +37,12 @@ export const HOW_TO: Record<PuzzleTypeId, string[]> = {
     'Tap a cell, then a number. Notes mode (or the N key) writes small pencil marks instead.',
     'Every puzzle can be solved by logic alone, no guessing needed.',
   ],
+  zip: [
+    'Draw one path that starts at 1 and ends at the highest number.',
+    'Pass the numbers in ascending order.',
+    'The path must visit every cell exactly once. Drag to draw, drag back to erase.',
+    'Thick lines are walls: the path cannot cross them.',
+  ],
   kakuro: [
     'Fill every white cell with a digit from 1 to 9.',
     'A clue above the diagonal is the sum of the cells to its right, a clue below it is the sum of the cells beneath.',

@@ -13,6 +13,7 @@ import {
   generateShapes,
   generateStars,
   generateSudoku,
+  generateZip,
   levelRef,
   kakuroAdapter,
   mosaicAdapter,
@@ -22,6 +23,8 @@ import {
   refId,
   shapesAdapter,
   starsAdapter,
+  zipAdapter,
+  zipNumberCount,
   type PuzzleRef,
 } from '@puzzle-hustle/core';
 import { href, navigate, onLinkClick } from '../lib/router.ts';
@@ -33,6 +36,7 @@ import { dailyNumber } from '../lib/stats.ts';
 import { ShapesGame } from '../shapes/ShapesGame.tsx';
 import { NonogramGame } from '../nonogram/NonogramGame.tsx';
 import { KakuroGame } from '../kakuro/KakuroGame.tsx';
+import { ZipGame } from '../zip/ZipGame.tsx';
 import { MosaicGame } from '../mosaic/MosaicGame.tsx';
 import { SudokuGame } from '../sudoku/SudokuGame.tsx';
 import { RegionsGame } from '../regions/RegionsGame.tsx';
@@ -72,7 +76,9 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const existing = solves[id];
   const spec = useMemo(
     () =>
-      puzzleRef.type === 'kakuro'
+      puzzleRef.type === 'zip'
+        ? generateZip(puzzleRef.seed, puzzleRef.difficulty, zipAdapter.options(puzzleRef.period))
+        : puzzleRef.type === 'kakuro'
         ? generateKakuro(puzzleRef.seed, puzzleRef.difficulty, kakuroAdapter.options(puzzleRef.period))
         : puzzleRef.type === 'crowns'
         ? generateCrowns(puzzleRef.seed, puzzleRef.difficulty, crownsAdapter.options(puzzleRef.period))
@@ -92,7 +98,9 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const sizeLabel =
     'pieces' in spec
       ? `${spec.config.inner}×${spec.config.inner}, ${spec.pieces.length} shapes`
-      : 'runs' in spec
+      : 'walls' in spec
+        ? `${spec.config.size}×${spec.config.size}, ${zipNumberCount(spec)} numbers`
+        : 'runs' in spec
         ? `${spec.config.rows - 1}×${spec.config.cols - 1}, ${spec.runs.length} sums`
         : 'regions' in spec
         ? `${spec.config.size}×${spec.config.size}, ${spec.config.stars} per line`
@@ -245,6 +253,17 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
         <RegionsGame
           spec={spec}
           symbol={puzzleRef.type === 'crowns' ? 'crown' : 'star'}
+          onMove={onMove}
+          onSolved={onSolved}
+          onHintUsed={onHintUsed}
+          requestHint={() => hintProvider.request()}
+          locked={false}
+          initialState={saved?.state}
+          onStateChange={onStateChange}
+        />
+      ) : 'walls' in spec ? (
+        <ZipGame
+          spec={spec}
           onMove={onMove}
           onSolved={onSolved}
           onHintUsed={onHintUsed}

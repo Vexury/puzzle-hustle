@@ -17,3 +17,5 @@ export * from './regions/puzzle.ts';
 export * from './regions/solver.ts';
 export * from './kakuro/puzzle.ts';
 export * from './kakuro/solver.ts';
+export * from './zip/puzzle.ts';
+export * from './zip/solver.ts';

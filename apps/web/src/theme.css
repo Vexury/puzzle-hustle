@@ -183,6 +183,8 @@ p { margin: 0; }
 }
 .puzzle-icon svg { width: 100%; height: 100%; }
 .ic-a { fill: var(--accent); }
+.ic-path { fill: none; stroke: var(--accent); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; opacity: 0.55; }
+.ic-on { fill: var(--on-accent); font-family: 'Inconsolata', monospace; }
 .ic-cut { fill: var(--board-cell); }
 .ic-grid { stroke: var(--board-line); stroke-width: 1; }
 .ic-text { fill: var(--text); font-family: 'Inconsolata', monospace; }

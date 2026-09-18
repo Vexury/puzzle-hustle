@@ -10,6 +10,8 @@ import { generateShapes, SHAPES_VERSION, type ShapesOptions } from './shapes/puz
 import { generateKiller, generateSudoku, SUDOKU_VERSION, type SudokuOptions } from './sudoku/puzzle.ts';
 import { sudokuCanonicalKey, sudokuDifficultyReport } from './sudoku/solver.ts';
 import { canonicalKey, difficultyReport, isUnique } from './shapes/solver.ts';
+import { generateZip, ZIP_VERSION, type ZipOptions } from './zip/puzzle.ts';
+import { zipCanonicalKey, zipDifficultyReport } from './zip/solver.ts';
 import type { Difficulty, Period, PuzzleTypeId } from './types.ts';
 
 export const RUNTIME_BUDGET = 3_000_000;
@@ -188,6 +190,34 @@ export const kakuroAdapter: PuzzleAdapter<KakuroOptions> = {
   },
 };
 
+export const zipAdapter: PuzzleAdapter<ZipOptions> = {
+  version: ZIP_VERSION,
+  options(period) {
+    switch (period) {
+      case 'weekly':
+        return { sizeDelta: 1 };
+      case 'monthly':
+        return { sizeDelta: 2 };
+      default:
+        return {};
+    }
+  },
+  accepts(seed, difficulty, options) {
+    try {
+      generateZip(seed, difficulty, options);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  key(seed, difficulty) {
+    return zipCanonicalKey(generateZip(seed, difficulty));
+  },
+  score(seed, difficulty) {
+    return zipDifficultyReport(generateZip(seed, difficulty)).score;
+  },
+};
+
 export const ADAPTERS: { [K in PuzzleTypeId]: PuzzleAdapter<never> } = {
   shapes: shapesAdapter as PuzzleAdapter<never>,
   nonogram: nonogramAdapter as PuzzleAdapter<never>,
@@ -197,6 +227,7 @@ export const ADAPTERS: { [K in PuzzleTypeId]: PuzzleAdapter<never> } = {
   sudoku: sudokuAdapter as PuzzleAdapter<never>,
   killer: killerAdapter as PuzzleAdapter<never>,
   kakuro: kakuroAdapter as PuzzleAdapter<never>,
+  zip: zipAdapter as PuzzleAdapter<never>,
 };
 
 export function adapter(type: PuzzleTypeId): PuzzleAdapter<never> {
