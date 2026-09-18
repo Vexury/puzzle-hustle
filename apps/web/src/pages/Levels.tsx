@@ -35,7 +35,7 @@ export function LevelsIndex() {
   return (
     <>
       <header className="page-head">
-        <h1>Levels</h1>
+        <h1>Puzzles</h1>
         <p className="muted">Hand-picked packs, playable offline.</p>
         <ThemeToggle />
       </header>
@@ -89,7 +89,7 @@ function LevelGrid({ type }: { type: PuzzleTypeId }) {
   return (
     <>
       <a href={href('/levels')} onClick={onLinkClick} className="back">
-        ‹ Levels
+        ‹ Puzzles
       </a>
       <header className="page-head compact">
         <h1>

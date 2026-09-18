@@ -2,11 +2,11 @@ import { href, onLinkClick, useRoute } from '../lib/router.ts';
 
 const TABS = [
   { path: '/', label: 'Daily', match: (p: string) => p === '/' },
-  { path: '/levels', label: 'Levels', match: (p: string) => p.startsWith('/levels') },
+  { path: '/levels', label: 'Puzzles', match: (p: string) => p.startsWith('/levels') },
   { path: '/profile', label: 'Profile', match: (p: string) => p === '/profile' },
 ] as const;
 
-function Icon({ name }: { name: 'Daily' | 'Levels' | 'Profile' }) {
+function Icon({ name }: { name: 'Daily' | 'Puzzles' | 'Profile' }) {
   switch (name) {
     case 'Daily':
       return (
@@ -18,7 +18,7 @@ function Icon({ name }: { name: 'Daily' | 'Levels' | 'Profile' }) {
           <rect x="7" y="13" width="3" height="3" rx="0.5" className="fill" />
         </svg>
       );
-    case 'Levels':
+    case 'Puzzles':
       return (
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <rect x="3" y="3" width="8" height="8" rx="2" />
