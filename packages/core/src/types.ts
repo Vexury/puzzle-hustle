@@ -4,7 +4,7 @@ export type Difficulty = (typeof DIFFICULTIES)[number];
 export const PERIODS = ['daily', 'weekly', 'monthly'] as const;
 export type Period = (typeof PERIODS)[number];
 
-export const PUZZLE_TYPES = ['shapes', 'nonogram', 'mosaic'] as const;
+export const PUZZLE_TYPES = ['shapes', 'nonogram', 'mosaic', 'crowns', 'stars', 'sudoku', 'killer'] as const;
 export type PuzzleTypeId = (typeof PUZZLE_TYPES)[number];
 
 export interface PuzzleMeta {
@@ -28,6 +28,26 @@ export const PUZZLE_META: Record<PuzzleTypeId, PuzzleMeta> = {
     id: 'mosaic',
     name: 'Mosaic',
     tagline: 'Each number counts the filled cells in its 3x3 block. Paint the picture.',
+  },
+  crowns: {
+    id: 'crowns',
+    name: 'Crowns',
+    tagline: 'One crown per row, column and colour. Crowns never touch.',
+  },
+  stars: {
+    id: 'stars',
+    name: 'Stars',
+    tagline: 'Two stars per row, column and colour. Stars never touch.',
+  },
+  sudoku: {
+    id: 'sudoku',
+    name: 'Sudoku',
+    tagline: 'Fill the grid so every row, column and box holds 1 to 9.',
+  },
+  killer: {
+    id: 'killer',
+    name: 'Killer Sudoku',
+    tagline: 'No givens, just cages. Each dashed cage adds up to its number.',
   },
 };
 

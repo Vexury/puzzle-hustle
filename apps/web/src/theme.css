@@ -184,6 +184,8 @@ p { margin: 0; }
 .ic-cut { fill: var(--board-cell); }
 .ic-grid { stroke: var(--board-line); stroke-width: 1; }
 .ic-text { fill: var(--text); font-family: 'Inconsolata', monospace; }
+.ic-num { fill: var(--accent); font-family: 'Inconsolata', monospace; }
+.ic-dash { fill: none; stroke: var(--accent); stroke-width: 1.2; stroke-dasharray: 2 1.5; }
 
 .pill {
   display: inline-flex;

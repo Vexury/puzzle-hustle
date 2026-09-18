@@ -4,9 +4,14 @@ import {
   PUZZLE_TYPES,
   decodeRef,
   encodeRef,
+  crownsAdapter,
+  generateCrowns,
+  generateKiller,
   generateMosaic,
   generateNonogram,
   generateShapes,
+  generateStars,
+  generateSudoku,
   levelRef,
   mosaicAdapter,
   nonogramAdapter,
@@ -14,6 +19,7 @@ import {
   randomRef,
   refId,
   shapesAdapter,
+  starsAdapter,
   type PuzzleRef,
 } from '@puzzle-hustle/core';
 import { href, navigate, onLinkClick } from '../lib/router.ts';
@@ -25,6 +31,8 @@ import { dailyNumber } from '../lib/stats.ts';
 import { ShapesGame } from '../shapes/ShapesGame.tsx';
 import { NonogramGame } from '../nonogram/NonogramGame.tsx';
 import { MosaicGame } from '../mosaic/MosaicGame.tsx';
+import { SudokuGame } from '../sudoku/SudokuGame.tsx';
+import { RegionsGame } from '../regions/RegionsGame.tsx';
 import { toast } from '../components/Toast.tsx';
 
 export function Play({ params }: { params: URLSearchParams }) {
@@ -61,7 +69,15 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const existing = solves[id];
   const spec = useMemo(
     () =>
-      puzzleRef.type === 'nonogram'
+      puzzleRef.type === 'crowns'
+        ? generateCrowns(puzzleRef.seed, puzzleRef.difficulty, crownsAdapter.options(puzzleRef.period))
+        : puzzleRef.type === 'stars'
+          ? generateStars(puzzleRef.seed, puzzleRef.difficulty, starsAdapter.options(puzzleRef.period))
+          : puzzleRef.type === 'sudoku'
+        ? generateSudoku(puzzleRef.seed, puzzleRef.difficulty)
+        : puzzleRef.type === 'killer'
+          ? generateKiller(puzzleRef.seed, puzzleRef.difficulty)
+          : puzzleRef.type === 'nonogram'
         ? generateNonogram(puzzleRef.seed, puzzleRef.difficulty, nonogramAdapter.options(puzzleRef.period))
         : puzzleRef.type === 'mosaic'
           ? generateMosaic(puzzleRef.seed, puzzleRef.difficulty, mosaicAdapter.options(puzzleRef.period))
@@ -71,7 +87,13 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const sizeLabel =
     'pieces' in spec
       ? `${spec.config.inner}×${spec.config.inner}, ${spec.pieces.length} shapes`
-      : 'clues' in spec
+      : 'regions' in spec
+        ? `${spec.config.size}×${spec.config.size}, ${spec.config.stars} per line`
+        : 'cages' in spec
+        ? spec.cages.length
+          ? `9×9, ${spec.cages.length} cages`
+          : `9×9, ${[...spec.givens].filter(Boolean).length} givens`
+        : 'clues' in spec
         ? `${spec.config.rows}×${spec.config.cols}, ${[...spec.clues].filter((c) => c >= 0).length} clues`
         : `${spec.config.rows}×${spec.config.cols}${spec.config.colors > 1 ? `, ${spec.config.colors} colors` : ''}`;
   const saved = useMemo(() => (existing ? null : readProgress(id)), [id, existing]);
@@ -211,6 +233,29 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           initialState={saved?.state}
           onStateChange={onStateChange}
           viewKey={id}
+        />
+      ) : 'regions' in spec ? (
+        <RegionsGame
+          spec={spec}
+          symbol={puzzleRef.type === 'crowns' ? 'crown' : 'star'}
+          onMove={onMove}
+          onSolved={onSolved}
+          onHintUsed={onHintUsed}
+          requestHint={() => hintProvider.request()}
+          locked={false}
+          initialState={saved?.state}
+          onStateChange={onStateChange}
+        />
+      ) : 'cages' in spec ? (
+        <SudokuGame
+          spec={spec}
+          onMove={onMove}
+          onSolved={onSolved}
+          onHintUsed={onHintUsed}
+          requestHint={() => hintProvider.request()}
+          locked={false}
+          initialState={saved?.state}
+          onStateChange={onStateChange}
         />
       ) : 'clues' in spec ? (
         <MosaicGame

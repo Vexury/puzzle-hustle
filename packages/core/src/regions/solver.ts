@@ -57,6 +57,7 @@ export function enumerateRegionsSolutions(spec: RegionsSpec, limit: number, onSo
   const all = [...units.rows, ...units.cols, ...units.regions];
   const unitsOf: number[][] = Array.from({ length: n * n }, (_, i) => [Math.floor(i / n), n + (i % n), 2 * n + spec.regions[i]!]);
   const placed = new Uint8Array(all.length);
+  const open = Uint8Array.from(all, (cells) => cells.length);
   const state = new Uint8Array(n * n);
   const trail: number[] = [];
   let solutions = 0;
@@ -66,11 +67,13 @@ export function enumerateRegionsSolutions(spec: RegionsSpec, limit: number, onSo
     if (state[i] !== 0) return;
     state[i] = ELIMINATED;
     trail.push(i);
+    for (const u of unitsOf[i]!) open[u]!--;
   }
 
   function place(i: number): void {
     state[i] = 1;
     trail.push(i);
+    for (const u of unitsOf[i]!) open[u]!--;
     for (const j of regionsNeighbors(n, i)) eliminate(j);
     for (const u of unitsOf[i]!) {
       placed[u]!++;
@@ -81,7 +84,10 @@ export function enumerateRegionsSolutions(spec: RegionsSpec, limit: number, onSo
   function undo(mark: number): void {
     while (trail.length > mark) {
       const i = trail.pop()!;
-      if (state[i] === 1) for (const u of unitsOf[i]!) placed[u]!--;
+      for (const u of unitsOf[i]!) {
+        open[u]!++;
+        if (state[i] === 1) placed[u]!--;
+      }
       state[i] = 0;
     }
   }
@@ -92,10 +98,8 @@ export function enumerateRegionsSolutions(spec: RegionsSpec, limit: number, onSo
     for (let u = 0; u < all.length; u++) {
       const need = k - placed[u]!;
       if (need === 0) continue;
-      let candidates = 0;
-      for (const i of all[u]!) if (state[i] === 0) candidates++;
-      if (candidates < need) return undefined;
-      const slack = candidates - need;
+      if (open[u]! < need) return undefined;
+      const slack = open[u]! - need;
       if (slack < bestSlack) {
         bestSlack = slack;
         best = u;
@@ -115,16 +119,17 @@ export function enumerateRegionsSolutions(spec: RegionsSpec, limit: number, onSo
       return;
     }
     const candidates = all[u]!.filter((i) => state[i] === 0);
-    const mark = trail.length;
+    const start = trail.length;
     for (const i of candidates) {
       nodes++;
+      const mark = trail.length;
       place(i);
       search();
       undo(mark);
-      if (solutions >= limit) return;
+      if (solutions >= limit) break;
       eliminate(i);
     }
-    undo(mark);
+    undo(start);
   }
 
   search();

@@ -19,4 +19,28 @@ export const HOW_TO: Record<PuzzleTypeId, string[]> = {
     'Tap to fill, tap again to mark an X, tap once more to clear. Drag to paint a line.',
     'Numbers fade once their block is satisfied. Every puzzle can be solved by logic alone.',
   ],
+  crowns: [
+    'Place exactly one crown in every row, every column and every coloured region.',
+    'Crowns may never touch, not even diagonally.',
+    'Tap a cell to mark an X, tap again to place a crown, tap once more to clear. Drag to mark several X cells; long-press or right-click places a crown directly.',
+    'Every puzzle has exactly one solution and can be solved by logic alone.',
+  ],
+  stars: [
+    'Place exactly two stars in every row, every column and every coloured region.',
+    'Stars may never touch, not even diagonally, so two stars in one row need a gap between them.',
+    'Tap a cell to mark an X, tap again to place a star, tap once more to clear. Drag to mark several X cells; long-press or right-click places a star directly.',
+    'Every puzzle has exactly one solution. Small regions are the best place to start.',
+  ],
+  sudoku: [
+    'Fill every empty cell with a digit from 1 to 9.',
+    'Each row, each column and each 3x3 box must contain every digit exactly once.',
+    'Tap a cell, then a number. Notes mode (or the N key) writes small pencil marks instead.',
+    'Every puzzle can be solved by logic alone, no guessing needed.',
+  ],
+  killer: [
+    'Normal Sudoku rules apply: 1 to 9 once per row, column and 3x3 box.',
+    'The dashed outlines are cages. The digits inside a cage add up to the small number in its corner.',
+    'Digits inside a cage cannot repeat. Harder levels have no givens at all, so start from the smallest and largest cage sums.',
+    'Tap a cell, then a number. Notes mode keeps track of candidates. Everything is solvable by logic.',
+  ],
 };

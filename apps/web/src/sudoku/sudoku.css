@@ -1,0 +1,142 @@
+:root {
+  --sudoku-max: 440px;
+  --sudoku-peer: color-mix(in srgb, var(--accent) 9%, var(--board-cell));
+  --sudoku-same: color-mix(in srgb, var(--accent) 24%, var(--board-cell));
+  --sudoku-selected: color-mix(in srgb, var(--accent) 36%, var(--board-cell));
+}
+
+.sudoku-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.sudoku-board {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  width: 100%;
+  max-width: var(--sudoku-max);
+  aspect-ratio: 1;
+  container-type: inline-size;
+  background: var(--card-bg);
+  border: 2px solid var(--border-mid);
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.sudoku-board.solved { border-color: var(--success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 30%, transparent); }
+
+.sudoku-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  background: var(--board-cell);
+  border-right: 1px solid var(--board-line);
+  border-bottom: 1px solid var(--board-line);
+  font-size: clamp(1rem, 6.2cqw, 2rem);
+  font-weight: 600;
+  color: var(--accent-deep);
+  cursor: pointer;
+  transition: background 0.08s;
+}
+.sudoku-cell.box-r { border-right: 2px solid var(--border-mid); }
+.sudoku-cell.box-b { border-bottom: 2px solid var(--border-mid); }
+.sudoku-cell.last-c { border-right: none; }
+.sudoku-cell.last-r { border-bottom: none; }
+.sudoku-cell.given { color: var(--text); font-weight: 700; }
+.sudoku-cell.peer { background: var(--sudoku-peer); }
+.sudoku-cell.same { background: var(--sudoku-same); }
+.sudoku-cell.selected { background: var(--sudoku-selected); box-shadow: inset 0 0 0 2px var(--accent); }
+.sudoku-cell.conflict .sudoku-value { color: var(--danger); }
+.sudoku-cell.flash { animation: sudoku-flash 0.6s ease-out 3; }
+@keyframes sudoku-flash {
+  0% { box-shadow: inset 0 0 0 3px var(--success); }
+  100% { box-shadow: inset 0 0 0 0 transparent; }
+}
+
+.sudoku-value { position: relative; z-index: 1; line-height: 1; }
+
+.sudoku-cage {
+  position: absolute;
+  inset: 3px;
+  pointer-events: none;
+  border: 0 dashed var(--text-muted);
+  opacity: 0.75;
+}
+.sudoku-cage.t { border-top-width: 1.5px; }
+.sudoku-cage.r { border-right-width: 1.5px; }
+.sudoku-cage.b { border-bottom-width: 1.5px; }
+.sudoku-cage.l { border-left-width: 1.5px; }
+
+.sudoku-cage-sum {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  z-index: 1;
+  font-size: clamp(0.5rem, 2.7cqw, 0.8rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-muted);
+}
+.sudoku-cell.given .sudoku-cage-sum,
+.sudoku-cell.selected .sudoku-cage-sum { color: var(--text); }
+
+.sudoku-notes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 100%;
+  height: 100%;
+  padding: 3px;
+  box-sizing: border-box;
+  font-size: clamp(0.45rem, 2.5cqw, 0.75rem);
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-muted);
+}
+.sudoku-notes i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-style: normal;
+}
+
+.sudoku-pad {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 6px;
+  width: 100%;
+  max-width: var(--sudoku-max);
+}
+.sudoku-key {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 48px;
+  padding: 4px 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--accent-deep);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.sudoku-key small { font-size: 0.6rem; font-weight: 600; color: var(--text-muted); }
+.sudoku-key:hover:not(:disabled) { border-color: var(--accent); }
+.sudoku-key:active:not(:disabled) { background: var(--sudoku-same); }
+.sudoku-key:disabled { opacity: 0.35; cursor: default; }
+
+.sudoku-wrap .actions .btn.active { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }

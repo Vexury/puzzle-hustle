@@ -9,6 +9,69 @@ export function PuzzleIcon({ type, size = 56 }: { type: PuzzleTypeId; size?: num
           <polygon points="25,13 37,25 25,37 13,25" className="ic-a" />
           <polygon points="17,13 25,13 25,21" className="ic-cut" />
         </svg>
+      ) : type === 'crowns' ? (
+        <svg viewBox="0 0 40 40">
+          <g className="ic-grid">
+            {[1, 2].map((i) => (
+              <line key={`h${i}`} x1="6" y1={6 + i * 9.33} x2="34" y2={6 + i * 9.33} />
+            ))}
+            {[1, 2].map((i) => (
+              <line key={`v${i}`} x1={6 + i * 9.33} y1="6" x2={6 + i * 9.33} y2="34" />
+            ))}
+          </g>
+          <path d="M8 29 L7 14 L15 20 L20 10 L25 20 L33 14 L32 29 Z" className="ic-a" />
+          <rect x="8" y="30.5" width="24" height="3" rx="1" className="ic-a" />
+        </svg>
+      ) : type === 'stars' ? (
+        <svg viewBox="0 0 40 40">
+          <g className="ic-grid">
+            {[1, 2].map((i) => (
+              <line key={`h${i}`} x1="6" y1={6 + i * 9.33} x2="34" y2={6 + i * 9.33} />
+            ))}
+            {[1, 2].map((i) => (
+              <line key={`v${i}`} x1={6 + i * 9.33} y1="6" x2={6 + i * 9.33} y2="34" />
+            ))}
+          </g>
+          <polygon points="15,7 17.6,13 24,13.6 19.2,17.8 20.7,24 15,20.7 9.3,24 10.8,17.8 6,13.6 12.4,13" className="ic-a" />
+          <polygon points="28,21 29.8,25.2 34.3,25.6 30.9,28.6 32,33 28,30.7 24,33 25.1,28.6 21.7,25.6 26.2,25.2" className="ic-a" />
+        </svg>
+      ) : type === 'sudoku' || type === 'killer' ? (
+        <svg viewBox="0 0 40 40">
+          <g className="ic-grid">
+            {[1, 2].map((i) => (
+              <line key={`h${i}`} x1="6" y1={6 + i * 9.33} x2="34" y2={6 + i * 9.33} />
+            ))}
+            {[1, 2].map((i) => (
+              <line key={`v${i}`} x1={6 + i * 9.33} y1="6" x2={6 + i * 9.33} y2="34" />
+            ))}
+          </g>
+          {type === 'killer' ? (
+            <>
+              <rect x="8" y="8" width="24.6" height="15" rx="2" className="ic-dash" />
+              <text x="10.5" y="14" fontSize="6" fontWeight="700" className="ic-text">
+                12
+              </text>
+              <text x="20" y="31.5" textAnchor="middle" fontSize="10" fontWeight="700" className="ic-text">
+                7
+              </text>
+            </>
+          ) : (
+            <>
+              <text x="10.7" y="14.5" textAnchor="middle" fontSize="8" fontWeight="700" className="ic-text">
+                3
+              </text>
+              <text x="29.3" y="14.5" textAnchor="middle" fontSize="8" fontWeight="700" className="ic-text">
+                8
+              </text>
+              <text x="20" y="24.5" textAnchor="middle" fontSize="11" fontWeight="700" className="ic-num">
+                5
+              </text>
+              <text x="10.7" y="33" textAnchor="middle" fontSize="8" fontWeight="700" className="ic-text">
+                1
+              </text>
+            </>
+          )}
+        </svg>
       ) : type === 'mosaic' ? (
         <svg viewBox="0 0 40 40">
           <g className="ic-grid">

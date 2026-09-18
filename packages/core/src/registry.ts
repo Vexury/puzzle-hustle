@@ -2,7 +2,11 @@ import { generateMosaic, MOSAIC_VERSION, type MosaicOptions } from './mosaic/puz
 import { mosaicCanonicalKey, mosaicDifficultyReport } from './mosaic/solver.ts';
 import { generateNonogram, NONOGRAM_VERSION, type NonogramOptions } from './nonogram/puzzle.ts';
 import { nonogramCanonicalKey, nonogramDifficultyReport } from './nonogram/solver.ts';
+import { generateCrowns, generateStars, REGIONS_VERSION, type RegionsOptions } from './regions/puzzle.ts';
+import { regionsCanonicalKey, regionsDifficultyReport } from './regions/solver.ts';
 import { generateShapes, SHAPES_VERSION, type ShapesOptions } from './shapes/puzzle.ts';
+import { generateKiller, generateSudoku, SUDOKU_VERSION, type SudokuOptions } from './sudoku/puzzle.ts';
+import { sudokuCanonicalKey, sudokuDifficultyReport } from './sudoku/solver.ts';
 import { canonicalKey, difficultyReport, isUnique } from './shapes/solver.ts';
 import type { Difficulty, Period, PuzzleTypeId } from './types.ts';
 
@@ -95,10 +99,73 @@ export const mosaicAdapter: PuzzleAdapter<MosaicOptions> = {
   },
 };
 
+function sudokuLikeAdapter(generate: typeof generateSudoku): PuzzleAdapter<SudokuOptions> {
+  return {
+    version: SUDOKU_VERSION,
+    options() {
+      return {};
+    },
+    accepts(seed, difficulty) {
+      try {
+        generate(seed, difficulty);
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    key(seed, difficulty) {
+      return sudokuCanonicalKey(generate(seed, difficulty));
+    },
+    score(seed, difficulty) {
+      return sudokuDifficultyReport(generate(seed, difficulty)).score;
+    },
+  };
+}
+
+function regionsAdapter(generate: typeof generateCrowns, options: PuzzleAdapter<RegionsOptions>['options']): PuzzleAdapter<RegionsOptions> {
+  return {
+    version: REGIONS_VERSION,
+    options,
+    accepts(seed, difficulty, opts) {
+      try {
+        generate(seed, difficulty, opts);
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    key(seed, difficulty) {
+      return regionsCanonicalKey(generate(seed, difficulty));
+    },
+    score(seed, difficulty) {
+      return regionsDifficultyReport(generate(seed, difficulty)).score;
+    },
+  };
+}
+
+export const crownsAdapter = regionsAdapter(generateCrowns, (period) => {
+  switch (period) {
+    case 'weekly':
+      return { sizeDelta: 1 };
+    case 'monthly':
+      return { sizeDelta: 2 };
+    default:
+      return {};
+  }
+});
+export const starsAdapter = regionsAdapter(generateStars, () => ({}));
+
+export const sudokuAdapter = sudokuLikeAdapter(generateSudoku);
+export const killerAdapter = sudokuLikeAdapter(generateKiller);
+
 export const ADAPTERS: { [K in PuzzleTypeId]: PuzzleAdapter<never> } = {
   shapes: shapesAdapter as PuzzleAdapter<never>,
   nonogram: nonogramAdapter as PuzzleAdapter<never>,
   mosaic: mosaicAdapter as PuzzleAdapter<never>,
+  crowns: crownsAdapter as PuzzleAdapter<never>,
+  stars: starsAdapter as PuzzleAdapter<never>,
+  sudoku: sudokuAdapter as PuzzleAdapter<never>,
+  killer: killerAdapter as PuzzleAdapter<never>,
 };
 
 export function adapter(type: PuzzleTypeId): PuzzleAdapter<never> {

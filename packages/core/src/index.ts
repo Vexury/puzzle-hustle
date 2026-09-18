@@ -11,3 +11,7 @@ export * from './nonogram/puzzle.ts';
 export * from './nonogram/solver.ts';
 export * from './mosaic/puzzle.ts';
 export * from './mosaic/solver.ts';
+export * from './sudoku/puzzle.ts';
+export * from './sudoku/solver.ts';
+export * from './regions/puzzle.ts';
+export * from './regions/solver.ts';

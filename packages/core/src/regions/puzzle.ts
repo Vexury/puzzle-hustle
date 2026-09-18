@@ -152,6 +152,13 @@ function connect(n: number, owner: Int16Array, from: number, to: number, reg: nu
 }
 
 const SNAKE_BIAS = 0.85;
+const SIZE_SKEW = 3;
+
+function targetSizes(n: number, sizes: Int32Array, rng: Rng): Float64Array {
+  const weights = Float64Array.from({ length: n }, () => 0.05 + rng.next() ** SIZE_SKEW);
+  const total = weights.reduce((a, b) => a + b, 0);
+  return weights.map((w, reg) => Math.max(sizes[reg]!, Math.min(2.5 * n, (w / total) * n * n)));
+}
 
 function grow(n: number, owner: Int16Array, rng: Rng): void {
   const frontiers: number[][] = Array.from({ length: n }, () => []);
@@ -173,15 +180,21 @@ function grow(n: number, owner: Int16Array, rng: Rng): void {
     sizes[owner[i]!]!++;
     push(i);
   }
+  const target = targetSizes(n, sizes, rng);
   for (;;) {
     let reg = -1;
+    let bestRatio = Number.POSITIVE_INFINITY;
     for (let cand = 0; cand < n; cand++) {
       if (frontiers[cand]!.length === 0) continue;
-      if (reg < 0 || sizes[cand]! < sizes[reg]! || (sizes[cand] === sizes[reg] && rng.next() < 0.5)) reg = cand;
+      const ratio = sizes[cand]! / target[cand]!;
+      if (ratio < bestRatio || (ratio === bestRatio && rng.next() < 0.5)) {
+        bestRatio = ratio;
+        reg = cand;
+      }
     }
     if (reg < 0) break;
     const frontier = frontiers[reg]!;
-    const pick = rng.next() < ((globalThis as any).__snake ?? SNAKE_BIAS) ? frontier.length - 1 : rng.int(frontier.length);
+    const pick = rng.next() < SNAKE_BIAS ? frontier.length - 1 : rng.int(frontier.length);
     const cell = frontier[pick]!;
     frontier[pick] = frontier[frontier.length - 1]!;
     frontier.pop();
@@ -250,15 +263,13 @@ function otherRegions(n: number, spec: RegionsSpec, i: number): number[] {
   return out;
 }
 
-const REFINE_LIMIT = 256;
+const REFINE_LIMIT = 64;
 
 function altStarFrequency(spec: RegionsSpec, limit: number): { count: number; freq: Uint16Array } {
   const freq = new Uint16Array(spec.solution.length);
-  const g = globalThis as any; g.__calls++; const t0 = performance.now();
   const { solutions } = enumerateRegionsSolutions(spec, limit, (grid) => {
     for (let i = 0; i < grid.length; i++) if (grid[i] === 1 && spec.solution[i] === 0) freq[i]!++;
   });
-  g.__ms += performance.now() - t0; if (solutions >= limit) g.__cap++;
   return { count: solutions, freq };
 }
 
@@ -272,7 +283,7 @@ function rankedMoves(n: number, spec: RegionsSpec, freq: Uint16Array, rng: Rng):
   return out;
 }
 
-const REFINE_BATCH = 12;
+const REFINE_BATCH = 8;
 const TABU = 6;
 
 function remember(tabu: number[], cell: number): void {
@@ -280,40 +291,45 @@ function remember(tabu: number[], cell: number): void {
   if (tabu.length > TABU) tabu.shift();
 }
 
+function movable(n: number, spec: RegionsSpec, tabu: readonly number[], move: number): boolean {
+  const cell = Math.floor(move / n);
+  return !tabu.includes(cell) && !spec.solution[cell] && staysConnected(n, spec.regions, spec.regions[cell]!, cell);
+}
+
+function randomMove(n: number, spec: RegionsSpec, tabu: readonly number[], rng: Rng): number | undefined {
+  const moves: number[] = [];
+  for (let i = 0; i < n * n; i++) for (const reg of otherRegions(n, spec, i)) moves.push(i * n + reg);
+  return rng.shuffle(moves).find((m) => movable(n, spec, tabu, m));
+}
+
 function refineUnique(spec: RegionsSpec, rng: Rng, maxSteps: number): boolean {
   const n = spec.config.size;
   let { count, freq } = altStarFrequency(spec, REFINE_LIMIT);
   const tabu: number[] = [];
   for (let step = 0; step < maxSteps && count !== 1; step++) {
-    (globalThis as any).__steps++;
-    if (count >= REFINE_LIMIT) {
-      const move = rankedMoves(n, spec, freq, rng).find((m) => !tabu.includes(Math.floor(m / n)) && staysConnected(n, spec.regions, spec.regions[Math.floor(m / n)]!, Math.floor(m / n)));
-      if ((globalThis as any).__trace) console.log('step', step, 'capped', count, 'move', move);
-      if (move === undefined) return false;
-      spec.regions[Math.floor(move / n)] = move % n;
-      remember(tabu, Math.floor(move / n));
-      ({ count, freq } = altStarFrequency(spec, REFINE_LIMIT));
-      continue;
-    }
-    let best: { cell: number; to: number; count: number; freq: Uint16Array } | null = null;
+    let best: { move: number; count: number; freq: Uint16Array } | null = null;
     let tried = 0;
     for (const move of rankedMoves(n, spec, freq, rng)) {
-      if (tried >= REFINE_BATCH) break;
+      if (tried >= REFINE_BATCH || (count >= REFINE_LIMIT && tried > 0)) break;
+      if (!movable(n, spec, tabu, move)) continue;
+      tried++;
       const cell = Math.floor(move / n);
       const from = spec.regions[cell]!;
-      if (tabu.includes(cell) || !staysConnected(n, spec.regions, from, cell)) continue;
-      tried++;
       spec.regions[cell] = move % n;
-      const next = altStarFrequency(spec, REFINE_LIMIT);
+      const next = altStarFrequency(spec, Math.min(REFINE_LIMIT, count + 1));
       spec.regions[cell] = from;
-      if (next.count === 0) continue;
-      if (!best || next.count < best.count) best = { cell, to: move % n, count: next.count, freq: next.freq };
-      if (next.count < count) break;
+      if (!best || next.count < best.count) best = { move, count: next.count, freq: next.freq };
+      if (next.count <= count) break;
     }
-    if ((globalThis as any).__trace) console.log('step', step, 'count', count, 'best', best?.count, 'tried', tried);
-    if (!best) return false;
-    spec.regions[best.cell] = best.to;
-    remember(tabu, best.cell);
+    if (!best) {
+      const move = randomMove(n, spec, tabu, rng);
+      if (move === undefined) return false;
+      spec.regions[Math.floor(move / n)] = move % n;
+      const next = altStarFrequency(spec, REFINE_LIMIT);
+      best = { move, count: next.count, freq: next.freq };
+    }
+    spec.regions[Math.floor(best.move / n)] = best.move % n;
+    remember(tabu, Math.floor(best.move / n));
     count = best.count;
     freq = best.freq;
   }
@@ -325,13 +341,11 @@ export function generateRegions(seed: number, config: RegionsConfig, difficulty:
   if (size < stars * 4) throw new Error(`regions grid ${size} too small for ${stars} stars`);
   const rng = new Rng(seed);
   for (let attempt = 0; attempt < 40; attempt++) {
-    (globalThis as any).__attempts++;
     const solution = randomStars(size, stars, rng);
     if (!solution) continue;
     const regions = buildRegions(size, stars, solution, rng);
     if (!regions) continue;
     const spec: RegionsSpec = { version: REGIONS_VERSION, seed, difficulty, config, regions, solution };
-    if ((globalThis as any).__capture) return spec;
     if (refineUnique(spec, rng, 200)) return spec;
   }
   throw new Error(`could not generate regions puzzle for seed ${seed} / ${size}x${size} with ${stars} stars`);
