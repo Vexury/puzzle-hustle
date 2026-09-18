@@ -13,6 +13,7 @@ import {
   type ShapesState,
 } from '@puzzle-hustle/core';
 import { outlinePoints } from './PieceShape.tsx';
+import { useHistory } from '../lib/useHistory.ts';
 
 interface Drag {
   pieceId: number;
@@ -48,6 +49,7 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
   const [selected, setSelected] = useState<number | null>(null);
   const [flash, setFlash] = useState<number | null>(null);
   const [hintBusy, setHintBusy] = useState(false);
+  const history = useHistory<ShapesState>();
   const boardRef = useRef<SVGSVGElement>(null);
   const solved = isSolved(spec, state);
 
@@ -89,6 +91,7 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
     if (cur.r === placement.r && cur.c === placement.c) return;
     const next = [...state];
     next[pieceId] = placement;
+    history.remember(state);
     setState(next);
     onMove();
     onStateChange?.(next.flatMap((p) => [p.r, p.c]));
@@ -157,10 +160,21 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
 
   function reset() {
     if (locked || solved) return;
+    history.remember(state);
     setState([...spec.start]);
     setSelected(null);
     onMove();
     onStateChange?.(spec.start.flatMap((p) => [p.r, p.c]));
+  }
+
+  function undo() {
+    if (locked || solved) return;
+    const prev = history.undo();
+    if (!prev) return;
+    setState(prev);
+    setSelected(null);
+    onMove();
+    onStateChange?.(prev.flatMap((p) => [p.r, p.c]));
   }
 
   const preview = drag ? dropTarget(drag) : null;
@@ -220,11 +234,14 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
 
           {!solved && (
             <div className="actions">
-              <button type="button" className="btn" onClick={useHint} disabled={locked || hintBusy}>
-                Hint
-              </button>
               <button type="button" className="btn" onClick={reset} disabled={locked}>
                 Reset
+              </button>
+              <button type="button" className="btn" onClick={undo} disabled={locked || !history.canUndo}>
+                Undo
+              </button>
+              <button type="button" className="btn" onClick={useHint} disabled={locked || hintBusy}>
+                Hint
               </button>
             </div>
           )}

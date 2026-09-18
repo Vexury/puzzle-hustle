@@ -13,6 +13,7 @@ import {
   type RegionsState,
 } from '@puzzle-hustle/core';
 import './regions.css';
+import { useHistory } from '../lib/useHistory.ts';
 
 const LONG_PRESS_MS = 450;
 const REGION_COLORS = 12;
@@ -75,6 +76,7 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
   const [state, setState] = useState<RegionsState>(() => (initialState && initialState.length === spec.config.size * spec.config.size ? Uint8Array.from(initialState) : emptyRegionsState(spec)));
   const [flash, setFlash] = useState<number | null>(null);
   const [hintBusy, setHintBusy] = useState(false);
+  const history = useHistory<RegionsState>();
   const stateRef = useRef(state);
   const drag = useRef<Drag | null>(null);
   const solved = isRegionsSolved(spec, state);
@@ -109,6 +111,7 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
 
   function startDrag(e: React.PointerEvent<HTMLDivElement>) {
     if (locked || solved || drag.current) return;
+    history.remember(stateRef.current);
     const idx = cellAt(e.clientX, e.clientY);
     if (idx === null) return;
     e.preventDefault();
@@ -169,6 +172,7 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
     if (!ok) return;
     onHintUsed();
     const idx = h.r * n + h.c;
+    history.remember(stateRef.current);
     setCell(idx, h.value);
     setFlash(idx);
     setTimeout(() => setFlash(null), 1800);
@@ -176,7 +180,14 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
 
   function reset() {
     if (locked || solved) return;
+    history.remember(stateRef.current);
     commit(emptyRegionsState(spec));
+  }
+
+  function undo() {
+    if (locked || solved) return;
+    const prev = history.undo();
+    if (prev) commit(prev);
   }
 
   const cellClass = (i: number, v: number) => {
@@ -194,10 +205,9 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
   };
 
   return (
-    <div className="regions-wrap">
+    <div className="regions-wrap" style={{ '--size': n } as React.CSSProperties}>
       <div
         className={solved ? 'regions-board solved' : 'regions-board'}
-        style={{ '--size': n } as React.CSSProperties}
         onPointerDown={startDrag}
         onPointerMove={moveDrag}
         onPointerUp={endDrag}
@@ -219,11 +229,14 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
 
       {!solved && (
         <div className="actions">
-          <button type="button" className="btn" onClick={useHint} disabled={locked || hintBusy}>
-            Hint
-          </button>
           <button type="button" className="btn" onClick={reset} disabled={locked}>
             Reset
+          </button>
+          <button type="button" className="btn" onClick={undo} disabled={locked || !history.canUndo}>
+            Undo
+          </button>
+          <button type="button" className="btn" onClick={useHint} disabled={locked || hintBusy}>
+            Hint
           </button>
         </div>
       )}

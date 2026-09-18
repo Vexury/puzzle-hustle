@@ -217,12 +217,14 @@ p { margin: 0; }
 .row-card.solved .pill.outline { border-color: var(--success); color: var(--success); }
 .row-card.solved .pill.outline:hover { background: var(--success); border-color: var(--success); color: #fff; }
 
-.actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 4px; }
+.actions { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 10px; width: 100%; margin-top: 4px; }
+.board-panel .actions { max-width: 520px; margin-left: auto; margin-right: auto; }
 .actions .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   min-height: 40px;
-  padding: 8px 18px;
+  padding: 8px 6px;
   border-radius: 999px;
   border: 2px solid var(--border-mid);
   background: transparent;

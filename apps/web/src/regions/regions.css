@@ -39,6 +39,7 @@
 }
 
 .regions-wrap {
+  --cell: min(calc(180px / var(--size) + 22px), calc((100cqw - 18px) / var(--size)));
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -50,7 +51,6 @@
 }
 
 .regions-board {
-  --cell: min(calc(180px / var(--size) + 22px), calc((100cqw - 18px) / var(--size)));
   display: grid;
   grid-template-columns: repeat(var(--size), var(--cell));
   grid-template-rows: repeat(var(--size), var(--cell));
@@ -62,6 +62,7 @@
   max-width: 100%;
   touch-action: none;
 }
+.regions-wrap .actions { width: calc(var(--size) * var(--cell) + 18px); max-width: 100%; }
 .regions-board.solved { border-color: var(--success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 30%, transparent); }
 
 .regions-cell {

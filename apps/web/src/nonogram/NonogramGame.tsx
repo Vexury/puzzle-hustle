@@ -12,6 +12,7 @@ import {
 import { useZoomViewport } from '../lib/useZoomViewport.ts';
 import './nonogram.css';
 import { gridLineClasses } from '../lib/gridLines.ts';
+import { useHistory } from '../lib/useHistory.ts';
 
 const LONG_PRESS_MS = 450;
 
@@ -70,6 +71,7 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
   const [color, setColor] = useState(1);
   const [flash, setFlash] = useState<number | null>(null);
   const [hintBusy, setHintBusy] = useState(false);
+  const history = useHistory<NonogramState>();
   const stateRef = useRef(state);
   const drag = useRef<Drag | null>(null);
   const solved = isNonogramSolved(spec, state);
@@ -107,6 +109,7 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
       return;
     }
     if (locked || solved || drag.current) return;
+    history.remember(stateRef.current);
     const pos = cellAt(e.clientX, e.clientY);
     if (!pos) return;
     e.preventDefault();
@@ -177,6 +180,7 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
     if (!ok) return;
     onHintUsed();
     const idx = h.r * cols + h.c;
+    history.remember(stateRef.current);
     setCells([idx], h.value);
     setFlash(idx);
     setTimeout(() => setFlash(null), 1800);
@@ -184,7 +188,14 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
 
   function reset() {
     if (locked || solved) return;
+    history.remember(stateRef.current);
     commit(emptyState(spec));
+  }
+
+  function undo() {
+    if (locked || solved) return;
+    const prev = history.undo();
+    if (prev) commit(prev);
   }
 
   const cellClass = (r: number, c: number, v: number) => {
@@ -244,11 +255,14 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
 
       {!solved && (
         <div className="actions">
-          <button type="button" className="btn" onClick={useHint} disabled={locked || hintBusy}>
-            Hint
-          </button>
           <button type="button" className="btn" onClick={reset} disabled={locked}>
             Reset
+          </button>
+          <button type="button" className="btn" onClick={undo} disabled={locked || !history.canUndo}>
+            Undo
+          </button>
+          <button type="button" className="btn" onClick={useHint} disabled={locked || hintBusy}>
+            Hint
           </button>
         </div>
       )}

@@ -139,4 +139,5 @@
 .sudoku-key:active:not(:disabled) { background: var(--sudoku-same); }
 .sudoku-key:disabled { opacity: 0.35; cursor: default; }
 
+.sudoku-wrap .actions { max-width: var(--sudoku-max); }
 .sudoku-wrap .actions .btn.active { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }

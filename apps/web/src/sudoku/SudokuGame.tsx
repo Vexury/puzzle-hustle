@@ -12,6 +12,7 @@ import {
   type SudokuState,
 } from '@puzzle-hustle/core';
 import './sudoku.css';
+import { useHistory } from '../lib/useHistory.ts';
 
 const DIGITS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -76,6 +77,7 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
   const [notesMode, setNotesMode] = useState(false);
   const [flash, setFlash] = useState<number | null>(null);
   const [hintBusy, setHintBusy] = useState(false);
+  const history = useHistory<SudokuState>();
   const stateRef = useRef(state);
   const cages = useMemo(() => cageCells(spec), [spec]);
   const values = useMemo(() => sudokuCellValues(spec, state), [spec, state]);
@@ -87,7 +89,8 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
     if (solved) onSolved();
   }, [solved, onSolved]);
 
-  function commit(next: SudokuState) {
+  function commit(next: SudokuState, record = true) {
+    if (record) history.remember(stateRef.current);
     stateRef.current = next;
     setState(next);
     onMove();
@@ -156,6 +159,12 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
     commit(emptySudokuState(spec));
   }
 
+  function undo() {
+    if (frozen) return;
+    const prev = history.undo();
+    if (prev) commit(prev, false);
+  }
+
   const remaining = DIGITS.map((d) => 9 - values.reduce((n, v) => n + (v === d ? 1 : 0), 0));
   const selectedValue = selected === null ? 0 : values[selected]!;
   const peers = useMemo(() => (selected === null ? new Set<number>() : new Set(sudokuPeers(selected))), [selected]);
@@ -221,11 +230,14 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
             <button type="button" className="btn" onClick={erase} disabled={locked}>
               Erase
             </button>
-            <button type="button" className="btn" onClick={useHint} disabled={locked || hintBusy}>
-              Hint
-            </button>
             <button type="button" className="btn" onClick={reset} disabled={locked}>
               Reset
+            </button>
+            <button type="button" className="btn" onClick={undo} disabled={locked || !history.canUndo}>
+              Undo
+            </button>
+            <button type="button" className="btn" onClick={useHint} disabled={locked || hintBusy}>
+              Hint
             </button>
           </div>
         </>
