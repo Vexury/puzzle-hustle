@@ -20,20 +20,29 @@
   -webkit-user-select: none;
 }
 
-.mosaic-board {
-  --cell: min(calc(180px / var(--cols) + 22px), calc((100cqw - 18px) / var(--cols)));
-  display: grid;
-  grid-template-columns: repeat(var(--cols), var(--cell));
-  grid-template-rows: repeat(var(--rows), var(--cell));
+.mosaic-viewport {
+  width: 100%;
+  max-height: calc(100dvh - 250px);
+  min-height: 220px;
+  overflow: auto;
+  overscroll-behavior: contain;
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 8px;
-  max-width: 100%;
   touch-action: none;
+  scrollbar-width: thin;
 }
-.mosaic-board.solved { border-color: var(--success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 30%, transparent); }
+.mosaic-viewport.solved { border-color: var(--success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 30%, transparent); }
+
+.mosaic-board {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--cell));
+  grid-template-rows: repeat(var(--rows), var(--cell));
+  width: max-content;
+  padding: 8px;
+  margin: 0 auto;
+}
 
 .mosaic-cell {
   position: relative;
@@ -80,4 +89,4 @@
 }
 .mosaic-cell.filled .mosaic-clue { color: var(--mosaic-clue-on-fill); }
 .mosaic-cell.done .mosaic-clue { opacity: 0.4; }
-.mosaic-board.solved .mosaic-cell.done .mosaic-clue { opacity: 0.25; }
+.mosaic-viewport.solved .mosaic-cell.done .mosaic-clue { opacity: 0.25; }

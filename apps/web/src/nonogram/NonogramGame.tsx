@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   MARKED_EMPTY,
   emptyState,
@@ -9,19 +9,10 @@ import {
   type NonogramSpec,
   type NonogramState,
 } from '@puzzle-hustle/core';
+import { useZoomViewport } from '../lib/useZoomViewport.ts';
 import './nonogram.css';
 
 const LONG_PRESS_MS = 450;
-const MIN_CELL = 12;
-const MAX_CELL = 64;
-
-interface Pinch {
-  ids: [number, number];
-  startDist: number;
-  startCell: number;
-  lastX: number;
-  lastY: number;
-}
 
 interface Drag {
   pointerId: number;
@@ -42,6 +33,7 @@ export interface NonogramGameProps {
   locked: boolean;
   initialState?: number[] | undefined;
   onStateChange?(state: number[]): void;
+  viewKey?: string | undefined;
 }
 
 function cellAt(x: number, y: number): { r: number; c: number } | null {
@@ -71,7 +63,7 @@ function ClueList({ clues, done, axis, index }: { clues: Clue[]; done: boolean; 
   );
 }
 
-export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, locked, initialState, onStateChange }: NonogramGameProps) {
+export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, locked, initialState, onStateChange, viewKey }: NonogramGameProps) {
   const { rows, cols, colors } = spec.config;
   const [state, setState] = useState<NonogramState>(() => (initialState && initialState.length === emptyState(spec).length ? Uint8Array.from(initialState) : emptyState(spec)));
   const [color, setColor] = useState(1);
@@ -79,50 +71,10 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
   const [hintBusy, setHintBusy] = useState(false);
   const stateRef = useRef(state);
   const drag = useRef<Drag | null>(null);
-  const pointers = useRef(new Map<number, { x: number; y: number }>());
-  const pinch = useRef<Pinch | null>(null);
-  const viewport = useRef<HTMLDivElement>(null);
-  const [cellPx, setCellPx] = useState(24);
-  const pendingZoom = useRef<{ from: number; to: number; x: number; y: number } | null>(null);
   const solved = isNonogramSolved(spec, state);
+  const clueW = 26 + Math.max(...spec.rowClues.map((c) => Math.max(c.length, 1))) * 14;
+  const { viewport, cellPx, pointerDown, pointerMove, pointerUp, pointerCancel } = useZoomViewport(cols, clueW, viewKey);
 
-  useLayoutEffect(() => {
-    const el = viewport.current;
-    if (!el) return;
-    const clueW = 8 + Math.max(...spec.rowClues.map((c) => Math.max(c.length, 1))) * 14;
-    const fit = Math.floor((el.clientWidth - clueW - 18) / cols);
-    setCellPx(Math.max(Math.min(fit, 44), 24));
-  }, [spec, cols]);
-
-  useLayoutEffect(() => {
-    const el = viewport.current;
-    const z = pendingZoom.current;
-    if (!el || !z) return;
-    pendingZoom.current = null;
-    const k = z.to / z.from;
-    el.scrollLeft = (el.scrollLeft + z.x) * k - z.x;
-    el.scrollTop = (el.scrollTop + z.y) * k - z.y;
-  }, [cellPx]);
-
-  useEffect(() => {
-    const el = viewport.current;
-    if (!el) return;
-    const onWheel = (e: WheelEvent) => {
-      if (!e.ctrlKey) return;
-      e.preventDefault();
-      const rect = el.getBoundingClientRect();
-      zoomTo(cellPx * (e.deltaY < 0 ? 1.1 : 0.9), e.clientX - rect.left, e.clientY - rect.top);
-    };
-    el.addEventListener('wheel', onWheel, { passive: false });
-    return () => el.removeEventListener('wheel', onWheel);
-  });
-
-  function zoomTo(next: number, x: number, y: number) {
-    const to = Math.round(Math.min(Math.max(next, MIN_CELL), MAX_CELL));
-    if (to === cellPx) return;
-    pendingZoom.current = { from: cellPx, to, x, y };
-    setCellPx(to);
-  }
 
   useEffect(() => {
     if (solved) onSolved();
@@ -149,16 +101,11 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
   }
 
   function startDrag(e: React.PointerEvent<HTMLDivElement>) {
-    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    e.currentTarget.setPointerCapture(e.pointerId);
-    if (pointers.current.size === 2) {
+    if (pointerDown(e)) {
       cancelDrag();
-      const [a, b] = [...pointers.current.entries()];
-      const dist = Math.hypot(a![1].x - b![1].x, a![1].y - b![1].y);
-      pinch.current = { ids: [a![0], b![0]], startDist: dist, startCell: cellPx, lastX: (a![1].x + b![1].x) / 2, lastY: (a![1].y + b![1].y) / 2 };
       return;
     }
-    if (pointers.current.size > 1 || locked || solved || drag.current) return;
+    if (locked || solved || drag.current) return;
     const pos = cellAt(e.clientX, e.clientY);
     if (!pos) return;
     e.preventDefault();
@@ -178,24 +125,7 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
   }
 
   function moveDrag(e: React.PointerEvent<HTMLDivElement>) {
-    if (pointers.current.has(e.pointerId)) pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    const p = pinch.current;
-    const el = viewport.current;
-    if (p && el) {
-      const a = pointers.current.get(p.ids[0]);
-      const b = pointers.current.get(p.ids[1]);
-      if (!a || !b) return;
-      const cx = (a.x + b.x) / 2;
-      const cy = (a.y + b.y) / 2;
-      el.scrollLeft -= cx - p.lastX;
-      el.scrollTop -= cy - p.lastY;
-      p.lastX = cx;
-      p.lastY = cy;
-      const dist = Math.hypot(a.x - b.x, a.y - b.y);
-      const rect = el.getBoundingClientRect();
-      zoomTo(p.startCell * (dist / p.startDist), cx - rect.left, cy - rect.top);
-      return;
-    }
+    if (pointerMove(e)) return;
     const d = drag.current;
     if (!d || d.pointerId !== e.pointerId) return;
     const pos = cellAt(e.clientX, e.clientY);
@@ -216,11 +146,7 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
   }
 
   function endDrag(e: React.PointerEvent<HTMLDivElement>) {
-    pointers.current.delete(e.pointerId);
-    if (pinch.current) {
-      if (pointers.current.size < 2) pinch.current = null;
-      return;
-    }
+    if (pointerUp(e)) return;
     const d = drag.current;
     if (!d || d.pointerId !== e.pointerId) return;
     clearTimer(d);
@@ -236,8 +162,7 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
   }
 
   function cancelPointer(e: React.PointerEvent<HTMLDivElement>) {
-    pointers.current.delete(e.pointerId);
-    if (pointers.current.size < 2) pinch.current = null;
+    pointerCancel(e);
     cancelDrag();
   }
 
@@ -319,14 +244,16 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
         </div>
       )}
 
-      <div className="actions">
-        <button type="button" className="btn" onClick={useHint} disabled={solved || locked || hintBusy}>
-          Hint
-        </button>
-        <button type="button" className="btn" onClick={reset} disabled={solved || locked}>
-          Reset
-        </button>
-      </div>
+      {!solved && (
+        <div className="actions">
+          <button type="button" className="btn" onClick={useHint} disabled={locked || hintBusy}>
+            Hint
+          </button>
+          <button type="button" className="btn" onClick={reset} disabled={locked}>
+            Reset
+          </button>
+        </div>
+      )}
     </div>
   );
 }

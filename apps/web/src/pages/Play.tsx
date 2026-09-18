@@ -210,6 +210,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           locked={false}
           initialState={saved?.state}
           onStateChange={onStateChange}
+          viewKey={id}
         />
       ) : 'clues' in spec ? (
         <MosaicGame
@@ -221,6 +222,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           locked={false}
           initialState={saved?.state}
           onStateChange={onStateChange}
+          viewKey={id}
         />
       ) : (
         <NonogramGame
@@ -232,6 +234,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           locked={false}
           initialState={saved?.state}
           onStateChange={onStateChange}
+          viewKey={id}
         />
       )}
 

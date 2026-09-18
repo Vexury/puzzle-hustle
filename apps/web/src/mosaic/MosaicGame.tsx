@@ -8,6 +8,7 @@ import {
   type MosaicSpec,
   type MosaicState,
 } from '@puzzle-hustle/core';
+import { useZoomViewport } from '../lib/useZoomViewport.ts';
 import './mosaic.css';
 
 const LONG_PRESS_MS = 450;
@@ -32,6 +33,7 @@ export interface MosaicGameProps {
   locked: boolean;
   initialState?: number[] | undefined;
   onStateChange?(state: number[]): void;
+  viewKey?: string | undefined;
 }
 
 function cellAt(x: number, y: number): { r: number; c: number } | null {
@@ -47,7 +49,7 @@ function nextValue(current: number, mark: boolean): number {
   return MOSAIC_MARKED_EMPTY;
 }
 
-export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, locked, initialState, onStateChange }: MosaicGameProps) {
+export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, locked, initialState, onStateChange, viewKey }: MosaicGameProps) {
   const { rows, cols } = spec.config;
   const [state, setState] = useState<MosaicState>(() => (initialState && initialState.length === emptyMosaicState(spec).length ? Uint8Array.from(initialState) : emptyMosaicState(spec)));
   const [flash, setFlash] = useState<number | null>(null);
@@ -55,6 +57,7 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
   const stateRef = useRef(state);
   const drag = useRef<Drag | null>(null);
   const solved = isMosaicSolved(spec, state);
+  const { viewport, cellPx, pointerDown, pointerMove, pointerUp, pointerCancel } = useZoomViewport(cols, 18, viewKey);
 
   useEffect(() => {
     if (solved) onSolved();
@@ -81,11 +84,14 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
   }
 
   function startDrag(e: React.PointerEvent<HTMLDivElement>) {
+    if (pointerDown(e)) {
+      cancelDrag();
+      return;
+    }
     if (locked || solved || drag.current) return;
     const pos = cellAt(e.clientX, e.clientY);
     if (!pos) return;
     e.preventDefault();
-    e.currentTarget.setPointerCapture(e.pointerId);
     const idx = pos.r * cols + pos.c;
     const current = stateRef.current[idx]!;
     const mark = e.button === 2;
@@ -102,6 +108,7 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
   }
 
   function moveDrag(e: React.PointerEvent<HTMLDivElement>) {
+    if (pointerMove(e)) return;
     const d = drag.current;
     if (!d || d.pointerId !== e.pointerId) return;
     const pos = cellAt(e.clientX, e.clientY);
@@ -121,6 +128,7 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
   }
 
   function endDrag(e: React.PointerEvent<HTMLDivElement>) {
+    if (pointerUp(e)) return;
     const d = drag.current;
     if (!d || d.pointerId !== e.pointerId) return;
     clearTimer(d);
@@ -133,6 +141,11 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
     if (!d) return;
     clearTimer(d);
     drag.current = null;
+  }
+
+  function cancelPointer(e: React.PointerEvent<HTMLDivElement>) {
+    pointerCancel(e);
+    cancelDrag();
   }
 
   async function useHint() {
@@ -171,16 +184,17 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
   return (
     <div className="mosaic-wrap">
       <div
-        className={solved ? 'mosaic-board solved' : 'mosaic-board'}
-        style={{ '--rows': rows, '--cols': cols } as React.CSSProperties}
+        ref={viewport}
+        className={solved ? 'mosaic-viewport solved' : 'mosaic-viewport'}
         onPointerDown={startDrag}
         onPointerMove={moveDrag}
         onPointerUp={endDrag}
-        onPointerCancel={cancelDrag}
+        onPointerCancel={cancelPointer}
         onContextMenu={(e) => e.preventDefault()}
         role="application"
         aria-label="Mosaic board"
       >
+        <div className="mosaic-board" style={{ '--rows': rows, '--cols': cols, '--cell': `${cellPx}px` } as React.CSSProperties}>
         {Array.from({ length: rows * cols }, (_, i) => {
           const r = Math.floor(i / cols);
           const c = i % cols;
@@ -191,16 +205,19 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
             </div>
           );
         })}
+        </div>
       </div>
 
-      <div className="actions">
-        <button type="button" className="btn" onClick={useHint} disabled={solved || locked || hintBusy}>
-          Hint
-        </button>
-        <button type="button" className="btn" onClick={reset} disabled={solved || locked}>
-          Reset
-        </button>
-      </div>
+      {!solved && (
+        <div className="actions">
+          <button type="button" className="btn" onClick={useHint} disabled={locked || hintBusy}>
+            Hint
+          </button>
+          <button type="button" className="btn" onClick={reset} disabled={locked}>
+            Reset
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -166,7 +166,7 @@ function grow(n: number, owner: Int16Array, rng: Rng): void {
   };
   for (let i = 0; i < n * n; i++) if (owner[i]! >= 0) push(i);
   while (frontier.length > 0) {
-    const pick = rng.int(frontier.length);
+    const pick = rng.next() < ((globalThis as any).__snake ?? 0.5) ? frontier.length - 1 : rng.int(frontier.length);
     const entry = frontier[pick]!;
     frontier[pick] = frontier[frontier.length - 1]!;
     frontier.pop();
@@ -264,6 +264,13 @@ function refineUnique(spec: RegionsSpec, rng: Rng, maxSteps: number): boolean {
   let { count, freq } = altStarFrequency(spec, REFINE_LIMIT);
   for (let step = 0; step < maxSteps && count !== 1; step++) {
     (globalThis as any).__steps++;
+    if (count >= REFINE_LIMIT) {
+      const move = rankedMoves(n, spec, freq, rng).find((m) => staysConnected(n, spec.regions, spec.regions[Math.floor(m / n)]!, Math.floor(m / n)));
+      if (move === undefined) return false;
+      spec.regions[Math.floor(move / n)] = move % n;
+      ({ count, freq } = altStarFrequency(spec, REFINE_LIMIT));
+      continue;
+    }
     let best: { cell: number; to: number; count: number; freq: Uint16Array } | null = null;
     let tried = 0;
     for (const move of rankedMoves(n, spec, freq, rng)) {

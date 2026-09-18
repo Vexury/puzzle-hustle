@@ -33,6 +33,7 @@ export interface ShapesGameProps {
   locked: boolean;
   initialState?: number[] | undefined;
   onStateChange?(state: number[]): void;
+  viewKey?: string | undefined;
 }
 
 export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, locked, initialState, onStateChange }: ShapesGameProps) {
@@ -217,14 +218,16 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
             })}
           </svg>
 
-          <div className="actions">
-            <button type="button" className="btn" onClick={useHint} disabled={solved || locked || hintBusy}>
-              Hint
-            </button>
-            <button type="button" className="btn" onClick={reset} disabled={solved || locked}>
-              Reset
-            </button>
-          </div>
+          {!solved && (
+            <div className="actions">
+              <button type="button" className="btn" onClick={useHint} disabled={locked || hintBusy}>
+                Hint
+              </button>
+              <button type="button" className="btn" onClick={reset} disabled={locked}>
+                Reset
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
