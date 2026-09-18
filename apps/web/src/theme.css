@@ -73,12 +73,29 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url('../public/fonts/nunito-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url('../public/fonts/nunito-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 html, body { margin: 0; padding: 0; }
 body {
   background: var(--bg);
   color: var(--text);
   --font-num: 'Inconsolata', ui-monospace, monospace;
-  font-family: var(--font-text, var(--font-num));
+  --font-text: 'Nunito', system-ui, sans-serif;
+  font-family: var(--font-text);
   font-size: var(--fs-base);
   line-height: 1.45;
   min-height: 100dvh;
@@ -88,7 +105,7 @@ body {
 a { color: inherit; }
 button { font: inherit; color: inherit; }
 h1, h2, h3 { margin: 0; line-height: 1.15; }
-h1 { font-size: var(--fs-xl); font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+h1 { font-size: var(--fs-xl); font-weight: 800; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 h2 { font-size: var(--fs-lg); }
 p { margin: 0; }
 .muted { color: var(--text-muted); }
@@ -410,7 +427,6 @@ p { margin: 0; }
 .icon-round.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-deep); }
 .play-meta { display: flex; align-items: center; gap: 12px; }
 .sudoku-board, .sudoku-pad, .kakuro-board, .kakuro-pad, .nono-board, .mosaic-board, .zip-svg, .timer, .big-time, .stat b, .tile b { font-family: var(--font-num); }
-:root:not([data-font="inconsolata"]) h1, :root:not([data-font="inconsolata"]) h2 { font-weight: 800; }
 .timer { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: var(--fs-md); }
 .clock { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 .play-meta .muted { flex: 1; }
@@ -436,7 +452,7 @@ p { margin: 0; }
 @keyframes atom-solve { 0% { fill: var(--accent); stroke: var(--accent); } 40% { fill: var(--success); stroke: var(--success); } 100% { fill: var(--accent); stroke: var(--accent); } }
 @keyframes zip-solve { 0% { filter: brightness(1); } 40% { filter: brightness(1.5) drop-shadow(0 0 0.12px var(--success)); } 100% { filter: brightness(1); } }
 @media (prefers-reduced-motion: reduce) { .solved-head, .solved .solve-fx { animation: none !important; } }
-.solved-head h2 { color: var(--success); font-size: var(--fs-xl); }
+.solved-head h2 { color: var(--success); font-size: var(--fs-xl); font-weight: 800; }
 .big-time { font-size: 2.4rem; line-height: 1.1; color: var(--accent-deep); }
 .solved-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; }
 .solved-actions > :only-child { margin-left: auto; }

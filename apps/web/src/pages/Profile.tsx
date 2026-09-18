@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { PUZZLE_META, PUZZLE_TYPES } from '@puzzle-hustle/core';
 import { Flame } from './Daily.tsx';
 import { readSetting, resetProgress, useSolves, writeSetting } from '../lib/storage.ts';
@@ -6,15 +6,12 @@ import { formatSeconds } from '../lib/share.ts';
 import { STREAK_MIN, dailyStreaks, totalSolved, typeStats } from '../lib/stats.ts';
 import { THEME_PREFS, useTheme, type ThemePref } from '../lib/theme.ts';
 import { ThemeToggle } from '../components/ThemeToggle.tsx';
-import { FONT_OPTIONS, preloadFonts, useFont } from '../lib/font.ts';
 
 export function Profile() {
   const solves = useSolves();
   const streaks = dailyStreaks(solves);
   const stats = typeStats(solves);
   const { pref, setPref } = useTheme();
-  const [font, setFont] = useFont();
-  useEffect(preloadFonts, []);
   const [name, setName] = useState(readSetting('ph:name') ?? '');
   const [editing, setEditing] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -95,18 +92,6 @@ export function Profile() {
             {THEME_PREFS.map((p: ThemePref) => (
               <button key={p} type="button" role="radio" aria-checked={pref === p} className={pref === p ? 'seg active' : 'seg'} onClick={() => setPref(p)}>
                 {p === 'system' ? 'System' : p === 'light' ? 'Light' : 'Dark'}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="card-lg">
-          <b>Text font (preview)</b>
-          <span className="muted small">Numbers keep the mono font. Pick the one that reads best.</span>
-          <div className="segmented" role="radiogroup" aria-label="Text font">
-            {FONT_OPTIONS.map((f) => (
-              <button key={f.id} type="button" role="radio" aria-checked={font === f.id} className={font === f.id ? 'seg active' : 'seg'} onClick={() => setFont(f.id)} style={{ fontFamily: f.family }}>
-                {f.label}
               </button>
             ))}
           </div>
