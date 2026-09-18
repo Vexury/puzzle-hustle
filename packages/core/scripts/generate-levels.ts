@@ -6,10 +6,13 @@ import type { LevelEntry, LevelPack } from '../src/levels.ts';
 
 const PER_DIFFICULTY = Number(process.argv[2] ?? 20);
 const ONLY = process.argv[3];
+const ONLY_DIFFS = process.argv[4]?.split(',') as Difficulty[] | undefined;
 const BUDGET = 5_000_000;
 
 if (ONLY !== undefined && !isPuzzleTypeId(ONLY)) throw new Error(`unknown puzzle type ${ONLY}`);
 const types = ONLY ? [ONLY] : [...PUZZLE_TYPES];
+for (const d of ONLY_DIFFS ?? []) if (!(DIFFICULTIES as readonly string[]).includes(d)) throw new Error(`unknown difficulty ${d}`);
+const difficulties = ONLY_DIFFS ?? DIFFICULTIES;
 
 const out = fileURLToPath(new URL('../src/levels.json', import.meta.url));
 const existing = JSON.parse(readFileSync(out, 'utf-8')) as LevelPack;
@@ -21,7 +24,7 @@ for (const type of types) {
   const keepOld = versions[type] === a.version;
   versions[type] = a.version;
   levels[type] = { ...(keepOld ? levels[type] : {}) } as Record<Difficulty, LevelEntry[]>;
-  for (const difficulty of DIFFICULTIES) {
+  for (const difficulty of difficulties) {
     const kept = keepOld ? (levels[type][difficulty] ?? []) : [];
     const missing = PER_DIFFICULTY - kept.length;
     if (missing <= 0) {
