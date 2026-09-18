@@ -108,6 +108,20 @@ p { margin: 0; }
 .section-sub { margin-bottom: 10px; }
 .stack { display: flex; flex-direction: column; gap: 12px; }
 
+.daily-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: -6px 0 16px;
+  color: var(--text-muted);
+}
+.daily-progress .bar { position: relative; display: flex; gap: 4px; height: 10px; }
+.daily-progress .seg { flex: 1; border-radius: 999px; background: var(--board-cell); border: 1px solid var(--border); transition: background 0.2s; }
+.daily-progress .seg.on { background: var(--accent); border-color: var(--accent); }
+.daily-progress.safe .seg.on { background: var(--success); border-color: var(--success); }
+.daily-progress.safe { color: var(--success); }
+.daily-progress .goal { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--text-muted); transform: translateX(-1px); }
+
 .streak {
   display: inline-flex;
   align-items: center;

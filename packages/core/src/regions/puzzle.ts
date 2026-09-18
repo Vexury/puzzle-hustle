@@ -151,28 +151,43 @@ function connect(n: number, owner: Int16Array, from: number, to: number, reg: nu
   return true;
 }
 
+const SNAKE_BIAS = 0.85;
+
 function grow(n: number, owner: Int16Array, rng: Rng): void {
-  const frontier: number[] = [];
+  const frontiers: number[][] = Array.from({ length: n }, () => []);
+  const sizes = new Int32Array(n);
   const push = (i: number) => {
+    const reg = owner[i]!;
     const r = Math.floor(i / n);
     const c = i % n;
-    for (const [dr, dc] of DIRS) {
+    for (const [dr, dc] of rng.shuffle([...DIRS])) {
       const rr = r + dr;
       const cc = c + dc;
       if (rr < 0 || cc < 0 || rr >= n || cc >= n) continue;
       const j = rr * n + cc;
-      if (owner[j]! < 0) frontier.push(j * n + owner[i]!);
+      if (owner[j]! < 0) frontiers[reg]!.push(j);
     }
   };
-  for (let i = 0; i < n * n; i++) if (owner[i]! >= 0) push(i);
-  while (frontier.length > 0) {
-    const pick = rng.next() < ((globalThis as any).__snake ?? 0.5) ? frontier.length - 1 : rng.int(frontier.length);
-    const entry = frontier[pick]!;
+  for (let i = 0; i < n * n; i++) {
+    if (owner[i]! < 0) continue;
+    sizes[owner[i]!]!++;
+    push(i);
+  }
+  for (;;) {
+    let reg = -1;
+    for (let cand = 0; cand < n; cand++) {
+      if (frontiers[cand]!.length === 0) continue;
+      if (reg < 0 || sizes[cand]! < sizes[reg]! || (sizes[cand] === sizes[reg] && rng.next() < 0.5)) reg = cand;
+    }
+    if (reg < 0) break;
+    const frontier = frontiers[reg]!;
+    const pick = rng.next() < ((globalThis as any).__snake ?? SNAKE_BIAS) ? frontier.length - 1 : rng.int(frontier.length);
+    const cell = frontier[pick]!;
     frontier[pick] = frontier[frontier.length - 1]!;
     frontier.pop();
-    const cell = Math.floor(entry / n);
     if (owner[cell]! >= 0) continue;
-    owner[cell] = entry % n;
+    owner[cell] = reg;
+    sizes[reg]!++;
     push(cell);
   }
 }
@@ -235,7 +250,7 @@ function otherRegions(n: number, spec: RegionsSpec, i: number): number[] {
   return out;
 }
 
-const REFINE_LIMIT = 48;
+const REFINE_LIMIT = 256;
 
 function altStarFrequency(spec: RegionsSpec, limit: number): { count: number; freq: Uint16Array } {
   const freq = new Uint16Array(spec.solution.length);
@@ -258,16 +273,25 @@ function rankedMoves(n: number, spec: RegionsSpec, freq: Uint16Array, rng: Rng):
 }
 
 const REFINE_BATCH = 12;
+const TABU = 6;
+
+function remember(tabu: number[], cell: number): void {
+  tabu.push(cell);
+  if (tabu.length > TABU) tabu.shift();
+}
 
 function refineUnique(spec: RegionsSpec, rng: Rng, maxSteps: number): boolean {
   const n = spec.config.size;
   let { count, freq } = altStarFrequency(spec, REFINE_LIMIT);
+  const tabu: number[] = [];
   for (let step = 0; step < maxSteps && count !== 1; step++) {
     (globalThis as any).__steps++;
     if (count >= REFINE_LIMIT) {
-      const move = rankedMoves(n, spec, freq, rng).find((m) => staysConnected(n, spec.regions, spec.regions[Math.floor(m / n)]!, Math.floor(m / n)));
+      const move = rankedMoves(n, spec, freq, rng).find((m) => !tabu.includes(Math.floor(m / n)) && staysConnected(n, spec.regions, spec.regions[Math.floor(m / n)]!, Math.floor(m / n)));
+      if ((globalThis as any).__trace) console.log('step', step, 'capped', count, 'move', move);
       if (move === undefined) return false;
       spec.regions[Math.floor(move / n)] = move % n;
+      remember(tabu, Math.floor(move / n));
       ({ count, freq } = altStarFrequency(spec, REFINE_LIMIT));
       continue;
     }
@@ -277,7 +301,7 @@ function refineUnique(spec: RegionsSpec, rng: Rng, maxSteps: number): boolean {
       if (tried >= REFINE_BATCH) break;
       const cell = Math.floor(move / n);
       const from = spec.regions[cell]!;
-      if (!staysConnected(n, spec.regions, from, cell)) continue;
+      if (tabu.includes(cell) || !staysConnected(n, spec.regions, from, cell)) continue;
       tried++;
       spec.regions[cell] = move % n;
       const next = altStarFrequency(spec, REFINE_LIMIT);
@@ -286,8 +310,10 @@ function refineUnique(spec: RegionsSpec, rng: Rng, maxSteps: number): boolean {
       if (!best || next.count < best.count) best = { cell, to: move % n, count: next.count, freq: next.freq };
       if (next.count < count) break;
     }
+    if ((globalThis as any).__trace) console.log('step', step, 'count', count, 'best', best?.count, 'tried', tried);
     if (!best) return false;
     spec.regions[best.cell] = best.to;
+    remember(tabu, best.cell);
     count = best.count;
     freq = best.freq;
   }
@@ -305,6 +331,7 @@ export function generateRegions(seed: number, config: RegionsConfig, difficulty:
     const regions = buildRegions(size, stars, solution, rng);
     if (!regions) continue;
     const spec: RegionsSpec = { version: REGIONS_VERSION, seed, difficulty, config, regions, solution };
+    if ((globalThis as any).__capture) return spec;
     if (refineUnique(spec, rng, 200)) return spec;
   }
   throw new Error(`could not generate regions puzzle for seed ${seed} / ${size}x${size} with ${stars} stars`);

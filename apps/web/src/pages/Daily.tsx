@@ -4,7 +4,7 @@ import { PuzzleIcon } from '../components/PuzzleIcon.tsx';
 import { href, onLinkClick } from '../lib/router.ts';
 import { useSolves } from '../lib/storage.ts';
 import { capitalize, formatSeconds } from '../lib/share.ts';
-import { dailyNumber, dailyStreaks, formatDateLong, monthlyNumber, weeklyNumber } from '../lib/stats.ts';
+import { STREAK_MIN, dailyNumber, dailyStreaks, formatDateLong, monthlyNumber, weeklyNumber } from '../lib/stats.ts';
 
 export function useCountdown(period: Period): string {
   const [text, setText] = useState('');
@@ -71,6 +71,8 @@ export function Daily() {
         </p>
       </header>
 
+      <DailyProgress solved={streaks.today} total={dailies.length} />
+
       <div className="stack">
         {dailies.map((ref) => (
           <ChallengeCard key={refId(ref)} puzzleRef={ref} label={`Daily #${number} ·`} />
@@ -93,6 +95,25 @@ export function Daily() {
         <ChallengeCard puzzleRef={monthly} label={`Monthly #${monthlyNumber(monthly.key!)} ·`} />
       </div>
     </>
+  );
+}
+
+function DailyProgress({ solved, total }: { solved: number; total: number }) {
+  const safe = solved >= STREAK_MIN;
+  const missing = STREAK_MIN - solved;
+  return (
+    <div className={safe ? 'daily-progress safe' : 'daily-progress'} role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={solved}>
+      <div className="bar">
+        {Array.from({ length: total }, (_, i) => (
+          <span key={i} className={i < solved ? 'seg on' : 'seg'} />
+        ))}
+        {STREAK_MIN < total && <span className="goal" style={{ left: `${(STREAK_MIN / total) * 100}%` }} />}
+      </div>
+      <span className="small">
+        {solved}/{total} solved today ·{' '}
+        {safe ? 'streak kept' : missing === 1 ? 'one more keeps your streak' : `${missing} more keep your streak`}
+      </span>
+    </div>
   );
 }
 

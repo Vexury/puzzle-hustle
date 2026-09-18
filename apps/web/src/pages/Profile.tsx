@@ -3,7 +3,7 @@ import { PUZZLE_META, PUZZLE_TYPES } from '@puzzle-hustle/core';
 import { Flame } from './Daily.tsx';
 import { readSetting, resetProgress, useSolves, writeSetting } from '../lib/storage.ts';
 import { formatSeconds } from '../lib/share.ts';
-import { dailyStreaks, totalSolved, typeStats } from '../lib/stats.ts';
+import { STREAK_MIN, dailyStreaks, totalSolved, typeStats } from '../lib/stats.ts';
 import { useTheme } from '../lib/theme.ts';
 
 export function Profile() {
@@ -61,7 +61,7 @@ export function Profile() {
         </div>
 
         <div className="stat-grid">
-          <Stat value={streaks.current} label="day streak" flame />
+          <Stat value={streaks.current} label={`day streak (${STREAK_MIN}+ dailies)`} flame />
           <Stat value={streaks.best} label="best streak" />
           <Stat value={streaks.daysPlayed} label="days played" />
           <Stat value={totalSolved(solves)} label="puzzles solved" />

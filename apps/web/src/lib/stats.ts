@@ -2,6 +2,7 @@ import { PUZZLE_TYPES, isoWeek, levelList, localDateParts, periodKey, type Puzzl
 import type { SolveRecord } from './storage.ts';
 
 export const LAUNCH_DAY = '2026-09-18';
+export const STREAK_MIN = Math.min(3, PUZZLE_TYPES.length);
 
 function dayIndex(key: string): number {
   const [y, m, d] = key.split('-').map(Number);
@@ -36,6 +37,7 @@ function keyOfDayIndex(index: number): string {
 }
 
 export interface DailyStreaks {
+  today: number;
   current: number;
   best: number;
   perfect: number;
@@ -53,7 +55,7 @@ export function dailyStreaks(solves: Record<string, SolveRecord>, now: Date = ne
   }
   const today = periodKey('daily', now);
   const todayIndex = dayIndex(today);
-  const anyOn = (i: number) => (solvedTypesByDay.get(keyOfDayIndex(i))?.size ?? 0) > 0;
+  const anyOn = (i: number) => (solvedTypesByDay.get(keyOfDayIndex(i))?.size ?? 0) >= STREAK_MIN;
   const perfectOn = (i: number) => (solvedTypesByDay.get(keyOfDayIndex(i))?.size ?? 0) >= PUZZLE_TYPES.length;
 
   const run = (test: (i: number) => boolean) => {
@@ -83,6 +85,7 @@ export function dailyStreaks(solves: Record<string, SolveRecord>, now: Date = ne
   };
 
   return {
+    today: solvedTypesByDay.get(today)?.size ?? 0,
     current: run(anyOn),
     best: Math.max(best(anyOn), run(anyOn)),
     perfect: run(perfectOn),

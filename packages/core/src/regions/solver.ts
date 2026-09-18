@@ -48,70 +48,86 @@ export interface RegionsCount {
   nodes: number;
 }
 
-function regionSuffixCounts(spec: RegionsSpec): Int32Array {
-  const n = spec.config.size;
-  const out = new Int32Array(n * (n + 1));
-  for (let reg = 0; reg < n; reg++) {
-    for (let r = n - 1; r >= 0; r--) {
-      let count = out[reg * (n + 1) + r + 1]!;
-      for (let c = 0; c < n; c++) if (spec.regions[r * n + c] === reg) count++;
-      out[reg * (n + 1) + r] = count;
-    }
-  }
-  return out;
-}
+const ELIMINATED = 2;
 
 export function enumerateRegionsSolutions(spec: RegionsSpec, limit: number, onSolution: (grid: Uint8Array) => void): RegionsCount {
-  const n = spec.config.size;
-  const k = spec.config.stars;
-  const regionOf = spec.regions;
-  const suffix = regionSuffixCounts(spec);
-  const colCount = new Uint8Array(n);
-  const regCount = new Uint8Array(n);
-  const grid = new Uint8Array(n * n);
+  const units = regionsUnits(spec);
+  const n = units.size;
+  const k = units.stars;
+  const all = [...units.rows, ...units.cols, ...units.regions];
+  const unitsOf: number[][] = Array.from({ length: n * n }, (_, i) => [Math.floor(i / n), n + (i % n), 2 * n + spec.regions[i]!]);
+  const placed = new Uint8Array(all.length);
+  const state = new Uint8Array(n * n);
+  const trail: number[] = [];
   let solutions = 0;
   let nodes = 0;
 
-  function feasible(r: number): boolean {
-    const left = n - r - 1;
-    for (let c = 0; c < n; c++) if (colCount[c]! + left < k) return false;
-    for (let reg = 0; reg < n; reg++) if (regCount[reg]! + suffix[reg * (n + 1) + r + 1]! < k) return false;
-    return true;
+  function eliminate(i: number): void {
+    if (state[i] !== 0) return;
+    state[i] = ELIMINATED;
+    trail.push(i);
   }
 
-  function blocked(r: number, c: number): boolean {
-    if (r === 0) return false;
-    const base = (r - 1) * n;
-    return grid[base + c] === 1 || (c > 0 && grid[base + c - 1] === 1) || (c + 1 < n && grid[base + c + 1] === 1);
+  function place(i: number): void {
+    state[i] = 1;
+    trail.push(i);
+    for (const j of regionsNeighbors(n, i)) eliminate(j);
+    for (const u of unitsOf[i]!) {
+      placed[u]!++;
+      if (placed[u] === k) for (const j of all[u]!) eliminate(j);
+    }
   }
 
-  function placeRow(r: number, startCol: number, count: number): void {
+  function undo(mark: number): void {
+    while (trail.length > mark) {
+      const i = trail.pop()!;
+      if (state[i] === 1) for (const u of unitsOf[i]!) placed[u]!--;
+      state[i] = 0;
+    }
+  }
+
+  function pickUnit(): number | null | undefined {
+    let best: number | null = null;
+    let bestSlack = Number.POSITIVE_INFINITY;
+    for (let u = 0; u < all.length; u++) {
+      const need = k - placed[u]!;
+      if (need === 0) continue;
+      let candidates = 0;
+      for (const i of all[u]!) if (state[i] === 0) candidates++;
+      if (candidates < need) return undefined;
+      const slack = candidates - need;
+      if (slack < bestSlack) {
+        bestSlack = slack;
+        best = u;
+        if (slack === 0) break;
+      }
+    }
+    return best;
+  }
+
+  function search(): void {
     if (solutions >= limit) return;
-    if (count === k) {
-      nodes++;
-      if (!feasible(r)) return;
-      if (r === n - 1) {
-        solutions++;
-        onSolution(grid);
-      } else placeRow(r + 1, 0, 0);
+    const u = pickUnit();
+    if (u === undefined) return;
+    if (u === null) {
+      solutions++;
+      onSolution(state.map((v) => (v === 1 ? 1 : 0)));
       return;
     }
-    for (let c = startCol; c <= n - 1 - 2 * (k - count - 1); c++) {
-      if (colCount[c]! >= k || blocked(r, c)) continue;
-      const reg = regionOf[r * n + c]!;
-      if (regCount[reg]! >= k) continue;
-      colCount[c]!++;
-      regCount[reg]!++;
-      grid[r * n + c] = 1;
-      placeRow(r, c + 2, count + 1);
-      grid[r * n + c] = 0;
-      colCount[c]!--;
-      regCount[reg]!--;
+    const candidates = all[u]!.filter((i) => state[i] === 0);
+    const mark = trail.length;
+    for (const i of candidates) {
+      nodes++;
+      place(i);
+      search();
+      undo(mark);
       if (solutions >= limit) return;
+      eliminate(i);
     }
+    undo(mark);
   }
 
-  placeRow(0, 0, 0);
+  search();
   return { solutions, nodes };
 }
 
