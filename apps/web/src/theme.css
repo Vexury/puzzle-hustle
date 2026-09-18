@@ -150,7 +150,7 @@ p { margin: 0; }
   border: 1px solid var(--border);
   transition: background 0.25s, border-color 0.25s;
 }
-.daily-progress .streak-zone .flame { width: 26px; height: 26px; fill: var(--border-mid); transition: fill 0.25s; }
+.daily-progress .streak-zone .flame { width: 34px; height: 34px; fill: var(--border-mid); transition: fill 0.25s; }
 .daily-progress.safe .streak-zone { background: var(--success-soft); border-color: var(--success); }
 .daily-progress.safe .streak-zone .flame { fill: var(--flame); }
 .daily-progress .slot {
@@ -173,10 +173,11 @@ p { margin: 0; }
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: var(--fs-md);
-  color: var(--accent-deep);
+  font-size: var(--fs-lg);
+  color: var(--flame);
 }
-.flame { width: 1em; height: 1em; fill: var(--accent); vertical-align: -0.1em; }
+.flame { width: 1em; height: 1em; fill: var(--flame); vertical-align: -0.1em; }
+.streak .flame { width: 1.35em; height: 1.35em; }
 
 .row-card {
   display: grid;
