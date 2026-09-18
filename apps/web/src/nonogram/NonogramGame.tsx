@@ -75,7 +75,7 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
   const stateRef = useRef(state);
   const drag = useRef<Drag | null>(null);
   const solved = isNonogramSolved(spec, state);
-  const clueW = 26 + Math.max(...spec.rowClues.map((c) => Math.max(c.length, 1))) * 14;
+  const clueW = 12 + Math.max(...spec.rowClues.map((c) => Math.max(c.length, 1))) * 14;
   const { viewport, cellPx, pointerDown, pointerMove, pointerUp, pointerCancel } = useZoomViewport(cols, clueW, viewKey);
 
 
@@ -211,7 +211,7 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
     <div className="nono-wrap">
       <div
         ref={viewport}
-        className={solved ? 'nono-viewport solved' : 'nono-viewport'}
+        className={solved ? 'nono-viewport board-frame solved' : 'nono-viewport board-frame'}
         onPointerDown={startDrag}
         onPointerMove={moveDrag}
         onPointerUp={endDrag}

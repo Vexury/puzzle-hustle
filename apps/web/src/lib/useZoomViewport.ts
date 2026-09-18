@@ -45,7 +45,7 @@ export function useZoomViewport(cols: number, reserve: number, viewKey: string |
       setCellPx(saved.cell);
       return;
     }
-    const fit = Math.floor((el.clientWidth - reserve) / cols);
+    const fit = Math.floor(((el.parentElement?.clientWidth ?? el.clientWidth) - reserve) / cols);
     setCellPx(Math.max(Math.min(fit, 44), 24));
   }, [cols, reserve, storageKey]);
 

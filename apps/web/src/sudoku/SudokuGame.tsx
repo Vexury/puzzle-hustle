@@ -211,7 +211,7 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
 
   return (
     <div className="sudoku-wrap">
-      <div className={solved ? 'sudoku-board solved' : 'sudoku-board'} role="grid" aria-label="Sudoku board">
+      <div className={solved ? 'sudoku-board board-frame solved' : 'sudoku-board board-frame'} role="grid" aria-label="Sudoku board">
         {Array.from({ length: 81 }, (_, i) => {
           const cage = cages[i]!;
           const v = values[i]!;

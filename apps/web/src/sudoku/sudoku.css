@@ -24,13 +24,7 @@
   max-width: var(--sudoku-max);
   aspect-ratio: 1;
   container-type: inline-size;
-  background: var(--card-bg);
-  border: 2px solid var(--border-mid);
-  border-radius: 6px;
-  box-shadow: var(--shadow);
-  overflow: hidden;
 }
-.sudoku-board.solved { border-color: var(--success); box-shadow: 0 0 0 5px color-mix(in srgb, var(--success) 45%, transparent); }
 
 .sudoku-cell {
   position: relative;

@@ -39,7 +39,7 @@
 }
 
 .regions-wrap {
-  --cell: min(calc(180px / var(--size) + 22px), calc((100cqw - 18px) / var(--size)));
+  --cell: min(calc(180px / var(--size) + 22px), calc((100cqw - 4px) / var(--size)));
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -54,16 +54,10 @@
   display: grid;
   grid-template-columns: repeat(var(--size), var(--cell));
   grid-template-rows: repeat(var(--size), var(--cell));
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 8px;
   max-width: 100%;
   touch-action: none;
 }
-.regions-wrap .actions { width: calc(var(--size) * var(--cell) + 18px); max-width: 100%; }
-.regions-board.solved { border-color: var(--success); box-shadow: 0 0 0 5px color-mix(in srgb, var(--success) 45%, transparent); }
+.regions-wrap .actions { width: calc(var(--size) * var(--cell) + 4px); max-width: 100%; }
 
 .regions-cell {
   position: relative;

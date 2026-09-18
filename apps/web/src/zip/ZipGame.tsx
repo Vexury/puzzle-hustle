@@ -247,7 +247,7 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, locke
 
   return (
     <div className="zip-wrap" style={{ '--size': n } as React.CSSProperties}>
-      <div className={solved ? 'zip-board solved' : 'zip-board'}>
+      <div className={solved ? 'zip-board board-frame solved' : 'zip-board board-frame'}>
         <svg
           ref={svgRef}
           className="zip-svg"
@@ -263,7 +263,6 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, locke
           onContextMenu={(e) => e.preventDefault()}
         >
           <g className="zip-cells">{cells}</g>
-          <rect className="zip-frame" x={0} y={0} width={n} height={n} />
           {path.length > 1 && <polyline className="zip-path" points={points} />}
           {path.length === 1 && <circle className="zip-path-dot" cx={(head % n) + 0.5} cy={Math.floor(head / n) + 0.5} r={0.21} />}
           <g className="zip-numbers">{numbers}</g>

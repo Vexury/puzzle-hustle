@@ -60,7 +60,7 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
   const stateRef = useRef(state);
   const drag = useRef<Drag | null>(null);
   const solved = isMosaicSolved(spec, state);
-  const { viewport, cellPx, pointerDown, pointerMove, pointerUp, pointerCancel } = useZoomViewport(cols, 18, viewKey);
+  const { viewport, cellPx, pointerDown, pointerMove, pointerUp, pointerCancel } = useZoomViewport(cols, 4, viewKey);
 
   useEffect(() => {
     if (solved) onSolved();
@@ -194,7 +194,7 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
     <div className="mosaic-wrap">
       <div
         ref={viewport}
-        className={solved ? 'mosaic-viewport solved' : 'mosaic-viewport'}
+        className={solved ? 'mosaic-viewport board-frame solved' : 'mosaic-viewport board-frame'}
         onPointerDown={startDrag}
         onPointerMove={moveDrag}
         onPointerUp={endDrag}

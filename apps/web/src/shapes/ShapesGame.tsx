@@ -185,7 +185,7 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
         <div className="board-panel">
           <svg
             ref={boardRef}
-            className={solved ? 'board solved' : 'board'}
+            className={solved ? 'board board-frame solved' : 'board board-frame'}
             viewBox={`0 0 ${size} ${size}`}
             onPointerMove={moveDrag}
             onPointerUp={endDrag}

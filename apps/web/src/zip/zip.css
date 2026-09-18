@@ -1,5 +1,5 @@
 .zip-wrap {
-  --cell: min(calc(180px / var(--size) + 22px), calc((100cqw - 18px) / var(--size)));
+  --cell: min(calc(180px / var(--size) + 22px), calc((100cqw - 4px) / var(--size)));
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -11,17 +11,11 @@
 }
 
 .zip-board {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 8px;
   max-width: 100%;
   touch-action: none;
   line-height: 0;
 }
-.zip-board.solved { border-color: var(--success); box-shadow: 0 0 0 5px color-mix(in srgb, var(--success) 45%, transparent); }
-.zip-wrap .actions { width: calc(var(--size) * var(--cell) + 18px); max-width: 100%; }
+.zip-wrap .actions { width: calc(var(--size) * var(--cell) + 4px); max-width: 100%; }
 
 .zip-svg {
   width: calc(var(--size) * var(--cell));
@@ -29,9 +23,8 @@
   display: block;
   touch-action: none;
   outline: none;
-  border-radius: 6px;
 }
-.zip-svg:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
+.zip-svg:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
 
 .zip-cell {
   fill: var(--board-cell);
@@ -44,12 +37,6 @@
 @keyframes zip-flash {
   0% { fill: var(--success-soft); stroke: var(--success); stroke-width: 0.08; }
   100% { fill: var(--accent-soft); stroke: var(--board-line); stroke-width: 0.03; }
-}
-
-.zip-frame {
-  fill: none;
-  stroke: var(--border-mid);
-  stroke-width: 0.06;
 }
 
 .zip-path {

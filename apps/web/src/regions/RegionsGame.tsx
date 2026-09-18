@@ -193,10 +193,12 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
   const cellClass = (i: number, v: number) => {
     const cls = ['regions-cell'];
     const b = borders[i]!;
-    if (b.top) cls.push('bt');
-    if (b.right) cls.push('br');
-    if (b.bottom) cls.push('bb');
-    if (b.left) cls.push('bl');
+    const r = Math.floor(i / n);
+    const c = i % n;
+    if (b.top && r > 0) cls.push('bt');
+    if (b.right && c < n - 1) cls.push('br');
+    if (b.bottom && r < n - 1) cls.push('bb');
+    if (b.left && c > 0) cls.push('bl');
     if (v === REGIONS_MARKED_EMPTY && !solved) cls.push('x');
     if (v === 1 && conflicts[i]) cls.push('conflict');
     if (regionsUnitComplete(spec, counts, i)) cls.push('done');
@@ -207,7 +209,7 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
   return (
     <div className="regions-wrap" style={{ '--size': n } as React.CSSProperties}>
       <div
-        className={solved ? 'regions-board solved' : 'regions-board'}
+        className={solved ? 'regions-board board-frame solved' : 'regions-board board-frame'}
         onPointerDown={startDrag}
         onPointerMove={moveDrag}
         onPointerUp={endDrag}

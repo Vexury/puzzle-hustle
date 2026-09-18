@@ -22,26 +22,20 @@
 }
 
 .nono-viewport {
-  width: 100%;
+  width: fit-content;
+  max-width: 100%;
   max-height: calc(100dvh - 250px);
-  min-height: 220px;
   overflow: auto;
   overscroll-behavior: contain;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
   touch-action: none;
   scrollbar-width: thin;
 }
-.nono-viewport.solved { border-color: var(--success); box-shadow: 0 0 0 5px color-mix(in srgb, var(--success) 45%, transparent); }
 
 .nono-board {
   display: grid;
   grid-template-columns: auto repeat(var(--cols), var(--cell));
   grid-template-rows: auto repeat(var(--rows), var(--cell));
   width: max-content;
-  padding: 0 8px 8px 0;
   --clue-fs: clamp(10px, calc(var(--cell) * 0.5), 14px);
 }
 
@@ -79,8 +73,8 @@
 .nono-cell.gb { border-bottom-width: 2px; border-bottom-color: var(--border-mid); }
 .nono-cell.first-col { border-left-width: 2px; border-left-color: var(--border-mid); }
 .nono-cell.first-row { border-top-width: 2px; border-top-color: var(--border-mid); }
-.nono-cell.last-col { border-right-width: 2px; border-right-color: var(--border-mid); }
-.nono-cell.last-row { border-bottom-width: 2px; border-bottom-color: var(--border-mid); }
+.nono-cell.last-col { border-right-width: 0; }
+.nono-cell.last-row { border-bottom-width: 0; }
 .nono-cell.f1 { background: var(--nono-c1); }
 .nono-cell.f2 { background: var(--nono-c2); }
 .nono-cell.f3 { background: var(--nono-c3); }
