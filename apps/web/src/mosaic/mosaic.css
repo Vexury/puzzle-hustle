@@ -66,9 +66,9 @@
   content: '';
   position: absolute;
   left: 50%;
-  top: 25%;
+  top: 12%;
   width: 1.5px;
-  height: 50%;
+  height: 76%;
   background: var(--mosaic-mark);
   opacity: 0.55;
 }

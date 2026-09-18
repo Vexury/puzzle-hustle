@@ -158,7 +158,10 @@ export function mosaicClueSatisfied(spec: MosaicSpec, state: MosaicState, r: num
   const clue = spec.clues[r * cols + c]!;
   if (clue < 0) return false;
   let filled = 0;
-  for (const i of mosaicBlockCells(rows, cols, r, c)) filled += filledBit(state[i]!);
+  for (const i of mosaicBlockCells(rows, cols, r, c)) {
+    if (state[i] === 0) return false;
+    filled += filledBit(state[i]!);
+  }
   return filled === clue;
 }
 
