@@ -79,6 +79,8 @@
 .nono-cell.gb { border-bottom-width: 2px; border-bottom-color: var(--border-mid); }
 .nono-cell.first-col { border-left-width: 2px; border-left-color: var(--border-mid); }
 .nono-cell.first-row { border-top-width: 2px; border-top-color: var(--border-mid); }
+.nono-cell.last-col { border-right-width: 2px; border-right-color: var(--border-mid); }
+.nono-cell.last-row { border-bottom-width: 2px; border-bottom-color: var(--border-mid); }
 .nono-cell.f1 { background: var(--nono-c1); }
 .nono-cell.f2 { background: var(--nono-c2); }
 .nono-cell.f3 { background: var(--nono-c3); }

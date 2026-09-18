@@ -58,6 +58,8 @@
 .mosaic-cell.gb { border-bottom-width: 2px; border-bottom-color: var(--border-mid); }
 .mosaic-cell.first-col { border-left-width: 2px; border-left-color: var(--border-mid); }
 .mosaic-cell.first-row { border-top-width: 2px; border-top-color: var(--border-mid); }
+.mosaic-cell.last-col { border-right-width: 2px; border-right-color: var(--border-mid); }
+.mosaic-cell.last-row { border-bottom-width: 2px; border-bottom-color: var(--border-mid); }
 .mosaic-cell.filled { background: var(--mosaic-fill); }
 .mosaic-cell.x::before,
 .mosaic-cell.x::after {

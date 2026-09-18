@@ -11,6 +11,7 @@ import {
 } from '@puzzle-hustle/core';
 import { useZoomViewport } from '../lib/useZoomViewport.ts';
 import './nonogram.css';
+import { gridLineClasses } from '../lib/gridLines.ts';
 
 const LONG_PRESS_MS = 450;
 
@@ -190,10 +191,7 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
     const cls = ['nono-cell'];
     if (v === MARKED_EMPTY && !solved) cls.push('x');
     else if (v !== 0 && v !== MARKED_EMPTY) cls.push(`f${v}`);
-    if (c === 0) cls.push('first-col');
-    if (r === 0) cls.push('first-row');
-    if ((c + 1) % 5 === 0 && c + 1 < cols) cls.push('gr');
-    if ((r + 1) % 5 === 0 && r + 1 < rows) cls.push('gb');
+    cls.push(...gridLineClasses(r, c, rows, cols));
     if (flash === r * cols + c) cls.push('flash');
     return cls.join(' ');
   };
