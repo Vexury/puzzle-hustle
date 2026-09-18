@@ -15,3 +15,5 @@ export * from './sudoku/puzzle.ts';
 export * from './sudoku/solver.ts';
 export * from './regions/puzzle.ts';
 export * from './regions/solver.ts';
+export * from './kakuro/puzzle.ts';
+export * from './kakuro/solver.ts';

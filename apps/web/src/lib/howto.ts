@@ -37,6 +37,12 @@ export const HOW_TO: Record<PuzzleTypeId, string[]> = {
     'Tap a cell, then a number. Notes mode (or the N key) writes small pencil marks instead.',
     'Every puzzle can be solved by logic alone, no guessing needed.',
   ],
+  kakuro: [
+    'Fill every white cell with a digit from 1 to 9.',
+    'A clue above the diagonal is the sum of the cells to its right, a clue below it is the sum of the cells beneath.',
+    'Digits never repeat inside one sum. Tap a cell, then a number; a completed sum fades its clue.',
+    'Every puzzle can be solved by logic alone, no guessing needed.',
+  ],
   killer: [
     'Normal Sudoku rules apply: 1 to 9 once per row, column and 3x3 box.',
     'The dashed outlines are cages. The digits inside a cage add up to the small number in its corner.',

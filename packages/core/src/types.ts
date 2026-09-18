@@ -4,7 +4,7 @@ export type Difficulty = (typeof DIFFICULTIES)[number];
 export const PERIODS = ['daily', 'weekly', 'monthly'] as const;
 export type Period = (typeof PERIODS)[number];
 
-export const PUZZLE_TYPES = ['shapes', 'nonogram', 'mosaic', 'crowns', 'stars', 'sudoku', 'killer'] as const;
+export const PUZZLE_TYPES = ['shapes', 'nonogram', 'mosaic', 'crowns', 'stars', 'sudoku', 'killer', 'kakuro'] as const;
 export type PuzzleTypeId = (typeof PUZZLE_TYPES)[number];
 
 export interface PuzzleMeta {
@@ -48,6 +48,11 @@ export const PUZZLE_META: Record<PuzzleTypeId, PuzzleMeta> = {
     id: 'killer',
     name: 'Killer Sudoku',
     tagline: 'No givens, just cages. Each dashed cage adds up to its number.',
+  },
+  kakuro: {
+    id: 'kakuro',
+    name: 'Kakuro',
+    tagline: 'Cross sums. Each run adds up to its clue, digits never repeat within a run.',
   },
 };
 

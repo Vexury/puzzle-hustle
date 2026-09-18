@@ -11,6 +11,8 @@ import { SUDOKU_VERSION, generateKiller, generateSudoku } from '../src/sudoku/pu
 import { isSudokuUnique, sudokuCanonicalKey } from '../src/sudoku/solver.ts';
 import { REGIONS_VERSION, generateCrowns, generateStars } from '../src/regions/puzzle.ts';
 import { isRegionsUnique, regionsCanonicalKey } from '../src/regions/solver.ts';
+import { KAKURO_VERSION, generateKakuro } from '../src/kakuro/puzzle.ts';
+import { isKakuroUnique, kakuroCanonicalKey } from '../src/kakuro/solver.ts';
 import { decodeRef, encodeRef, levelRef, refId } from '../src/ref.ts';
 
 describe('level pack', () => {
@@ -22,7 +24,23 @@ describe('level pack', () => {
     expect(LEVEL_PACK.versions.killer).toBe(SUDOKU_VERSION);
     expect(LEVEL_PACK.versions.crowns).toBe(REGIONS_VERSION);
     expect(LEVEL_PACK.versions.stars).toBe(REGIONS_VERSION);
+    expect(LEVEL_PACK.versions.kakuro).toBe(KAKURO_VERSION);
   });
+
+  it('has 20 distinct, unique kakuro levels for easy and medium', () => {
+    for (const difficulty of ['easy', 'medium'] as const) {
+      const list = levelList('kakuro', difficulty);
+      expect(list.length).toBe(20);
+      const keys = new Set<string>();
+      list.forEach((entry, i) => {
+        const spec = generateKakuro(entry.seed, difficulty);
+        expect(isKakuroUnique(spec)).toBe(true);
+        keys.add(kakuroCanonicalKey(spec));
+        if (i > 0) expect(entry.score).toBeGreaterThanOrEqual(list[i - 1]!.score);
+      });
+      expect(keys.size).toBe(list.length);
+    }
+  }, 120_000);
 
   it('has 20 distinct, unique crowns and stars levels per difficulty', () => {
     for (const [type, generate] of [['crowns', generateCrowns], ['stars', generateStars]] as const) {

@@ -52,9 +52,11 @@ export const PERIOD_DIFFICULTY: Record<Period, Difficulty> = {
   monthly: 'genius',
 };
 
+export const PERIOD_TYPES: readonly PuzzleTypeId[] = PUZZLE_TYPES.filter((t) => t !== 'kakuro');
+
 export function periodPuzzleType(period: Period, key: string): PuzzleTypeId {
-  const index = hashString(`type|${period}|${key}`) % PUZZLE_TYPES.length;
-  return PUZZLE_TYPES[index] as PuzzleTypeId;
+  const index = hashString(`type|${period}|${key}`) % PERIOD_TYPES.length;
+  return PERIOD_TYPES[index] as PuzzleTypeId;
 }
 
 export function periodSeed(type: PuzzleTypeId, period: Period, key: string): number {

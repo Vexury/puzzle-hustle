@@ -1,3 +1,5 @@
+import { generateKakuro, KAKURO_VERSION, type KakuroOptions } from './kakuro/puzzle.ts';
+import { kakuroCanonicalKey, kakuroDifficultyReport } from './kakuro/solver.ts';
 import { generateMosaic, MOSAIC_VERSION, type MosaicOptions } from './mosaic/puzzle.ts';
 import { mosaicCanonicalKey, mosaicDifficultyReport } from './mosaic/solver.ts';
 import { generateNonogram, NONOGRAM_VERSION, type NonogramOptions } from './nonogram/puzzle.ts';
@@ -158,6 +160,34 @@ export const starsAdapter = regionsAdapter(generateStars, () => ({}));
 export const sudokuAdapter = sudokuLikeAdapter(generateSudoku);
 export const killerAdapter = sudokuLikeAdapter(generateKiller);
 
+export const kakuroAdapter: PuzzleAdapter<KakuroOptions> = {
+  version: KAKURO_VERSION,
+  options(period) {
+    switch (period) {
+      case 'weekly':
+        return { sizeDelta: 2 };
+      case 'monthly':
+        return { sizeDelta: 2 };
+      default:
+        return {};
+    }
+  },
+  accepts(seed, difficulty, options) {
+    try {
+      generateKakuro(seed, difficulty, options);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  key(seed, difficulty) {
+    return kakuroCanonicalKey(generateKakuro(seed, difficulty));
+  },
+  score(seed, difficulty) {
+    return kakuroDifficultyReport(generateKakuro(seed, difficulty)).score;
+  },
+};
+
 export const ADAPTERS: { [K in PuzzleTypeId]: PuzzleAdapter<never> } = {
   shapes: shapesAdapter as PuzzleAdapter<never>,
   nonogram: nonogramAdapter as PuzzleAdapter<never>,
@@ -166,6 +196,7 @@ export const ADAPTERS: { [K in PuzzleTypeId]: PuzzleAdapter<never> } = {
   stars: starsAdapter as PuzzleAdapter<never>,
   sudoku: sudokuAdapter as PuzzleAdapter<never>,
   killer: killerAdapter as PuzzleAdapter<never>,
+  kakuro: kakuroAdapter as PuzzleAdapter<never>,
 };
 
 export function adapter(type: PuzzleTypeId): PuzzleAdapter<never> {
