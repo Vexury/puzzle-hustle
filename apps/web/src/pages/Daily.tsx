@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { PUZZLE_META, PUZZLE_TYPES, encodeRef, nextPeriodStart, periodRef, refId, type Period, type PuzzleRef } from '@puzzle-hustle/core';
+import { PUZZLE_META, PUZZLE_TYPES, encodeRef, nextPeriodStart, periodRef, refId, type Period, type PuzzleRef, type PuzzleTypeId } from '@puzzle-hustle/core';
 import { PuzzleIcon } from '../components/PuzzleIcon.tsx';
 import { href, onLinkClick } from '../lib/router.ts';
-import { useSolves } from '../lib/storage.ts';
+import { useSolves, type SolveRecord } from '../lib/storage.ts';
 import { capitalize, formatSeconds } from '../lib/share.ts';
 import { ThemeToggle } from '../components/ThemeToggle.tsx';
 import { STREAK_MIN, dailyNumber, dailyStreaks, formatDateLong, monthlyNumber, weeklyNumber } from '../lib/stats.ts';
@@ -73,7 +73,7 @@ export function Daily() {
         <ThemeToggle />
       </header>
 
-      <DailyProgress solved={streaks.today} total={dailies.length} />
+      <DailyProgress dailies={dailies} solves={solves} />
 
       <div className="stack">
         {dailies.map((ref) => (
@@ -100,20 +100,34 @@ export function Daily() {
   );
 }
 
-function DailyProgress({ solved, total }: { solved: number; total: number }) {
+function DailyProgress({ dailies, solves }: { dailies: PuzzleRef[]; solves: Record<string, SolveRecord> }) {
+  const total = dailies.length;
+  const done = dailies
+    .map((ref) => ({ type: ref.type, solve: solves[refId(ref)] }))
+    .filter((d): d is { type: PuzzleTypeId; solve: SolveRecord } => !!d.solve)
+    .sort((a, b) => a.solve.solvedAt.localeCompare(b.solve.solvedAt));
+  const solved = done.length;
   const safe = solved >= STREAK_MIN;
   const missing = STREAK_MIN - solved;
+  const slot = (i: number) => {
+    const d = done[i];
+    return (
+      <span key={i} className={d ? 'slot on' : 'slot'}>
+        {d && <PuzzleIcon type={d.type} size={28} />}
+      </span>
+    );
+  };
   return (
     <div className={safe ? 'daily-progress safe' : 'daily-progress'} role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={solved}>
-      <div className="bar">
-        {Array.from({ length: total }, (_, i) => (
-          <span key={i} className={i < solved ? 'seg on' : 'seg'} />
-        ))}
-        {STREAK_MIN < total && <span className="goal" style={{ left: `${(STREAK_MIN / total) * 100}%` }} />}
+      <div className="slots">
+        <span className="streak-zone">
+          {Array.from({ length: Math.min(STREAK_MIN, total) }, (_, i) => slot(i))}
+          <Flame />
+        </span>
+        {Array.from({ length: Math.max(0, total - STREAK_MIN) }, (_, i) => slot(i + STREAK_MIN))}
       </div>
       <span className="small">
-        {solved}/{total} solved today ·{' '}
-        {safe ? 'streak kept' : missing === 1 ? 'one more keeps your streak' : `${missing} more keep your streak`}
+        {solved}/{total} solved · {safe ? 'streak safe' : missing === 1 ? 'one more for your streak' : `${missing} more for your streak`}
       </span>
     </div>
   );

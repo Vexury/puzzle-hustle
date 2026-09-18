@@ -135,12 +135,35 @@ p { margin: 0; }
   margin: -6px 0 16px;
   color: var(--text-muted);
 }
-.daily-progress .bar { position: relative; display: flex; gap: 4px; height: 10px; }
-.daily-progress .seg { flex: 1; border-radius: 999px; background: var(--board-cell); border: 1px solid var(--border); transition: background 0.2s; }
-.daily-progress .seg.on { background: var(--accent); border-color: var(--accent); }
-.daily-progress.safe .seg.on { background: var(--success); border-color: var(--success); }
+.daily-progress .slots { display: flex; align-items: center; gap: 6px; }
+.daily-progress .streak-zone {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px 4px 4px;
+  border-radius: 999px;
+  background: var(--board-cell);
+  border: 1px solid var(--border);
+  transition: background 0.25s, border-color 0.25s;
+}
+.daily-progress .streak-zone .flame { width: 18px; height: 18px; fill: var(--border-mid); transition: fill 0.25s; }
+.daily-progress.safe .streak-zone { background: var(--success-soft); border-color: var(--success); }
+.daily-progress.safe .streak-zone .flame { fill: var(--accent); }
+.daily-progress .slot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1px solid var(--border-mid);
+  opacity: 0.6;
+  display: grid;
+  place-items: center;
+}
+.daily-progress .slot.on { border-color: transparent; opacity: 1; animation: slot-pop 0.3s ease-out; }
+.daily-progress .slot .puzzle-icon { border-radius: 50%; border-color: transparent; }
 .daily-progress.safe { color: var(--success); }
-.daily-progress .goal { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--text-muted); transform: translateX(-1px); }
+@keyframes slot-pop { 0% { transform: scale(0.6); } 60% { transform: scale(1.12); } 100% { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .daily-progress .slot.on { animation: none; } }
 
 .streak {
   display: inline-flex;
