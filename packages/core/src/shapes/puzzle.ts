@@ -2,9 +2,9 @@ import { Rng } from '../rng.ts';
 import type { Difficulty } from '../types.ts';
 import { SHAPES, atomIndex, type ShapeKind } from './shapes.ts';
 
-export const TABLET_VERSION = 1;
+export const SHAPES_VERSION = 1;
 
-export interface TabletConfig {
+export interface ShapesConfig {
   size: number;
   pieceCount: number;
   kinds: readonly ShapeKind[];
@@ -17,47 +17,48 @@ export interface Placement {
   c: number;
 }
 
-export interface TabletPiece {
+export interface ShapesPiece {
   id: number;
   kind: ShapeKind;
 }
 
-export interface TabletSpec {
+export interface ShapesSpec {
   version: number;
   seed: number;
   difficulty: Difficulty;
-  config: TabletConfig;
-  pieces: TabletPiece[];
+  config: ShapesConfig;
+  pieces: ShapesPiece[];
   target: Uint8Array;
   solution: Placement[];
+  start: Placement[];
 }
 
-export type TabletState = (Placement | null)[];
+export type ShapesState = Placement[];
 
 const SMALL: ShapeKind[] = ['sq1', 'tri-nw', 'tri-ne', 'tri-se', 'tri-sw', 'dia1'];
 const MEDIUM: ShapeKind[] = [...SMALL, 'sq2', 'tri2-nw', 'tri2-ne', 'tri2-se', 'tri2-sw'];
 const ALL: ShapeKind[] = [...MEDIUM, 'dia2'];
 
-export const TABLET_PRESETS: Record<Difficulty, TabletConfig> = {
+export const SHAPES_PRESETS: Record<Difficulty, ShapesConfig> = {
   easy: { size: 3, pieceCount: 3, kinds: SMALL, minOverlapAtoms: 1, maxLitRatio: 0.8 },
   medium: { size: 4, pieceCount: 4, kinds: MEDIUM, minOverlapAtoms: 2, maxLitRatio: 0.75 },
   hard: { size: 5, pieceCount: 6, kinds: MEDIUM, minOverlapAtoms: 6, maxLitRatio: 0.7 },
   genius: { size: 6, pieceCount: 8, kinds: ALL, minOverlapAtoms: 12, maxLitRatio: 0.7 },
 };
 
-export interface TabletOptions {
+export interface ShapesOptions {
   sizeDelta?: number;
   pieceDelta?: number;
 }
 
-export function tabletConfig(difficulty: Difficulty, options: TabletOptions = {}): TabletConfig {
-  const base = TABLET_PRESETS[difficulty];
+export function shapesConfig(difficulty: Difficulty, options: ShapesOptions = {}): ShapesConfig {
+  const base = SHAPES_PRESETS[difficulty];
   const size = base.size + (options.sizeDelta ?? 0);
   const pieceCount = base.pieceCount + (options.pieceDelta ?? 0);
   return { ...base, size, pieceCount, minOverlapAtoms: Math.round(base.minOverlapAtoms * (pieceCount / base.pieceCount)) };
 }
 
-export function coverage(size: number, pieces: readonly TabletPiece[], placements: readonly (Placement | null)[]): Uint8Array {
+export function coverage(size: number, pieces: readonly ShapesPiece[], placements: readonly (Placement | null)[]): Uint8Array {
   const counts = new Uint8Array(size * size * 4);
   pieces.forEach((piece, i) => {
     const p = placements[i];
@@ -78,12 +79,12 @@ export function fitsBoard(size: number, kind: ShapeKind, p: Placement): boolean 
   return p.r >= 0 && p.c >= 0 && p.r + s.height <= size && p.c + s.width <= size;
 }
 
-export function generateTablet(seed: number, difficulty: Difficulty, options: TabletOptions = {}): TabletSpec {
-  const config = tabletConfig(difficulty, options);
+export function generateShapes(seed: number, difficulty: Difficulty, options: ShapesOptions = {}): ShapesSpec {
+  const config = shapesConfig(difficulty, options);
   const rng = new Rng(seed);
   const kinds = config.kinds.filter((k) => SHAPES[k].width <= config.size);
   for (let attempt = 0; attempt < 5000; attempt++) {
-    const pieces: TabletPiece[] = [];
+    const pieces: ShapesPiece[] = [];
     const solution: Placement[] = [];
     for (let i = 0; i < config.pieceCount; i++) {
       const kind = rng.pick(kinds);
@@ -93,12 +94,39 @@ export function generateTablet(seed: number, difficulty: Difficulty, options: Ta
     }
     if (!validCandidate(config, pieces, solution)) continue;
     const target = litMask(coverage(config.size, pieces, solution));
-    return { version: TABLET_VERSION, seed, difficulty, config, pieces, target, solution };
+    const start = startLayout(config.size, pieces, target, rng);
+    return { version: SHAPES_VERSION, seed, difficulty, config, pieces, target, solution, start };
   }
-  throw new Error(`could not generate tablet for seed ${seed} / ${difficulty}`);
+  throw new Error(`could not generate shapes for seed ${seed} / ${difficulty}`);
 }
 
-function validCandidate(config: TabletConfig, pieces: TabletPiece[], solution: Placement[]): boolean {
+function startLayout(size: number, pieces: ShapesPiece[], target: Uint8Array, rng: Rng): Placement[] {
+  const order = rng.shuffle(pieces.map((_, i) => i));
+  const occupied = new Uint8Array(size * size * 4);
+  const start: Placement[] = pieces.map(() => ({ r: 0, c: 0 }));
+  for (const i of order) {
+    const s = SHAPES[pieces[i]!.kind];
+    const free: Placement[] = [];
+    for (let r = 0; r + s.height <= size; r++) {
+      for (let c = 0; c + s.width <= size; c++) {
+        if (s.atoms.every(([dr, dc, dir]) => occupied[atomIndex(size, r + dr, c + dc, dir)] === 0)) free.push({ r, c });
+      }
+    }
+    const p = free.length > 0 ? rng.pick(free) : { r: rng.int(size - s.height + 1), c: rng.int(size - s.width + 1) };
+    start[i] = p;
+    for (const [dr, dc, dir] of s.atoms) occupied[atomIndex(size, p.r + dr, p.c + dc, dir)] = 1;
+  }
+  const lit = litMask(coverage(size, pieces, start));
+  if (lit.every((v, i) => v === target[i])) {
+    const i = order[0]!;
+    const s = SHAPES[pieces[i]!.kind];
+    const p = start[i]!;
+    start[i] = p.c + s.width < size ? { r: p.r, c: p.c + 1 } : p.r + s.height < size ? { r: p.r + 1, c: p.c } : { r: 0, c: 0 };
+  }
+  return start;
+}
+
+function validCandidate(config: ShapesConfig, pieces: ShapesPiece[], solution: Placement[]): boolean {
   const seen = new Set<string>();
   for (let i = 0; i < pieces.length; i++) {
     const key = `${pieces[i]!.kind}@${solution[i]!.r},${solution[i]!.c}`;
@@ -122,13 +150,12 @@ function validCandidate(config: TabletConfig, pieces: TabletPiece[], solution: P
   return true;
 }
 
-export function isSolved(spec: TabletSpec, state: TabletState): boolean {
-  if (state.some((p) => p === null)) return false;
+export function isSolved(spec: ShapesSpec, state: ShapesState): boolean {
   const lit = litMask(coverage(spec.config.size, spec.pieces, state));
   return lit.every((v, i) => v === spec.target[i]);
 }
 
-export function progress(spec: TabletSpec, state: TabletState): { matching: number; total: number } {
+export function progress(spec: ShapesSpec, state: ShapesState): { matching: number; total: number } {
   const lit = litMask(coverage(spec.config.size, spec.pieces, state));
   let matching = 0;
   let total = 0;
@@ -146,21 +173,17 @@ export interface Hint {
   placement: Placement;
 }
 
-export function hint(spec: TabletSpec, state: TabletState): Hint | null {
+export function hint(spec: ShapesSpec, state: ShapesState): Hint | null {
   const unmatched = new Set<number>(spec.solution.map((_, i) => i));
   const wrong: number[] = [];
   for (let i = 0; i < spec.pieces.length; i++) {
-    const p = state[i];
-    if (!p) {
-      wrong.push(i);
-      continue;
-    }
+    const p = state[i]!;
     const kind = spec.pieces[i]!.kind;
     const match = [...unmatched].find((j) => spec.pieces[j]!.kind === kind && spec.solution[j]!.r === p.r && spec.solution[j]!.c === p.c);
     if (match === undefined) wrong.push(i);
     else unmatched.delete(match);
   }
-  const pieceId = wrong.find((i) => state[i] !== null) ?? wrong[0];
+  const pieceId = wrong[0];
   if (pieceId === undefined) return null;
   const kind = spec.pieces[pieceId]!.kind;
   const slot = [...unmatched].find((j) => spec.pieces[j]!.kind === kind);

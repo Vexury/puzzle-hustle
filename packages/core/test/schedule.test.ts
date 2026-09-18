@@ -31,6 +31,6 @@ describe('refs', () => {
 
   it('rejects garbage', () => {
     expect(decodeRef('t=nope&d=easy&s=1')).toBeNull();
-    expect(decodeRef('t=tablet&d=easy')).toBeNull();
+    expect(decodeRef('t=shapes&d=easy')).toBeNull();
   });
 });

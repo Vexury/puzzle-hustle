@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { PUZZLE_META, decodeRef, encodeRef, generateTablet, periodOptions, randomSeed, refId, type PuzzleRef } from '@puzzle-hustle/core';
+import { PUZZLE_META, decodeRef, encodeRef, generateShapes, periodOptions, randomSeed, refId, type PuzzleRef } from '@puzzle-hustle/core';
 import { href, navigate, onLinkClick } from '../lib/router.ts';
 import { getSolve, recordSolve, useSolves, type SolveRecord } from '../lib/storage.ts';
 import { capitalize, formatSeconds, periodLabel, puzzleUrl, share, shareText } from '../lib/share.ts';
 import { currentHintProvider } from '../lib/hints.ts';
-import { TabletGame } from '../tablet/TabletGame.tsx';
+import { ShapesGame } from '../shapes/ShapesGame.tsx';
 import { toast } from '../components/Toast.tsx';
 
 export function Play({ params }: { params: URLSearchParams }) {
@@ -25,7 +25,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const id = refId(puzzleRef);
   const solves = useSolves();
   const existing = solves[id];
-  const spec = useMemo(() => generateTablet(puzzleRef.seed, puzzleRef.difficulty, periodOptions(puzzleRef.period)), [puzzleRef]);
+  const spec = useMemo(() => generateShapes(puzzleRef.seed, puzzleRef.difficulty, periodOptions(puzzleRef.period)), [puzzleRef]);
   const [moves, setMoves] = useState(0);
   const [hints, setHints] = useState(0);
   const [seconds, setSeconds] = useState(0);
@@ -76,7 +76,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
             <span>{periodLabel(puzzleRef)}</span>
             {puzzleRef.period && <span>{capitalize(puzzleRef.difficulty)}</span>}
             <span>
-              {spec.config.size}×{spec.config.size} · {spec.pieces.length} fragments
+              {spec.config.size}×{spec.config.size} · {spec.pieces.length} shapes
             </span>
             <span>
               <b>{formatSeconds(result?.seconds ?? seconds)}</b>
@@ -89,7 +89,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
         </div>
       </div>
 
-      <TabletGame
+      <ShapesGame
         spec={spec}
         onMove={onMove}
         onSolved={onSolved}

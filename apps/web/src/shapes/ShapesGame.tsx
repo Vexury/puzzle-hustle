@@ -9,10 +9,10 @@ import {
   isSolved,
   litMask,
   type Placement,
-  type TabletSpec,
-  type TabletState,
+  type ShapesSpec,
+  type ShapesState,
 } from '@puzzle-hustle/core';
-import { PieceShape, outlinePoints } from './PieceShape.tsx';
+import { outlinePoints } from './PieceShape.tsx';
 import { TargetView } from './TargetView.tsx';
 
 interface Drag {
@@ -23,11 +23,10 @@ interface Drag {
   y: number;
   startX: number;
   startY: number;
-  origin: 'tray' | 'board';
 }
 
-export interface TabletGameProps {
-  spec: TabletSpec;
+export interface ShapesGameProps {
+  spec: ShapesSpec;
   onMove(): void;
   onSolved(): void;
   onHintUsed(): void;
@@ -35,21 +34,16 @@ export interface TabletGameProps {
   locked: boolean;
 }
 
-export function TabletGame({ spec, onMove, onSolved, onHintUsed, requestHint, locked }: TabletGameProps) {
+export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, locked }: ShapesGameProps) {
   const size = spec.config.size;
-  const [state, setState] = useState<TabletState>(() => spec.pieces.map(() => null));
+  const [state, setState] = useState<ShapesState>(() => [...spec.start]);
+  const [order, setOrder] = useState<number[]>(() => spec.pieces.map((_, i) => i));
   const [drag, setDrag] = useState<Drag | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
   const [flash, setFlash] = useState<number | null>(null);
   const [hintBusy, setHintBusy] = useState(false);
   const boardRef = useRef<SVGSVGElement>(null);
   const solved = isSolved(spec, state);
-
-  useEffect(() => {
-    setState(spec.pieces.map(() => null));
-    setSelected(null);
-    setDrag(null);
-  }, [spec]);
 
   useEffect(() => {
     if (solved) onSolved();
@@ -65,45 +59,49 @@ export function TabletGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
     return { r: (y - rect.top) / cell, c: (x - rect.left) / cell };
   }
 
-  function dropTarget(d: Drag): Placement | null {
-    const pos = boardCell(d.x, d.y);
-    if (!pos) return null;
-    const kind = spec.pieces[d.pieceId]!.kind;
-    const s = SHAPES[kind];
-    const r = Math.round(pos.r - d.offsetR);
-    const c = Math.round(pos.c - d.offsetC);
-    const inside = pos.r >= -0.5 && pos.c >= -0.5 && pos.r <= size + 0.5 && pos.c <= size + 0.5;
-    if (!inside) return null;
-    const clamped = { r: Math.min(Math.max(r, 0), size - s.height), c: Math.min(Math.max(c, 0), size - s.width) };
-    return fitsBoard(size, kind, clamped) ? clamped : null;
+  function clampPlacement(pieceId: number, r: number, c: number): Placement {
+    const s = SHAPES[spec.pieces[pieceId]!.kind];
+    return { r: Math.min(Math.max(r, 0), size - s.height), c: Math.min(Math.max(c, 0), size - s.width) };
   }
 
-  function place(pieceId: number, placement: Placement | null) {
-    const cur = state[pieceId] ?? null;
-    if (cur?.r === placement?.r && cur?.c === placement?.c) return;
+  function dropTarget(d: Drag): Placement {
+    const pos = boardCell(d.x, d.y);
+    const cur = state[d.pieceId]!;
+    if (!pos) return cur;
+    const p = clampPlacement(d.pieceId, Math.round(pos.r - d.offsetR), Math.round(pos.c - d.offsetC));
+    return fitsBoard(size, spec.pieces[d.pieceId]!.kind, p) ? p : cur;
+  }
+
+  function raise(pieceId: number) {
+    setOrder((o) => [...o.filter((i) => i !== pieceId), pieceId]);
+  }
+
+  function place(pieceId: number, placement: Placement) {
+    const cur = state[pieceId]!;
+    if (cur.r === placement.r && cur.c === placement.c) return;
     const next = [...state];
     next[pieceId] = placement;
     setState(next);
     onMove();
   }
 
-  function startDrag(e: React.PointerEvent, pieceId: number, origin: Drag['origin']) {
+  function startDrag(e: React.PointerEvent, pieceId: number) {
     if (locked || solved) return;
     e.preventDefault();
+    e.stopPropagation();
     (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
-    const s = SHAPES[spec.pieces[pieceId]!.kind];
-    let offsetR = s.height / 2;
-    let offsetC = s.width / 2;
-    if (origin === 'board') {
-      const pos = boardCell(e.clientX, e.clientY);
-      const p = state[pieceId];
-      if (pos && p) {
-        offsetR = pos.r - p.r;
-        offsetC = pos.c - p.c;
-      }
-    }
-    setSelected(null);
-    setDrag({ pieceId, offsetR, offsetC, x: e.clientX, y: e.clientY, startX: e.clientX, startY: e.clientY, origin });
+    const pos = boardCell(e.clientX, e.clientY);
+    const p = state[pieceId]!;
+    raise(pieceId);
+    setDrag({
+      pieceId,
+      offsetR: pos ? pos.r - p.r : 0,
+      offsetC: pos ? pos.c - p.c : 0,
+      x: e.clientX,
+      y: e.clientY,
+      startX: e.clientX,
+      startY: e.clientY,
+    });
   }
 
   function moveDrag(e: React.PointerEvent) {
@@ -114,12 +112,12 @@ export function TabletGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
   function endDrag(e: React.PointerEvent) {
     if (!drag) return;
     const d = { ...drag, x: e.clientX, y: e.clientY };
-    const moved = Math.hypot(d.x - d.startX, d.y - d.startY);
     setDrag(null);
-    if (d.origin === 'tray' && moved < 4) {
+    if (Math.hypot(d.x - d.startX, d.y - d.startY) < 4) {
       setSelected((cur) => (cur === d.pieceId ? null : d.pieceId));
       return;
     }
+    setSelected(null);
     place(d.pieceId, dropTarget(d));
   }
 
@@ -127,11 +125,9 @@ export function TabletGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
     if (selected === null || locked || solved) return;
     const pos = boardCell(e.clientX, e.clientY);
     if (!pos) return;
-    const kind = spec.pieces[selected]!.kind;
-    const s = SHAPES[kind];
-    const r = Math.min(Math.max(Math.round(pos.r - s.height / 2), 0), size - s.height);
-    const c = Math.min(Math.max(Math.round(pos.c - s.width / 2), 0), size - s.width);
-    place(selected, { r, c });
+    const s = SHAPES[spec.pieces[selected]!.kind];
+    place(selected, clampPlacement(selected, Math.round(pos.r - s.height / 2), Math.round(pos.c - s.width / 2)));
+    raise(selected);
     setSelected(null);
   }
 
@@ -145,26 +141,25 @@ export function TabletGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
     if (!ok) return;
     onHintUsed();
     place(h.pieceId, h.placement);
+    raise(h.pieceId);
     setFlash(h.pieceId);
     setTimeout(() => setFlash(null), 1800);
   }
 
   function reset() {
     if (locked || solved) return;
-    setState(spec.pieces.map(() => null));
+    setState([...spec.start]);
     setSelected(null);
     onMove();
   }
 
   const preview = drag ? dropTarget(drag) : null;
-  const dragKind = drag ? spec.pieces[drag.pieceId]!.kind : null;
-  const cellPx = boardRef.current ? boardRef.current.getBoundingClientRect().width / size : 48;
 
   return (
-    <div className="tablet-wrap">
-      <div className="tablet">
+    <div className="shapes-wrap">
+      <div className="shapes">
         <div className="target-panel">
-          <h3>Prophecy</h3>
+          <h3>Target</h3>
           <TargetView size={size} target={spec.target} />
         </div>
         <div className="board-panel">
@@ -177,7 +172,7 @@ export function TabletGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
             onPointerCancel={() => setDrag(null)}
             onClick={tapBoard as unknown as React.MouseEventHandler<SVGSVGElement>}
             role="application"
-            aria-label="Tablet board"
+            aria-label="Shapes board"
           >
             {[...lit].map((v, i) => {
               const { r, c, dir } = atomFromIndex(size, i);
@@ -189,59 +184,30 @@ export function TabletGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
                 <line className="grid-line" x1={i} y1={0} x2={i} y2={size} />
               </g>
             ))}
-            {spec.pieces.map((piece, i) => {
-              const p = state[i];
-              if (!p) return null;
+            {order.map((i) => {
+              const piece = spec.pieces[i]!;
+              const p = drag?.pieceId === i && preview ? preview : state[i]!;
               const dragging = drag?.pieceId === i;
+              const cls = ['piece-outline', dragging ? 'dragging' : '', selected === i ? 'selected' : ''].join(' ');
               return (
                 <g key={piece.id}>
-                  <polygon className={dragging ? 'piece-outline dragging' : 'piece-outline'} points={outlinePoints(piece.kind, p.r, p.c)} />
+                  <polygon className={cls} points={outlinePoints(piece.kind, p.r, p.c)} />
                   {flash === i && <polygon className="hint-flash" points={outlinePoints(piece.kind, p.r, p.c)} />}
-                  {!dragging && !solved && (
+                  {!solved && (
                     <polygon
                       className="piece-hit"
                       points={outlinePoints(piece.kind, p.r, p.c)}
-                      onPointerDown={(e) => startDrag(e, i, 'board')}
+                      onPointerDown={(e) => startDrag(e, i)}
                       onPointerMove={moveDrag}
                       onPointerUp={endDrag}
+                      onPointerCancel={() => setDrag(null)}
+                      aria-label={SHAPES[piece.kind].label}
                     />
                   )}
                 </g>
               );
             })}
-            {drag && dragKind && (
-              <polygon
-                className={preview ? 'drop-preview' : 'drop-preview invalid'}
-                points={preview ? outlinePoints(dragKind, preview.r, preview.c) : ''}
-              />
-            )}
           </svg>
-
-          <div className="tray" aria-label="Fragments">
-            {spec.pieces.map((piece, i) =>
-              state[i] ? null : (
-                <button
-                  type="button"
-                  key={piece.id}
-                  className={[
-                    'tray-piece',
-                    selected === i ? 'selected' : '',
-                    drag?.pieceId === i ? 'hidden' : '',
-                  ].join(' ')}
-                  onPointerDown={(e) => startDrag(e, i, 'tray')}
-                  onPointerMove={moveDrag}
-                  onPointerUp={endDrag}
-                  onPointerCancel={() => setDrag(null)}
-                  aria-label={SHAPES[piece.kind].label}
-                  aria-pressed={selected === i}
-                >
-                  <PieceShape kind={piece.kind} />
-                </button>
-              ),
-            )}
-            {state.every((p) => p !== null) && !solved && <span className="tray-empty">All fragments placed. Something is off.</span>}
-            {solved && <span className="tray-empty">Prophecy fulfilled.</span>}
-          </div>
 
           <div className="actions">
             <button type="button" className="btn" onClick={useHint} disabled={solved || locked || hintBusy}>
@@ -253,21 +219,6 @@ export function TabletGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
           </div>
         </div>
       </div>
-
-      {drag && dragKind && (
-        <svg
-          className="ghost"
-          style={{
-            left: drag.x - drag.offsetC * cellPx,
-            top: drag.y - drag.offsetR * cellPx,
-            width: SHAPES[dragKind].width * cellPx,
-            height: SHAPES[dragKind].height * cellPx,
-          }}
-          viewBox={`0 0 ${SHAPES[dragKind].width} ${SHAPES[dragKind].height}`}
-        >
-          <polygon points={outlinePoints(dragKind)} />
-        </svg>
-      )}
     </div>
   );
 }
