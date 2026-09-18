@@ -13,4 +13,10 @@ export const HOW_TO: Record<PuzzleTypeId, string[]> = {
     'Tap to fill, tap again to mark an X, tap once more to clear. Drag to paint a whole line.',
     'Every puzzle can be solved by logic alone, no guessing needed.',
   ],
+  mosaic: [
+    'Every number counts the filled cells in the 3x3 block around it, the numbered cell included.',
+    'A 0 means the whole block stays empty, a 9 means all of it is filled. Edge and corner blocks are smaller.',
+    'Tap to fill, tap again to mark an X, tap once more to clear. Drag to paint a line.',
+    'Numbers fade once their block is satisfied. Every puzzle can be solved by logic alone.',
+  ],
 };

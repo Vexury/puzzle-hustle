@@ -170,6 +170,7 @@ p { margin: 0; }
 .ic-a { fill: var(--accent); }
 .ic-cut { fill: var(--board-cell); }
 .ic-grid { stroke: var(--board-line); stroke-width: 1; }
+.ic-text { fill: var(--text); font-family: 'Inconsolata', monospace; }
 
 .pill {
   display: inline-flex;

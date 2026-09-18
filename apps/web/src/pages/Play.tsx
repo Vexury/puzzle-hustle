@@ -3,9 +3,11 @@ import {
   PUZZLE_META,
   decodeRef,
   encodeRef,
+  generateMosaic,
   generateNonogram,
   generateShapes,
   levelRef,
+  mosaicAdapter,
   nonogramAdapter,
   randomRef,
   refId,
@@ -20,6 +22,7 @@ import { HOW_TO } from '../lib/howto.ts';
 import { dailyNumber } from '../lib/stats.ts';
 import { ShapesGame } from '../shapes/ShapesGame.tsx';
 import { NonogramGame } from '../nonogram/NonogramGame.tsx';
+import { MosaicGame } from '../mosaic/MosaicGame.tsx';
 import { toast } from '../components/Toast.tsx';
 
 export function Play({ params }: { params: URLSearchParams }) {
@@ -58,13 +61,17 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
     () =>
       puzzleRef.type === 'nonogram'
         ? generateNonogram(puzzleRef.seed, puzzleRef.difficulty, nonogramAdapter.options(puzzleRef.period))
-        : generateShapes(puzzleRef.seed, puzzleRef.difficulty, shapesAdapter.options(puzzleRef.period)),
+        : puzzleRef.type === 'mosaic'
+          ? generateMosaic(puzzleRef.seed, puzzleRef.difficulty, mosaicAdapter.options(puzzleRef.period))
+          : generateShapes(puzzleRef.seed, puzzleRef.difficulty, shapesAdapter.options(puzzleRef.period)),
     [puzzleRef],
   );
   const sizeLabel =
     'pieces' in spec
       ? `${spec.config.inner}×${spec.config.inner}, ${spec.pieces.length} shapes`
-      : `${spec.config.rows}×${spec.config.cols}${spec.config.colors > 1 ? `, ${spec.config.colors} colors` : ''}`;
+      : 'clues' in spec
+        ? `${spec.config.rows}×${spec.config.cols}, ${[...spec.clues].filter((c) => c >= 0).length} clues`
+        : `${spec.config.rows}×${spec.config.cols}${spec.config.colors > 1 ? `, ${spec.config.colors} colors` : ''}`;
   const [moves, setMoves] = useState(0);
   const [hints, setHints] = useState(0);
   const [seconds, setSeconds] = useState(0);
@@ -150,6 +157,15 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
 
       {'pieces' in spec ? (
         <ShapesGame
+          spec={spec}
+          onMove={onMove}
+          onSolved={onSolved}
+          onHintUsed={() => setHints((h) => h + 1)}
+          requestHint={() => hintProvider.request()}
+          locked={false}
+        />
+      ) : 'clues' in spec ? (
+        <MosaicGame
           spec={spec}
           onMove={onMove}
           onSolved={onSolved}

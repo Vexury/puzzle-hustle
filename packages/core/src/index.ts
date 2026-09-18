@@ -9,3 +9,5 @@ export * from './levels.ts';
 export * from './registry.ts';
 export * from './nonogram/puzzle.ts';
 export * from './nonogram/solver.ts';
+export * from './mosaic/puzzle.ts';
+export * from './mosaic/solver.ts';

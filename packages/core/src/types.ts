@@ -4,7 +4,7 @@ export type Difficulty = (typeof DIFFICULTIES)[number];
 export const PERIODS = ['daily', 'weekly', 'monthly'] as const;
 export type Period = (typeof PERIODS)[number];
 
-export const PUZZLE_TYPES = ['shapes', 'nonogram'] as const;
+export const PUZZLE_TYPES = ['shapes', 'nonogram', 'mosaic'] as const;
 export type PuzzleTypeId = (typeof PUZZLE_TYPES)[number];
 
 export interface PuzzleMeta {
@@ -23,6 +23,11 @@ export const PUZZLE_META: Record<PuzzleTypeId, PuzzleMeta> = {
     id: 'nonogram',
     name: 'Nonogram',
     tagline: 'Fill cells so every row and column matches its clues.',
+  },
+  mosaic: {
+    id: 'mosaic',
+    name: 'Mosaic',
+    tagline: 'Each number counts the filled cells in its 3x3 block. Paint the picture.',
   },
 };
 

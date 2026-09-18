@@ -1,3 +1,5 @@
+import { generateMosaic, MOSAIC_VERSION, type MosaicOptions } from './mosaic/puzzle.ts';
+import { mosaicCanonicalKey, mosaicDifficultyReport } from './mosaic/solver.ts';
 import { generateNonogram, NONOGRAM_VERSION, type NonogramOptions } from './nonogram/puzzle.ts';
 import { nonogramCanonicalKey, nonogramDifficultyReport } from './nonogram/solver.ts';
 import { generateShapes, SHAPES_VERSION, type ShapesOptions } from './shapes/puzzle.ts';
@@ -65,9 +67,38 @@ export const nonogramAdapter: PuzzleAdapter<NonogramOptions> = {
   },
 };
 
+export const mosaicAdapter: PuzzleAdapter<MosaicOptions> = {
+  version: MOSAIC_VERSION,
+  options(period) {
+    switch (period) {
+      case 'weekly':
+        return { sizeDelta: 2 };
+      case 'monthly':
+        return { sizeDelta: 5 };
+      default:
+        return {};
+    }
+  },
+  accepts(seed, difficulty, options) {
+    try {
+      generateMosaic(seed, difficulty, options);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  key(seed, difficulty) {
+    return mosaicCanonicalKey(generateMosaic(seed, difficulty));
+  },
+  score(seed, difficulty) {
+    return mosaicDifficultyReport(generateMosaic(seed, difficulty)).score;
+  },
+};
+
 export const ADAPTERS: { [K in PuzzleTypeId]: PuzzleAdapter<never> } = {
   shapes: shapesAdapter as PuzzleAdapter<never>,
   nonogram: nonogramAdapter as PuzzleAdapter<never>,
+  mosaic: mosaicAdapter as PuzzleAdapter<never>,
 };
 
 export function adapter(type: PuzzleTypeId): PuzzleAdapter<never> {

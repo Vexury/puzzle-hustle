@@ -5,12 +5,30 @@ import { SHAPES_VERSION, generateShapes, isSolved } from '../src/shapes/puzzle.t
 import { canonicalKey, isUnique } from '../src/shapes/solver.ts';
 import { NONOGRAM_VERSION, generateNonogram } from '../src/nonogram/puzzle.ts';
 import { isLineSolvable, nonogramCanonicalKey } from '../src/nonogram/solver.ts';
+import { MOSAIC_VERSION, generateMosaic } from '../src/mosaic/puzzle.ts';
+import { isMosaicLogicSolvable, mosaicCanonicalKey } from '../src/mosaic/solver.ts';
 import { decodeRef, encodeRef, levelRef, refId } from '../src/ref.ts';
 
 describe('level pack', () => {
   it('matches the current generator version', () => {
     expect(LEVEL_PACK.versions.shapes).toBe(SHAPES_VERSION);
     expect(LEVEL_PACK.versions.nonogram).toBe(NONOGRAM_VERSION);
+    expect(LEVEL_PACK.versions.mosaic).toBe(MOSAIC_VERSION);
+  });
+
+  it('has 20 distinct, logic-solvable, ascending mosaic levels per difficulty', () => {
+    for (const difficulty of DIFFICULTIES) {
+      const list = levelList('mosaic', difficulty);
+      expect(list.length).toBe(20);
+      const keys = new Set<string>();
+      list.forEach((entry, i) => {
+        const spec = generateMosaic(entry.seed, difficulty);
+        expect(isMosaicLogicSolvable(spec)).toBe(true);
+        keys.add(mosaicCanonicalKey(spec));
+        if (i > 0) expect(entry.score).toBeGreaterThanOrEqual(list[i - 1]!.score);
+      });
+      expect(keys.size).toBe(list.length);
+    }
   });
 
   it('has 20 distinct, line-solvable, ascending nonogram levels per difficulty', () => {

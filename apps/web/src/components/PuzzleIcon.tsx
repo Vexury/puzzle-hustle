@@ -9,6 +9,23 @@ export function PuzzleIcon({ type, size = 56 }: { type: PuzzleTypeId; size?: num
           <polygon points="25,13 37,25 25,37 13,25" className="ic-a" />
           <polygon points="17,13 25,13 25,21" className="ic-cut" />
         </svg>
+      ) : type === 'mosaic' ? (
+        <svg viewBox="0 0 40 40">
+          <g className="ic-grid">
+            {[1, 2].map((i) => (
+              <line key={`h${i}`} x1="6" y1={6 + i * 9.33} x2="34" y2={6 + i * 9.33} />
+            ))}
+            {[1, 2].map((i) => (
+              <line key={`v${i}`} x1={6 + i * 9.33} y1="6" x2={6 + i * 9.33} y2="34" />
+            ))}
+          </g>
+          <rect x="7" y="7" width="7.5" height="7.5" rx="1" className="ic-a" />
+          <rect x="16.3" y="7" width="7.5" height="7.5" rx="1" className="ic-a" />
+          <rect x="25.6" y="16.3" width="7.5" height="7.5" rx="1" className="ic-a" />
+          <text x="20" y="24" textAnchor="middle" fontSize="10" fontWeight="700" className="ic-text">
+            3
+          </text>
+        </svg>
       ) : (
         <svg viewBox="0 0 40 40">
           <g className="ic-grid">
