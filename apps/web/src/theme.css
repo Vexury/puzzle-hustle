@@ -165,6 +165,26 @@ p { margin: 0; }
 .daily-progress .slot.on { border-color: transparent; opacity: 1; animation: slot-pop 0.3s ease-out; }
 .daily-progress .slot .puzzle-icon { border-radius: 12px; }
 .daily-progress.safe { color: var(--success); }
+.daily-progress.bar-variant { margin-top: 4px; }
+.daily-progress .track { position: relative; height: 12px; border-radius: 999px; background: var(--board-cell); margin: 10px 0; }
+.daily-progress .fill { display: block; height: 100%; border-radius: 999px; background: var(--accent); transition: width 0.3s, background 0.25s; }
+.daily-progress.safe .fill { background: var(--success); }
+.daily-progress .goal-badge {
+  position: absolute;
+  top: 50%;
+  width: 30px;
+  height: 30px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--card-bg);
+  border: 2px solid var(--border-mid);
+  display: grid;
+  place-items: center;
+  transition: border-color 0.25s;
+}
+.daily-progress .goal-badge .flame { width: 18px; height: 18px; fill: var(--border-mid); transition: fill 0.25s; }
+.daily-progress.safe .goal-badge { border-color: var(--success); }
+.daily-progress.safe .goal-badge .flame { fill: var(--flame); }
 @keyframes slot-pop { 0% { transform: scale(0.6); } 60% { transform: scale(1.12); } 100% { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .daily-progress .slot.on { animation: none; } }
 

@@ -74,6 +74,7 @@ export function Daily() {
       </header>
 
       <DailyProgress dailies={dailies} solves={solves} />
+      <DailyProgressBar solved={streaks.today} total={dailies.length} />
 
       <div className="stack">
         {dailies.map((ref) => (
@@ -122,6 +123,24 @@ function DailyProgress({ dailies, solves }: { dailies: PuzzleRef[]; solves: Reco
       <div className="slots">
         <span className="streak-zone">
           {Array.from({ length: Math.min(STREAK_MIN, total) }, (_, i) => slot(i))}
+          <Flame />
+        </span>
+      </div>
+      <span className="small">
+        {solved}/{total} solved · {safe ? 'streak safe' : missing === 1 ? 'one more for your streak' : `${missing} more for your streak`}
+      </span>
+    </div>
+  );
+}
+
+function DailyProgressBar({ solved, total }: { solved: number; total: number }) {
+  const safe = solved >= STREAK_MIN;
+  const missing = STREAK_MIN - solved;
+  return (
+    <div className={safe ? 'daily-progress bar-variant safe' : 'daily-progress bar-variant'} role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={solved}>
+      <div className="track">
+        <span className="fill" style={{ width: `${(solved / total) * 100}%` }} />
+        <span className="goal-badge" style={{ left: `${(STREAK_MIN / total) * 100}%` }}>
           <Flame />
         </span>
       </div>
