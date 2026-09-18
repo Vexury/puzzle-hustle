@@ -103,6 +103,11 @@
   line-height: 1;
   color: var(--text-muted);
 }
+.sudoku-notes.with-sum {
+  padding-top: calc(4px + clamp(0.5rem, 2.7cqw, 0.8rem));
+  padding-bottom: 2px;
+  font-size: clamp(0.4rem, 2.2cqw, 0.68rem);
+}
 .sudoku-notes i {
   display: flex;
   align-items: center;

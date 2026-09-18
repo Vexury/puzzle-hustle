@@ -225,7 +225,7 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
               {v ? (
                 <span className="sudoku-value">{v}</span>
               ) : notes ? (
-                <span className="sudoku-notes">
+                <span className={cage.sum !== null ? 'sudoku-notes with-sum' : 'sudoku-notes'}>
                   {DIGITS.map((d) => (
                     <i key={d}>{notes & (1 << (d - 1)) ? d : ''}</i>
                   ))}
