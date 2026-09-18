@@ -143,9 +143,9 @@ p { margin: 0; }
   flex: 4;
   display: flex;
   align-items: center;
-  justify-content: space-around;
-  padding: 4px 0;
-  border-radius: 999px;
+  justify-content: space-between;
+  padding: 10px;
+  border-radius: var(--radius);
   background: var(--board-cell);
   border: 1px solid var(--border);
   transition: background 0.25s, border-color 0.25s;
