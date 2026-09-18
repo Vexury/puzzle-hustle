@@ -102,7 +102,9 @@ p { margin: 0; }
 }
 .app.play-mode { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
 
-.page-head { margin: 8px 0 14px; display: flex; flex-direction: column; gap: 6px; }
+.page-head { position: relative; margin: 8px 0 14px; display: flex; flex-direction: column; gap: 6px; }
+.theme-toggle { position: absolute; top: 0; right: 0; }
+.theme-icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .page-head.compact { margin-top: 4px; }
 .section-h { margin: 36px 0 2px; font-size: var(--fs-lg); font-weight: 700; }
 .section-sub { margin-bottom: 10px; }
@@ -249,6 +251,7 @@ p { margin: 0; }
   border-radius: 999px;
   margin: 6px 0 16px;
 }
+.segmented.three { grid-template-columns: repeat(3, 1fr); margin-bottom: 0; }
 .seg {
   display: flex;
   flex-direction: column;

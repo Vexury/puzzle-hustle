@@ -1,31 +1,42 @@
 import { useSyncExternalStore } from 'react';
 import { readSetting, writeSetting } from './storage.ts';
 
-type Theme = 'light' | 'dark';
-const listeners = new Set<() => void>();
+export type Theme = 'light' | 'dark';
+export type ThemePref = Theme | 'system';
+export const THEME_PREFS: ThemePref[] = ['system', 'light', 'dark'];
 
-function current(): Theme {
-  return document.documentElement.dataset['theme'] === 'dark' ? 'dark' : 'light';
+const listeners = new Set<() => void>();
+const media = matchMedia('(prefers-color-scheme: dark)');
+
+function pref(): ThemePref {
+  const saved = readSetting('theme');
+  return saved === 'light' || saved === 'dark' ? saved : 'system';
 }
 
-export function useTheme(): [Theme, () => void] {
-  const theme = useSyncExternalStore(
-    (l) => {
-      listeners.add(l);
-      return () => listeners.delete(l);
-    },
-    current,
-  );
-  const toggle = () => {
-    const next: Theme = current() === 'dark' ? 'light' : 'dark';
-    document.documentElement.dataset['theme'] = next;
-    writeSetting('theme', next);
-    for (const l of listeners) l();
+function resolve(p: ThemePref): Theme {
+  return p === 'system' ? (media.matches ? 'dark' : 'light') : p;
+}
+
+function apply() {
+  document.documentElement.dataset['theme'] = resolve(pref());
+  for (const l of listeners) l();
+}
+
+export function useTheme(): { pref: ThemePref; theme: Theme; setPref(p: ThemePref): void; toggle(): void } {
+  const subscribe = (l: () => void) => {
+    listeners.add(l);
+    return () => listeners.delete(l);
   };
-  return [theme, toggle];
+  const p = useSyncExternalStore(subscribe, pref);
+  const theme = useSyncExternalStore(subscribe, () => resolve(pref()));
+  const setPref = (next: ThemePref) => {
+    writeSetting('theme', next);
+    apply();
+  };
+  return { pref: p, theme, setPref, toggle: () => setPref(theme === 'dark' ? 'light' : 'dark') };
 }
 
 export function initTheme() {
-  const saved = readSetting('theme');
-  if (saved === 'light' || saved === 'dark') document.documentElement.dataset['theme'] = saved;
+  apply();
+  media.addEventListener('change', apply);
 }

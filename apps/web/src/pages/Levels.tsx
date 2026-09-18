@@ -18,6 +18,7 @@ import { href, navigate, onLinkClick } from '../lib/router.ts';
 import { readSetting, useSolves, writeSetting, type SolveRecord } from '../lib/storage.ts';
 import { capitalize, formatSeconds } from '../lib/share.ts';
 import { typeStats } from '../lib/stats.ts';
+import { ThemeToggle } from '../components/ThemeToggle.tsx';
 
 export function unlockedLevel(type: PuzzleTypeId, difficulty: Difficulty, solves: Record<string, SolveRecord>): number {
   const list = levelList(type, difficulty);
@@ -36,6 +37,7 @@ export function LevelsIndex() {
       <header className="page-head">
         <h1>Levels</h1>
         <p className="muted">Hand-picked packs, playable offline.</p>
+        <ThemeToggle />
       </header>
       <div className="stack">
         {PUZZLE_TYPES.map((type) => {

@@ -4,6 +4,7 @@ import { PuzzleIcon } from '../components/PuzzleIcon.tsx';
 import { href, onLinkClick } from '../lib/router.ts';
 import { useSolves } from '../lib/storage.ts';
 import { capitalize, formatSeconds } from '../lib/share.ts';
+import { ThemeToggle } from '../components/ThemeToggle.tsx';
 import { STREAK_MIN, dailyNumber, dailyStreaks, formatDateLong, monthlyNumber, weeklyNumber } from '../lib/stats.ts';
 
 export function useCountdown(period: Period): string {
@@ -69,6 +70,7 @@ export function Daily() {
         <p className="muted">
           {formatDateLong()} · {dayLeft}
         </p>
+        <ThemeToggle />
       </header>
 
       <DailyProgress solved={streaks.today} total={dailies.length} />

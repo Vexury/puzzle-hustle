@@ -4,13 +4,14 @@ import { Flame } from './Daily.tsx';
 import { readSetting, resetProgress, useSolves, writeSetting } from '../lib/storage.ts';
 import { formatSeconds } from '../lib/share.ts';
 import { STREAK_MIN, dailyStreaks, totalSolved, typeStats } from '../lib/stats.ts';
-import { useTheme } from '../lib/theme.ts';
+import { THEME_PREFS, useTheme, type ThemePref } from '../lib/theme.ts';
+import { ThemeToggle } from '../components/ThemeToggle.tsx';
 
 export function Profile() {
   const solves = useSolves();
   const streaks = dailyStreaks(solves);
   const stats = typeStats(solves);
-  const [theme, toggleTheme] = useTheme();
+  const { pref, setPref } = useTheme();
   const [name, setName] = useState(readSetting('ph:name') ?? '');
   const [editing, setEditing] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -26,6 +27,7 @@ export function Profile() {
     <>
       <header className="page-head">
         <h1>Profile</h1>
+        <ThemeToggle />
       </header>
 
       <div className="stack">
@@ -83,14 +85,16 @@ export function Profile() {
           </table>
         </div>
 
-        <div className="card-lg row-between">
-          <span>
-            <b>Appearance</b>
-            <span className="muted small">{theme === 'dark' ? 'Dark' : 'Light'}</span>
-          </span>
-          <button type="button" className="pill outline" onClick={toggleTheme}>
-            Switch to {theme === 'dark' ? 'light' : 'dark'}
-          </button>
+        <div className="card-lg">
+          <b>Appearance</b>
+          <span className="muted small">System follows your device setting.</span>
+          <div className="segmented three" role="radiogroup" aria-label="Appearance">
+            {THEME_PREFS.map((p: ThemePref) => (
+              <button key={p} type="button" role="radio" aria-checked={pref === p} className={pref === p ? 'seg active' : 'seg'} onClick={() => setPref(p)}>
+                {p === 'system' ? 'System' : p === 'light' ? 'Light' : 'Dark'}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="card-lg row-between">
