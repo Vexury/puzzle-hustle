@@ -61,7 +61,7 @@ function regionSuffixCounts(spec: RegionsSpec): Int32Array {
   return out;
 }
 
-export function countRegionsSolutions(spec: RegionsSpec, limit = 2): RegionsCount {
+export function enumerateRegionsSolutions(spec: RegionsSpec, limit: number, onSolution: (grid: Uint8Array) => void): RegionsCount {
   const n = spec.config.size;
   const k = spec.config.stars;
   const regionOf = spec.regions;
@@ -90,8 +90,10 @@ export function countRegionsSolutions(spec: RegionsSpec, limit = 2): RegionsCoun
     if (count === k) {
       nodes++;
       if (!feasible(r)) return;
-      if (r === n - 1) solutions++;
-      else placeRow(r + 1, 0, 0);
+      if (r === n - 1) {
+        solutions++;
+        onSolution(grid);
+      } else placeRow(r + 1, 0, 0);
       return;
     }
     for (let c = startCol; c <= n - 1 - 2 * (k - count - 1); c++) {
@@ -111,6 +113,10 @@ export function countRegionsSolutions(spec: RegionsSpec, limit = 2): RegionsCoun
 
   placeRow(0, 0, 0);
   return { solutions, nodes };
+}
+
+export function countRegionsSolutions(spec: RegionsSpec, limit = 2): RegionsCount {
+  return enumerateRegionsSolutions(spec, limit, () => {});
 }
 
 export function isRegionsUnique(spec: RegionsSpec): boolean {

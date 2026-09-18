@@ -1,6 +1,6 @@
 import { Rng } from '../rng.ts';
 import type { Difficulty } from '../types.ts';
-import { REGIONS_MARKED_EMPTY, countRegionsSolutions, regionsNeighbors, regionsPropagate, regionsUnits } from './solver.ts';
+import { REGIONS_MARKED_EMPTY, enumerateRegionsSolutions, regionsNeighbors, regionsPropagate, regionsUnits } from './solver.ts';
 
 export { REGIONS_MARKED_EMPTY } from './solver.ts';
 
@@ -221,40 +221,65 @@ function staysConnected(n: number, regions: Uint8Array, reg: number, removed: nu
   return reached === total;
 }
 
-function boundaryMoves(n: number, spec: RegionsSpec): number[] {
+function otherRegions(n: number, spec: RegionsSpec, i: number): number[] {
+  const r = Math.floor(i / n);
+  const c = i % n;
   const out: number[] = [];
-  for (let i = 0; i < n * n; i++) {
-    if (spec.solution[i]) continue;
-    const r = Math.floor(i / n);
-    const c = i % n;
-    for (const [dr, dc] of DIRS) {
-      const rr = r + dr;
-      const cc = c + dc;
-      if (rr < 0 || cc < 0 || rr >= n || cc >= n) continue;
-      const j = rr * n + cc;
-      if (spec.regions[j] !== spec.regions[i]) out.push(i * n * n + j);
-    }
+  for (const [dr, dc] of DIRS) {
+    const rr = r + dr;
+    const cc = c + dc;
+    if (rr < 0 || cc < 0 || rr >= n || cc >= n) continue;
+    const reg = spec.regions[rr * n + cc]!;
+    if (reg !== spec.regions[i] && !out.includes(reg)) out.push(reg);
   }
   return out;
 }
 
-const REFINE_LIMIT = 64;
+const REFINE_LIMIT = 48;
+
+function altStarFrequency(spec: RegionsSpec, limit: number): { count: number; freq: Uint16Array } {
+  const freq = new Uint16Array(spec.solution.length);
+  const { solutions } = enumerateRegionsSolutions(spec, limit, (grid) => {
+    for (let i = 0; i < grid.length; i++) if (grid[i] === 1 && spec.solution[i] === 0) freq[i]!++;
+  });
+  return { count: solutions, freq };
+}
+
+function rankedMoves(n: number, spec: RegionsSpec, freq: Uint16Array, rng: Rng): number[] {
+  const cells: number[] = [];
+  for (let i = 0; i < freq.length; i++) if (freq[i]! > 0) cells.push(i);
+  rng.shuffle(cells);
+  cells.sort((a, b) => freq[b]! - freq[a]!);
+  const out: number[] = [];
+  for (const i of cells) for (const reg of rng.shuffle(otherRegions(n, spec, i))) out.push(i * n + reg);
+  return out;
+}
+
+const REFINE_BATCH = 12;
 
 function refineUnique(spec: RegionsSpec, rng: Rng, maxSteps: number): boolean {
   const n = spec.config.size;
-  let count = countRegionsSolutions(spec, REFINE_LIMIT).solutions;
+  let { count, freq } = altStarFrequency(spec, REFINE_LIMIT);
   for (let step = 0; step < maxSteps && count !== 1; step++) {
-    const moves = boundaryMoves(n, spec);
-    if (moves.length === 0) return false;
-    const move = rng.pick(moves);
-    const cell = Math.floor(move / (n * n));
-    const from = spec.regions[cell]!;
-    const to = spec.regions[move % (n * n)]!;
-    if (!staysConnected(n, spec.regions, from, cell)) continue;
-    spec.regions[cell] = to;
-    const next = countRegionsSolutions(spec, Math.min(REFINE_LIMIT, count + 1)).solutions;
-    if (next === 0 || next > count) spec.regions[cell] = from;
-    else count = next;
+    let best: { cell: number; to: number; count: number; freq: Uint16Array } | null = null;
+    let tried = 0;
+    for (const move of rankedMoves(n, spec, freq, rng)) {
+      if (tried >= REFINE_BATCH) break;
+      const cell = Math.floor(move / n);
+      const from = spec.regions[cell]!;
+      if (!staysConnected(n, spec.regions, from, cell)) continue;
+      tried++;
+      spec.regions[cell] = move % n;
+      const next = altStarFrequency(spec, REFINE_LIMIT);
+      spec.regions[cell] = from;
+      if (next.count === 0) continue;
+      if (!best || next.count < best.count) best = { cell, to: move % n, count: next.count, freq: next.freq };
+      if (next.count < count) break;
+    }
+    if (!best) return false;
+    spec.regions[best.cell] = best.to;
+    count = best.count;
+    freq = best.freq;
   }
   return count === 1;
 }
@@ -269,7 +294,7 @@ export function generateRegions(seed: number, config: RegionsConfig, difficulty:
     const regions = buildRegions(size, stars, solution, rng);
     if (!regions) continue;
     const spec: RegionsSpec = { version: REGIONS_VERSION, seed, difficulty, config, regions, solution };
-    if (refineUnique(spec, rng, 600)) return spec;
+    if (refineUnique(spec, rng, 200)) return spec;
   }
   throw new Error(`could not generate regions puzzle for seed ${seed} / ${size}x${size} with ${stars} stars`);
 }

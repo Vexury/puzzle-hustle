@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   PUZZLE_META,
+  PUZZLE_TYPES,
   decodeRef,
   encodeRef,
   generateMosaic,
@@ -9,6 +10,7 @@ import {
   levelRef,
   mosaicAdapter,
   nonogramAdapter,
+  periodRef,
   randomRef,
   refId,
   shapesAdapter,
@@ -155,6 +157,11 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
 
   const another = () => navigate(href(`/play?${encodeRef(randomRef(puzzleRef.type, puzzleRef.difficulty))}`));
   const nextLevel = puzzleRef.level ? levelRef(puzzleRef.type, puzzleRef.difficulty, puzzleRef.level + 1) : null;
+  const nextChallenge = useMemo(() => {
+    if (!puzzleRef.period) return null;
+    const candidates = [...PUZZLE_TYPES.map((type) => ({ ...periodRef('daily'), type })), periodRef('weekly'), periodRef('monthly')];
+    return candidates.find((c) => refId(c) !== id && !solves[refId(c)]) ?? null;
+  }, [puzzleRef, id, solves]);
   const toggleHelp = () => {
     setShowHelp((v) => !v);
     writeSetting(seenKey, '1');
@@ -229,23 +236,25 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
       )}
 
       {result && (
-        <div className="actions solved-actions">
-          <button type="button" className="pill" onClick={doShare}>
-            Share result
+        <div className="solved-actions">
+          <button type="button" className="icon-round" onClick={doShare} aria-label="Share result" title="Share result">
+            <ShareIcon />
           </button>
           {nextLevel && (
-            <a href={href(`/play?${encodeRef(nextLevel)}`)} className="pill outline" onClick={onLinkClick}>
-              Level #{nextLevel.level}
+            <a href={href(`/play?${encodeRef(nextLevel)}`)} className="pill" onClick={onLinkClick}>
+              Level #{nextLevel.level} ›
             </a>
           )}
           {!puzzleRef.period && !puzzleRef.level && (
-            <button type="button" className="pill outline" onClick={another}>
-              Another {capitalize(puzzleRef.difficulty)}
+            <button type="button" className="pill" onClick={another}>
+              Another {capitalize(puzzleRef.difficulty)} ›
             </button>
           )}
-          <a href={back.url} className="pill outline" onClick={onLinkClick}>
-            {back.label}
-          </a>
+          {nextChallenge && (
+            <a href={href(`/play?${encodeRef(nextChallenge)}`)} className="pill" onClick={onLinkClick}>
+              {nextChallenge.period === 'daily' ? PUZZLE_META[nextChallenge.type].name : capitalize(nextChallenge.period!)} ›
+            </a>
+          )}
         </div>
       )}
 
@@ -260,6 +269,17 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
         </div>
       )}
     </section>
+  );
+}
+
+function ShareIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="share-icon" aria-hidden="true">
+      <circle cx="18" cy="5" r="2.5" />
+      <circle cx="6" cy="12" r="2.5" />
+      <circle cx="18" cy="19" r="2.5" />
+      <path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4" />
+    </svg>
   );
 }
 
