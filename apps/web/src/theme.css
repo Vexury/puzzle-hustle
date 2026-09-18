@@ -77,7 +77,8 @@ html, body { margin: 0; padding: 0; }
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Inconsolata', ui-monospace, monospace;
+  --font-num: 'Inconsolata', ui-monospace, monospace;
+  font-family: var(--font-text, var(--font-num));
   font-size: var(--fs-base);
   line-height: 1.45;
   min-height: 100dvh;
@@ -408,6 +409,8 @@ p { margin: 0; }
 .icon-round:hover { background: var(--hover-bg); color: var(--hover-text); border-color: var(--hover-bg); }
 .icon-round.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-deep); }
 .play-meta { display: flex; align-items: center; gap: 12px; }
+.sudoku-board, .sudoku-pad, .kakuro-board, .kakuro-pad, .nono-board, .mosaic-board, .zip-svg, .timer, .big-time, .stat b, .tile b { font-family: var(--font-num); }
+:root:not([data-font="inconsolata"]) h1, :root:not([data-font="inconsolata"]) h2 { font-weight: 800; }
 .timer { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: var(--fs-md); }
 .clock { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 .play-meta .muted { flex: 1; }
