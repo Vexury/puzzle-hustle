@@ -137,35 +137,7 @@ p { margin: 0; }
   margin: -6px 0 16px;
   color: var(--text-muted);
 }
-.daily-progress .slots { display: flex; align-items: center; width: 100%; }
-.daily-progress .streak-zone {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 14px;
-  border-radius: var(--radius);
-  background: var(--board-cell);
-  border: 1px solid var(--border);
-  transition: background 0.25s, border-color 0.25s;
-}
-.daily-progress .streak-zone .flame { width: 40px; height: 40px; fill: var(--border-mid); transition: fill 0.25s; }
-.daily-progress.safe .streak-zone { background: var(--success-soft); border-color: var(--success); }
-.daily-progress.safe .streak-zone .flame { fill: var(--flame); }
-.daily-progress .slot {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: var(--bg);
-  border: 1px solid var(--border-mid);
-  opacity: 0.6;
-  display: grid;
-  place-items: center;
-}
-.daily-progress .slot.on { border-color: transparent; opacity: 1; animation: slot-pop 0.3s ease-out; }
-.daily-progress .slot .puzzle-icon { border-radius: 12px; }
 .daily-progress.safe { color: var(--success); }
-.daily-progress.bar-variant { margin-top: 4px; }
 .daily-progress .track { position: relative; height: 12px; border-radius: 999px; background: var(--board-cell); margin: 10px 0; }
 .daily-progress .fill { display: block; height: 100%; border-radius: 999px; background: var(--accent); transition: width 0.3s, background 0.25s; }
 .daily-progress.safe .fill { background: var(--success); }
@@ -185,8 +157,6 @@ p { margin: 0; }
 .daily-progress .goal-badge .flame { width: 18px; height: 18px; fill: var(--border-mid); transition: fill 0.25s; }
 .daily-progress.safe .goal-badge { border-color: var(--success); }
 .daily-progress.safe .goal-badge .flame { fill: var(--flame); }
-@keyframes slot-pop { 0% { transform: scale(0.6); } 60% { transform: scale(1.12); } 100% { transform: none; } }
-@media (prefers-reduced-motion: reduce) { .daily-progress .slot.on { animation: none; } }
 
 .streak {
   display: inline-flex;
