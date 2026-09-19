@@ -14,8 +14,8 @@ import {
 } from '@puzzle-hustle/core';
 import './regions.css';
 import { useHistory } from '../lib/useHistory.ts';
+import { LONG_PRESS_MS } from '../lib/input.ts';
 
-const LONG_PRESS_MS = 450;
 const REGION_COLORS = 12;
 
 interface Drag {

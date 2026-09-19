@@ -12,8 +12,7 @@ import { useZoomViewport } from '../lib/useZoomViewport.ts';
 import './mosaic.css';
 import { gridLineClasses } from '../lib/gridLines.ts';
 import { useHistory } from '../lib/useHistory.ts';
-
-const LONG_PRESS_MS = 300;
+import { LONG_PRESS_MS } from '../lib/input.ts';
 
 interface Drag {
   pointerId: number;
