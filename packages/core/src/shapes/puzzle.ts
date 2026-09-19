@@ -1,6 +1,6 @@
 import { Rng } from '../rng.ts';
 import type { Difficulty } from '../types.ts';
-import { SHAPES, atomIndex, type ShapeKind } from './shapes.ts';
+import { SHAPES, atomIndex, type AtomOffset, type ShapeKind } from './shapes.ts';
 
 export const SHAPES_VERSION = 2;
 
@@ -127,15 +127,21 @@ function startLayout(config: ShapesConfig, pieces: ShapesPiece[], target: Uint8A
   for (const i of order) {
     const s = SHAPES[pieces[i]!.kind];
     const ring: Placement[] = [];
+    const clear: Placement[] = [];
     const free: Placement[] = [];
     for (let r = 0; r + s.height <= size; r++) {
       for (let c = 0; c + s.width <= size; c++) {
         if (!s.atoms.every(([dr, dc, dir]) => occupied[atomIndex(size, r + dr, c + dc, dir)] === 0)) continue;
         free.push({ r, c });
         if (s.atoms.every(([dr, dc]) => !inInner(config, r + dr, c + dc))) ring.push({ r, c });
+        else if (s.atoms.every(([dr, dc, dir]) => target[atomIndex(size, r + dr, c + dc, dir)] === 0)) clear.push({ r, c });
       }
     }
-    const p = ring.length > 0 ? rng.pick(ring) : free.length > 0 ? rng.pick(free) : { r: rng.int(size - s.height + 1), c: rng.int(size - s.width + 1) };
+    const p =
+      ring.length > 0 ? rng.pick(ring)
+      : clear.length > 0 ? rng.pick(clear)
+      : free.length > 0 ? rng.pick(leastCovering(size, s.atoms, target, free))
+      : { r: rng.int(size - s.height + 1), c: rng.int(size - s.width + 1) };
     start[i] = p;
     for (const [dr, dc, dir] of s.atoms) occupied[atomIndex(size, p.r + dr, p.c + dc, dir)] = 1;
   }
@@ -147,6 +153,16 @@ function startLayout(config: ShapesConfig, pieces: ShapesPiece[], target: Uint8A
     start[i] = p.c + s.width < size ? { r: p.r, c: p.c + 1 } : p.r + s.height < size ? { r: p.r + 1, c: p.c } : { r: 0, c: 0 };
   }
   return start;
+}
+
+function leastCovering(size: number, atoms: readonly AtomOffset[], target: Uint8Array, places: Placement[]): Placement[] {
+  let best = Infinity;
+  let out: Placement[] = [];
+  for (const p of places) {
+    const n = atoms.reduce((k, [dr, dc, dir]) => k + target[atomIndex(size, p.r + dr, p.c + dc, dir)]!, 0);
+    if (n < best) { best = n; out = [p]; } else if (n === best) out.push(p);
+  }
+  return out;
 }
 
 function validCandidate(config: ShapesConfig, pieces: ShapesPiece[], solution: Placement[]): boolean {
