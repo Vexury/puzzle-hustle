@@ -36,7 +36,7 @@ export function LevelsIndex() {
     <>
       <header className="page-head">
         <h1>Puzzles</h1>
-        <p className="muted">Hand-picked packs, playable offline.</p>
+        <p className="muted">Four difficulties, playable offline.</p>
         <ThemeToggle />
       </header>
       <div className="stack">
