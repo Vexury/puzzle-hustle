@@ -58,18 +58,36 @@
 
 .sudoku-value { position: relative; z-index: 1; line-height: 1; }
 
+/* Striche als Verlauf statt als Rahmen: iOS WebKit zeichnet eine gestrichelte
+   Rahmenkante an einem nullbreiten Kasten nur als einzelnen Strich. */
 .sudoku-cage {
   --in: 2px;
+  --line: 1.5px;
+  --dash: 3px;
+  --step: 6px;
   position: absolute;
   z-index: 1;
   pointer-events: none;
-  border: 0 dashed var(--text-muted);
   opacity: 0.75;
 }
-.sudoku-cage.t { top: var(--in); left: calc(var(--a) * var(--in)); right: calc(var(--b) * var(--in)); border-top-width: 1.5px; }
-.sudoku-cage.b { bottom: var(--in); left: calc(var(--a) * var(--in)); right: calc(var(--b) * var(--in)); border-bottom-width: 1.5px; }
-.sudoku-cage.l { left: var(--in); top: calc(var(--a) * var(--in)); bottom: calc(var(--b) * var(--in)); border-left-width: 1.5px; }
-.sudoku-cage.r { right: var(--in); top: calc(var(--a) * var(--in)); bottom: calc(var(--b) * var(--in)); border-right-width: 1.5px; }
+.sudoku-cage.t,
+.sudoku-cage.b {
+  left: calc(var(--a) * var(--in));
+  right: calc(var(--b) * var(--in));
+  height: var(--line);
+  background: repeating-linear-gradient(to right, var(--text-muted) 0 var(--dash), transparent var(--dash) var(--step));
+}
+.sudoku-cage.l,
+.sudoku-cage.r {
+  top: calc(var(--a) * var(--in));
+  bottom: calc(var(--b) * var(--in));
+  width: var(--line);
+  background: repeating-linear-gradient(to bottom, var(--text-muted) 0 var(--dash), transparent var(--dash) var(--step));
+}
+.sudoku-cage.t { top: var(--in); }
+.sudoku-cage.b { bottom: var(--in); }
+.sudoku-cage.l { left: var(--in); }
+.sudoku-cage.r { right: var(--in); }
 
 .sudoku-cage-sum {
   position: absolute;
