@@ -72,4 +72,13 @@ describe('solver', () => {
     expect(canonicalKey(rotated)).toBe(canonicalKey(spec));
     expect(canonicalKey(generateShapes(12, 'medium'))).not.toBe(canonicalKey(spec));
   });
+
+  it('canonical key is invariant under translation of the target', () => {
+    const spec = generateShapes(11, 'easy');
+    const shifted = structuredClone(spec);
+    shifted.target = new Uint8Array(spec.target.length);
+    const rowAtoms = spec.config.size * 4;
+    for (let a = 0; a < spec.target.length; a++) if (spec.target[a]) shifted.target[a + rowAtoms] = 1;
+    expect(canonicalKey(shifted)).toBe(canonicalKey(spec));
+  });
 });

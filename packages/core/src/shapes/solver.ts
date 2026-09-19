@@ -182,13 +182,16 @@ export function canonicalKey(spec: ShapesSpec): string {
     kinds = kinds.map((k) => KIND_FLIP[k]);
   }
   for (const v of variants) {
-    const bits = new Uint8Array(total);
+    const atoms: [number, number, number][] = [];
     for (let a = 0; a < total; a++) {
       if (!spec.target[a]) continue;
       const cell = Math.floor(a / 4);
-      const [r, c, d] = v.map(Math.floor(cell / n), cell % n, a % 4);
-      bits[atomIndex(n, r, c, d as 0 | 1 | 2 | 3)] = 1;
+      atoms.push(v.map(Math.floor(cell / n), cell % n, a % 4));
     }
+    const minR = Math.min(...atoms.map(([r]) => r));
+    const minC = Math.min(...atoms.map(([, c]) => c));
+    const bits = new Uint8Array(total);
+    for (const [r, c, d] of atoms) bits[atomIndex(n, r - minR, c - minC, d as 0 | 1 | 2 | 3)] = 1;
     const key = `${n}|${[...v.kinds].sort().join(',')}|${Array.from(bits).join('')}`;
     if (best === '' || key < best) best = key;
   }
