@@ -183,6 +183,19 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
     <div className="shapes-wrap">
       <div className="shapes">
         <div className="board-panel">
+          {!solved && (
+            <div className="target-preview">
+              <span className="target-label">Target</span>
+              <svg className="target-thumb" viewBox={`${m} ${m} ${inner} ${inner}`} role="img" aria-label="Target pattern">
+                <rect className="inner-area" x={m} y={m} width={inner} height={inner} />
+                {[...spec.target].map((v, i) => {
+                  if (!v) return null;
+                  const { r, c, dir } = atomFromIndex(size, i);
+                  return <polygon key={i} className="atom lit" points={atomPolygon(r, c, dir).map((p) => p.join(',')).join(' ')} />;
+                })}
+              </svg>
+            </div>
+          )}
           <svg
             ref={boardRef}
             className={solved ? 'board board-frame solved' : 'board board-frame'}

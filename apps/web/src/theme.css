@@ -485,6 +485,9 @@ p { margin: 0; }
 .shapes-wrap { container-type: inline-size; }
 .shapes { display: grid; gap: 12px; touch-action: none; user-select: none; -webkit-user-select: none; }
 .board-panel { display: flex; flex-direction: column; gap: 12px; }
+.target-preview { display: flex; align-items: center; justify-content: flex-end; gap: 10px; width: 100%; max-width: 520px; margin: 0 auto; }
+.target-label { font-size: 13px; color: var(--text-muted); }
+.target-thumb { width: 72px; height: 72px; border: 1px solid var(--border-mid); border-radius: 6px; background: var(--board-cell); display: block; }
 .board-frame {
   background: var(--card-bg);
   border: 2px solid var(--border-mid);
