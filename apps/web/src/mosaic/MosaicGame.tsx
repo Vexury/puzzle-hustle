@@ -13,7 +13,7 @@ import './mosaic.css';
 import { gridLineClasses } from '../lib/gridLines.ts';
 import { useHistory } from '../lib/useHistory.ts';
 
-const LONG_PRESS_MS = 450;
+const LONG_PRESS_MS = 300;
 
 interface Drag {
   pointerId: number;
