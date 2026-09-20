@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { PUZZLE_META, PUZZLE_TYPES } from '@puzzle-hustle/core';
 import { Flame } from './Daily.tsx';
-import { adsAvailable, showPrivacyOptions } from '../lib/ads.ts';
+import { adsAvailable, onAdsConsent, privacyOptionsAvailable, showPrivacyOptions } from '../lib/ads.ts';
 import { buyUnlimitedHints, hasUnlimitedHints, onEntitlement } from '../lib/entitlement.ts';
 import { readSetting, resetProgress, useSolves, writeSetting } from '../lib/storage.ts';
 import { formatSeconds } from '../lib/share.ts';
@@ -20,7 +20,10 @@ export function Profile() {
   const [unlimited, setUnlimited] = useState(hasUnlimitedHints);
   const [buying, setBuying] = useState(false);
 
+  const [privacy, setPrivacy] = useState(privacyOptionsAvailable);
+
   useEffect(() => onEntitlement(() => setUnlimited(hasUnlimitedHints())), []);
+  useEffect(() => onAdsConsent(() => setPrivacy(privacyOptionsAvailable())), []);
 
   const commitName = () => {
     const v = name.trim().slice(0, 24);
@@ -162,7 +165,7 @@ export function Profile() {
           <a href="https://vexury.dev" target="_blank" rel="noreferrer">
             vexury.dev
           </a>
-          {adsAvailable ? (
+          {adsAvailable && privacy ? (
             <>
               {' · '}
               <button type="button" className="linklike" onClick={() => void showPrivacyOptions()}>

@@ -9,43 +9,50 @@ const TESTING = true;
 
 const native = Capacitor.isNativePlatform();
 
-let ready: Promise<void> | null = null;
+export const adsAvailable = native;
 
-async function consent(): Promise<void> {
-  const info = await AdMob.requestConsentInfo();
-  if (info.isConsentFormAvailable && info.status === AdmobConsentStatus.REQUIRED) {
-    await AdMob.showConsentForm();
-  }
+let ready: Promise<boolean> | null = null;
+let privacyOptions = false;
+const listeners = new Set<() => void>();
+
+export function onAdsConsent(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
 }
 
-function init(): Promise<void> {
+export function privacyOptionsAvailable(): boolean {
+  return privacyOptions;
+}
+
+// Nichts hiervon laeuft beim Start: das SDK wird erst wach, wenn der Spieler
+// zum ersten Mal eine Anzeige anfordert, damit der Einwilligungsdialog nicht
+// ungefragt den ersten Eindruck der App bestimmt.
+function prepare(): Promise<boolean> {
   ready ??= (async () => {
     await AdMob.initialize();
-    try {
-      await consent();
-    } catch {
-      /* ohne Zustimmung laeuft die App weiter, nur die Anzeige bleibt aus */
+    let info = await AdMob.requestConsentInfo();
+    if (info.isConsentFormAvailable && info.status === AdmobConsentStatus.REQUIRED) {
+      info = await AdMob.showConsentForm();
     }
-  })();
+    // Das Plugin exportiert PrivacyOptionsRequirementStatus nicht, daher der String.
+    privacyOptions = String(info.privacyOptionsRequirementStatus) === 'REQUIRED';
+    for (const l of listeners) l();
+    return info.canRequestAds;
+  })().catch(() => false);
   return ready;
 }
 
-export function initAds(): void {
-  if (!native) return;
-  void init();
-}
-
-export const adsAvailable = native;
-
 export async function showPrivacyOptions(): Promise<void> {
   if (!native) return;
-  await init();
+  await prepare();
   await AdMob.showPrivacyOptionsForm();
 }
 
 export async function showRewardedAd(): Promise<boolean> {
   if (!native) return false;
-  await init();
+  if (!(await prepare())) return false;
 
   let rewarded = false;
   const handle = await AdMob.addListener(RewardAdPluginEvents.Rewarded, () => {
