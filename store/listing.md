@@ -29,7 +29,8 @@ generated on the device.
 | App icon | 512x512, 32-bit PNG | `store/icon-512.png` |
 | Feature graphic | 1024x500, PNG or JPG | `store/feature-graphic.png` |
 | Phone screenshots | at least 2, 320-3840 px, long side at most twice the short side | `store/screenshots/phone/`, 6 shots, 1080x2160 |
-| Tablet screenshots | optional, helps placement on large screens | `store/screenshots/tablet/`, 4 shots, 1600x2560 |
+| 7-inch tablet screenshots | own slot in the console | `store/screenshots/tablet7/`, 4 shots, 1200x1920 |
+| 10-inch tablet screenshots | own slot in the console | `store/screenshots/tablet10/`, 4 shots, 1600x2560 |
 
 Themes alternate across the set rather than being shown as a split image, so every shot is a real
 screen and Play sees no composite. Phone shots are 1080x2160 on purpose: Play rejects a screenshot
