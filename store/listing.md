@@ -85,5 +85,27 @@ ESRB Everyone.
 
 **Government app:** No. **Financial features:** none. **Health apps:** no.
 
-**Privacy policy:** required as a public URL even though nothing is collected. To be published on
-vexury.dev.
+**Privacy policy:** https://vexury.dev/puzzle-hustle-privacy/ (source in the vexury.github.io repo
+at `src/puzzle-hustle-privacy.md`). Required as a public URL even though nothing is collected.
+
+## Release order
+
+The 14-day tester clock is the critical path, so the first upload comes before the app is
+finished. Everything after step 4 can run while the clock is ticking.
+
+1. Create the app in the Play Console: Puzzle Hustle, default language English (US), type Game,
+   category Puzzle, free. Accept Play App Signing when prompted; the key in
+   `Z:/Documents/Arbeit/Moritz/Vexury/keys/` is then the upload key, which Google can reset.
+2. Fill the store listing from this file and upload `store/icon-512.png`,
+   `store/feature-graphic.png` and `store/screenshots/`.
+3. Work through App content: privacy policy URL, ads (no), app access (no login), content rating
+   questionnaire, target audience 13+, data safety (nothing collected, nothing shared),
+   government apps (no), financial features (none), health (no).
+4. Create the closed testing track, upload `app-release.aab`, add at least 12 testers by email or
+   through a Google Group, and send them the opt-in link. The clock starts once they are opted in
+   and only counts continuous days, so a tester who opts out resets their own contribution.
+5. While the 14 days run: build in AdMob with UMP consent and Play Billing, ship them as updates
+   to the same track, then switch the ads and in-app purchase declarations, extend the privacy
+   policy and update data safety.
+6. After 14 days with 12 continuous testers, apply for production access. Google reviews it, which
+   is a separate wait.
