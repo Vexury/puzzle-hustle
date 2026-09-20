@@ -48,8 +48,12 @@ Puzzle Hustle keeps everything on your device. No account, no sign-up, no ads, n
 | --- | --- | --- |
 | App icon | 512x512, 32-bit PNG | `store/icon-512.png` |
 | Feature graphic | 1024x500, PNG or JPG | `store/feature-graphic.png` |
-| Phone screenshots | at least 2, 16:9 or 9:16, 320-3840 px | open |
+| Phone screenshots | at least 2, 16:9 or 9:16, 320-3840 px | `store/screenshots/`, 1080x2340, dark theme |
 | Tablet screenshots | optional, but improves reach | open |
+
+The screenshots are a first set taken on a Galaxy S23: the daily list, four boards and the puzzle
+index, all on empty boards. They should be retaken once the app has some progress to show, so the
+daily screen does not read "0/8 solved".
 
 Both images are generated: `node scripts/android-icons.mjs` from `apps/web` renders the launcher
 icons, `node scripts/store-assets.mjs` the listing icon, and `PH_FONT=<path> node
