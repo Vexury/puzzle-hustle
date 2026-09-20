@@ -1,11 +1,11 @@
-import { AdMob, AdmobConsentStatus, RewardAdPluginEvents } from '@capacitor-community/admob';
+import { AdMob, AdmobConsentStatus, MaxAdContentRating, RewardAdPluginEvents } from '@capacitor-community/admob';
 import { Capacitor } from '@capacitor/core';
 
 const REWARD_UNIT = 'ca-app-pub-3552688457242630/8666936384';
 
-// Bis ein Testgeraet in AdMob registriert ist, fordert jede Anfrage eine Testanzeige an.
-// Sonst zaehlt jeder eigene Klick als ungueltiger Traffic und gefaehrdet das Konto.
-const TESTING = true;
+// Geraete, die statt echter Anzeigen immer Testanzeigen bekommen. Ein Klick von hier
+// zaehlt nicht als ungueltiger Traffic. Die ID steht beim ersten Anzeigenaufruf im Logcat.
+const TEST_DEVICES = ['8CC764321F12FA067B339B812405EE50'];
 
 const native = Capacitor.isNativePlatform();
 
@@ -31,7 +31,11 @@ export function privacyOptionsAvailable(): boolean {
 // ungefragt den ersten Eindruck der App bestimmt.
 function prepare(): Promise<boolean> {
   ready ??= (async () => {
-    await AdMob.initialize();
+    await AdMob.initialize({
+      testingDevices: TEST_DEVICES,
+      initializeForTesting: true,
+      maxAdContentRating: MaxAdContentRating.General,
+    });
     let info = await AdMob.requestConsentInfo();
     if (info.isConsentFormAvailable && info.status === AdmobConsentStatus.REQUIRED) {
       info = await AdMob.showConsentForm();
@@ -60,7 +64,7 @@ export async function showRewardedAd(): Promise<boolean> {
   });
 
   try {
-    await AdMob.prepareRewardVideoAd({ adId: REWARD_UNIT, isTesting: TESTING });
+    await AdMob.prepareRewardVideoAd({ adId: REWARD_UNIT });
     const reward = await AdMob.showRewardVideoAd();
     if (reward && reward.amount > 0) rewarded = true;
   } catch {
