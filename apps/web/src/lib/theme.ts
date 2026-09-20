@@ -1,3 +1,5 @@
+import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import { useSyncExternalStore } from 'react';
 import { readSetting, writeSetting } from './storage.ts';
 
@@ -18,7 +20,11 @@ function resolve(p: ThemePref): Theme {
 }
 
 function apply() {
-  document.documentElement.dataset['theme'] = resolve(pref());
+  const theme = resolve(pref());
+  document.documentElement.dataset['theme'] = theme;
+  if (Capacitor.isNativePlatform()) {
+    void StatusBar.setStyle({ style: theme === 'dark' ? Style.Dark : Style.Light });
+  }
   for (const l of listeners) l();
 }
 

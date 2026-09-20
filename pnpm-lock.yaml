@@ -187,6 +187,9 @@ importers:
       '@capacitor/share':
         specifier: ^8.0.2
         version: 8.0.2(@capacitor/core@8.5.2)
+      '@capacitor/status-bar':
+        specifier: ^8.0.3
+        version: 8.0.3(@capacitor/core@8.5.2)
       '@puzzle-hustle/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -278,6 +281,11 @@ packages:
 
   '@capacitor/share@8.0.2':
     resolution: {integrity: sha512-L2M4iBLTf/IaMmg+ruuriAoJyBzu1EgayWhgC5cX1HJGkA665g2ROz8c2Z5lfkT/XSLbAuG3bb7VlW3eGgUCNQ==}
+    peerDependencies:
+      '@capacitor/core': '>=8.0.0'
+
+  '@capacitor/status-bar@8.0.3':
+    resolution: {integrity: sha512-csSpfNeN49Hx9JaQBSJEIiEbOLtXg3kcc2IpScq2fu5L520h3AWEvsxoH8Srk1jxfRKepaJ4S4sqSC3foI4AgA==}
     peerDependencies:
       '@capacitor/core': '>=8.0.0'
 
@@ -1561,6 +1569,10 @@ snapshots:
       '@capacitor/core': 8.5.2
 
   '@capacitor/share@8.0.2(@capacitor/core@8.5.2)':
+    dependencies:
+      '@capacitor/core': 8.5.2
+
+  '@capacitor/status-bar@8.0.3(@capacitor/core@8.5.2)':
     dependencies:
       '@capacitor/core': 8.5.2
 
