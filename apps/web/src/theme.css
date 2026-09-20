@@ -106,6 +106,7 @@ body {
 }
 a { color: inherit; }
 button { font: inherit; color: inherit; }
+.linklike { background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
 h1, h2, h3 { margin: 0; line-height: 1.15; }
 h1 { font-size: var(--fs-xl); font-weight: 800; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 h2 { font-size: var(--fs-lg); }

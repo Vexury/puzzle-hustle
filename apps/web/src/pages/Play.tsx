@@ -114,7 +114,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const [result, setResult] = useState<SolveRecord | undefined>(existing);
   const seenKey = `ph:howto:${puzzleRef.type}`;
   const [showHelp, setShowHelp] = useState(() => readSetting(seenKey) !== '1');
-  const hintProvider = currentHintProvider();
+  const hintProvider = currentHintProvider(hints);
   const back = backTarget(puzzleRef);
 
   useEffect(() => {

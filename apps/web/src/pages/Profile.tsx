@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PUZZLE_META, PUZZLE_TYPES } from '@puzzle-hustle/core';
 import { Flame } from './Daily.tsx';
+import { adsAvailable, showPrivacyOptions } from '../lib/ads.ts';
+import { buyUnlimitedHints, hasUnlimitedHints, onEntitlement } from '../lib/entitlement.ts';
 import { readSetting, resetProgress, useSolves, writeSetting } from '../lib/storage.ts';
 import { formatSeconds } from '../lib/share.ts';
 import { STREAK_MIN, dailyStreaks, totalSolved, typeStats } from '../lib/stats.ts';
@@ -15,6 +17,10 @@ export function Profile() {
   const [name, setName] = useState(readSetting('ph:name') ?? '');
   const [editing, setEditing] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [unlimited, setUnlimited] = useState(hasUnlimitedHints);
+  const [buying, setBuying] = useState(false);
+
+  useEffect(() => onEntitlement(() => setUnlimited(hasUnlimitedHints())), []);
 
   const commitName = () => {
     const v = name.trim().slice(0, 24);
@@ -97,6 +103,32 @@ export function Profile() {
           </div>
         </div>
 
+        {adsAvailable ? (
+          <div className="card-lg row-between">
+            <span>
+              <b>Unlimited hints</b>
+              <span className="muted small">
+                {unlimited ? 'Bought. Every hint is yours, no ads.' : 'One hint per puzzle is free. Unlock the rest without ads.'}
+              </span>
+            </span>
+            {unlimited ? (
+              <span className="muted small">Unlocked</span>
+            ) : (
+              <button
+                type="button"
+                className="pill"
+                disabled={buying}
+                onClick={() => {
+                  setBuying(true);
+                  void buyUnlimitedHints().finally(() => setBuying(false));
+                }}
+              >
+                {buying ? 'One moment' : 'Unlock'}
+              </button>
+            )}
+          </div>
+        ) : null}
+
         <div className="card-lg row-between">
           <span>
             <b>Reset progress</b>
@@ -130,6 +162,14 @@ export function Profile() {
           <a href="https://vexury.dev" target="_blank" rel="noreferrer">
             vexury.dev
           </a>
+          {adsAvailable ? (
+            <>
+              {' · '}
+              <button type="button" className="linklike" onClick={() => void showPrivacyOptions()}>
+                Ad privacy settings
+              </button>
+            </>
+          ) : null}
         </p>
       </div>
     </>
