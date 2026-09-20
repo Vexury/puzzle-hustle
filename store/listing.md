@@ -9,38 +9,44 @@ Puzzle Hustle
 
 ## Short description (max 80)
 
-Eight logic puzzles, new every day. No ads, no account, nothing to sign up for.
+Eight logic puzzles, new every day. Every one solvable by logic, never by luck.
 
 ## Full description (max 4000)
 
-Puzzle Hustle is a collection of eight logic puzzles with a fresh set every day.
+Eight logic puzzles. One fresh set every day, the same for everyone playing.
 
-Every day you get one puzzle of each type, seeded from the date, so every player solves
-exactly the same puzzles. On top of that there is a harder Weekly, a bigger Monthly, and
-unlimited free play in four difficulties.
+Every puzzle here is run through a solver before it ships. It has exactly one solution, and you can
+always reason your way to it. No guessing, no backing out of a dead end you could not have seen
+coming. Nonograms resolve row by row and column by column. Killer cages fall to sums and the rule
+of 45. When you are stuck, the puzzle is still fair, you just have not found the next step yet.
 
-PUZZLE TYPES
-- Shapes: move overlapping pieces until the lit pattern matches the target
-- Nonogram: paint the picture from the numbers, in black and white or in colour
+THE DAILY SET
+One puzzle of each type, seeded from the date, so your Tuesday is everyone's Tuesday. A harder
+Weekly and a bigger Monthly sit on top. Three solved dailies keep your streak alive.
+
+THE PUZZLES
+- Shapes: slide overlapping pieces until the lit pattern matches the target
+- Nonogram: paint the picture from the numbers, black and white or in colour
 - Mosaic: every number counts the filled cells around it
 - Crowns: one crown per row, column and region, never touching
-- Stars: the same idea, with two stars per row, column and region
+- Stars: the same idea, two stars per line
 - Sudoku: the classic
 - Killer Sudoku: sudoku with cages that add up
-- Zip: draw one path through every cell, reaching the numbers in order
+- Zip: one path through every cell, reaching the numbers in order
 
-WHAT YOU GET
-- A daily set that is identical for every player
-- Weekly and monthly challenges on bigger boards
-- 20 levels per puzzle type and difficulty (50 for Shapes), sorted from easiest to hardest
-- Endless random puzzles in easy, medium, hard and genius
-- Every puzzle has exactly one solution, verified by a solver before it ships
-- Hints when you are stuck, plus undo and reset
-- Progress and streaks are saved, and unfinished puzzles resume where you left off
-- Light and dark theme
-- Works offline
+FREE PLAY
+Twenty levels per type and difficulty, fifty for Shapes, ordered from gentle to genius. After that,
+endless random puzzles in four difficulties.
 
-Puzzle Hustle keeps everything on your device. No account, no sign-up, no ads, no tracking.
+Pencil marks, undo, reset, and a hint when you want one. Your streak and your progress are kept,
+and a half-finished board is waiting exactly where you left it. Light and dark theme. The puzzles
+are generated on your device, so the train, the plane and the basement all work fine.
+
+No account. No sign-up. Open it and solve.
+
+Paste the paragraphs unwrapped: the line breaks above are for reading the file, Play would keep
+them literally. Never claim the app is ad free here; the moment AdMob ships, Play puts a
+"Contains ads" label next to the listing and the two would contradict each other.
 
 ## Graphics
 
