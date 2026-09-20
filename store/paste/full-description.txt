@@ -1,27 +1,36 @@
-Good news: eight new puzzles are waiting for you, and there will be eight more tomorrow.
+Eight fresh logic puzzles are waiting for you today, and not one of them needs a lucky guess. Grab a coffee and start solving!
 
-Puzzle Hustle is for the kind of person who reads "one crown per row, column and region, and they may never touch" and immediately wants to have a go. Nonograms, Sudoku, Killer Sudoku, Crowns, Stars, Mosaic, Zip and Shapes, all in one app, all refreshed every single day.
+Puzzle Hustle brings Sudoku, Killer Sudoku, Nonograms, Mosaic, Crowns, Stars, Zip and Shapes together in one friendly little app. Wake your brain up on the morning commute, or wind down with a quiet grid before bed. There is always something new waiting.
 
-And every single one plays fair. Each puzzle goes through a solver before it ever reaches you, so there is exactly one answer and a clean line of reasoning that gets you there. No guessing. No filling in a corner, crossing your fingers, and finding out ten minutes later that it was wrong all along. When you are stuck, the next step really is sitting there waiting to be spotted. That little click in your head when you find it is the whole reason we built this.
+🧩 A FRESH SET EVERY DAY
+Every day brings one puzzle of each type, and every player in the world gets exactly the same ones. Solve three and your streak keeps growing. Want something meatier? A tougher Weekly and a properly big Monthly are there for the days you fancy settling in.
 
-YOUR DAILY EIGHT
-One puzzle of every type, grown from today's date, which means your Tuesday puzzles are everyone else's Tuesday puzzles. Solve three and your streak rolls on. There is a chunkier Weekly and a properly big Monthly for the days you want to settle in with a coffee.
+✓ ALWAYS FAIR, ALWAYS SOLVABLE
+Every puzzle goes through our solver before it reaches you. One solution, and you can always reason your way to it. No guessing, no dead ends, no filling in a corner and hoping for the best. When you are stuck, the next step really is sitting there waiting to be spotted, and that little click in your head when you find it never gets old.
 
-WHAT YOU GET TO SOLVE
-- Shapes: slide the pieces around until the lit pattern matches the target
-- Nonogram: paint the hidden picture from the numbers, black and white or in colour
-- Mosaic: every number tells you how many cells around it are filled
-- Crowns: one crown per row, column and region, and they hate being neighbours
-- Stars: same deal, now with two stars per line
-- Sudoku: you know this one
-- Killer Sudoku: Sudoku, plus cages that have to add up
-- Zip: draw a single path through every cell, reaching the numbers in order
+🎯 EIGHT PUZZLES TO FALL FOR
+• Sudoku: the classic you already know
+• Killer Sudoku: Sudoku, plus cages that have to add up
+• Nonogram: paint the hidden picture from the numbers, black and white or in colour
+• Mosaic: every number tells you how many cells around it are filled
+• Crowns: one crown per row, column and region, and they refuse to be neighbours
+• Stars: same idea, now with two stars per line
+• Zip: draw a single path through every cell, reaching the numbers in order
+• Shapes: slide the pieces until the lit pattern matches the target
 
-PLAY AS MUCH AS YOU LIKE
-Twenty levels for every type and difficulty, fifty for Shapes, lined up from gentle warm-up to genuinely genius. Run out? Endless random puzzles are waiting in four difficulties.
+⭐ PLAY FOR AS LONG AS YOU LIKE
+• 20 levels for every type and difficulty, 50 for Shapes
+• Lined up from gentle warm-up to genuinely genius
+• Endless random puzzles whenever you want more
+• Four difficulties: easy, medium, hard and genius
 
-Pencil marks for the Sudoku crowd. Undo for the bold. A hint for when you have earned it. Your streak, your progress and that half-finished board you abandoned on the bus are all still there when you come back. Light and dark theme, whichever suits the hour.
+💡 MADE FOR COMFY SOLVING
+• Pencil marks for your Sudoku notes
+• Undo and reset whenever you need them
+• A hint when you fancy a nudge
+• Your streak and progress save themselves
+• Left a board half finished? It is waiting exactly where you dropped it
+• Light and dark theme, whichever suits the hour
+• Everything is generated right on your phone, so trains, planes and waiting rooms all work
 
-Everything is generated right on your phone, so trains, planes and basements are all fine.
-
-No account, no sign-up, no "create a profile to continue". Open it and go solve something.
+No account. No sign-up. No "create a profile to continue". Just open it and go solve something!
