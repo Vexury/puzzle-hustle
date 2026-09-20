@@ -9,44 +9,18 @@ Puzzle Hustle
 
 ## Short description (max 80)
 
-Eight logic puzzles, new every day. Every one solvable by logic, never by luck.
+`store/paste/short-description.txt`, ready to paste as is.
 
 ## Full description (max 4000)
 
-Eight logic puzzles. One fresh set every day, the same for everyone playing.
+`store/paste/full-description.txt`, ready to paste as is. Paragraphs are unwrapped on purpose:
+Play keeps every line break literally, so a file wrapped for reading would show breaks mid
+sentence.
 
-Every puzzle here is run through a solver before it ships. It has exactly one solution, and you can
-always reason your way to it. No guessing, no backing out of a dead end you could not have seen
-coming. Nonograms resolve row by row and column by column. Killer cages fall to sums and the rule
-of 45. When you are stuck, the puzzle is still fair, you just have not found the next step yet.
-
-THE DAILY SET
-One puzzle of each type, seeded from the date, so your Tuesday is everyone's Tuesday. A harder
-Weekly and a bigger Monthly sit on top. Three solved dailies keep your streak alive.
-
-THE PUZZLES
-- Shapes: slide overlapping pieces until the lit pattern matches the target
-- Nonogram: paint the picture from the numbers, black and white or in colour
-- Mosaic: every number counts the filled cells around it
-- Crowns: one crown per row, column and region, never touching
-- Stars: the same idea, two stars per line
-- Sudoku: the classic
-- Killer Sudoku: sudoku with cages that add up
-- Zip: one path through every cell, reaching the numbers in order
-
-FREE PLAY
-Twenty levels per type and difficulty, fifty for Shapes, ordered from gentle to genius. After that,
-endless random puzzles in four difficulties.
-
-Pencil marks, undo, reset, and a hint when you want one. Your streak and your progress are kept,
-and a half-finished board is waiting exactly where you left it. Light and dark theme. The puzzles
-are generated on your device, so the train, the plane and the basement all work fine.
-
-No account. No sign-up. Open it and solve.
-
-Paste the paragraphs unwrapped: the line breaks above are for reading the file, Play would keep
-them literally. Never claim the app is ad free here; the moment AdMob ships, Play puts a
-"Contains ads" label next to the listing and the two would contradict each other.
+Never claim the app is ad free in here. The moment AdMob ships, Play puts a "Contains ads" label
+next to the listing and the two would contradict each other. The same goes for "no tracking",
+since ads process the advertising ID. What stays true for good: no account, no sign-up, puzzles
+generated on the device.
 
 ## Graphics
 
