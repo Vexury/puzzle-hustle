@@ -22,6 +22,23 @@ next to the listing and the two would contradict each other. The same goes for "
 since ads process the advertising ID. What stays true for good: no account, no sign-up, puzzles
 generated on the device.
 
+## Languages
+
+Default language is English (US). Play machine translates the listing into every language that has
+no entry of its own, and there is no switch to turn that off; the only lever is supplying real text.
+Checked on the live German page on 2026-09-20, the machine translation renamed the puzzle types to
+Kronen, Sterne and Formen, which the English-only app never shows, and inverted the fairness
+sentence so that the player, rather than the next step, sits there waiting to be spotted.
+
+German is therefore written by hand: `store/paste/short-description-de.txt` and
+`store/paste/full-description-de.txt`, submitted 2026-09-20. Rules for any further language:
+
+- Keep the eight puzzle names, the four difficulties and Daily/Weekly/Monthly in English. They are
+  what `PUZZLE_META` shows in the app, so translating them promises words the app never uses.
+- Say that the app itself is English, for as long as that is true.
+- Adding a language needs no extra graphics. Under Store-Einträge, "Übersetzungen verwalten" adds
+  the locale, and de-DE inherited icon, feature graphic and screenshots from en-US.
+
 ## Graphics
 
 | Asset | Requirement | Status |
