@@ -19,7 +19,7 @@ Every puzzle goes through our solver before it reaches you. One solution, and yo
 • Shapes: slide the pieces until the lit pattern matches the target
 
 ⭐ PLAY FOR AS LONG AS YOU LIKE
-• 20 levels for every type and difficulty, 50 for Shapes
+• Level packs for every puzzle type and difficulty, growing with every update
 • Lined up from gentle warm-up to genuinely genius
 • Endless random puzzles whenever you want more
 • Four difficulties: easy, medium, hard and genius
