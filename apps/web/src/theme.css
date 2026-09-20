@@ -107,6 +107,9 @@ body {
 a { color: inherit; }
 button { font: inherit; color: inherit; }
 .linklike { background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
+.ad-ask { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 24px; background: rgba(0, 0, 0, 0.55); }
+.ad-ask > .card-lg { max-width: 22rem; gap: 12px; }
+.ad-ask-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
 h1, h2, h3 { margin: 0; line-height: 1.15; }
 h1 { font-size: var(--fs-xl); font-weight: 800; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 h2 { font-size: var(--fs-lg); }

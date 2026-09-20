@@ -114,7 +114,24 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const [result, setResult] = useState<SolveRecord | undefined>(existing);
   const seenKey = `ph:howto:${puzzleRef.type}`;
   const [showHelp, setShowHelp] = useState(() => readSetting(seenKey) !== '1');
-  const hintProvider = currentHintProvider(hints);
+  const [askAd, setAskAd] = useState(false);
+  const adAnswer = useRef<((ok: boolean) => void) | null>(null);
+
+  const confirmAd = () =>
+    new Promise<boolean>((resolve) => {
+      adAnswer.current = resolve;
+      setAskAd(true);
+    });
+
+  const answerAd = (ok: boolean) => {
+    setAskAd(false);
+    adAnswer.current?.(ok);
+    adAnswer.current = null;
+  };
+
+  useEffect(() => () => adAnswer.current?.(false), []);
+
+  const hintProvider = currentHintProvider(hints, confirmAd);
   const back = backTarget(puzzleRef);
 
   useEffect(() => {
@@ -321,6 +338,23 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
               {nextChallenge.period === 'daily' ? PUZZLE_META[nextChallenge.type].name : capitalize(nextChallenge.period!)} ›
             </a>
           )}
+        </div>
+      )}
+
+      {askAd && (
+        <div className="ad-ask" role="dialog" aria-modal="true" aria-label="Watch a video for a hint">
+          <div className="card-lg">
+            <b>One more hint?</b>
+            <span className="muted small">Watch a short video and the next hint is yours. Your first hint on every puzzle is always free.</span>
+            <div className="ad-ask-row">
+              <button type="button" className="pill outline" onClick={() => answerAd(false)}>
+                Not now
+              </button>
+              <button type="button" className="pill" onClick={() => answerAd(true)}>
+                Watch video
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

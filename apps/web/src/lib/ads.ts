@@ -54,9 +54,12 @@ export async function showPrivacyOptions(): Promise<void> {
   await AdMob.showPrivacyOptionsForm();
 }
 
+// Laesst sich keine Anzeige ausliefern, bekommt der Spieler den Hint trotzdem.
+// Gescheitert ist das Netz oder die Fuellrate, nicht er, und verdient haette
+// die App an einer Anzeige, die es nie gab, ohnehin nichts.
 export async function showRewardedAd(): Promise<boolean> {
   if (!native) return false;
-  if (!(await prepare())) return false;
+  if (!(await prepare())) return true;
 
   let rewarded = false;
   const handle = await AdMob.addListener(RewardAdPluginEvents.Rewarded, () => {
@@ -65,10 +68,16 @@ export async function showRewardedAd(): Promise<boolean> {
 
   try {
     await AdMob.prepareRewardVideoAd({ adId: REWARD_UNIT });
+  } catch {
+    await handle.remove();
+    return true;
+  }
+
+  try {
     const reward = await AdMob.showRewardVideoAd();
     if (reward && reward.amount > 0) rewarded = true;
   } catch {
-    rewarded = false;
+    rewarded = true;
   } finally {
     await handle.remove();
   }

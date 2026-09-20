@@ -13,12 +13,15 @@ export const freeHints: HintProvider = {
   },
 };
 
-export const adHints: HintProvider = {
-  label: 'Watch ad',
-  request: showRewardedAd,
-};
-
-export function currentHintProvider(used: number): HintProvider {
+// Googles Richtlinie verlangt fuer Rewarded Ads ein ausdrueckliches Ja, bevor die
+// Anzeige laeuft. Ein Tipp auf "Hint" ist keins, deshalb fragt `confirm` vorher nach.
+export function currentHintProvider(used: number, confirm: () => Promise<boolean>): HintProvider {
   if (!adsAvailable || hasUnlimitedHints() || used === 0) return freeHints;
-  return adHints;
+  return {
+    label: 'Watch ad',
+    async request() {
+      if (!(await confirm())) return false;
+      return showRewardedAd();
+    },
+  };
 }
