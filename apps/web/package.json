@@ -11,6 +11,7 @@
     "test": "echo no web tests yet"
   },
   "dependencies": {
+    "@capacitor-community/admob": "^8.1.0",
     "@capacitor/app": "^8.1.1",
     "@capacitor/core": "^8.5.2",
     "@capacitor/preferences": "^8.0.1",
