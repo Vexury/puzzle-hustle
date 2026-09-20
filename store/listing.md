@@ -28,17 +28,23 @@ generated on the device.
 | --- | --- | --- |
 | App icon | 512x512, 32-bit PNG | `store/icon-512.png` |
 | Feature graphic | 1024x500, PNG or JPG | `store/feature-graphic.png` |
-| Phone screenshots | at least 2, 16:9 or 9:16, 320-3840 px | `store/screenshots/`, 1080x2340, dark theme |
-| Tablet screenshots | optional, but improves reach | open |
+| Phone screenshots | at least 2, 320-3840 px, long side at most twice the short side | `store/screenshots/phone/`, 6 shots, 1080x2160 |
+| Tablet screenshots | optional, helps placement on large screens | `store/screenshots/tablet/`, 4 shots, 1600x2560 |
 
-The screenshots are a first set taken on a Galaxy S23: the daily list, four boards and the puzzle
-index, all on empty boards. They should be retaken once the app has some progress to show, so the
-daily screen does not read "0/8 solved".
+Themes alternate across the set rather than being shown as a split image, so every shot is a real
+screen and Play sees no composite. Phone shots are 1080x2160 on purpose: Play rejects a screenshot
+whose long side is more than twice its short side, and a real 20:9 phone capture (1080x2340) misses
+that by a hair.
+
+Screenshots are taken from the live web build at puzzles.vexury.dev through Chrome with remote
+debugging, at the device sizes above and with `prefers-color-scheme` forced per shot. The web build
+and the app share the same UI code, and a puzzle screen can be addressed directly, for example
+`/play?t=killer&d=medium&s=<seed>&p=daily&k=<date>`, which beats tapping through the app.
 
 Both images are generated: `node scripts/android-icons.mjs` from `apps/web` renders the launcher
-icons, `node scripts/store-assets.mjs` the listing icon, and `PH_FONT=<path> node
-scripts/feature-graphic.mjs` the feature graphic. `PH_FONT` points at a Nunito TTF, which is not
-in the repo; take `ofl/nunito/Nunito[wght].ttf` from the google/fonts repository.
+icons, `node scripts/store-assets.mjs` the listing icon plus the PWA icons in `public/`, and
+`PH_FONT=<path> node scripts/feature-graphic.mjs` the feature graphic. `PH_FONT` points at a Nunito
+TTF, which is not in the repo; take `ofl/nunito/Nunito[wght].ttf` from the google/fonts repository.
 
 ## Play Console answers
 
