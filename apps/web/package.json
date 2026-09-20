@@ -13,6 +13,7 @@
   "dependencies": {
     "@capacitor/app": "^8.1.1",
     "@capacitor/core": "^8.5.2",
+    "@capacitor/preferences": "^8.0.1",
     "@capacitor/share": "^8.0.2",
     "@puzzle-hustle/core": "workspace:*",
     "react": "19.3.0",
@@ -27,6 +28,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "6.1.1",
     "oxc-transform-react": "^0.150.0",
+    "sharp": "^0.35.4",
     "vite": "8.3.0"
   }
 }

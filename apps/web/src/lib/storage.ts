@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { isBackedUp, scheduleBackup } from './backup.ts';
 
 export interface SolveRecord {
   solvedAt: string;
@@ -20,6 +21,11 @@ function load(): Record<string, SolveRecord> {
   }
 }
 
+export function rehydrate() {
+  cache = load();
+  for (const l of listeners) l();
+}
+
 export function getSolve(id: string): SolveRecord | undefined {
   return cache[id];
 }
@@ -29,6 +35,7 @@ export function recordSolve(id: string, record: SolveRecord) {
   cache = { ...cache, [id]: record };
   try {
     localStorage.setItem(KEY, JSON.stringify(cache));
+    scheduleBackup();
   } catch {
     /* storage unavailable */
   }
@@ -66,6 +73,7 @@ export function readProgress(id: string): Progress | null {
 export function writeProgress(id: string, progress: Progress) {
   try {
     localStorage.setItem(PROGRESS_PREFIX + id, JSON.stringify(progress));
+    scheduleBackup();
   } catch {
     /* storage unavailable */
   }
@@ -74,6 +82,7 @@ export function writeProgress(id: string, progress: Progress) {
 export function clearProgress(id: string) {
   try {
     localStorage.removeItem(PROGRESS_PREFIX + id);
+    scheduleBackup();
   } catch {
     /* storage unavailable */
   }
@@ -87,6 +96,7 @@ export function resetProgress() {
       if (k && (k === KEY || k.startsWith(PROGRESS_PREFIX) || k.startsWith('ph:howto:') || k.startsWith('ph:difficulty:'))) doomed.push(k);
     }
     for (const k of doomed) localStorage.removeItem(k);
+    scheduleBackup();
   } catch {
     /* storage unavailable */
   }
@@ -105,6 +115,7 @@ export function readSetting(key: string): string | null {
 export function writeSetting(key: string, value: string) {
   try {
     localStorage.setItem(key, value);
+    if (isBackedUp(key)) scheduleBackup();
   } catch {
     /* storage unavailable */
   }
