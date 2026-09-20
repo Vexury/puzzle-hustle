@@ -1,5 +1,10 @@
 apply plugin: 'com.android.application'
 
+def signingProperty = { String name ->
+    project.findProperty(name) ?: System.getenv(name)
+}
+def keystorePath = signingProperty('PH_KEYSTORE_FILE')
+
 android {
     namespace = "dev.vexury.puzzlehustle"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -16,9 +21,21 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (keystorePath) {
+                storeFile file(keystorePath)
+                storePassword signingProperty('PH_KEYSTORE_PASSWORD')
+                keyAlias signingProperty('PH_KEY_ALIAS')
+                keyPassword signingProperty('PH_KEY_PASSWORD')
+            }
+        }
+    }
     buildTypes {
         release {
-            minifyEnabled false
+            if (keystorePath) signingConfig signingConfigs.release
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
