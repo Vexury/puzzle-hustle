@@ -8,9 +8,11 @@ const BG = '#1c1b19';
 const FG = '#FFA833';
 
 const MOTIF = `
-  <rect x="14" y="14" width="24" height="24" fill="${FG}"/>
-  <polygon points="38,26 50,38 38,50 26,38" fill="${FG}"/>
-  <polygon points="26,26 38,26 38,38" fill="${BG}"/>`;
+  <g transform="translate(1.4,1.2)">
+    <rect x="14" y="14" width="24" height="24" fill="${FG}"/>
+    <polygon points="38,26 50,38 38,50 26,38" fill="${FG}"/>
+    <polygon points="26,26 38,26 38,38" fill="${BG}"/>
+  </g>`;
 
 const LEGACY = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <rect width="64" height="64" rx="14" fill="${BG}"/>${MOTIF}

@@ -9,11 +9,21 @@ const FG = '#FFA833';
 
 const ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <rect width="64" height="64" fill="${BG}"/>
-  <rect x="14" y="14" width="24" height="24" fill="${FG}"/>
-  <polygon points="38,26 50,38 38,50 26,38" fill="${FG}"/>
-  <polygon points="26,26 38,26 38,38" fill="${BG}"/>
+  <g transform="translate(1.4,1.2)">
+    <rect x="14" y="14" width="24" height="24" fill="${FG}"/>
+    <polygon points="38,26 50,38 38,50 26,38" fill="${FG}"/>
+    <polygon points="26,26 38,26 38,38" fill="${BG}"/>
+  </g>
 </svg>`;
+
+const ROUNDED = ICON.replace('<rect width="64" height="64"', '<rect width="64" height="64" rx="14"');
+const PUBLIC = fileURLToPath(new URL('../public/', import.meta.url));
 
 await mkdir(OUT, { recursive: true });
 await sharp(Buffer.from(ICON), { density: 512 }).resize(512, 512).png().toFile(`${OUT}icon-512.png`);
 console.log('store/icon-512.png');
+
+for (const size of [192, 512]) {
+  await sharp(Buffer.from(ROUNDED), { density: 512 }).resize(size, size).png().toFile(`${PUBLIC}icon-${size}.png`);
+  console.log(`public/icon-${size}.png`);
+}

@@ -14,9 +14,11 @@ const H = 500;
 
 const mark = await sharp(
   Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-    <rect x="14" y="14" width="24" height="24" fill="${FG}"/>
-    <polygon points="38,26 50,38 38,50 26,38" fill="${FG}"/>
-    <polygon points="26,26 38,26 38,38" fill="${BG}"/>
+    <g transform="translate(1.4,1.2)">
+      <rect x="14" y="14" width="24" height="24" fill="${FG}"/>
+      <polygon points="38,26 50,38 38,50 26,38" fill="${FG}"/>
+      <polygon points="26,26 38,26 38,38" fill="${BG}"/>
+    </g>
   </svg>`),
   { density: 512 },
 )
