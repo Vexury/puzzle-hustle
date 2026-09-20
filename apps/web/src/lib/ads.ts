@@ -1,8 +1,11 @@
 import { AdMob, AdmobConsentStatus, RewardAdPluginEvents } from '@capacitor-community/admob';
 import { Capacitor } from '@capacitor/core';
 
-// Googles Test-Einheit, bis das AdMob-Konto freigegeben ist.
-const REWARD_UNIT = 'ca-app-pub-3940256099942544/5224354917';
+const REWARD_UNIT = 'ca-app-pub-3552688457242630/8666936384';
+
+// Bis ein Testgeraet in AdMob registriert ist, fordert jede Anfrage eine Testanzeige an.
+// Sonst zaehlt jeder eigene Klick als ungueltiger Traffic und gefaehrdet das Konto.
+const TESTING = true;
 
 const native = Capacitor.isNativePlatform();
 
@@ -50,7 +53,7 @@ export async function showRewardedAd(): Promise<boolean> {
   });
 
   try {
-    await AdMob.prepareRewardVideoAd({ adId: REWARD_UNIT });
+    await AdMob.prepareRewardVideoAd({ adId: REWARD_UNIT, isTesting: TESTING });
     const reward = await AdMob.showRewardVideoAd();
     if (reward && reward.amount > 0) rewarded = true;
   } catch {
