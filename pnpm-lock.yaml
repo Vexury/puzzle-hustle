@@ -190,6 +190,9 @@ importers:
       '@capacitor/status-bar':
         specifier: ^8.0.3
         version: 8.0.3(@capacitor/core@8.5.2)
+      '@capgo/native-purchases':
+        specifier: ^8.7.0
+        version: 8.7.0(@capacitor/core@8.5.2)
       '@puzzle-hustle/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -286,6 +289,11 @@ packages:
 
   '@capacitor/status-bar@8.0.3':
     resolution: {integrity: sha512-csSpfNeN49Hx9JaQBSJEIiEbOLtXg3kcc2IpScq2fu5L520h3AWEvsxoH8Srk1jxfRKepaJ4S4sqSC3foI4AgA==}
+    peerDependencies:
+      '@capacitor/core': '>=8.0.0'
+
+  '@capgo/native-purchases@8.7.0':
+    resolution: {integrity: sha512-sfnV5rZZOeUx/a/IVFX98HdEQX8f7/h9/oLyeo23QuTRnltVb6PxJhvmBOqIl02R7Pp5BaafNIEStvcacxLgnA==}
     peerDependencies:
       '@capacitor/core': '>=8.0.0'
 
@@ -1573,6 +1581,10 @@ snapshots:
       '@capacitor/core': 8.5.2
 
   '@capacitor/status-bar@8.0.3(@capacitor/core@8.5.2)':
+    dependencies:
+      '@capacitor/core': 8.5.2
+
+  '@capgo/native-purchases@8.7.0(@capacitor/core@8.5.2)':
     dependencies:
       '@capacitor/core': 8.5.2
 

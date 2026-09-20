@@ -16,6 +16,7 @@
     "@capacitor/preferences": "^8.0.1",
     "@capacitor/share": "^8.0.2",
     "@capacitor/status-bar": "^8.0.3",
+    "@capgo/native-purchases": "^8.7.0",
     "@puzzle-hustle/core": "workspace:*",
     "react": "19.3.0",
     "react-dom": "19.3.0"
