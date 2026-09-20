@@ -47,9 +47,14 @@ Puzzle Hustle keeps everything on your device. No account, no sign-up, no ads, n
 | Asset | Requirement | Status |
 | --- | --- | --- |
 | App icon | 512x512, 32-bit PNG | `store/icon-512.png` |
-| Feature graphic | 1024x500, PNG or JPG | open |
+| Feature graphic | 1024x500, PNG or JPG | `store/feature-graphic.png` |
 | Phone screenshots | at least 2, 16:9 or 9:16, 320-3840 px | open |
 | Tablet screenshots | optional, but improves reach | open |
+
+Both images are generated: `node scripts/android-icons.mjs` from `apps/web` renders the launcher
+icons, `node scripts/store-assets.mjs` the listing icon, and `PH_FONT=<path> node
+scripts/feature-graphic.mjs` the feature graphic. `PH_FONT` points at a Nunito TTF, which is not
+in the repo; take `ofl/nunito/Nunito[wght].ttf` from the google/fonts repository.
 
 ## Play Console answers
 
