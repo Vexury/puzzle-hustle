@@ -30,6 +30,10 @@ export function useGroups(): { groups: Group[]; reload: () => void; loading: boo
       // A sign-out (or account switch) while this request is in flight must not let a late
       // response repopulate a list for a session that is no longer current.
       .then((data) => {
+        // apiFetch only guarantees parseable JSON, not this shape. Treat a malformed body
+        // exactly like any other failed request rather than handing a non-array to setGroups
+        // and blanking the Daily tab's FriendsRow, or anything else that maps over it.
+        if (!Array.isArray(data.groups)) throw new Error('malformed /groups response');
         if (readSession()?.token === session.token) setGroups(data.groups);
       })
       .catch(() => undefined)
@@ -47,6 +51,7 @@ const MESSAGES: Record<string, string> = {
   group_limit: 'You are in five groups already',
   group_name: 'Pick a different name',
   offline: 'No connection',
+  unauthorized: 'Please sign in again',
 };
 
 export function explain(err: unknown): string {
@@ -55,15 +60,14 @@ export function explain(err: unknown): string {
 
 export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
   const session = useSession();
-  const { groups, reload } = useGroups();
+  const { groups, reload, loading } = useGroups();
   const [name, setName] = useState('');
   const [code, setCode] = useState(initialCode.trim().toUpperCase().slice(0, 6));
-  // Independent per-form flags, not useGroups's loading: that one is about the list refetch,
-  // and a later task needs it for that. These exist only to stop a double-tap on a pill button
-  // from firing a second POST before the first one has come back.
+  // Independent per-form flags, not useGroups's loading: that one is about the list refetch.
+  // These exist only to stop a double-tap on a pill button from firing a second POST before
+  // the first one has come back.
   const [creating, setCreating] = useState(false);
   const [joining, setJoining] = useState(false);
-  const puzzles = [...PUZZLE_TYPES.map((type) => dailyRef(type)), periodRef('weekly'), periodRef('monthly')];
   const [groupId, setGroupId] = useState<string | null>(null);
   const [puzzleIndex, setPuzzleIndex] = useState(0);
 
@@ -81,6 +85,21 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
       </section>
     );
   }
+
+  if (loading && groups.length === 0) {
+    return (
+      <>
+        <section className="page-head">
+          <h1>Friends</h1>
+        </section>
+        <p className="muted small">Loading…</p>
+      </>
+    );
+  }
+
+  // Ten generator runs a signed-out (or still-loading) player never needs, so this stays below
+  // both early returns above and only runs once we know it will actually be rendered.
+  const puzzles = [...PUZZLE_TYPES.map((type) => dailyRef(type)), periodRef('weekly'), periodRef('monthly')];
 
   const create = async () => {
     setCreating(true);
