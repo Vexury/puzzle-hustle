@@ -238,6 +238,7 @@ const DELETE_CONFIRM_MS = 4000;
 
 function FriendsCard() {
   const session = useSession();
+  const { theme } = useTheme();
   const buttonHost = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -245,15 +246,17 @@ function FriendsCard() {
   const attemptSignIn = () => {
     if (!buttonHost.current) return;
     setFailed(false);
-    renderSignInButton(buttonHost.current, () => setFailed(false)).catch(() => setFailed(true));
+    renderSignInButton(buttonHost.current, () => setFailed(false), theme).catch(() => setFailed(true));
   };
 
   useEffect(() => {
     // With no client id configured, a sign-in attempt is guaranteed to throw immediately
     // (renderSignInButton's own guard). That is "not configured", not "failed to load", and
     // must never reach the player as an error with a retry link that cannot help.
+    // Keyed on the theme as well: Google draws the button itself, so the only way it follows
+    // a theme switch is to draw it again.
     if (!session && CLIENT_ID) attemptSignIn();
-  }, [session]);
+  }, [session, theme]);
 
   // Mirrors ResetButton.tsx's arm/revert pattern: the timer lives in an effect keyed on the
   // armed state so it is cleared on unmount or re-arm instead of firing into a stale closure.

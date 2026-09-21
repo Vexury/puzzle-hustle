@@ -55,7 +55,11 @@ interface Gsi {
   };
 }
 
-export async function renderSignInButton(target: HTMLElement, onDone: (session: Session) => void): Promise<void> {
+export async function renderSignInButton(
+  target: HTMLElement,
+  onDone: (session: Session) => void,
+  theme: 'light' | 'dark' = 'light',
+): Promise<void> {
   if (!CLIENT_ID) throw new Error('no client id');
   await loadGsi();
   const gsi = (window as unknown as { google?: Gsi }).google;
@@ -96,7 +100,23 @@ export async function renderSignInButton(target: HTMLElement, onDone: (session: 
       })();
     },
   });
-  gsi.accounts.id.renderButton(target, { type: 'standard', theme: 'outline', size: 'large', text: 'signin_with' });
+  // Google renders this button itself and its branding rules leave only these knobs, so the
+  // way to make it belong here is to pick the variant that matches the surface it sits on:
+  // the dark fill under the dark theme, the outline under the light one, and the pill shape
+  // the rest of the app's buttons use. Width is measured rather than guessed so the button
+  // spans its card instead of floating at whatever size the account name happens to need.
+  // Re-rendering clears the host first: renderButton appends, it does not replace.
+  const width = Math.round(target.getBoundingClientRect().width);
+  target.replaceChildren();
+  gsi.accounts.id.renderButton(target, {
+    type: 'standard',
+    theme: theme === 'dark' ? 'filled_black' : 'outline',
+    size: 'large',
+    shape: 'pill',
+    text: 'signin_with',
+    logo_alignment: 'left',
+    width: String(Math.max(200, Math.min(400, width || 280))),
+  });
 }
 
 export function signOut() {
