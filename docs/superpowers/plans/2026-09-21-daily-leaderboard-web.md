@@ -80,6 +80,7 @@ describe('parsePuzzleId', () => {
     expect(parsePuzzleId('sudoku:daily:2026-9-21')).toBeNull();
     expect(parsePuzzleId('sudoku:daily:2026-02-30')).toBeNull();
     expect(parsePuzzleId('sudoku:weekly:2026-W54')).toBeNull();
+    expect(parsePuzzleId('sudoku:weekly:2025-W53')).toBeNull(); // 2025 has 52 ISO weeks
     expect(parsePuzzleId('sudoku:monthly:2026-13')).toBeNull();
   });
 });
@@ -138,7 +139,7 @@ Expected: FAIL, both files, cannot resolve `../src/puzzleId.ts` and `../src/plau
 - [ ] **Step 3: Write `packages/core/src/puzzleId.ts`**
 
 ```ts
-import { nextPeriodStart, periodDifficulty } from './schedule.ts';
+import { isoWeek, nextPeriodStart, periodDifficulty } from './schedule.ts';
 import { isPeriod, isPuzzleTypeId, type Difficulty, type Period, type PuzzleTypeId } from './types.ts';
 
 export interface ParsedPuzzleId {
@@ -168,7 +169,10 @@ function dateInPeriod(period: Period, key: string): Date | null {
     const jan4 = new Date(Date.UTC(y, 0, 4, 12));
     const monday = jan4.getTime() - ((jan4.getUTCDay() || 7) - 1) * 86400000;
     const probe = new Date(monday + (w - 1) * 7 * 86400000);
-    if (probe.getUTCFullYear() > y + 1) return null;
+    // Bounding w to 1..53 is not enough: 2025 has only 52 ISO weeks, so 2025-W53 would
+    // otherwise resolve to a date that really belongs to 2026-W01. Round-trip to be sure.
+    const computed = isoWeek({ year: probe.getUTCFullYear(), month: probe.getUTCMonth() + 1, day: probe.getUTCDate() });
+    if (computed.year !== y || computed.week !== w) return null;
     return probe;
   }
   const m = /^(\d{4})-(\d{2})$/.exec(key);
