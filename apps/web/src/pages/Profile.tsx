@@ -6,7 +6,7 @@ import { adsAvailable, onAdsConsent, privacyOptionsAvailable, showPrivacyOptions
 import { buyUnlimitedHints, hasUnlimitedHints, onEntitlement } from '../lib/entitlement.ts';
 import { readSetting, resetProgress, useSolves, writeSetting } from '../lib/storage.ts';
 import { formatSeconds } from '../lib/share.ts';
-import { STREAK_MIN, dailyStreaks, totalSolved, typeStats } from '../lib/stats.ts';
+import { dailyStreaks, totalSolved, typeStats } from '../lib/stats.ts';
 import { THEME_PREFS, useTheme, type ThemePref } from '../lib/theme.ts';
 import { ThemeToggle } from '../components/ThemeToggle.tsx';
 
@@ -74,7 +74,7 @@ export function Profile() {
         </div>
 
         <div className="stat-grid">
-          <Stat value={streaks.current} label={`day streak (${STREAK_MIN}+ dailies)`} flame />
+          <Stat value={streaks.current} label="day streak" flame />
           <Stat value={streaks.best} label="best streak" />
           <Stat value={streaks.daysPlayed} label="days played" />
           <Stat value={totalSolved(solves)} label="puzzles solved" />

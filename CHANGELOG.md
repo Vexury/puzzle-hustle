@@ -64,6 +64,10 @@ and Crowns had drifted to smaller ones with their own opacities.
 looks like and sits in the middle of its button. The theme toggle reached the level picker,
 the one screen of four that was missing it.
 
+**The streak tile in the profile reads "day streak" again.** The rule in brackets, "3+
+dailies", explained itself to nobody standing in a grid of four numbers, and the daily
+progress bar already says how many are missing.
+
 **The crown in the Crowns icon shrank to the size of its neighbours.** It covered all nine
 cells of the little grid drawn behind it and carried about twice the ink of any other type
 icon in the list. It now sits centred at roughly the size of the star in the Stars icon.
