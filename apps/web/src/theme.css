@@ -511,6 +511,7 @@ p { margin: 0; }
 .inner-frame { fill: none; stroke: var(--border-mid); stroke-width: 0.05; pointer-events: none; }
 .atom.lit { fill: var(--accent); stroke: var(--accent); stroke-width: 0.012; opacity: 0.42; }
 .atom.lit.match { opacity: 1; }
+.atom.lit:not(.match) { stroke: var(--accent-deep); }
 .match-pulse { animation: atom-pulse 2s ease-in-out infinite; }
 .board.solved .match-pulse { animation: none; }
 .board.solved .atom.lit { animation: atom-solve 1s ease-out both; }
