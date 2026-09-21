@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ApiError, apiFetch, readSession } from '../lib/api.ts';
 import { useSession } from '../lib/auth.ts';
 import { href, onLinkClick } from '../lib/router.ts';
+import { joinUrl, share } from '../lib/share.ts';
 import { toast } from '../components/Toast.tsx';
 
 export interface Group {
@@ -50,11 +51,11 @@ export function explain(err: unknown): string {
   return err instanceof ApiError ? (MESSAGES[err.code] ?? 'Something went wrong') : 'Something went wrong';
 }
 
-export function Friends() {
+export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
   const session = useSession();
   const { groups, reload } = useGroups();
   const [name, setName] = useState('');
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(initialCode.toUpperCase().slice(0, 6));
   // Independent per-form flags, not useGroups's loading: that one is about the list refetch,
   // and a later task needs it for that. These exist only to stop a double-tap on a pill button
   // from firing a second POST before the first one has come back.
@@ -126,6 +127,20 @@ export function Friends() {
               {group.members} member{group.members === 1 ? '' : 's'} · code <b className="num">{group.code}</b>
             </span>
           </span>
+          <button
+            type="button"
+            className="pill outline"
+            onClick={() =>
+              void share(`Join my Puzzle Hustle group "${group.name}"\nCode ${group.code}\n${joinUrl(group.code)}`).then(
+                (outcome) => {
+                  if (outcome === 'copied') toast('Link copied');
+                  else if (outcome === 'failed') toast('Could not share');
+                },
+              )
+            }
+          >
+            Invite
+          </button>
           <button type="button" className="pill outline" onClick={() => void leave(group)}>
             Leave
           </button>

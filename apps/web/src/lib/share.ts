@@ -13,6 +13,11 @@ export function puzzleUrl(ref: PuzzleRef): string {
   return `${origin}${href('/play')}?${encodeRef(ref)}`;
 }
 
+export function joinUrl(code: string): string {
+  const origin = Capacitor.isNativePlatform() ? SHARE_ORIGIN : location.origin;
+  return `${origin}${href('/join')}?c=${code}`;
+}
+
 export function formatSeconds(total: number): string {
   const m = Math.floor(total / 60);
   const s = total % 60;
