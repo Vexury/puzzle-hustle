@@ -117,6 +117,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const [result, setResult] = useState<SolveRecord | undefined>(existing);
   const seenKey = `ph:howto:${puzzleRef.type}`;
   const [showHelp, setShowHelp] = useState(() => readSetting(seenKey) !== '1');
+  const helpSeen = useRef(readSetting(seenKey) === '1');
   const [askAd, setAskAd] = useState(false);
   const adAnswer = useRef<((ok: boolean) => void) | null>(null);
   const [askLeave, setAskLeave] = useState(false);
@@ -141,6 +142,14 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
 
   const hintProvider = currentHintProvider(hints, confirmAd);
   const back = backTarget(puzzleRef);
+
+  // The clock runs from the moment the puzzle is on screen. Starting it on the first move
+  // rewards solving the whole thing in your head and then racing the input.
+  useEffect(() => {
+    if (result) return;
+    startedAt.current = Date.now() - seconds * 1000;
+    setRunning(true);
+  }, []);
 
   useEffect(() => {
     if (!running) return;
@@ -201,11 +210,9 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const onMove = () => {
     counters.current.moves++;
     setMoves(counters.current.moves);
-    if (startedAt.current === null) {
-      startedAt.current = Date.now() - seconds * 1000;
-      setRunning(true);
-      writeSetting(seenKey, '1');
-    }
+    if (helpSeen.current) return;
+    helpSeen.current = true;
+    writeSetting(seenKey, '1');
   };
 
   const onHintUsed = () => {
