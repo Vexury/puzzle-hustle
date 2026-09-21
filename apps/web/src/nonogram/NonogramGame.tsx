@@ -134,6 +134,12 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
     if (pointerMove(e)) return;
     const d = drag.current;
     if (!d || d.pointerId !== e.pointerId) return;
+    // A stroke that completes the picture has to stop there, or the next cell it paints
+    // unsolves a puzzle that is already recorded as solved.
+    if (isNonogramSolved(spec, stateRef.current)) {
+      cancelDrag();
+      return;
+    }
     const pos = cellAt(e.clientX, e.clientY);
     if (!pos || (pos.r === d.r && pos.c === d.c)) return;
     clearTimer(d);

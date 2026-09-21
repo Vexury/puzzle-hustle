@@ -144,6 +144,12 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, locke
   function moveDrag(e: React.PointerEvent<SVGSVGElement>) {
     const d = drag.current;
     if (!d || d.pointerId !== e.pointerId) return;
+    // The drag that completed the path must not keep going: moving back onto the line
+    // would cut it and unsolve a puzzle that is already recorded as solved.
+    if (isZipSolved(spec, pathRef.current)) {
+      drag.current = null;
+      return;
+    }
     const cell = cellAt(e);
     if (cell === null || cell === d.last) return;
     d.last = cell;
