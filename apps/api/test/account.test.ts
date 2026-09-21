@@ -41,6 +41,28 @@ it('records a report once per pair', async () => {
   expect(rows?.n).toBe(1);
 });
 
+it('refuses a self-report and writes nothing', async () => {
+  const me = await signIn('s1', 'Moritz');
+  const response = await call('/report', me.token, {
+    method: 'POST',
+    body: JSON.stringify({ playerId: me.player.id, reason: 'name' }),
+  });
+  expect(response.status).toBe(400);
+  const rows = await env.DB.prepare('SELECT COUNT(*) AS n FROM reports').first<{ n: number }>();
+  expect(rows?.n).toBe(0);
+});
+
+it('refuses a report against an unknown player and writes nothing', async () => {
+  const me = await signIn('s1', 'Moritz');
+  const response = await call('/report', me.token, {
+    method: 'POST',
+    body: JSON.stringify({ playerId: 'nope', reason: 'name' }),
+  });
+  expect(response.status).toBe(404);
+  const rows = await env.DB.prepare('SELECT COUNT(*) AS n FROM reports').first<{ n: number }>();
+  expect(rows?.n).toBe(0);
+});
+
 it('deletes the player, their scores and their memberships', async () => {
   const me = await signIn('s1', 'Moritz');
   await call('/groups', me.token, { method: 'POST', body: JSON.stringify({ name: 'Family' }) });

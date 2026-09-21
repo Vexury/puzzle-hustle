@@ -115,6 +115,9 @@ async function route(request: Request, env: Env): Promise<Response> {
   if (method === 'POST' && path === '/report') {
     const input = await body(request);
     if (typeof input.playerId !== 'string') return error(400, 'missing_id');
+    if (input.playerId === playerId) return error(400, 'self_report');
+    const target = await env.DB.prepare('SELECT id FROM players WHERE id = ?').bind(input.playerId).first<{ id: string }>();
+    if (!target) return error(404, 'unknown_player');
     const reason = typeof input.reason === 'string' ? input.reason.slice(0, 200) : 'name';
     const existing = await env.DB.prepare('SELECT id FROM reports WHERE reporter_id = ? AND target_id = ?')
       .bind(playerId, input.playerId)
