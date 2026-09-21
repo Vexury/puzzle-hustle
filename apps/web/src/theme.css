@@ -195,7 +195,6 @@ p { margin: 0; }
   text-decoration: none;
   transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
-.row-card:hover { border-color: var(--accent); box-shadow: var(--shadow-hover); }
 .row-card:active { transform: scale(0.99); }
 .row-icon { position: relative; display: inline-flex; }
 .row-check {
@@ -258,16 +257,12 @@ p { margin: 0; }
   white-space: nowrap;
   transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
 }
-.pill:hover { background: var(--hover-bg); border-color: var(--hover-bg); color: var(--hover-text); }
 .pill:active { transform: scale(0.97); }
 .pill:disabled { opacity: 0.5; cursor: default; transform: none; }
 .pill.outline { background: transparent; color: var(--text); border-color: var(--border-mid); }
 .pill.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
-.pill.danger:hover { background: var(--hover-bg); border-color: var(--hover-bg); color: var(--hover-text); }
 .reset-confirm { display: flex; gap: 8px; }
-.pill.outline:hover:not(:disabled) { background: var(--hover-bg); border-color: var(--hover-bg); color: var(--hover-text); }
 .row-card.solved .pill.outline { border-color: var(--success); color: var(--success); }
-.row-card.solved .pill.outline:hover { background: var(--success); border-color: var(--success); color: #fff; }
 
 .actions { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 10px; width: 100%; margin-top: 4px; }
 .board-panel .actions { max-width: 520px; margin-left: auto; margin-right: auto; }
@@ -285,10 +280,9 @@ p { margin: 0; }
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
-.actions .btn:hover:not(:disabled) { background: var(--hover-bg); border-color: var(--hover-bg); color: var(--hover-text); }
 .actions .btn:disabled { opacity: 0.45; cursor: default; }
 .actions .btn.warn { color: var(--danger); }
-.actions .btn.danger, .actions .btn.danger:hover:not(:disabled) { background: var(--danger); border-color: var(--danger); color: #fff; }
+.actions .btn.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
 
 .chevron { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 
@@ -354,7 +348,6 @@ p { margin: 0; }
 .tile.solved { border-color: var(--success); background: var(--success-soft); }
 .tile.solved b, .tile.solved small { color: var(--success); }
 .tile.locked { opacity: 0.45; border-style: dashed; }
-.tile:not(.locked):hover { border-color: var(--hover-bg); }
 .tile:not(.locked):active { transform: scale(0.97); }
 
 .card-lg {
@@ -446,7 +439,6 @@ p { margin: 0; }
 .tab svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .tab svg .fill { fill: currentColor; stroke: none; }
 .tab.active { background: var(--accent-soft); color: var(--accent-deep); }
-.tab:hover { color: var(--text); }
 
 .play { display: flex; flex-direction: column; gap: 12px; }
 .play-bar { display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; gap: 8px; }
@@ -465,7 +457,6 @@ p { margin: 0; }
   cursor: pointer;
   line-height: 1;
 }
-.icon-round:hover { background: var(--hover-bg); color: var(--hover-text); border-color: var(--hover-bg); }
 .icon-round.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-deep); }
 .play-meta { display: flex; align-items: center; gap: 12px; }
 .sudoku-board, .sudoku-pad, .nono-board, .mosaic-board, .zip-svg, .timer, .big-time, .stat b, .tile b { font-family: var(--font-num); }
@@ -556,4 +547,18 @@ p { margin: 0; }
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
+}
+
+/* Touch devices keep the last hover state stuck on a button until the next tap. */
+@media (hover: hover) {
+  .row-card:hover { border-color: var(--accent); box-shadow: var(--shadow-hover); }
+  .pill:hover { background: var(--hover-bg); border-color: var(--hover-bg); color: var(--hover-text); }
+  .pill.danger:hover { background: var(--hover-bg); border-color: var(--hover-bg); color: var(--hover-text); }
+  .pill.outline:hover:not(:disabled) { background: var(--hover-bg); border-color: var(--hover-bg); color: var(--hover-text); }
+  .row-card.solved .pill.outline:hover { background: var(--success); border-color: var(--success); color: #fff; }
+  .actions .btn:hover:not(:disabled) { background: var(--hover-bg); border-color: var(--hover-bg); color: var(--hover-text); }
+  .actions .btn.danger:hover:not(:disabled) { background: var(--danger); border-color: var(--danger); color: #fff; }
+  .tile:not(.locked):hover { border-color: var(--hover-bg); }
+  .tab:hover { color: var(--text); }
+  .icon-round:hover { background: var(--hover-bg); color: var(--hover-text); border-color: var(--hover-bg); }
 }
