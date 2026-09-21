@@ -1,0 +1,22 @@
+<en-US>
+Most of this comes straight from tester feedback.
+
+- Short intro on first launch
+- Crowns and Stars: tap sets the crown or star, long press sets an X
+- Reset asks before it clears the board
+- Clock starts with the puzzle and pauses when you leave
+- Solved puzzles stay solved
+- Hints work offline, no waiting
+- Logo on launch, working shared links
+</en-US>
+<de-DE>
+Das meiste hier kommt direkt aus dem Testerfeedback.
+
+- Kurze Einführung beim ersten Start
+- Crowns und Stars: Tippen setzt Krone oder Stern, Halten setzt ein X
+- Reset fragt nach, bevor es das Brett leert
+- Uhr startet mit dem Rätsel und pausiert beim Verlassen
+- Gelöste Rätsel bleiben gelöst
+- Hinweise funktionieren offline, ohne Warten
+- Logo beim Start, funktionierende geteilte Links
+</de-DE>
