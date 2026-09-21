@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { PUZZLE_META, PUZZLE_TYPES } from '@puzzle-hustle/core';
 import { Flame } from './Daily.tsx';
+import { ACCENTS, ACCENT_NAMES, useAccent } from '../lib/accent.ts';
 import { adsAvailable, onAdsConsent, privacyOptionsAvailable, showPrivacyOptions } from '../lib/ads.ts';
 import { buyUnlimitedHints, hasUnlimitedHints, onEntitlement } from '../lib/entitlement.ts';
 import { readSetting, resetProgress, useSolves, writeSetting } from '../lib/storage.ts';
@@ -14,6 +15,7 @@ export function Profile() {
   const streaks = dailyStreaks(solves);
   const stats = typeStats(solves);
   const { pref, setPref } = useTheme();
+  const { accent, setAccent } = useAccent();
   const [name, setName] = useState(readSetting('ph:name') ?? '');
   const [editing, setEditing] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -104,6 +106,22 @@ export function Profile() {
               </button>
             ))}
           </div>
+          <div className="swatches" role="radiogroup" aria-label="Accent color">
+            {ACCENTS.map((a) => (
+              <button
+                key={a}
+                type="button"
+                role="radio"
+                aria-checked={accent === a}
+                aria-label={ACCENT_NAMES[a]}
+                title={ACCENT_NAMES[a]}
+                data-accent={a}
+                className="swatch"
+                onClick={() => setAccent(a)}
+              />
+            ))}
+          </div>
+          <span className="muted small">{ACCENT_NAMES[accent]}</span>
         </div>
 
         {adsAvailable ? (

@@ -30,8 +30,8 @@
   --accent-text: #FFA833;
   --accent-deep: #d98a12;
   --on-accent: #2d2d2d;
-  --accent-soft: rgba(255, 168, 51, 0.10);
-  --accent-strong: rgba(255, 168, 51, 0.35);
+  --accent-soft: color-mix(in srgb, var(--accent) 10%, transparent);
+  --accent-strong: color-mix(in srgb, var(--accent) 35%, transparent);
   --shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
   --shadow-hover: 0 4px 14px rgba(0, 0, 0, 0.10);
   --hover-text: #ffffff;
@@ -63,8 +63,8 @@
   --border-mid: #6f685c;
   --accent-deep: #FFA833;
   --flame: #ff6a3d;
-  --accent-soft: rgba(255, 168, 51, 0.12);
-  --accent-strong: rgba(255, 168, 51, 0.4);
+  --accent-soft: color-mix(in srgb, var(--accent) 12%, transparent);
+  --accent-strong: color-mix(in srgb, var(--accent) 40%, transparent);
   --shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
   --shadow-hover: 0 4px 14px rgba(0, 0, 0, 0.6);
   --hover-text: #111110;
@@ -77,6 +77,21 @@
   color-scheme: dark;
   -webkit-font-smoothing: antialiased;
 }
+
+/* Accent themes. Every theme sets the fill, the text-on-background variant and the ink that sits on the fill;
+   the soft and strong tints derive from the fill. The second block per theme is the dark-mode text variant. */
+[data-accent="amber"]  { --accent: #ffa833; --accent-text: #ffa833; --accent-deep: #d98a12; --on-accent: #2d2d2d; }
+[data-accent="lagoon"] { --accent: #23cbb6; --accent-text: #23cbb6; --accent-deep: #0a8477; --on-accent: #06302b; }
+[data-accent="cobalt"] { --accent: #4faef7; --accent-text: #4faef7; --accent-deep: #1668b8; --on-accent: #062440; }
+[data-accent="iris"]   { --accent: #9b7bff; --accent-text: #9b7bff; --accent-deep: #5b3fcc; --on-accent: #180f38; }
+[data-accent="rose"]   { --accent: #ff7ba6; --accent-text: #ff7ba6; --accent-deep: #bc2c66; --on-accent: #3d0c22; }
+[data-accent="slate"]  { --accent: #8aa0bc; --accent-text: #8aa0bc; --accent-deep: #445a76; --on-accent: #131a24; }
+[data-theme="dark"][data-accent="amber"]  { --accent-deep: #ffa833; }
+[data-theme="dark"][data-accent="lagoon"] { --accent-deep: #35dcc6; }
+[data-theme="dark"][data-accent="cobalt"] { --accent-deep: #79c0ff; }
+[data-theme="dark"][data-accent="iris"]   { --accent-deep: #b79cff; }
+[data-theme="dark"][data-accent="rose"]   { --accent-deep: #ff9dbe; }
+[data-theme="dark"][data-accent="slate"]  { --accent-deep: #a8bcd6; }
 
 *, *::before, *::after { box-sizing: border-box; }
 @font-face {
@@ -321,6 +336,21 @@ p { margin: 0; }
 .seg small { font-weight: 400; color: var(--text-muted); font-size: var(--fs-xs); }
 .seg.active { background: var(--card-bg); box-shadow: var(--shadow); color: var(--accent-deep); }
 
+.swatches { display: flex; flex-wrap: wrap; gap: 12px; margin: 10px 0 2px; }
+.swatch {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 20%, transparent);
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.15s;
+}
+.swatch[aria-checked="true"] { box-shadow: 0 0 0 3px var(--card-bg), 0 0 0 5px var(--accent); }
+.swatch:active { transform: scale(0.92); }
+
 .level-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
 @media (min-width: 480px) { .level-grid { grid-template-columns: repeat(4, 1fr); } }
 .level-grid.slide-right { animation: level-slide-right 0.28s ease-out; }
@@ -560,5 +590,6 @@ p { margin: 0; }
   .actions .btn.danger:hover:not(:disabled) { background: var(--danger); border-color: var(--danger); color: #fff; }
   .tile:not(.locked):hover { border-color: var(--hover-bg); }
   .tab:hover { color: var(--text); }
+  .swatch:hover { transform: scale(1.08); }
   .icon-round:hover { background: var(--hover-bg); color: var(--hover-text); border-color: var(--hover-bg); }
 }

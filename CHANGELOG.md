@@ -64,6 +64,14 @@ and Crowns had drifted to smaller ones with their own opacities.
 looks like and sits in the middle of its button. The theme toggle reached the level picker,
 the one screen of four that was missing it.
 
+**Six accent colours, chosen under Profile.** The app had one orange, taken from vexury.dev,
+and it was the colour of every button, every active tab and every lit atom. Amber stays the
+default and is unchanged; Lagoon, Cobalt, Iris, Rose and Slate repaint the same tokens. Green
+and red are deliberately missing, because solved boards and the reset button own them and a
+green accent would make a solved level look like an open one. The pick lives in `ph:accent`,
+rides along in the native backup, survives a progress reset and is applied in the inline
+script before the first frame, so nothing flashes orange on the way in.
+
 ### Reliability
 
 **A failing puzzle no longer takes the app with it.** The generators throw when a seed will
