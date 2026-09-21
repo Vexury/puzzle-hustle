@@ -75,6 +75,13 @@ theme grows out of the button that was pressed, a circle opening over a snapshot
 screen through the View Transitions API. Where that API is missing, and whenever the system
 asks for less motion, both stay instant.
 
+**A killer cage is one line now, in its own colour.** Every cell used to draw its own four
+edges, which is why a dash could never turn a corner: each edge started the pattern again and
+the corners left a small gap. A cage is now a single path around its cells, set further in from
+the grid, with corners rounded enough for the dashes to run through them. Neighbouring cages
+never share a colour out of a set of five, and the cage sum carries the same colour, so a shape
+stays easy to follow where cages interlock. The sums moved in with the line and clear its corner.
+
 **The crown in the Crowns icon shrank to the size of its neighbours.** It covered all nine
 cells of the little grid drawn behind it and carried about twice the ink of any other type
 icon in the list. It now sits centred at roughly the size of the star in the Stars icon.
