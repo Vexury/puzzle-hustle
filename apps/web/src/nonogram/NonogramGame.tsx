@@ -74,7 +74,9 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
   const stateRef = useRef(state);
   const drag = useRef<Drag | null>(null);
   const solved = isNonogramSolved(spec, state);
-  const clueW = 12 + Math.max(...spec.rowClues.map((c) => Math.max(c.length, 1))) * 14;
+  const clueSlots = Math.max(...spec.rowClues.map((c) => Math.max(c.length, 1)));
+  // Deckt sich mit nonogram.css: 8 links, 6 rechts, je Ziffer 1.25em, dazwischen 2.
+  const clueW = (cell: number) => 14 + clueSlots * 1.25 * Math.min(14, Math.max(10, cell * 0.5)) + Math.max(clueSlots - 1, 0) * 2;
   const { viewport, cellPx, pointerDown, pointerMove, pointerUp, pointerCancel } = useZoomViewport(cols, clueW, viewKey);
 
 

@@ -32,7 +32,10 @@ export interface ZoomViewport {
   pointerCancel(e: React.PointerEvent<HTMLElement>): void;
 }
 
-export function useZoomViewport(cols: number, reserve: number, viewKey: string | undefined): ZoomViewport {
+// `reserve` ist der Platz neben dem Brett. Als Funktion, weil er bei Nonogramm von der
+// Zellgroesse abhaengt: die Hinweisziffern skalieren mit. Eine feste Schaetzung lag je nach
+// Raetsel 8 bis 13 Pixel daneben, genug, damit ein 10x10 knapp nicht mehr passte.
+export function useZoomViewport(cols: number, reserve: number | ((cell: number) => number), viewKey: string | undefined): ZoomViewport {
   const viewport = useRef<HTMLDivElement>(null);
   const [cellPx, setCellPx] = useState(24);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
@@ -46,8 +49,22 @@ export function useZoomViewport(cols: number, reserve: number, viewKey: string |
   useLayoutEffect(() => {
     const el = viewport.current;
     if (!el) return;
-    const fit = Math.floor(((el.parentElement?.clientWidth ?? el.clientWidth) - reserve) / cols);
-    const initial = Math.max(Math.min(fit, 44), 24);
+    // Die eigene Breite taugt nicht: der Ausschnitt schrumpft auf den Inhalt, sobald das Brett
+    // passt, und die Rechnung waere zirkulaer. Also die Elternbreite, abzueglich Rahmen und
+    // Innenabstand des Ausschnitts, die vom Platz fuers Brett abgehen.
+    const box = getComputedStyle(el);
+    const chrome =
+      parseFloat(box.borderLeftWidth) + parseFloat(box.borderRightWidth) + parseFloat(box.paddingLeft) + parseFloat(box.paddingRight);
+    const width = (el.parentElement?.clientWidth ?? el.clientWidth) - chrome;
+    const reserveAt = typeof reserve === 'function' ? reserve : () => reserve;
+    let fit = MIN_CELL;
+    for (let c = 44; c >= MIN_CELL; c--) {
+      if (reserveAt(c) + cols * c <= width) {
+        fit = c;
+        break;
+      }
+    }
+    const initial = Math.max(fit, 24);
     // Zoom gibt es nur, wo das Brett ueberhaupt ueberlaeuft. Passt es ohnehin in die Breite,
     // bleibt die Groesse fest; unter die Einpassung zu gehen wuerde es nur schrumpfen lassen.
     const overflows = fit < initial;

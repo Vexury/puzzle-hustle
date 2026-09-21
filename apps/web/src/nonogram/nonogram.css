@@ -55,7 +55,7 @@
 .nono-clues.col { flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 4px; min-width: var(--cell); }
 .nono-clues.row { flex-direction: row; justify-content: flex-end; align-items: center; padding-right: 6px; min-height: var(--cell); }
 .nono-clues.done { color: var(--text-muted); opacity: 0.6; }
-.nono-clues .clue { display: inline-block; min-width: 1.1em; text-align: center; }
+.nono-clues .clue { display: inline-block; min-width: 1.25em; text-align: center; }
 .nono-clues .clue.c2 { color: var(--nono-c2); }
 .nono-clues .clue.c3 { color: var(--nono-c3); }
 .nono-clues .clue.c1 { color: var(--nono-c1); }
