@@ -59,11 +59,11 @@
   content: '';
   position: absolute;
   left: 50%;
-  top: 12%;
+  top: var(--mark-inset);
   width: 1.5px;
-  height: 76%;
+  height: var(--mark-length);
   background: var(--mosaic-mark);
-  opacity: 0.55;
+  opacity: var(--mark-opacity);
 }
 .mosaic-cell.x::before { transform: translateX(-50%) rotate(45deg); }
 .mosaic-cell.x::after { transform: translateX(-50%) rotate(-45deg); }

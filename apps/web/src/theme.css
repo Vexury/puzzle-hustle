@@ -23,6 +23,9 @@
   --bg: #faf9f8;
   --card-bg: #fffdf7;
   --piece-line: color-mix(in srgb, var(--text) 60%, var(--bg));
+  --mark-inset: 12%;
+  --mark-length: 76%;
+  --mark-opacity: 0.55;
   --accent: #FFA833;
   --accent-text: #FFA833;
   --accent-deep: #d98a12;

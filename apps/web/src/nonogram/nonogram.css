@@ -83,11 +83,11 @@
   content: '';
   position: absolute;
   left: 50%;
-  top: 25%;
+  top: var(--mark-inset);
   width: 1.5px;
-  height: 50%;
+  height: var(--mark-length);
   background: var(--nono-mark);
-  opacity: 0.7;
+  opacity: var(--mark-opacity);
 }
 .nono-cell.x::before { transform: translateX(-50%) rotate(45deg); }
 .nono-cell.x::after { transform: translateX(-50%) rotate(-45deg); }

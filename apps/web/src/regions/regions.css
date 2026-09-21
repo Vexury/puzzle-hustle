@@ -79,11 +79,11 @@
   content: '';
   position: absolute;
   left: 50%;
-  top: 30%;
+  top: var(--mark-inset);
   width: 1.5px;
-  height: 40%;
+  height: var(--mark-length);
   background: var(--regions-mark);
-  opacity: 0.6;
+  opacity: var(--mark-opacity);
   transition: opacity 0.15s;
 }
 .regions-cell.x::before { transform: translateX(-50%) rotate(45deg); }
