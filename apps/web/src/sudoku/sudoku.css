@@ -3,6 +3,7 @@
   --sudoku-peer: color-mix(in srgb, var(--accent) 9%, var(--board-cell));
   --sudoku-same: color-mix(in srgb, var(--accent) 24%, var(--board-cell));
   --sudoku-selected: color-mix(in srgb, var(--accent) 36%, var(--board-cell));
+  --sudoku-box: #6f6b64;
   --cage-0: #a06a17;
   --cage-1: #1a7a6c;
   --cage-2: #6f56b5;
@@ -11,6 +12,7 @@
 }
 
 [data-theme="dark"] {
+  --sudoku-box: #968d7d;
   --cage-0: #dda542;
   --cage-1: #45c3ae;
   --cage-2: #a892ff;
@@ -55,8 +57,9 @@
   cursor: pointer;
   transition: background 0.08s;
 }
-.sudoku-cell.box-r { border-right: 2px solid var(--border-mid); }
-.sudoku-cell.box-b { border-bottom: 2px solid var(--border-mid); }
+.sudoku-board.board-frame { border-color: var(--sudoku-box); }
+.sudoku-cell.box-r { border-right: 2px solid var(--sudoku-box); }
+.sudoku-cell.box-b { border-bottom: 2px solid var(--sudoku-box); }
 .sudoku-cell.last-c { border-right: none; }
 .sudoku-cell.last-r { border-bottom: none; }
 .sudoku-cell.given { color: var(--text); font-weight: 700; }
