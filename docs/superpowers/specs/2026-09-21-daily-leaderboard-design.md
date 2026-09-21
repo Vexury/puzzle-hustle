@@ -91,7 +91,7 @@ The database is created with a Western Europe location hint, so the rows stay in
 
 ## API
 
-Base `https://api.puzzles.vexury.dev`. JSON in, JSON out. Every route except `POST /session` requires `Authorization: Bearer <session token>`.
+Base `https://puzzles-api.vexury.dev`. JSON in, JSON out. Every route except `POST /session` requires `Authorization: Bearer <session token>`.
 
 | Route | Body | Returns |
 |---|---|---|

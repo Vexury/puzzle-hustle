@@ -1,11 +1,12 @@
 name = "puzzle-hustle-api"
 main = "src/index.ts"
 compatibility_date = "2026-09-21"
+routes = [{ pattern = "puzzles-api.vexury.dev", custom_domain = true }]
 
 [[d1_databases]]
 binding = "DB"
 database_name = "puzzle-hustle"
-database_id = "local"
+database_id = "3aa05e1b-06eb-4bb2-9d15-bcab2554d587"
 migrations_dir = "migrations"
 
 # /session is the one route without a token in front of it, so it gets the platform's own

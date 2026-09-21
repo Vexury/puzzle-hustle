@@ -2094,7 +2094,7 @@ git commit -m "Report a name and delete an account for good"
 
 **Interfaces:**
 - Produces:
-  - `API_BASE: string` (from `import.meta.env.VITE_API_BASE`, default `https://api.puzzles.vexury.dev`)
+  - `API_BASE: string` (from `import.meta.env.VITE_API_BASE`, default `https://puzzles-api.vexury.dev`)
   - `interface Session { token: string; player: { id: string; name: string } }`
   - `readSession(): Session | null`, `writeSession(s: Session | null): void`
   - `apiFetch<T>(path: string, init?: RequestInit & { auth?: boolean }): Promise<T>` which throws `ApiError` with a `code` field on any non-2xx answer and on a network failure (`code: 'offline'`).
@@ -2185,7 +2185,7 @@ Expected: FAIL, cannot resolve `../src/lib/api.ts`.
 ```ts
 import { readSetting, writeSetting } from './storage.ts';
 
-export const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? 'https://api.puzzles.vexury.dev';
+export const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? 'https://puzzles-api.vexury.dev';
 
 const SESSION_KEY = 'ph:session';
 
@@ -2390,7 +2390,7 @@ export async function deleteAccount(): Promise<void> {
 Create `apps/web/.env.example`:
 
 ```
-VITE_API_BASE=https://api.puzzles.vexury.dev
+VITE_API_BASE=https://puzzles-api.vexury.dev
 VITE_GOOGLE_CLIENT_ID=
 ```
 
@@ -3231,11 +3231,11 @@ git commit -m "Show group standings and where today's time ranks"
 **Files:**
 - Create: `.github/workflows/api.yml`
 - Modify: `apps/api/wrangler.toml` (real `database_id`, route)
-- Test: `curl https://api.puzzles.vexury.dev/health`
+- Test: `curl https://puzzles-api.vexury.dev/health`
 
 **Interfaces:**
 - Consumes: the finished Worker.
-- Produces: a deployed API at `api.puzzles.vexury.dev` and a documented set of secrets.
+- Produces: a deployed API at `puzzles-api.vexury.dev` and a documented set of secrets.
 
 - [ ] **Step 1: Create the database and note its id**
 
@@ -3250,7 +3250,7 @@ Put the printed `database_id` into `wrangler.toml`. The location hint keeps the 
 In `wrangler.toml`:
 
 ```toml
-routes = [{ pattern = "api.puzzles.vexury.dev", custom_domain = true }]
+routes = [{ pattern = "puzzles-api.vexury.dev", custom_domain = true }]
 
 [vars]
 GOOGLE_CLIENT_IDS = "<the web OAuth client id>"
@@ -3280,7 +3280,7 @@ Add `VITE_API_BASE` and `VITE_GOOGLE_CLIENT_ID` as repository variables and pass
 - [ ] **Step 6: Verify the deployment**
 
 ```bash
-curl -s https://api.puzzles.vexury.dev/health
+curl -s https://puzzles-api.vexury.dev/health
 ```
 
 Expected: `{"ok":true}`. Then sign in on https://puzzles.vexury.dev, create a group, solve a daily and confirm the row appears in the list.
