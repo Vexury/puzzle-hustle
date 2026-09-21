@@ -70,7 +70,8 @@ default and is unchanged; Lagoon, Cobalt, Iris, Rose and Slate repaint the same 
 and red are deliberately missing, because solved boards and the reset button own them and a
 green accent would make a solved level look like an open one. The pick lives in `ph:accent`,
 rides along in the native backup, survives a progress reset and is applied in the inline
-script before the first frame, so nothing flashes orange on the way in.
+script before the first frame, so nothing flashes orange on the way in. The Appearance card
+sits above By puzzle now, so the choice is visible without scrolling past the statistics.
 
 ### Reliability
 

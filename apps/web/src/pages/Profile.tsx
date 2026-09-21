@@ -81,22 +81,6 @@ export function Profile() {
         </div>
 
         <div className="card-lg">
-          <h2>By puzzle</h2>
-          <table className="stat-table">
-            <tbody>
-              {stats.map((s) => (
-                <tr key={s.type}>
-                  <td>{PUZZLE_META[s.type].name}</td>
-                  <td className="num">{s.solved} solved</td>
-                  <td className="num muted">{s.averageSeconds === null ? '–' : `avg ${formatSeconds(s.averageSeconds)}`}</td>
-                  <td className="num muted">{s.bestSeconds === null ? '' : `best ${formatSeconds(s.bestSeconds)}`}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="card-lg">
           <b>Appearance</b>
           <span className="muted small">System follows your device setting.</span>
           <div className="segmented three" role="radiogroup" aria-label="Appearance">
@@ -122,6 +106,22 @@ export function Profile() {
             ))}
           </div>
           <span className="muted small">{ACCENT_NAMES[accent]}</span>
+        </div>
+
+        <div className="card-lg">
+          <h2>By puzzle</h2>
+          <table className="stat-table">
+            <tbody>
+              {stats.map((s) => (
+                <tr key={s.type}>
+                  <td>{PUZZLE_META[s.type].name}</td>
+                  <td className="num">{s.solved} solved</td>
+                  <td className="num muted">{s.averageSeconds === null ? '–' : `avg ${formatSeconds(s.averageSeconds)}`}</td>
+                  <td className="num muted">{s.bestSeconds === null ? '' : `best ${formatSeconds(s.bestSeconds)}`}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
         {adsAvailable ? (
