@@ -6,7 +6,7 @@ import { toast } from '../components/Toast.tsx';
 // Exported so a caller (the Profile tab's Friends card) can tell "sign-in is not configured
 // on this build" apart from "sign-in is configured but failed to load", instead of attempting
 // a sign-in that is guaranteed to throw.
-export const CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) ?? '';
+export const CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) || '';
 const GSI_SRC = 'https://accounts.google.com/gsi/client';
 
 let current: Session | null = readSession();

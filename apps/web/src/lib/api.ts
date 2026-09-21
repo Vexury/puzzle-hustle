@@ -1,6 +1,6 @@
 import { readSetting, removeSetting, writeSetting } from './storage.ts';
 
-export const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? 'https://api.puzzles.vexury.dev';
+export const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) || 'https://api.puzzles.vexury.dev';
 
 const SESSION_KEY = 'ph:session';
 
