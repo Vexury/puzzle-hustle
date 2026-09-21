@@ -68,6 +68,13 @@ the one screen of four that was missing it.
 dailies", explained itself to nobody standing in a grid of four numbers, and the daily
 progress bar already says how many are missing.
 
+**Two more things move: the tabs and the theme.** Switching tabs slides the page in from the
+side the tab sits on, with the 0.26 s ease-out the difficulty switcher already used, so the bar
+reads as one row rather than three separate screens. Light and dark no longer snap: the new
+theme grows out of the button that was pressed, a circle opening over a snapshot of the old
+screen through the View Transitions API. Where that API is missing, and whenever the system
+asks for less motion, both stay instant.
+
 **The crown in the Crowns icon shrank to the size of its neighbours.** It covered all nine
 cells of the little grid drawn behind it and carried about twice the ink of any other type
 icon in the list. It now sits centred at roughly the size of the star in the Stars icon.

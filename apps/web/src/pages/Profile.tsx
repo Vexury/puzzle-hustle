@@ -7,7 +7,7 @@ import { buyUnlimitedHints, hasUnlimitedHints, onEntitlement } from '../lib/enti
 import { readSetting, resetProgress, useSolves, writeSetting } from '../lib/storage.ts';
 import { formatSeconds } from '../lib/share.ts';
 import { dailyStreaks, totalSolved, typeStats } from '../lib/stats.ts';
-import { THEME_PREFS, useTheme, type ThemePref } from '../lib/theme.ts';
+import { THEME_PREFS, centerOf, useTheme, type ThemePref } from '../lib/theme.ts';
 import { ThemeToggle } from '../components/ThemeToggle.tsx';
 
 export function Profile() {
@@ -85,7 +85,7 @@ export function Profile() {
           <span className="muted small">System follows your device setting.</span>
           <div className="segmented three" role="radiogroup" aria-label="Appearance">
             {THEME_PREFS.map((p: ThemePref) => (
-              <button key={p} type="button" role="radio" aria-checked={pref === p} className={pref === p ? 'seg active' : 'seg'} onClick={() => setPref(p)}>
+              <button key={p} type="button" role="radio" aria-checked={pref === p} className={pref === p ? 'seg active' : 'seg'} onClick={(e) => setPref(p, centerOf(e.currentTarget))}>
                 {p === 'system' ? 'System' : p === 'light' ? 'Light' : 'Dark'}
               </button>
             ))}

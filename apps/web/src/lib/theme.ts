@@ -1,6 +1,17 @@
 import { Capacitor, registerPlugin } from '@capacitor/core';
 import { useSyncExternalStore } from 'react';
+import { flushSync } from 'react-dom';
 import { readSetting, writeSetting } from './storage.ts';
+
+export interface Origin {
+  x: number;
+  y: number;
+}
+
+export function centerOf(element: Element): Origin {
+  const box = element.getBoundingClientRect();
+  return { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+}
 
 export type Theme = 'light' | 'dark';
 export type ThemePref = Theme | 'system';
@@ -30,18 +41,35 @@ function apply() {
   for (const l of listeners) l();
 }
 
-export function useTheme(): { pref: ThemePref; theme: Theme; setPref(p: ThemePref): void; toggle(): void } {
+// The new theme grows out of the button that was pressed. Without view transitions, or when the
+// system asks for less motion, the swap stays instant.
+function reveal(origin: Origin | undefined, swap: () => void) {
+  const root = document.documentElement;
+  if (!origin || !document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    swap();
+    return;
+  }
+  const radius = Math.hypot(Math.max(origin.x, innerWidth - origin.x), Math.max(origin.y, innerHeight - origin.y));
+  root.style.setProperty('--reveal-x', `${origin.x}px`);
+  root.style.setProperty('--reveal-y', `${origin.y}px`);
+  root.style.setProperty('--reveal-r', `${radius}px`);
+  root.dataset['reveal'] = 'on';
+  const done = () => delete root.dataset['reveal'];
+  document.startViewTransition(() => flushSync(swap)).finished.then(done, done);
+}
+
+export function useTheme(): { pref: ThemePref; theme: Theme; setPref(p: ThemePref, origin?: Origin): void; toggle(origin?: Origin): void } {
   const subscribe = (l: () => void) => {
     listeners.add(l);
     return () => listeners.delete(l);
   };
   const p = useSyncExternalStore(subscribe, pref);
   const theme = useSyncExternalStore(subscribe, () => resolve(pref()));
-  const setPref = (next: ThemePref) => {
+  const setPref = (next: ThemePref, origin?: Origin) => {
     writeSetting('theme', next);
-    apply();
+    reveal(origin, apply);
   };
-  return { pref: p, theme, setPref, toggle: () => setPref(theme === 'dark' ? 'light' : 'dark') };
+  return { pref: p, theme, setPref, toggle: (origin?: Origin) => setPref(theme === 'dark' ? 'light' : 'dark', origin) };
 }
 
 export function initTheme() {
