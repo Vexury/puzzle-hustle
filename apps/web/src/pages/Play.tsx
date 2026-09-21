@@ -237,19 +237,22 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   // The clock is wall clock based and would keep running while the app sits in the
   // background, so a phone call must not cost the player a minute.
   useEffect(() => {
-    const onVisibility = () => {
-      if (document.visibilityState === 'hidden') {
-        pauseClock();
-        persist();
-      } else {
-        resumeClock();
-      }
+    const stop = () => {
+      pauseClock();
+      persist();
     };
+    const onVisibility = () => (document.visibilityState === 'hidden' ? stop() : resumeClock());
     document.addEventListener('visibilitychange', onVisibility);
+    // A system overlay such as the notification shade covers the puzzle without stopping the
+    // activity, so visibility never changes. MainActivity sends the window focus instead.
+    window.addEventListener('appBlur', stop);
+    window.addEventListener('appFocus', resumeClock);
     window.addEventListener('pagehide', persist);
     return () => {
       persist();
       document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('appBlur', stop);
+      window.removeEventListener('appFocus', resumeClock);
       window.removeEventListener('pagehide', persist);
     };
   }, []);

@@ -94,6 +94,15 @@ sits above By puzzle now, so the choice is visible without scrolling past the st
 
 ### Reliability
 
+**The clock stops behind the notification shade.** It was meant to stop whenever the app left
+the screen, but it only heard about that through `visibilitychange` and Capacitor's
+`appStateChange`, and both of those fire when Android stops the activity. The notification
+shade, the quick settings and other system overlays do not stop it: the activity keeps running
+and the page stays visible, so the clock counted on behind them. Measured on a Galaxy S23,
+thirteen seconds behind the shade cost thirteen seconds, while home, recents and switching apps
+paused correctly. Window focus is the one signal those cases do change, so `MainActivity` hands
+it to the page and the puzzle listens for it as well.
+
 **The status bar plugin is our own now.** The Play Console flagged the app for
 `Window.getStatusBarColor` and `setStatusBarColor`, which Android 15 dropped for edge-to-edge
 apps. Both came from `@capacitor/status-bar`, of which the app used exactly one thing: the
