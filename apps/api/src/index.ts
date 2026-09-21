@@ -1,4 +1,5 @@
 import { verifyGoogleIdToken } from './google.ts';
+import { createGroup, joinGroup, leaveGroup, listGroups, removeMember } from './groups.ts';
 import { cors, error, json, type Env } from './http.ts';
 import { generatedName, validateName } from './names.ts';
 import { requirePlayer, upsertPlayer } from './players.ts';
@@ -54,6 +55,42 @@ async function route(request: Request, env: Env): Promise<Response> {
   if (!playerId) return error(401, 'unauthorized');
 
   if (method === 'POST' && path === '/name') return postName(request, env, playerId);
+
+  if (method === 'GET' && path === '/groups') return json({ groups: await listGroups(env.DB, playerId) });
+
+  if (method === 'POST' && path === '/groups') {
+    const input = await body(request);
+    if (typeof input.name !== 'string') return error(400, 'missing_name');
+    const created = await createGroup(env.DB, playerId, input.name);
+    if (!created.ok) return error(created.reason === 'name' ? 400 : 403, `group_${created.reason}`);
+    return json(created.group);
+  }
+
+  if (method === 'POST' && path === '/groups/join') {
+    const input = await body(request);
+    if (typeof input.code !== 'string') return error(400, 'missing_code');
+    const joined = await joinGroup(env.DB, playerId, input.code);
+    if (!joined.ok) {
+      const status = joined.reason === 'unknown' ? 404 : joined.reason === 'already' ? 409 : 403;
+      return error(status, `group_${joined.reason}`);
+    }
+    return json(joined.group);
+  }
+
+  if (method === 'POST' && path === '/groups/leave') {
+    const input = await body(request);
+    if (typeof input.id !== 'string') return error(400, 'missing_id');
+    await leaveGroup(env.DB, playerId, input.id);
+    return json({});
+  }
+
+  if (method === 'POST' && path === '/groups/remove') {
+    const input = await body(request);
+    if (typeof input.id !== 'string' || typeof input.playerId !== 'string') return error(400, 'missing_id');
+    const done = await removeMember(env.DB, playerId, input.id, input.playerId);
+    return done ? json({}) : error(403, 'not_owner');
+  }
+
   return error(404, 'not_found');
 }
 
