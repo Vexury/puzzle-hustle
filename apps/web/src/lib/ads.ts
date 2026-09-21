@@ -49,6 +49,20 @@ function prepare(): Promise<boolean> {
   return ready;
 }
 
+// A network that is there but lets nothing through leaves the consent SDK in its own long
+// timeout while the player stares at a dead hint button. Give up after three seconds.
+const PREPARE_TIMEOUT_MS = 3000;
+
+function prepareOrGiveUp(): Promise<boolean> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(false), PREPARE_TIMEOUT_MS);
+    void prepare().then((ok) => {
+      clearTimeout(timer);
+      resolve(ok);
+    });
+  });
+}
+
 export async function showPrivacyOptions(): Promise<void> {
   if (!native) return;
   await prepare();
@@ -59,7 +73,7 @@ export async function showPrivacyOptions(): Promise<void> {
 // deliberate, not a missing error path.
 export async function showRewardedAd(): Promise<boolean> {
   if (!native) return false;
-  if (!(await prepare())) return true;
+  if (!(await prepareOrGiveUp())) return true;
 
   let rewarded = false;
   const handle = await AdMob.addListener(RewardAdPluginEvents.Rewarded, () => {
