@@ -124,7 +124,11 @@ export async function joinGroup(
 // Leaving is also how a group dies: the last member out deletes it, and an owner who leaves
 // hands the group to whoever has been in it longest.
 export async function leaveGroup(db: D1Database, playerId: string, groupId: string): Promise<void> {
-  await db.prepare('DELETE FROM members WHERE group_id = ? AND player_id = ?').bind(groupId, playerId).run();
+  const deleted = await db.prepare('DELETE FROM members WHERE group_id = ? AND player_id = ?').bind(groupId, playerId).run();
+  // Not a real exploit today (the caller only ever passes its own group ids), but nothing
+  // stops that from changing, and there is no reason to hand ownership on or delete a group
+  // over a membership that was never there.
+  if (deleted.meta.changes === 0) return;
   // player_id is only a tiebreaker for two members who joined in the same millisecond, so the
   // pick is repeatable for the same data, not a claim that the id order means anything.
   const next = await db
