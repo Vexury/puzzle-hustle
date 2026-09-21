@@ -6,3 +6,6 @@ dist/
 .vite/
 docs/reference/
 .worktrees/
+.wrangler/
+.dev.vars
+.env.local

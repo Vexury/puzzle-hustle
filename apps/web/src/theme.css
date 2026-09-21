@@ -217,6 +217,8 @@ p { margin: 0; }
   transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 .row-card:active { transform: scale(0.99); }
+/* A row-card with no leading icon, such as a friends group: just the text and the action. */
+.row-card.friends-row { grid-template-columns: 1fr auto; }
 .row-icon { position: relative; display: inline-flex; }
 .row-check {
   position: absolute;
@@ -283,6 +285,20 @@ p { margin: 0; }
 .pill.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
 .reset-confirm { display: flex; gap: 8px; }
 .friends-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.friends-actions input {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 2px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+.friends-actions input:focus-visible { border-color: var(--accent); outline: none; }
+.friends-actions input.num { font-family: var(--font-num); letter-spacing: 0.14em; text-align: center; }
+.row-sub .num { font-family: var(--font-num); }
 .row-card.solved .pill.outline { border-color: var(--success); color: var(--success); }
 
 .actions { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 10px; width: 100%; margin-top: 4px; }
