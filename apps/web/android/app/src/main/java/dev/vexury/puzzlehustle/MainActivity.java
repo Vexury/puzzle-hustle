@@ -17,4 +17,15 @@ public class MainActivity extends BridgeActivity {
         splash.setKeepOnScreenCondition(() -> System.currentTimeMillis() - start < SPLASH_MS);
         super.onCreate(savedInstanceState);
     }
+
+    // The notification shade and other system overlays neither stop the activity nor change the
+    // page's visibility, so the web side never hears about them and the clock in a puzzle keeps
+    // running behind them. Window focus is the one signal that covers those cases.
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (getBridge() != null) {
+            getBridge().triggerWindowJSEvent(hasFocus ? "appFocus" : "appBlur");
+        }
+    }
 }
