@@ -1,22 +1,12 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
+import { icon } from './mark.mjs';
 
 const OUT = fileURLToPath(new URL('../../../store/', import.meta.url));
 
-const BG = '#1c1b19';
-const FG = '#FFA833';
-
-const ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" fill="${BG}"/>
-  <g transform="translate(1.4,1.2)">
-    <rect x="14" y="14" width="24" height="24" fill="${FG}"/>
-    <polygon points="38,26 50,38 38,50 26,38" fill="${FG}"/>
-    <polygon points="26,26 38,26 38,38" fill="${BG}"/>
-  </g>
-</svg>`;
-
-const ROUNDED = ICON.replace('<rect width="64" height="64"', '<rect width="64" height="64" rx="14"');
+const ICON = icon();
+const ROUNDED = icon({ rounded: true });
 const PUBLIC = fileURLToPath(new URL('../public/', import.meta.url));
 
 await mkdir(OUT, { recursive: true });
@@ -27,3 +17,7 @@ for (const size of [192, 512]) {
   await sharp(Buffer.from(ROUNDED), { density: 512 }).resize(size, size).png().toFile(`${PUBLIC}icon-${size}.png`);
   console.log(`public/icon-${size}.png`);
 }
+
+await writeFile(`${PUBLIC}icon.svg`, `${ROUNDED}
+`);
+console.log('public/icon.svg');

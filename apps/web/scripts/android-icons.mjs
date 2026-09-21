@@ -1,25 +1,14 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
+import { BG, icon, motif } from './mark.mjs';
 
 const RES = fileURLToPath(new URL('../android/app/src/main/res/', import.meta.url));
 
-const BG = '#1c1b19';
-const FG = '#FFA833';
-
-const MOTIF = `
-  <g transform="translate(1.4,1.2)">
-    <rect x="14" y="14" width="24" height="24" fill="${FG}"/>
-    <polygon points="38,26 50,38 38,50 26,38" fill="${FG}"/>
-    <polygon points="26,26 38,26 38,38" fill="${BG}"/>
-  </g>`;
-
-const LEGACY = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="${BG}"/>${MOTIF}
-</svg>`;
+const LEGACY = icon({ rounded: true });
 
 const FOREGROUND = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108">
-  <g transform="translate(-1.04,-1.04) scale(1.72)">${MOTIF}</g>
+  <g transform="translate(-1.04,-1.04) scale(1.72)">${motif()}</g>
 </svg>`;
 
 const DENSITIES = [

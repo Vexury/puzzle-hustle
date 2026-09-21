@@ -1,27 +1,17 @@
 import { mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
+import { BG, FG, icon } from './mark.mjs';
 
 const OUT = fileURLToPath(new URL('../../../store/', import.meta.url));
 const FONT = process.env.PH_FONT;
 if (!FONT) throw new Error('set PH_FONT to a Nunito ttf (google/fonts: ofl/nunito/Nunito[wght].ttf)');
 
-const BG = '#1c1b19';
-const FG = '#FFA833';
 const MUTED = '#8d8a85';
 const W = 1024;
 const H = 500;
 
-const mark = await sharp(
-  Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-    <g transform="translate(1.4,1.2)">
-      <rect x="14" y="14" width="24" height="24" fill="${FG}"/>
-      <polygon points="38,26 50,38 38,50 26,38" fill="${FG}"/>
-      <polygon points="26,26 38,26 38,38" fill="${BG}"/>
-    </g>
-  </svg>`),
-  { density: 512 },
-)
+const mark = await sharp(Buffer.from(icon({ rounded: true })), { density: 512 })
   .resize(240, 240)
   .png()
   .toBuffer();
