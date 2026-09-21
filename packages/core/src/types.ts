@@ -4,7 +4,7 @@ export type Difficulty = (typeof DIFFICULTIES)[number];
 export const PERIODS = ['daily', 'weekly', 'monthly'] as const;
 export type Period = (typeof PERIODS)[number];
 
-export const PUZZLE_TYPES = ['shapes', 'nonogram', 'mosaic', 'crowns', 'stars', 'sudoku', 'killer', 'zip'] as const;
+export const PUZZLE_TYPES = ['shapes', 'zip', 'nonogram', 'mosaic', 'crowns', 'stars', 'sudoku', 'killer'] as const;
 export type PuzzleTypeId = (typeof PUZZLE_TYPES)[number];
 
 export interface PuzzleMeta {

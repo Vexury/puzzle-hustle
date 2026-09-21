@@ -1,5 +1,5 @@
 import { hashString } from './rng.ts';
-import { PUZZLE_TYPES, type Difficulty, type Period, type PuzzleTypeId } from './types.ts';
+import { type Difficulty, type Period, type PuzzleTypeId } from './types.ts';
 
 export const TIME_ZONE = 'Europe/Berlin';
 
@@ -52,7 +52,11 @@ export const PERIOD_DIFFICULTY: Record<Period, Difficulty> = {
   monthly: 'genius',
 };
 
-export const PERIOD_TYPES: readonly PuzzleTypeId[] = PUZZLE_TYPES.filter((t) => t !== 'zip');
+// Feste Reihenfolge, absichtlich von PUZZLE_TYPES entkoppelt: die Position bestimmt ueber
+// `periodPuzzleType`, welcher Typ ein Weekly oder Monthly ist. Wer hier umsortiert, wuerfelt
+// jede vergangene Periode neu und verwaist die zugehoerigen Loesungen. Zip fehlt, weil es
+// keine Periodenoptionen hat.
+export const PERIOD_TYPES: readonly PuzzleTypeId[] = ['shapes', 'nonogram', 'mosaic', 'crowns', 'stars', 'sudoku', 'killer'];
 
 export function periodPuzzleType(period: Period, key: string): PuzzleTypeId {
   const index = hashString(`type|${period}|${key}`) % PERIOD_TYPES.length;
