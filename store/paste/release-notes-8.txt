@@ -1,0 +1,18 @@
+<en-US>
+Colours, motion and a clock that minds its own business.
+
+- Six colour themes under Profile, teal among them
+- Appearance sits at the top of the profile now, not below the numbers
+- Tabs slide, and light and dark grow out of the button you press
+- The clock no longer keeps running while the notification shade is open
+- Clearer tick on solved dailies, smaller crown in the Crowns icon
+</en-US>
+<de-DE>
+Farben, Bewegung und eine Uhr, die sich zurückhält.
+
+- Sechs Farbthemen im Profil, Teal ist dabei
+- Darstellung steht jetzt oben im Profil statt unter den Zahlen
+- Reiter schieben, Hell und Dunkel wachsen aus dem gedrückten Knopf
+- Die Uhr läuft nicht mehr weiter, während die Benachrichtigungsleiste offen ist
+- Klarerer Haken bei gelösten Dailys, kleinere Krone im Crowns-Symbol
+</de-DE>
