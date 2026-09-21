@@ -55,12 +55,20 @@ export function Friends() {
   const { groups, reload } = useGroups();
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
+  // Independent per-form flags, not useGroups's loading: that one is about the list refetch,
+  // and a later task needs it for that. These exist only to stop a double-tap on a pill button
+  // from firing a second POST before the first one has come back.
+  const [creating, setCreating] = useState(false);
+  const [joining, setJoining] = useState(false);
 
   if (!session) {
     return (
       <section className="page-head">
         <h1>Friends</h1>
-        <p className="muted">Sign in on the Profile tab to compare your daily times with a group of friends.</p>
+        <p className="muted">
+          Sign in on the Profile tab to compare your daily times with a group of friends. Everything else works without an
+          account.
+        </p>
         <a href={href('/profile')} className="pill" onClick={onLinkClick}>
           To Profile ›
         </a>
@@ -69,16 +77,20 @@ export function Friends() {
   }
 
   const create = async () => {
+    setCreating(true);
     try {
       await apiFetch<Group>('/groups', { method: 'POST', body: JSON.stringify({ name }), auth: true });
       setName('');
       reload();
     } catch (err) {
       toast(explain(err));
+    } finally {
+      setCreating(false);
     }
   };
 
   const join = async () => {
+    setJoining(true);
     try {
       const group = await apiFetch<Group>('/groups/join', { method: 'POST', body: JSON.stringify({ code }), auth: true });
       setCode('');
@@ -86,6 +98,8 @@ export function Friends() {
       toast(`Joined ${group.name}`);
     } catch (err) {
       toast(explain(err));
+    } finally {
+      setJoining(false);
     }
   };
 
@@ -122,7 +136,7 @@ export function Friends() {
         <h2>New group</h2>
         <div className="friends-actions">
           <input value={name} onChange={(e) => setName(e.target.value)} maxLength={24} placeholder="Group name" />
-          <button type="button" className="pill" onClick={() => void create()} disabled={name.trim().length < 2}>
+          <button type="button" className="pill" onClick={() => void create()} disabled={name.trim().length < 2 || creating}>
             Create
           </button>
         </div>
@@ -138,7 +152,7 @@ export function Friends() {
             placeholder="CODE"
             className="num"
           />
-          <button type="button" className="pill" onClick={() => void join()} disabled={code.length !== 6}>
+          <button type="button" className="pill" onClick={() => void join()} disabled={code.length !== 6 || joining}>
             Join
           </button>
         </div>
