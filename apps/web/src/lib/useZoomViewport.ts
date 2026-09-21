@@ -64,7 +64,9 @@ export function useZoomViewport(cols: number, reserve: number | ((cell: number) 
         break;
       }
     }
-    const initial = Math.max(fit, 24);
+    // Lieber kleinere Zellen als ein abgeschnittenes Brett. Erst unter dieser Grenze wird
+    // geschrumpft sinnlos, dann laeuft das Brett bewusst ueber und bekommt dafuer Zoom.
+    const initial = Math.max(fit, 20);
     // Zoom gibt es nur, wo das Brett ueberhaupt ueberlaeuft. Passt es ohnehin in die Breite,
     // bleibt die Groesse fest; unter die Einpassung zu gehen wuerde es nur schrumpfen lassen.
     const overflows = fit < initial;

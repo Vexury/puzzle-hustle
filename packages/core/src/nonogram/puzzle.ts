@@ -1,11 +1,11 @@
 import { Rng } from '../rng.ts';
 import type { Difficulty } from '../types.ts';
 import { MARKED_EMPTY, cluesEqual, filledColor, gridClues, lineClues, readLine, type Clue, type LineAxis } from './clues.ts';
-import { propagateLines, solveByLines } from './solver.ts';
+import { nonogramDepth, propagateLines, solveByLines } from './solver.ts';
 
 export { MARKED_EMPTY, type Clue } from './clues.ts';
 
-export const NONOGRAM_VERSION = 1;
+export const NONOGRAM_VERSION = 2;
 export const NONOGRAM_MAX_COLORS = 3;
 
 export interface NonogramConfig {
@@ -31,13 +31,23 @@ export const NONOGRAM_PRESETS: Record<Difficulty, NonogramConfig> = {
   easy: { rows: 5, cols: 5, colors: 1, density: 0.55 },
   medium: { rows: 10, cols: 10, colors: 1, density: 0.55 },
   hard: { rows: 10, cols: 10, colors: 2, density: 0.6 },
-  genius: { rows: 15, cols: 15, colors: 3, density: 0.6 },
+  genius: { rows: 10, cols: 10, colors: 3, density: 0.6 },
 };
 
 export interface NonogramOptions {
   sizeDelta?: number;
   colorDelta?: number;
 }
+
+
+// Auf demselben Gitter reicht die Logiktiefe von etwa 44 bis 94, waehrend die Mediane der
+// Farbvarianten nur fuenf Punkte auseinanderliegen. Die Stufen trennt deshalb der Anspruch,
+// nicht die Groesse: der Generator sucht weiter, bis das Raetsel ins Fenster faellt.
+const DEPTH_GATES: Partial<Record<Difficulty, { min?: number; max?: number }>> = {
+  medium: { max: 42 },
+  hard: { min: 42 },
+  genius: { min: 56 },
+};
 
 export function nonogramConfig(difficulty: Difficulty, options: NonogramOptions = {}): NonogramConfig {
   const base = NONOGRAM_PRESETS[difficulty];
@@ -92,14 +102,29 @@ function validSolution(config: NonogramConfig, difficulty: Difficulty, grid: Uin
 
 export function generateNonogram(seed: number, difficulty: Difficulty, options: NonogramOptions = {}): NonogramSpec {
   const config = nonogramConfig(difficulty, options);
+  const cells = config.rows * config.cols;
+  const gate = DEPTH_GATES[difficulty];
   const rng = new Rng(seed);
+  let closest: NonogramSpec | null = null;
+  let closestMiss = Infinity;
   for (let attempt = 0; attempt < 2000; attempt++) {
     const solution = randomSolution(config, rng);
     if (!validSolution(config, difficulty, solution)) continue;
     const { rowClues, colClues } = gridClues(solution, config.rows, config.cols);
     const spec: NonogramSpec = { version: NONOGRAM_VERSION, seed, difficulty, config, solution, rowClues, colClues };
-    if (solveByLines(spec).solved) return spec;
+    const solved = solveByLines(spec);
+    if (!solved.solved) continue;
+    if (!gate) return spec;
+    const depth = nonogramDepth(solved.rounds, (solved.deducedPerRound[0] ?? 0) / cells);
+    const miss = Math.max((gate.min ?? -Infinity) - depth, depth - (gate.max ?? Infinity), 0);
+    if (miss === 0) return spec;
+    // Kein Seed darf leer ausgehen, sonst reisst der Zeitplan. Das knappste Verfehlen gewinnt.
+    if (miss < closestMiss) {
+      closestMiss = miss;
+      closest = spec;
+    }
   }
+  if (closest) return closest;
   throw new Error(`could not generate nonogram for seed ${seed} / ${difficulty}`);
 }
 

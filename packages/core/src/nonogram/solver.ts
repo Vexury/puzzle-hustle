@@ -128,12 +128,19 @@ export interface NonogramDifficultyReport {
   cells: number;
 }
 
+// Der groessenunabhaengige Teil der Bewertung: wie tief die Logik reicht, ohne den Bonus
+// fuer die Brettgroesse. Die Schwellen der Stufen haengen daran, damit Weekly und Monthly
+// nicht allein wegen des groesseren Bretts in eine andere Stufe rutschen.
+export function nonogramDepth(rounds: number, firstRoundRatio: number): number {
+  return rounds * 6 + (1 - firstRoundRatio) * 40;
+}
+
 export function nonogramDifficultyReport(spec: NonogramSpec): NonogramDifficultyReport {
   const { rows, cols } = spec.config;
   const cells = rows * cols;
   const r = solveByLines(spec);
   const firstRoundRatio = (r.deducedPerRound[0] ?? 0) / cells;
-  const score = r.rounds * 6 + (1 - firstRoundRatio) * 40 + Math.log2(cells) * 3;
+  const score = nonogramDepth(r.rounds, firstRoundRatio) + Math.log2(cells) * 3;
   return { score: Math.round(score * 10) / 10, rounds: r.rounds, firstRoundRatio: Math.round(firstRoundRatio * 1000) / 1000, cells };
 }
 
