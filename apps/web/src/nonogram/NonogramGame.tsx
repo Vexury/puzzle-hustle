@@ -14,6 +14,7 @@ import './nonogram.css';
 import { gridLineClasses } from '../lib/gridLines.ts';
 import { useHistory } from '../lib/useHistory.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
+import { ResetButton } from '../components/ResetButton.tsx';
 
 interface Drag {
   pointerId: number;
@@ -263,9 +264,7 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
 
       {!solved && (
         <div className="actions">
-          <button type="button" className="btn" onClick={reset} disabled={locked}>
-            Reset
-          </button>
+          <ResetButton onReset={reset} disabled={locked} />
           <button type="button" className="btn" onClick={undo} disabled={locked || !history.canUndo}>
             Undo
           </button>

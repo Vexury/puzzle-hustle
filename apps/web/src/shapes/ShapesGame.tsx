@@ -14,6 +14,7 @@ import {
 } from '@puzzle-hustle/core';
 import { outlinePoints } from './PieceShape.tsx';
 import { useHistory } from '../lib/useHistory.ts';
+import { ResetButton } from '../components/ResetButton.tsx';
 
 interface Drag {
   pieceId: number;
@@ -242,9 +243,7 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
 
           {!solved && (
             <div className="actions">
-              <button type="button" className="btn" onClick={reset} disabled={locked}>
-                Reset
-              </button>
+              <ResetButton onReset={reset} disabled={locked} />
               <button type="button" className="btn" onClick={undo} disabled={locked || !history.canUndo}>
                 Undo
               </button>

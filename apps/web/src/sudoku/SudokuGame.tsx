@@ -13,6 +13,7 @@ import {
 } from '@puzzle-hustle/core';
 import './sudoku.css';
 import { useHistory } from '../lib/useHistory.ts';
+import { ResetButton } from '../components/ResetButton.tsx';
 
 const DIGITS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -253,9 +254,7 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
             <button type="button" className="btn" onClick={erase} disabled={locked}>
               Erase
             </button>
-            <button type="button" className="btn" onClick={reset} disabled={locked}>
-              Reset
-            </button>
+            <ResetButton onReset={reset} disabled={locked} />
             <button type="button" className="btn" onClick={undo} disabled={locked || !history.canUndo}>
               Undo
             </button>

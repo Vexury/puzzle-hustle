@@ -1,0 +1,32 @@
+import { useEffect, useState } from 'react';
+
+const REVERT_MS = 4000;
+
+// A reset throws the whole board away, so the first press only arms the button.
+export function ResetButton({ onReset, disabled }: { onReset: () => void; disabled: boolean }) {
+  const [armed, setArmed] = useState(false);
+
+  useEffect(() => {
+    if (!armed) return;
+    const timer = setTimeout(() => setArmed(false), REVERT_MS);
+    return () => clearTimeout(timer);
+  }, [armed]);
+
+  return (
+    <button
+      type="button"
+      className={armed ? 'btn danger' : 'btn warn'}
+      onClick={() => {
+        if (!armed) {
+          setArmed(true);
+          return;
+        }
+        setArmed(false);
+        onReset();
+      }}
+      disabled={disabled}
+    >
+      {armed ? 'Sure?' : 'Reset'}
+    </button>
+  );
+}

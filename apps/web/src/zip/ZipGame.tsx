@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { emptyZipState, isZipSolved, zipHint, zipStart, zipStepAllowed, type ZipSpec, type ZipState } from '@puzzle-hustle/core';
 import { useHistory } from '../lib/useHistory.ts';
+import { ResetButton } from '../components/ResetButton.tsx';
 import './zip.css';
 
 export interface ZipGameProps {
@@ -279,9 +280,7 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, locke
 
       {!solved && (
         <div className="actions">
-          <button type="button" className="btn" onClick={reset} disabled={locked}>
-            Reset
-          </button>
+          <ResetButton onReset={reset} disabled={locked} />
           <button type="button" className="btn" onClick={undo} disabled={locked || !history.canUndo}>
             Undo
           </button>

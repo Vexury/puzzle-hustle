@@ -287,6 +287,8 @@ p { margin: 0; }
 }
 .actions .btn:hover:not(:disabled) { background: var(--hover-bg); border-color: var(--hover-bg); color: var(--hover-text); }
 .actions .btn:disabled { opacity: 0.45; cursor: default; }
+.actions .btn.warn { color: var(--danger); }
+.actions .btn.danger, .actions .btn.danger:hover:not(:disabled) { background: var(--danger); border-color: var(--danger); color: #fff; }
 
 .chevron { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 

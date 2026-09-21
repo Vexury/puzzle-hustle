@@ -15,6 +15,7 @@ import {
 import './regions.css';
 import { useHistory } from '../lib/useHistory.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
+import { ResetButton } from '../components/ResetButton.tsx';
 
 const REGION_COLORS = 12;
 
@@ -230,9 +231,7 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
 
       {!solved && (
         <div className="actions">
-          <button type="button" className="btn" onClick={reset} disabled={locked}>
-            Reset
-          </button>
+          <ResetButton onReset={reset} disabled={locked} />
           <button type="button" className="btn" onClick={undo} disabled={locked || !history.canUndo}>
             Undo
           </button>
