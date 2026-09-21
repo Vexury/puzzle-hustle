@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { parsePuzzleId, type Period } from '@puzzle-hustle/core';
 import { apiFetch } from '../lib/api.ts';
 import { formatSeconds } from '../lib/share.ts';
 import { toast } from './Toast.tsx';
@@ -41,11 +42,12 @@ export function useBoard(groupId: string | null, puzzle: string): { board: Board
 // "Faster than N%" compares against everybody else who solved this puzzle, so the player
 // themselves is out of both sides of the fraction. Below 20 submissions the number says
 // more about the size of the field than about the player, so it stays hidden.
-export function percentileText(percentile: BoardData['percentile']): string | null {
+export function percentileText(percentile: BoardData['percentile'], period: Period): string | null {
   if (!percentile || percentile.total < 20) return null;
   const others = percentile.total - 1;
   const beaten = others - percentile.faster;
-  return `Faster than ${Math.round((beaten / others) * 100)}% of all players today`;
+  const when = period === 'weekly' ? 'this week' : period === 'monthly' ? 'this month' : 'today';
+  return `Faster than ${Math.round((beaten / others) * 100)}% of all players ${when}`;
 }
 
 export function Board({ groupId, puzzle, meId }: { groupId: string; puzzle: string; meId: string }) {
@@ -54,7 +56,7 @@ export function Board({ groupId, puzzle, meId }: { groupId: string; puzzle: stri
   if (!board) return <p className="muted small">Standings are unavailable right now.</p>;
   if (board.entries.length === 0) return <p className="muted small">Nobody in this group has solved it yet.</p>;
 
-  const percentile = percentileText(board.percentile);
+  const percentile = percentileText(board.percentile, parsePuzzleId(puzzle)?.period ?? 'daily');
   return (
     <>
       <ol className="leaderboard">
