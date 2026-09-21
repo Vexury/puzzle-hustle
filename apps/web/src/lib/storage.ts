@@ -120,3 +120,12 @@ export function writeSetting(key: string, value: string) {
     /* storage unavailable */
   }
 }
+
+export function removeSetting(key: string) {
+  try {
+    localStorage.removeItem(key);
+    if (isBackedUp(key)) scheduleBackup();
+  } catch {
+    /* storage unavailable */
+  }
+}

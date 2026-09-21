@@ -1,4 +1,4 @@
-import { readSetting, writeSetting } from './storage.ts';
+import { readSetting, removeSetting, writeSetting } from './storage.ts';
 
 export const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? 'https://api.puzzles.vexury.dev';
 
@@ -31,11 +31,7 @@ export function readSession(): Session | null {
 
 export function writeSession(session: Session | null) {
   if (!session) {
-    try {
-      localStorage.removeItem(SESSION_KEY);
-    } catch {
-      /* storage unavailable */
-    }
+    removeSetting(SESSION_KEY);
     return;
   }
   writeSetting(SESSION_KEY, JSON.stringify(session));
@@ -58,10 +54,18 @@ export async function apiFetch<T>(path: string, init: RequestInit & { auth?: boo
     throw new ApiError('offline', 0);
   }
 
-  const data = (await response.json().catch(() => ({}))) as { error?: string };
+  let data: { error?: string } = {};
+  let parsed = true;
+  try {
+    data = (await response.json()) as { error?: string };
+  } catch {
+    parsed = false;
+  }
+
   if (!response.ok) {
     if (response.status === 401) writeSession(null);
     throw new ApiError(data.error ?? 'failed', response.status);
   }
+  if (!parsed) throw new ApiError('bad_response', response.status);
   return data as T;
 }

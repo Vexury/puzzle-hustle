@@ -19,7 +19,7 @@ it('stores and reads a session', () => {
 
 it('sends the bearer token when asked to', async () => {
   writeSession({ token: 't', player: { id: 'p', name: 'Moritz' } });
-  const fetchMock = vi.fn(async () => new Response('{"ok":true}', { status: 200 }));
+  const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response('{"ok":true}', { status: 200 }));
   vi.stubGlobal('fetch', fetchMock);
 
   await apiFetch('/groups', { auth: true });
@@ -45,4 +45,14 @@ it('drops the session on a 401 so the app stops pretending to be signed in', asy
   vi.stubGlobal('fetch', async () => new Response('{"error":"unauthorized"}', { status: 401 }));
   await expect(apiFetch('/groups', { auth: true })).rejects.toMatchObject({ code: 'unauthorized' });
   expect(readSession()).toBeNull();
+});
+
+it('turns an unparseable 200 body into a bad_response error', async () => {
+  vi.stubGlobal('fetch', async () => new Response('not json', { status: 200 }));
+  await expect(apiFetch('/health')).rejects.toMatchObject({ code: 'bad_response', status: 200 });
+});
+
+it('still resolves a 200 whose body is a legitimately empty object', async () => {
+  vi.stubGlobal('fetch', async () => new Response('{}', { status: 200 }));
+  await expect(apiFetch('/health')).resolves.toEqual({});
 });
