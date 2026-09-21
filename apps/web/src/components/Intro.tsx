@@ -12,11 +12,11 @@ const CARDS = [
   },
   {
     title: 'Stuck? Take a hint',
-    body: 'The first hint in every puzzle is free. After that a short video, or unlock unlimited hints once.',
+    body: 'The first hint in every puzzle is free. Every hint after that costs a short video, or you unlock unlimited hints once and keep them.',
   },
   {
     title: 'Start easy',
-    body: 'The dailies are medium. If a puzzle type is new to you, play the Easy levels first, they teach the rules on small boards.',
+    body: 'Most dailies land on medium. If a puzzle type is new to you, play the Easy levels first, they teach the rules on small boards.',
   },
 ];
 
