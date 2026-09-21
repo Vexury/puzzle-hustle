@@ -112,6 +112,34 @@ async function route(request: Request, env: Env): Promise<Response> {
     return board ? json(board) : error(404, 'not_a_member');
   }
 
+  if (method === 'POST' && path === '/report') {
+    const input = await body(request);
+    if (typeof input.playerId !== 'string') return error(400, 'missing_id');
+    const reason = typeof input.reason === 'string' ? input.reason.slice(0, 200) : 'name';
+    const existing = await env.DB.prepare('SELECT id FROM reports WHERE reporter_id = ? AND target_id = ?')
+      .bind(playerId, input.playerId)
+      .first<{ id: string }>();
+    if (!existing) {
+      await env.DB.prepare('INSERT INTO reports (id, reporter_id, target_id, reason, created_at) VALUES (?, ?, ?, ?, ?)')
+        .bind(crypto.randomUUID(), playerId, input.playerId, reason, Date.now())
+        .run();
+    }
+    return json({});
+  }
+
+  if (method === 'DELETE' && path === '/account') {
+    const { results } = await env.DB.prepare('SELECT group_id AS id FROM members WHERE player_id = ?')
+      .bind(playerId)
+      .all<{ id: string }>();
+    for (const row of results) await leaveGroup(env.DB, playerId, row.id);
+    await env.DB.batch([
+      env.DB.prepare('DELETE FROM scores WHERE player_id = ?').bind(playerId),
+      env.DB.prepare('DELETE FROM reports WHERE reporter_id = ? OR target_id = ?').bind(playerId, playerId),
+      env.DB.prepare('DELETE FROM players WHERE id = ?').bind(playerId),
+    ]);
+    return json({});
+  }
+
   return error(404, 'not_found');
 }
 
