@@ -4,8 +4,13 @@ import { Share } from '@capacitor/share';
 import type { SolveRecord } from './storage.ts';
 import { href } from './router.ts';
 
+// The Capacitor WebView serves the app from https://localhost, so location.origin would
+// put a dead link into every message shared from a phone.
+const SHARE_ORIGIN = 'https://puzzles.vexury.dev';
+
 export function puzzleUrl(ref: PuzzleRef): string {
-  return `${location.origin}${href('/play')}?${encodeRef(ref)}`;
+  const origin = Capacitor.isNativePlatform() ? SHARE_ORIGIN : location.origin;
+  return `${origin}${href('/play')}?${encodeRef(ref)}`;
 }
 
 export function formatSeconds(total: number): string {
@@ -32,21 +37,29 @@ export function shareText(ref: PuzzleRef, record?: SolveRecord): string {
   return `${head}\n✔ ${formatSeconds(record.seconds)} · ${hints}\n${puzzleUrl(ref)}`;
 }
 
-export async function share(text: string, url: string): Promise<'shared' | 'copied' | 'failed'> {
+// Dismissing the share sheet is a decision, not an error, and must stay silent.
+function wasCancelled(err: unknown): boolean {
+  if (err instanceof DOMException && err.name === 'AbortError') return true;
+  return err instanceof Error && /cancel/i.test(err.message);
+}
+
+// `text` already ends with the link. Passing it as `url` as well makes Android append it
+// a second time.
+export async function share(text: string): Promise<'shared' | 'copied' | 'cancelled' | 'failed'> {
   if (Capacitor.isNativePlatform()) {
     try {
-      await Share.share({ text, url, dialogTitle: 'Share puzzle' });
+      await Share.share({ text, dialogTitle: 'Share puzzle' });
       return 'shared';
-    } catch {
-      return 'failed';
+    } catch (err) {
+      return wasCancelled(err) ? 'cancelled' : 'failed';
     }
   }
   if (navigator.share) {
     try {
-      await navigator.share({ text, url });
+      await navigator.share({ text });
       return 'shared';
     } catch (err) {
-      if (err instanceof DOMException && err.name === 'AbortError') return 'failed';
+      if (wasCancelled(err)) return 'cancelled';
     }
   }
   try {

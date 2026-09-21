@@ -28,7 +28,7 @@ import {
 } from '@puzzle-hustle/core';
 import { href, navigate, onLinkClick } from '../lib/router.ts';
 import { clearProgress, getSolve, readProgress, readSetting, recordSolve, useSolves, writeProgress, writeSetting, type SolveRecord } from '../lib/storage.ts';
-import { capitalize, formatSeconds, puzzleUrl, share, shareText } from '../lib/share.ts';
+import { capitalize, formatSeconds, share, shareText } from '../lib/share.ts';
 import { currentHintProvider } from '../lib/hints.ts';
 import { HOW_TO } from '../lib/howto.ts';
 import { dailyNumber } from '../lib/stats.ts';
@@ -199,7 +199,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   };
 
   const doShare = async () => {
-    const outcome = await share(shareText(puzzleRef, result ?? getSolve(id)), puzzleUrl(puzzleRef));
+    const outcome = await share(shareText(puzzleRef, result ?? getSolve(id)));
     if (outcome === 'copied') toast('Link copied');
     else if (outcome === 'failed') toast('Could not share');
   };
