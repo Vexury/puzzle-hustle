@@ -22,6 +22,7 @@
   --border-mid: #c0c0c0;
   --bg: #faf9f8;
   --card-bg: #fffdf7;
+  --piece-line: color-mix(in srgb, var(--text) 60%, var(--bg));
   --accent: #FFA833;
   --accent-text: #FFA833;
   --accent-deep: #d98a12;
@@ -514,9 +515,9 @@ p { margin: 0; }
 .board.solved .atom.lit { animation: atom-solve 1s ease-out both; }
 @keyframes atom-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.62; } }
 .grid-line { stroke: var(--board-line); stroke-width: 0.02; fill: none; }
-.piece-outline { fill: none; stroke: var(--text); stroke-width: 0.05; stroke-linejoin: round; opacity: 0.6; transition: opacity 0.12s; }
-.piece-outline.dragging { opacity: 1; stroke-width: 0.07; stroke-dasharray: 0.12 0.08; }
-.piece-outline.selected { opacity: 1; stroke-width: 0.07; stroke: var(--accent-text); }
+.piece-outline { fill: none; stroke: var(--piece-line); stroke-width: 0.05; stroke-linejoin: round; transition: stroke 0.12s; }
+.piece-outline.dragging { stroke: var(--text); stroke-width: 0.07; stroke-dasharray: 0.12 0.08; }
+.piece-outline.selected { stroke: var(--accent-text); stroke-width: 0.07; }
 .piece-hit { fill: transparent; cursor: grab; stroke: transparent; stroke-width: 0.12; }
 .piece-hit:active { cursor: grabbing; }
 .hint-flash { fill: none; stroke: var(--success); stroke-width: 0.08; animation: flash 0.9s ease-out 2; pointer-events: none; }
