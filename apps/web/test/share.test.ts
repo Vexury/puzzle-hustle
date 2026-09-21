@@ -1,12 +1,19 @@
 import { expect, it, vi } from 'vitest';
-import { href } from '../src/lib/router.ts';
-import { joinUrl } from '../src/lib/share.ts';
+import { joinUrl, puzzleUrl } from '../src/lib/share.ts';
 
-it('builds a join link from the page origin on the web', () => {
-  expect(joinUrl('ABC123')).toBe(`${location.origin}${href('/join')}?c=ABC123`);
+it('builds a join link from the public address, not from wherever this copy runs', () => {
+  // jsdom serves the page from http://localhost:3000, which is exactly the kind of origin a
+  // recipient cannot open. The link must not inherit it.
+  expect(location.origin).not.toBe('https://puzzles.vexury.dev');
+  expect(joinUrl('ABC123')).toBe('https://puzzles.vexury.dev/join?c=ABC123');
 });
 
-it('uses the fixed share origin instead of the WebView-internal one when native', async () => {
+it('builds a puzzle link the same way', () => {
+  const url = puzzleUrl({ type: 'sudoku', difficulty: 'easy', seed: 1, period: 'daily', key: '2026-09-22' });
+  expect(url.startsWith('https://puzzles.vexury.dev/play?')).toBe(true);
+});
+
+it('does not change when running natively', async () => {
   vi.resetModules();
   vi.doMock('@capacitor/core', () => ({ Capacitor: { isNativePlatform: () => true } }));
   const { joinUrl: nativeJoinUrl } = await import('../src/lib/share.ts');

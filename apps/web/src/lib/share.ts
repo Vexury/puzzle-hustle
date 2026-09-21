@@ -4,18 +4,20 @@ import { Share } from '@capacitor/share';
 import type { SolveRecord } from './storage.ts';
 import { href } from './router.ts';
 
-// The Capacitor WebView serves the app from https://localhost, so location.origin would
-// put a dead link into every message shared from a phone.
+// A shared link exists to be opened on somebody else's device, so it is always built from
+// the app's public address and never from wherever this copy happens to be running.
+// `location.origin` is right only when that is already the public address: in the Capacitor
+// WebView it is https://localhost, on a dev server it is localhost:5173, and on a preview
+// deploy it is something nobody else can reach. The WebView version of this shipped once,
+// and it took a tester sending the broken message back to notice.
 const SHARE_ORIGIN = 'https://puzzles.vexury.dev';
 
 export function puzzleUrl(ref: PuzzleRef): string {
-  const origin = Capacitor.isNativePlatform() ? SHARE_ORIGIN : location.origin;
-  return `${origin}${href('/play')}?${encodeRef(ref)}`;
+  return `${SHARE_ORIGIN}${href('/play')}?${encodeRef(ref)}`;
 }
 
 export function joinUrl(code: string): string {
-  const origin = Capacitor.isNativePlatform() ? SHARE_ORIGIN : location.origin;
-  return `${origin}${href('/join')}?c=${code}`;
+  return `${SHARE_ORIGIN}${href('/join')}?c=${code}`;
 }
 
 export function formatSeconds(total: number): string {
