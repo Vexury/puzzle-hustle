@@ -75,3 +75,26 @@ it('waits after a failure instead of hammering the server', async () => {
   await flush();
   expect(fetchMock).toHaveBeenCalledTimes(1);
 });
+
+it("never submits another player's queued entry, but does once they sign back in", async () => {
+  writeSession({ token: 'a', player: { id: 'a', name: 'Alice' } });
+  enqueue('sudoku:daily:2026-09-21', record);
+
+  writeSession({ token: 'b', player: { id: 'b', name: 'Bob' } });
+  const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response(JSON.stringify({ results: [] }), { status: 200 }));
+  vi.stubGlobal('fetch', fetchMock);
+  await flush();
+  expect(readQueue()).toHaveLength(1);
+  const sent = fetchMock.mock.calls[0]
+    ? (JSON.parse((fetchMock.mock.calls[0][1] as RequestInit).body as string) as { entries: Array<{ puzzle: string }> })
+    : { entries: [] };
+  expect(sent.entries.some((e) => e.puzzle === 'sudoku:daily:2026-09-21')).toBe(false);
+
+  writeSession({ token: 'a', player: { id: 'a', name: 'Alice' } });
+  resetBackoff();
+  vi.stubGlobal('fetch', async () =>
+    new Response(JSON.stringify({ results: [{ puzzle: 'sudoku:daily:2026-09-21', status: 'stored' }] }), { status: 200 }),
+  );
+  await flush();
+  expect(readQueue()).toHaveLength(0);
+});

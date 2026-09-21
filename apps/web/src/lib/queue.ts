@@ -12,6 +12,12 @@ export interface QueuedScore {
   hints: number;
   moves: number;
   solvedAt: number;
+  // Who earned it, stamped at enqueue time from the session then signed in. Undefined means it
+  // was solved with nobody signed in, which submits under whoever signs in first — the ordinary
+  // path. A shared device (this app's actual use case, not a hypothetical one) can have a
+  // different player signed in by the time the network comes back, and that player's scores
+  // must never be credited with somebody else's solve.
+  playerId?: string;
 }
 
 export function readQueue(): QueuedScore[] {
@@ -33,14 +39,18 @@ export function enqueue(
   record: { seconds: number; hints: number; moves: number; solvedAt: string },
 ): void {
   if (!parsePuzzleId(puzzle)) return;
+  const playerId = readSession()?.player.id;
   const queue = readQueue();
-  if (queue.some((entry) => entry.puzzle === puzzle)) return;
+  // Scoped to (puzzle, owner): the same daily solved separately by two players who share this
+  // device are two legitimate entries, not a duplicate of each other.
+  if (queue.some((entry) => entry.puzzle === puzzle && entry.playerId === playerId)) return;
   queue.push({
     puzzle,
     seconds: record.seconds,
     hints: record.hints,
     moves: record.moves,
     solvedAt: Date.parse(record.solvedAt) || Date.now(),
+    ...(playerId !== undefined ? { playerId } : {}),
   });
   writeQueue(queue);
 }
@@ -69,11 +79,18 @@ export function resetBackoff() {
 }
 
 async function run(): Promise<void> {
-  if (!readSession()) return;
+  const session = readSession();
+  if (!session) return;
   if (Date.now() < nextAttempt) return;
-  let queue = readQueue();
-  while (queue.length > 0) {
-    const batch = queue.slice(0, BATCH);
+  // An entry with no owner is the ordinary case (solved before anyone signed in) and always
+  // submits under whoever is signed in now. An entry stamped for a different player is left
+  // exactly where it is — filtered out before batching, not after, so it never occupies a batch
+  // slot or counts toward the stuck-loop check below, and is never at risk of being dropped by
+  // it. It stays in the queue, in place, for whenever its own player signs back in.
+  const isMine = (entry: QueuedScore) => entry.playerId === undefined || entry.playerId === session.player.id;
+  let mine = readQueue().filter(isMine);
+  while (mine.length > 0) {
+    const batch = mine.slice(0, BATCH);
     // The server answers one result per entry it was sent, in order, echoing the puzzle we
     // sent it. Restricting matches to puzzles actually in this batch means a result naming a
     // puzzle we never sent (the server falls back to an empty string for a malformed entry —
@@ -101,9 +118,14 @@ async function run(): Promise<void> {
     const answered = new Set(
       results.filter((r) => r.status !== 'throttled' && batchPuzzles.has(r.puzzle)).map((r) => r.puzzle),
     );
+    // Re-read the full queue, not just `mine` — another player's entries may sit anywhere in it
+    // and must be written back exactly as they were, in their original place, untouched by
+    // anything decided here.
     const before = readQueue();
-    queue = before.filter((entry) => !answered.has(entry.puzzle));
-    writeQueue(queue);
+    const beforeMine = before.filter(isMine);
+    const after = before.filter((entry) => !(isMine(entry) && answered.has(entry.puzzle)));
+    writeQueue(after);
+    mine = after.filter(isMine);
     // The daily limit is spent. Trying again in this session would only burn requests.
     if (results.some((r) => r.status === 'throttled')) {
       failed();
@@ -112,7 +134,7 @@ async function run(): Promise<void> {
     // Nothing in this batch could be applied — a result we cannot match to anything we sent.
     // Retrying the same batch immediately would spin forever on that one entry; back off
     // instead so newer entries queued behind it still get their turn on the next trigger.
-    if (queue.length === before.length) {
+    if (mine.length === beforeMine.length) {
       failed();
       return;
     }
