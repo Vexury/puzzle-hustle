@@ -4,12 +4,17 @@ import { readSetting, writeSetting } from './storage.ts';
 const MIN_CELL = 12;
 const MAX_CELL = 64;
 
+// Zwei Finger halten beim Schieben nie exakt denselben Abstand. Ohne Totzone
+// wandert der Zoom bei jedem Pan mit, was ein sauberes Verschieben unmoeglich macht.
+const ZOOM_DEADZONE = 0.15;
+
 interface Pinch {
   ids: [number, number];
   startDist: number;
   startCell: number;
   lastX: number;
   lastY: number;
+  zooming: boolean;
 }
 
 interface SavedView {
@@ -34,19 +39,28 @@ export function useZoomViewport(cols: number, reserve: number, viewKey: string |
   const pinch = useRef<Pinch | null>(null);
   const pendingZoom = useRef<{ from: number; to: number; x: number; y: number } | null>(null);
   const restore = useRef<SavedView | null>(null);
+  const minCell = useRef(MIN_CELL);
+  const maxCell = useRef(MAX_CELL);
   const storageKey = viewKey ? `ph:view:${viewKey}` : null;
 
   useLayoutEffect(() => {
     const el = viewport.current;
     if (!el) return;
+    const fit = Math.floor(((el.parentElement?.clientWidth ?? el.clientWidth) - reserve) / cols);
+    const initial = Math.max(Math.min(fit, 44), 24);
+    // Zoom gibt es nur, wo das Brett ueberhaupt ueberlaeuft. Passt es ohnehin in die Breite,
+    // bleibt die Groesse fest; unter die Einpassung zu gehen wuerde es nur schrumpfen lassen.
+    const overflows = fit < initial;
+    minCell.current = overflows ? Math.max(fit, MIN_CELL) : initial;
+    maxCell.current = overflows ? MAX_CELL : initial;
     const saved = storageKey ? parseView(readSetting(storageKey)) : null;
     if (saved) {
-      restore.current = saved;
-      setCellPx(saved.cell);
+      const cell = Math.max(saved.cell, minCell.current);
+      restore.current = { ...saved, cell };
+      setCellPx(cell);
       return;
     }
-    const fit = Math.floor(((el.parentElement?.clientWidth ?? el.clientWidth) - reserve) / cols);
-    setCellPx(Math.max(Math.min(fit, 44), 24));
+    setCellPx(initial);
   }, [cols, reserve, storageKey]);
 
   useLayoutEffect(() => {
@@ -99,7 +113,7 @@ export function useZoomViewport(cols: number, reserve: number, viewKey: string |
   });
 
   function zoomTo(next: number, x: number, y: number) {
-    const to = Math.round(Math.min(Math.max(next, MIN_CELL), MAX_CELL));
+    const to = Math.round(Math.min(Math.max(next, minCell.current), maxCell.current));
     if (to === cellPx) return;
     pendingZoom.current = { from: cellPx, to, x, y };
     setCellPx(to);
@@ -116,6 +130,7 @@ export function useZoomViewport(cols: number, reserve: number, viewKey: string |
         startCell: cellPx,
         lastX: (a[1].x + b[1].x) / 2,
         lastY: (a[1].y + b[1].y) / 2,
+        zooming: false,
       };
       return true;
     }
@@ -136,8 +151,15 @@ export function useZoomViewport(cols: number, reserve: number, viewKey: string |
     el.scrollTop -= cy - p.lastY;
     p.lastX = cx;
     p.lastY = cy;
+    const dist = Math.hypot(a.x - b.x, a.y - b.y);
+    if (!p.zooming) {
+      if (Math.abs(dist / p.startDist - 1) < ZOOM_DEADZONE) return true;
+      p.zooming = true;
+      p.startDist = dist;
+      p.startCell = cellPx;
+    }
     const rect = el.getBoundingClientRect();
-    zoomTo(p.startCell * (Math.hypot(a.x - b.x, a.y - b.y) / p.startDist), cx - rect.left, cy - rect.top);
+    zoomTo(p.startCell * (dist / p.startDist), cx - rect.left, cy - rect.top);
     return true;
   }
 
