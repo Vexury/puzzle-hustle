@@ -45,7 +45,7 @@ export const HOW_TO: Record<PuzzleTypeId, string[]> = {
   ],
   killer: [
     'Normal Sudoku rules apply: 1 to 9 once per row, column and 3x3 box.',
-    'The dashed outlines are cages. The digits inside a cage add up to the small number in its corner.',
+    'The dashed outlines are cages. The digits inside a cage add up to the small number in its corner. Their colours only tell neighbouring cages apart and mean nothing for the solution.',
     'Digits inside a cage cannot repeat. Harder levels have no givens at all, so start from the smallest and largest cage sums.',
     'Tap a cell, then a number. Notes mode keeps track of candidates. Everything is solvable by logic.',
   ],
