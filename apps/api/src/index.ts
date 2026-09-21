@@ -62,7 +62,10 @@ async function route(request: Request, env: Env): Promise<Response> {
     const input = await body(request);
     if (typeof input.name !== 'string') return error(400, 'missing_name');
     const created = await createGroup(env.DB, playerId, input.name);
-    if (!created.ok) return error(created.reason === 'name' ? 400 : 403, `group_${created.reason}`);
+    if (!created.ok) {
+      const status = created.reason === 'name' ? 400 : created.reason === 'collision' ? 500 : 403;
+      return error(status, `group_${created.reason}`);
+    }
     return json(created.group);
   }
 

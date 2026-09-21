@@ -12,7 +12,7 @@ beforeEach(async () => {
   vi.restoreAllMocks();
 });
 
-async function signIn(subject: string, name: string): Promise<string> {
+async function signInWithId(subject: string, name: string): Promise<{ token: string; id: string }> {
   vi.spyOn(google, 'verifyGoogleIdToken').mockResolvedValue(subject);
   const response = await worker.fetch(
     new Request('https://api.test/session', {
@@ -21,7 +21,12 @@ async function signIn(subject: string, name: string): Promise<string> {
     }),
     env,
   );
-  return ((await response.json()) as { token: string }).token;
+  const parsed = (await response.json()) as { token: string; player: { id: string } };
+  return { token: parsed.token, id: parsed.player.id };
+}
+
+async function signIn(subject: string, name: string): Promise<string> {
+  return (await signInWithId(subject, name)).token;
 }
 
 function call(path: string, token: string, init: RequestInit = {}) {
@@ -92,13 +97,34 @@ it('refuses an invalid group name', async () => {
   expect((await post('/groups', token, { name: 'http://x.example' })).status).toBe(400);
 });
 
-it('lets a member leave and an owner remove somebody', async () => {
+it('refuses a non-owner removing anybody', async () => {
   const owner = await signIn('s1', 'Moritz');
   const group = (await (await post('/groups', owner, { name: 'Family' })).json()) as { id: string; code: string };
   const guest = await signIn('s2', 'Daniela');
   await post('/groups/join', guest, { code: group.code });
 
   expect((await post('/groups/remove', guest, { id: group.id, playerId: 'anyone' })).status).toBe(403);
+});
+
+it('lets an owner remove a member', async () => {
+  const owner = await signIn('s1', 'Moritz');
+  const group = (await (await post('/groups', owner, { name: 'Family' })).json()) as { id: string; code: string };
+  const guest = await signInWithId('s2', 'Daniela');
+  await post('/groups/join', guest.token, { code: group.code });
+
+  const removed = await post('/groups/remove', owner, { id: group.id, playerId: guest.id });
+  expect(removed.status).toBe(200);
+
+  const afterList = (await (await call('/groups', guest.token)).json()) as { groups: unknown[] };
+  expect(afterList.groups).toEqual([]);
+});
+
+it('lets a member leave voluntarily', async () => {
+  const owner = await signIn('s1', 'Moritz');
+  const group = (await (await post('/groups', owner, { name: 'Family' })).json()) as { id: string; code: string };
+  const guest = await signIn('s2', 'Daniela');
+  await post('/groups/join', guest, { code: group.code });
+
   await post('/groups/leave', guest, { id: group.id });
   const list = (await (await call('/groups', guest)).json()) as { groups: unknown[] };
   expect(list.groups).toEqual([]);

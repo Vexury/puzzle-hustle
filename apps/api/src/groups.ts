@@ -45,7 +45,7 @@ export async function createGroup(
   db: D1Database,
   ownerId: string,
   rawName: string,
-): Promise<{ ok: true; group: GroupRow } | { ok: false; reason: 'name' | 'limit' }> {
+): Promise<{ ok: true; group: GroupRow } | { ok: false; reason: 'name' | 'limit' | 'collision' }> {
   const name = validateName(rawName);
   if (!name.ok) return { ok: false, reason: 'name' };
 
@@ -55,25 +55,26 @@ export async function createGroup(
     .first<{ n: number }>();
   if ((owned?.n ?? 0) >= MAX_GROUPS) return { ok: false, reason: 'limit' };
 
-  const id = crypto.randomUUID();
   const now = Date.now();
   for (let attempt = 0; attempt < 5; attempt++) {
+    // Fresh id and code every attempt: a retry is a genuinely new insert, never a collision
+    // against a row a previous attempt in this same call already left behind.
+    const id = crypto.randomUUID();
     const code = newGroupCode();
     try {
-      await db
-        .prepare('INSERT INTO groups (id, code, name, owner_id, created_at) VALUES (?, ?, ?, ?, ?)')
-        .bind(id, code, name.name, ownerId, now)
-        .run();
-      await db
-        .prepare('INSERT INTO members (group_id, player_id, joined_at) VALUES (?, ?, ?)')
-        .bind(id, ownerId, now)
-        .run();
+      await db.batch([
+        db
+          .prepare('INSERT INTO groups (id, code, name, owner_id, created_at) VALUES (?, ?, ?, ?, ?)')
+          .bind(id, code, name.name, ownerId, now),
+        db.prepare('INSERT INTO members (group_id, player_id, joined_at) VALUES (?, ?, ?)').bind(id, ownerId, now),
+      ]);
       return { ok: true, group: { id, code, name: name.name, members: 1, owner: true } };
     } catch {
-      /* code collision, draw another */
+      // Batched as one transaction, so a failure here — most likely the code's UNIQUE
+      // constraint — leaves neither insert behind. Draw fresh values and try again.
     }
   }
-  return { ok: false, reason: 'limit' };
+  return { ok: false, reason: 'collision' };
 }
 
 export async function joinGroup(
