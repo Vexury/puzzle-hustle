@@ -17,13 +17,12 @@ export function PuzzleIcon({ type, size = 56 }: { type: PuzzleTypeId; size?: num
           </g>
           <defs>
             <clipPath id={clip}>
-              <polygon points="17.67,24.67 24.67,17.67 31.67,24.67 24.67,31.67" />
+              <polygon points="6,15.33 15.33,6 24.67,15.33 15.33,24.67" />
             </clipPath>
           </defs>
-          <polygon points="6,6 24.67,6 6,24.67" className="ic-a" />
-          <rect x="24.67" y="24.67" width="9.33" height="9.33" className="ic-a" />
-          <polygon points="17.67,24.67 24.67,17.67 31.67,24.67 24.67,31.67" className="ic-a" />
-          <rect x="24.67" y="24.67" width="9.33" height="9.33" className="ic-cut" clipPath={`url(#${clip})`} />
+          <rect x="15.33" y="15.33" width="18.67" height="18.67" className="ic-a" />
+          <polygon points="6,15.33 15.33,6 24.67,15.33 15.33,24.67" className="ic-a" />
+          <rect x="15.33" y="15.33" width="18.67" height="18.67" className="ic-cut" clipPath={`url(#${clip})`} />
         </svg>
       ) : type === 'crowns' ? (
         <svg viewBox="0 0 40 40">
