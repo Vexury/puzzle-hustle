@@ -282,6 +282,7 @@ p { margin: 0; }
 .pill.outline { background: transparent; color: var(--text); border-color: var(--border-mid); }
 .pill.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
 .reset-confirm { display: flex; gap: 8px; }
+.friends-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .row-card.solved .pill.outline { border-color: var(--success); color: var(--success); }
 
 .actions { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 10px; width: 100%; margin-top: 4px; }

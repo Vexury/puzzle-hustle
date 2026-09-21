@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { PUZZLE_META, PUZZLE_TYPES } from '@puzzle-hustle/core';
 import { Flame } from './Daily.tsx';
 import { ACCENTS, ACCENT_NAMES, useAccent } from '../lib/accent.ts';
 import { adsAvailable, onAdsConsent, privacyOptionsAvailable, showPrivacyOptions } from '../lib/ads.ts';
+import { deleteAccount, renderSignInButton, setName as setAccountName, signOut, useSession } from '../lib/auth.ts';
+import { readSession } from '../lib/api.ts';
 import { buyUnlimitedHints, hasUnlimitedHints, onEntitlement } from '../lib/entitlement.ts';
+import { href, onLinkClick } from '../lib/router.ts';
 import { readSetting, resetProgress, useSolves, writeSetting } from '../lib/storage.ts';
 import { formatSeconds } from '../lib/share.ts';
 import { dailyStreaks, totalSolved, typeStats } from '../lib/stats.ts';
@@ -31,6 +34,7 @@ export function Profile() {
     const v = name.trim().slice(0, 24);
     setName(v);
     writeSetting('ph:name', v);
+    if (readSession()) void setAccountName(v).catch(() => undefined);
     setEditing(false);
   };
 
@@ -60,6 +64,8 @@ export function Profile() {
             </button>
           )}
         </div>
+
+        <FriendsCard />
 
         <div className="card-lg streak-card">
           <span className="streak-badge">
@@ -179,7 +185,7 @@ export function Profile() {
         </div>
 
         <p className="muted small center">
-          Progress is stored on this device. Sign-in and sync will come later. ·{' '}
+          Progress is stored on this device. ·{' '}
           <a href="https://vexury.dev" target="_blank" rel="noreferrer">
             vexury.dev
           </a>
@@ -194,6 +200,58 @@ export function Profile() {
         </p>
       </div>
     </>
+  );
+}
+
+function FriendsCard() {
+  const session = useSession();
+  const buttonHost = useRef<HTMLDivElement>(null);
+  const [failed, setFailed] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  useEffect(() => {
+    if (session || !buttonHost.current) return;
+    renderSignInButton(buttonHost.current, () => setFailed(false)).catch(() => setFailed(true));
+  }, [session]);
+
+  if (!session) {
+    return (
+      <div className="card-lg">
+        <h2>Friends</h2>
+        <span className="muted small">Sign in to compare your daily times with a group of friends. Everything else works without an account.</span>
+        <div ref={buttonHost} />
+        {failed && <span className="muted small">Sign-in is unavailable right now.</span>}
+      </div>
+    );
+  }
+
+  return (
+    <div className="card-lg">
+      <h2>Friends</h2>
+      <span className="muted small">Signed in as {session.player.name}.</span>
+      <div className="friends-actions">
+        <a href={href('/friends')} className="pill" onClick={onLinkClick}>
+          Groups ›
+        </a>
+        <button type="button" className="pill outline" onClick={signOut}>
+          Sign out
+        </button>
+        <button
+          type="button"
+          className={confirmDelete ? 'pill danger' : 'pill outline'}
+          onClick={() => {
+            if (!confirmDelete) {
+              setConfirmDelete(true);
+              setTimeout(() => setConfirmDelete(false), 4000);
+              return;
+            }
+            void deleteAccount();
+          }}
+        >
+          {confirmDelete ? 'Sure?' : 'Delete account'}
+        </button>
+      </div>
+    </div>
   );
 }
 
