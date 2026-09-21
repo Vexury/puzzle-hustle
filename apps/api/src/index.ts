@@ -3,6 +3,7 @@ import { createGroup, joinGroup, leaveGroup, listGroups, removeMember } from './
 import { cors, error, json, type Env } from './http.ts';
 import { generatedName, validateName } from './names.ts';
 import { requirePlayer, upsertPlayer } from './players.ts';
+import { MAX_BATCH, submitScores } from './scores.ts';
 import { signSession } from './token.ts';
 
 async function body(request: Request): Promise<Record<string, unknown>> {
@@ -92,6 +93,14 @@ async function route(request: Request, env: Env): Promise<Response> {
     if (typeof input.id !== 'string' || typeof input.playerId !== 'string') return error(400, 'missing_id');
     const done = await removeMember(env.DB, playerId, input.id, input.playerId);
     return done ? json({}) : error(403, 'not_owner');
+  }
+
+  if (method === 'POST' && path === '/scores') {
+    const input = await body(request);
+    const entries = input.entries;
+    if (!Array.isArray(entries) || entries.length === 0) return error(400, 'missing_entries');
+    if (entries.length > MAX_BATCH) return error(400, 'batch_too_large');
+    return json({ results: await submitScores(env.DB, playerId, entries) });
   }
 
   return error(404, 'not_found');
