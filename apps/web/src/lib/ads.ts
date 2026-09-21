@@ -42,7 +42,10 @@ function prepare(): Promise<boolean> {
     privacyOptions = String(info.privacyOptionsRequirementStatus) === 'REQUIRED';
     for (const l of listeners) l();
     return info.canRequestAds;
-  })().catch(() => false);
+  })().catch(() => {
+    ready = null;
+    return false;
+  });
   return ready;
 }
 
@@ -61,22 +64,16 @@ export async function showRewardedAd(): Promise<boolean> {
   let rewarded = false;
   const handle = await AdMob.addListener(RewardAdPluginEvents.Rewarded, () => {
     rewarded = true;
-  });
+  }).catch(() => null);
 
   try {
     await AdMob.prepareRewardVideoAd({ adId: REWARD_UNIT });
-  } catch {
-    await handle.remove();
-    return true;
-  }
-
-  try {
     const reward = await AdMob.showRewardVideoAd();
     if (reward && reward.amount > 0) rewarded = true;
   } catch {
     rewarded = true;
   } finally {
-    await handle.remove();
+    await handle?.remove().catch(() => {});
   }
 
   return rewarded;
