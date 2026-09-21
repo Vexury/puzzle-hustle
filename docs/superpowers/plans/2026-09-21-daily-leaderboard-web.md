@@ -294,7 +294,8 @@ Nothing behavioural, but it proves the toolchain end to end before any logic dep
 Then install the tooling at its current version:
 
 ```bash
-pnpm --filter @puzzle-hustle/api add -D wrangler@latest @cloudflare/vitest-pool-workers@latest @cloudflare/workers-types@latest
+pnpm --filter @puzzle-hustle/api add -D wrangler@latest @cloudflare/workers-types@latest
+pnpm --filter @puzzle-hustle/api add -D @cloudflare/vitest-pool-workers@^0.22 vitest@^4.1
 ```
 
 `apps/api/wrangler.toml` (the `database_id` is filled in during Task 16; `"local"` is a placeholder only for `wrangler dev --local` and must be replaced before any remote command):
@@ -321,20 +322,18 @@ simple = { limit = 20, period = 60 }
 GOOGLE_CLIENT_IDS = ""
 ```
 
-`apps/api/tsconfig.json`:
+The pool has no release that works with the workspace's Vitest 5: `0.22` wants Vitest 4, the older `0.12` line wants Vitest 2 or 3. A local Vitest pin inside `apps/api` is therefore unavoidable, and it belongs on the newest pairing the vendor supports.
+
+`apps/api/tsconfig.json`, extending the repository base like `packages/core` and `apps/web` do, and keeping only what is api-specific:
 
 ```json
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "target": "es2022",
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "lib": ["es2022"],
-    "types": ["@cloudflare/workers-types", "@cloudflare/vitest-pool-workers"],
-    "strict": true,
     "noEmit": true,
-    "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true
+    "lib": ["es2022"],
+    "types": ["@cloudflare/workers-types", "@cloudflare/vitest-pool-workers/types"],
+    "allowImportingTsExtensions": true
   },
   "include": ["src", "test"]
 }
@@ -397,28 +396,28 @@ CREATE TABLE reports (
 `apps/api/vitest.config.ts`:
 
 ```ts
-import { defineWorkersConfig, readD1Migrations } from '@cloudflare/vitest-pool-workers/config';
+import { defineConfig } from 'vitest/config';
+import { cloudflareTest, readD1Migrations } from '@cloudflare/vitest-pool-workers';
 
 const migrations = await readD1Migrations('./migrations');
 
-export default defineWorkersConfig({
-  test: {
-    poolOptions: {
-      workers: {
-        singleWorker: true,
-        miniflare: {
-          d1Databases: ['DB'],
-          bindings: {
-            TEST_MIGRATIONS: migrations,
-            SESSION_SECRET: 'test-secret',
-            GOOGLE_CLIENT_IDS: 'test-client-id',
-          },
+export default defineConfig({
+  plugins: [
+    cloudflareTest({
+      miniflare: {
+        d1Databases: ['DB'],
+        bindings: {
+          TEST_MIGRATIONS: migrations,
+          SESSION_SECRET: 'test-secret',
+          GOOGLE_CLIENT_IDS: 'test-client-id',
         },
       },
-    },
-  },
+    }),
+  ],
 });
 ```
+
+In `0.22` the pool is a Vite plugin rather than a config wrapper, and the old `singleWorker` option is gone with no replacement. Each test file therefore gets its own storage, which is why every API test file applies the migrations in its own `beforeAll` and clears the tables in its own `beforeEach`. No test file may rely on data another one wrote.
 
 `apps/api/test/health.test.ts`:
 
