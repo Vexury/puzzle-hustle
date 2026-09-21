@@ -60,3 +60,15 @@ it('rejects a token whose signature does not match the published key', async () 
     verifyGoogleIdToken(token, { audiences: ['test-client-id'], fetchJwks: other.fetchJwks }),
   ).resolves.toBeNull();
 });
+
+it('rejects a token whose kid is not in the key set', async () => {
+  const { token } = await issue(base);
+  const other = await issue(base);
+  const otherJwks = await other.fetchJwks();
+  const fetchJwks = async (): Promise<Jwks> => ({
+    keys: [{ ...otherJwks.keys[0]!, kid: 'different-kid' } as JsonWebKey],
+  });
+  await expect(
+    verifyGoogleIdToken(token, { audiences: ['test-client-id'], fetchJwks }),
+  ).resolves.toBeNull();
+});
