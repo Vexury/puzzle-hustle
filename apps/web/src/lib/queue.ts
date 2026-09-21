@@ -186,7 +186,10 @@ export function flush(): Promise<void> {
 
 export function initQueue(): void {
   void flush();
-  window.addEventListener('online', () => void flush());
+  window.addEventListener('online', () => {
+    resetBackoff();
+    void flush();
+  });
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) void flush();
   });
