@@ -4,7 +4,7 @@ import { Flame } from './Daily.tsx';
 import { ACCENTS, ACCENT_NAMES, useAccent } from '../lib/accent.ts';
 import { adsAvailable, onAdsConsent, privacyOptionsAvailable, showPrivacyOptions } from '../lib/ads.ts';
 import { deleteAccount, renderSignInButton, setName as setAccountName, signOut, useSession } from '../lib/auth.ts';
-import { readSession } from '../lib/api.ts';
+import { ApiError, readSession } from '../lib/api.ts';
 import { buyUnlimitedHints, hasUnlimitedHints, onEntitlement } from '../lib/entitlement.ts';
 import { href, onLinkClick } from '../lib/router.ts';
 import { readSetting, resetProgress, useSolves, writeSetting } from '../lib/storage.ts';
@@ -12,6 +12,15 @@ import { formatSeconds } from '../lib/share.ts';
 import { dailyStreaks, totalSolved, typeStats } from '../lib/stats.ts';
 import { THEME_PREFS, centerOf, useTheme, type ThemePref } from '../lib/theme.ts';
 import { ThemeToggle } from '../components/ThemeToggle.tsx';
+import { toast } from '../components/Toast.tsx';
+
+// Once signed in, the server's name is the source of truth. A rejected rename must not leave
+// the local field and the Friends card silently showing two different names.
+const NAME_REJECTION_MESSAGES: Record<string, string> = {
+  name_length: 'Names are 2 to 24 characters',
+  name_characters: 'Letters, digits, spaces, dots, dashes and underscores only',
+  name_blocked: 'Pick a different name',
+};
 
 export function Profile() {
   const solves = useSolves();
@@ -34,7 +43,17 @@ export function Profile() {
     const v = name.trim().slice(0, 24);
     setName(v);
     writeSetting('ph:name', v);
-    if (readSession()) void setAccountName(v).catch(() => undefined);
+    if (readSession()) {
+      void setAccountName(v).catch((err: unknown) => {
+        const code = err instanceof ApiError ? err.code : undefined;
+        toast(code && code in NAME_REJECTION_MESSAGES ? NAME_REJECTION_MESSAGES[code]! : 'Could not save your name');
+        if (code && code in NAME_REJECTION_MESSAGES) {
+          const serverName = readSession()?.player.name ?? '';
+          setName(serverName);
+          writeSetting('ph:name', serverName);
+        }
+      });
+    }
     setEditing(false);
   };
 
