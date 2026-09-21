@@ -81,16 +81,15 @@ it('changes a name and refuses a bad one', async () => {
 });
 
 it('resolves a duplicate sign-in for the same subject to the existing player instead of racing a second row', async () => {
-  vi.spyOn(google, 'verifyGoogleIdToken').mockResolvedValue('subject-4');
-  const first = (await (await post('/session', { provider: 'google', idToken: 'x', name: 'Moritz' })).json()) as {
-    player: { id: string; name: string };
-  };
+  // First call walks the INSERT ... RETURNING branch and creates the row.
+  const first = await upsertPlayer(env.DB, 'google', 'subject-4', 'Moritz');
+  expect(first.name).toBe('Moritz');
 
-  // Simulate the losing side of a double-tapped sign-in: the row already exists (created
-  // above), so this call must resolve to it rather than throw on the unique constraint or
-  // create a second row.
-  const raced = await upsertPlayer(env.DB, 'google', 'subject-4', 'SomeoneElse');
-  expect(raced).toEqual(first.player);
+  // Second call, same provider/subject, different offered name: the unique index makes the
+  // insert a no-op, so this walks the ON CONFLICT branch and must resolve to the row the
+  // first call created rather than throw or create a second row.
+  const second = await upsertPlayer(env.DB, 'google', 'subject-4', 'SomeoneElse');
+  expect(second).toEqual({ id: first.id, name: 'Moritz' });
 
   const count = await env.DB.prepare('SELECT COUNT(*) AS n FROM players').first<{ n: number }>();
   expect(count?.n).toBe(1);
