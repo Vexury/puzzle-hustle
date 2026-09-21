@@ -88,6 +88,9 @@ export function clearProgress(id: string) {
   }
 }
 
+// Deliberately leaves ph:queue untouched: those are solves the player genuinely earned, often
+// while offline, and dropping them to honour a local reset would destroy real data to avoid
+// mild surprise. Decided, not an oversight.
 export function resetProgress() {
   try {
     const doomed: string[] = [];
