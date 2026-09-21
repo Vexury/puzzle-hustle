@@ -223,10 +223,9 @@ p { margin: 0; }
   color: #fff;
   display: grid;
   place-items: center;
-  font-weight: 700;
-  font-size: 15px;
   box-shadow: 0 0 0 3px var(--card-bg);
 }
+.row-check svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 4.4; stroke-linecap: round; stroke-linejoin: round; }
 .row-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .row-title { font-weight: 700; font-size: var(--fs-md); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .row-sub { color: var(--text-muted); font-size: var(--fs-sm); }

@@ -64,6 +64,10 @@ and Crowns had drifted to smaller ones with their own opacities.
 looks like and sits in the middle of its button. The theme toggle reached the level picker,
 the one screen of four that was missing it.
 
+**The tick on a solved daily is drawn, not set in type.** It was the Nunito glyph, which sat
+just under 3% of the badge diameter too high and stayed thinner than the circle around it.
+It is now a stroked path, centred on its own ink to the pixel and noticeably heavier.
+
 **Six accent colours, chosen under Profile.** The app had one orange, taken from vexury.dev,
 and it was the colour of every button, every active tab and every lit atom. Amber stays the
 default and is unchanged; Lagoon, Cobalt, Iris, Rose and Slate repaint the same tokens. Green

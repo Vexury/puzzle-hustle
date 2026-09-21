@@ -32,7 +32,13 @@ function ChallengeCard({ puzzleRef, label }: { puzzleRef: PuzzleRef; label: stri
     <a href={url} onClick={onLinkClick} className={solve ? 'row-card solved' : 'row-card'}>
       <span className="row-icon">
         <PuzzleIcon type={puzzleRef.type} />
-        {solve && <span className="row-check" aria-label="Solved">✓</span>}
+        {solve && (
+          <span className="row-check" role="img" aria-label="Solved">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5.5 12.25L10 16.75L18.5 7.25" />
+            </svg>
+          </span>
+        )}
       </span>
       <span className="row-text">
         <span className="row-title">{PUZZLE_META[puzzleRef.type].name}</span>
