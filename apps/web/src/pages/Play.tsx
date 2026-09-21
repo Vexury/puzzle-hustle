@@ -31,6 +31,7 @@ import { setBackGuard } from '../lib/back.ts';
 import { clearProgress, getSolve, readProgress, readSetting, recordSolve, useSolves, writeProgress, writeSetting, type SolveRecord } from '../lib/storage.ts';
 import { capitalize, formatSeconds, share, shareText } from '../lib/share.ts';
 import { currentHintProvider } from '../lib/hints.ts';
+import { enqueue, flush } from '../lib/queue.ts';
 import { HOW_TO } from '../lib/howto.ts';
 import { dailyNumber } from '../lib/stats.ts';
 import { ShapesGame } from '../shapes/ShapesGame.tsx';
@@ -265,6 +266,10 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
     setSeconds(elapsed);
     setResult(record);
     recordSolve(id, record);
+    if (puzzleRef.period) {
+      enqueue(id, record);
+      void flush();
+    }
     clearProgress(id);
   };
 
