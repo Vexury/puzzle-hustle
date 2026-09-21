@@ -43,14 +43,12 @@ function cellAt(x: number, y: number): number | null {
   return el ? Number(el.dataset['i']) : null;
 }
 
-function cycle(current: number): number {
-  if (current === 0) return REGIONS_MARKED_EMPTY;
-  if (current === REGIONS_MARKED_EMPTY) return 1;
-  return 0;
-}
-
 function toggleSymbol(current: number): number {
   return current === 1 ? 0 : 1;
+}
+
+function toggleX(current: number): number {
+  return current === REGIONS_MARKED_EMPTY ? 0 : REGIONS_MARKED_EMPTY;
 }
 
 function paintValue(current: number): number | null {
@@ -120,13 +118,14 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
     const d: Drag = { pointerId: e.pointerId, idx, paint: paintValue(current), applied: false, timer: null };
     if (e.button === 2) {
       d.applied = true;
-      setCell(idx, toggleSymbol(current));
-    } else if (e.pointerType !== 'mouse') {
+      setCell(idx, toggleX(current));
+    } else {
       d.timer = setTimeout(() => {
         if (d.applied) return;
         d.applied = true;
-        d.paint = null;
-        setCell(idx, toggleSymbol(current));
+        // Carry the written value into the drag so a long press can keep going.
+        d.paint = toggleX(current);
+        setCell(idx, d.paint);
       }, LONG_PRESS_MS);
     }
     drag.current = d;
@@ -152,7 +151,7 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
     if (!d || d.pointerId !== e.pointerId) return;
     clearTimer(d);
     drag.current = null;
-    if (!d.applied) setCell(d.idx, cycle(stateRef.current[d.idx]!));
+    if (!d.applied) setCell(d.idx, toggleSymbol(stateRef.current[d.idx]!));
   }
 
   function cancelDrag() {
