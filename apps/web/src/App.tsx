@@ -1,4 +1,5 @@
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
+import { Intro } from './components/Intro.tsx';
 import { TabBar } from './components/TabBar.tsx';
 import { ToastHost } from './components/Toast.tsx';
 import { useRoute } from './lib/router.ts';
@@ -25,6 +26,7 @@ export function App() {
         <ErrorBoundary resetKey={`${route.path}?${route.params.toString()}`}>{page}</ErrorBoundary>
       </main>
       {chrome && <TabBar />}
+      {chrome && <Intro />}
       <ToastHost />
     </div>
   );
