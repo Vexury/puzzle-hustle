@@ -93,8 +93,13 @@ export async function renderSignInButton(target: HTMLElement, onDone: (session: 
 }
 
 export function signOut() {
-  const gsi = (window as unknown as { google?: Gsi }).google;
-  gsi?.accounts.id.disableAutoSelect();
+  try {
+    const gsi = (window as unknown as { google?: Gsi }).google;
+    gsi?.accounts.id.disableAutoSelect();
+  } catch {
+    // Google's auto-select hint is a convenience. If the browser refuses it, that is no
+    // reason to keep the player signed in locally.
+  }
   writeSession(null);
   emit();
 }
