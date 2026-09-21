@@ -80,10 +80,14 @@ export async function renderSignInButton(target: HTMLElement, onDone: (session: 
           // Sign-in rejects an invalid offered name server-side and replaces it with a
           // generated one without saying so. Keep the local name in step with whatever the
           // server actually settled on, so Profile's field and the Friends card never
-          // disagree, and say so once rather than silently swapping the player's name.
-          if (session.player.name !== readSetting('ph:name')) {
+          // disagree. Only toast about it when a local name existed to be overridden — a
+          // first-ever sign-in has none, so the server's generated name is not a change from
+          // anything the player had, and announcing one would read as an error on the one
+          // screen meant to make signing in feel harmless.
+          const offered = readSetting('ph:name');
+          if (session.player.name !== offered) {
             writeSetting('ph:name', session.player.name);
-            toast(`Signed in as ${session.player.name}.`);
+            if (offered) toast(`Signed in as ${session.player.name}.`);
           }
           onDone(session);
         } catch {
