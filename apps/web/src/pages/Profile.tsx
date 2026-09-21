@@ -28,6 +28,7 @@ export function Profile() {
   const stats = typeStats(solves);
   const { pref, setPref } = useTheme();
   const { accent, setAccent } = useAccent();
+  const session = useSession();
   const [name, setName] = useState(readSetting('ph:name') ?? '');
   const [editing, setEditing] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -38,6 +39,17 @@ export function Profile() {
 
   useEffect(() => onEntitlement(() => setUnlimited(hasUnlimitedHints())), []);
   useEffect(() => onAdsConsent(() => setPrivacy(privacyOptionsAvailable())), []);
+
+  // FriendsCard, a child, is where sign-in actually happens; this component never re-renders
+  // on its own just because the session changed. Follow the signed-in player's name so the
+  // field and the Friends card below it never show two different names. Reading `editing` via
+  // a ref (rather than a dependency) means finishing an edit doesn't re-run this against a
+  // session that hasn't caught up yet and clobber what the player just typed.
+  const editingRef = useRef(editing);
+  editingRef.current = editing;
+  useEffect(() => {
+    if (session && !editingRef.current) setName(session.player.name);
+  }, [session?.player.name]);
 
   const commitName = () => {
     const v = name.trim().slice(0, 24);
