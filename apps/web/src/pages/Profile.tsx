@@ -242,6 +242,13 @@ function FriendsCard() {
   const buttonHost = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  // Google's button is an iframe from accounts.google.com, and for an account that already
+  // consented it serves a white personalised variant regardless of the theme and shape asked
+  // for in the iframe's own URL. Nothing on our side can colour it. So it is not shown until
+  // the player asks for it: at rest the card carries an ordinary app button, and Google's
+  // control appears when it is the thing being looked at rather than a bright slab sitting in
+  // a dark card. Ours says only "Sign in" — the Google wording and mark belong on Google's.
+  const [asked, setAsked] = useState(false);
 
   const attemptSignIn = () => {
     if (!buttonHost.current) return;
@@ -255,8 +262,8 @@ function FriendsCard() {
     // must never reach the player as an error with a retry link that cannot help.
     // Keyed on the theme as well: Google draws the button itself, so the only way it follows
     // a theme switch is to draw it again.
-    if (!session && CLIENT_ID) attemptSignIn();
-  }, [session, theme]);
+    if (asked && !session && CLIENT_ID) attemptSignIn();
+  }, [session, theme, asked]);
 
   // Mirrors ResetButton.tsx's arm/revert pattern: the timer lives in an effect keyed on the
   // armed state so it is cleared on unmount or re-arm instead of firing into a stale closure.
@@ -279,7 +286,12 @@ function FriendsCard() {
       <div className="card-lg">
         <h2>Friends</h2>
         <span className="muted small">Sign in to compare your daily times with a group of friends. Everything else works without an account.</span>
-        <div className="gsi-host" ref={buttonHost} />
+        {!asked && (
+          <button type="button" className="pill" onClick={() => setAsked(true)}>
+            Sign in
+          </button>
+        )}
+        {asked && <div className="gsi-host" ref={buttonHost} />}
         {failed && (
           <button type="button" className="linklike muted small" onClick={attemptSignIn}>
             Sign-in is unavailable right now. Try again.
