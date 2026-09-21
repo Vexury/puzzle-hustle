@@ -1,3 +1,4 @@
+import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import { TabBar } from './components/TabBar.tsx';
 import { ToastHost } from './components/Toast.tsx';
 import { useRoute } from './lib/router.ts';
@@ -20,7 +21,9 @@ export function App() {
 
   return (
     <div className={chrome ? 'app' : 'app play-mode'}>
-      <main>{page}</main>
+      <main>
+        <ErrorBoundary resetKey={`${route.path}?${route.params.toString()}`}>{page}</ErrorBoundary>
+      </main>
       {chrome && <TabBar />}
       <ToastHost />
     </div>
