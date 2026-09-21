@@ -1002,7 +1002,10 @@ const LINKISH = /:\/\/|www\.|\.(com|net|org|de|io|dev|xyz)\b/i;
 export type NameResult = { ok: true; name: string } | { ok: false; reason: 'length' | 'characters' | 'blocked' };
 
 export function validateName(raw: string): NameResult {
-  const name = raw.trim().replace(/\s+/g, ' ');
+  // Only literal spaces are collapsed here; any other whitespace (newline, tab, ...) is left
+  // in place so it falls through to the ALLOWED check below and is rejected as a control
+  // character rather than silently turned into a space.
+  const name = raw.trim().replace(/ +/g, ' ');
   if (name.length < 2 || name.length > 24) return { ok: false, reason: 'length' };
   if (!ALLOWED.test(name) || LINKISH.test(name)) return { ok: false, reason: 'characters' };
   const flat = name.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
