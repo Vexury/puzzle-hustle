@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { apiFetch } from '../lib/api.ts';
 import { formatSeconds } from '../lib/share.ts';
 import { toast } from './Toast.tsx';
@@ -12,16 +12,28 @@ export interface BoardData {
 export function useBoard(groupId: string | null, puzzle: string): { board: BoardData | null; loading: boolean } {
   const [board, setBoard] = useState<BoardData | null>(null);
   const [loading, setLoading] = useState(false);
+  // Holds the groupId|puzzle of whichever request is the latest. Tapping through the pill
+  // row fires overlapping requests; an earlier, slower one must not overwrite the board with
+  // another puzzle's times just because it resolves last.
+  const current = useRef<string | null>(null);
   useEffect(() => {
+    const key = groupId ? `${groupId}|${puzzle}` : null;
+    current.current = key;
     if (!groupId) {
       setBoard(null);
       return;
     }
     setLoading(true);
     apiFetch<BoardData>(`/board?group=${encodeURIComponent(groupId)}&puzzle=${encodeURIComponent(puzzle)}`, { auth: true })
-      .then(setBoard)
-      .catch(() => setBoard(null))
-      .finally(() => setLoading(false));
+      .then((data) => {
+        if (current.current === key) setBoard(data);
+      })
+      .catch(() => {
+        if (current.current === key) setBoard(null);
+      })
+      .finally(() => {
+        if (current.current === key) setLoading(false);
+      });
   }, [groupId, puzzle]);
   return { board, loading };
 }
@@ -48,10 +60,10 @@ export function Board({ groupId, puzzle, meId }: { groupId: string; puzzle: stri
       <ol className="leaderboard">
         {board.entries.map((entry, index) => (
           <li key={entry.playerId} className={entry.playerId === meId ? 'leaderboard-row me' : 'leaderboard-row'}>
-            <span className="leaderboard-rank num">{index + 1}</span>
+            <span className="leaderboard-rank">{index + 1}</span>
             <span className="leaderboard-name">{entry.name}</span>
             {entry.hints > 0 && <span className="muted small">{entry.hints} hint{entry.hints === 1 ? '' : 's'}</span>}
-            <span className="leaderboard-time num">{formatSeconds(entry.seconds)}</span>
+            <span className="leaderboard-time">{formatSeconds(entry.seconds)}</span>
             {entry.playerId !== meId && (
               <button
                 type="button"
