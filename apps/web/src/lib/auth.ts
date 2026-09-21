@@ -106,7 +106,8 @@ export async function renderSignInButton(
   // the rest of the app's buttons use. Width is measured rather than guessed so the button
   // spans its card instead of floating at whatever size the account name happens to need.
   // Re-rendering clears the host first: renderButton appends, it does not replace.
-  const width = Math.round(target.getBoundingClientRect().width);
+  const box = getComputedStyle(target);
+  const width = Math.round(target.clientWidth - parseFloat(box.paddingLeft) - parseFloat(box.paddingRight));
   target.replaceChildren();
   gsi.accounts.id.renderButton(target, {
     type: 'standard',

@@ -279,7 +279,7 @@ function FriendsCard() {
       <div className="card-lg">
         <h2>Friends</h2>
         <span className="muted small">Sign in to compare your daily times with a group of friends. Everything else works without an account.</span>
-        <div ref={buttonHost} />
+        <div className="gsi-host" ref={buttonHost} />
         {failed && (
           <button type="button" className="linklike muted small" onClick={attemptSignIn}>
             Sign-in is unavailable right now. Try again.

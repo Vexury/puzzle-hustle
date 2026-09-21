@@ -222,6 +222,19 @@ p { margin: 0; }
 /* Wraps every action button in a friends-row so the grid still sees exactly two children
    (text, actions) no matter how many buttons are in play; a later one slots in here too. */
 .friends-row-actions { display: flex; gap: 14px; }
+/* Google draws this button itself and caps it at 400px, and for an account that has already
+   consented it serves a light personalised variant that ignores the theme we ask for. Rather
+   than fight its rendering, give it a deliberate seat: a full-width inset that reads as a
+   place where a third-party control sits, in either theme, whatever Google puts inside it. */
+.gsi-host {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card-bg);
+}
 .row-icon { position: relative; display: inline-flex; }
 .row-check {
   position: absolute;
