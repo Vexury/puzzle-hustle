@@ -30,7 +30,7 @@ export async function readBoard(
          JOIN members m ON m.player_id = s.player_id AND m.group_id = ?
          JOIN players p ON p.id = s.player_id
         WHERE s.puzzle = ?
-        ORDER BY s.hints, s.seconds, s.created_at`,
+        ORDER BY s.hints, s.seconds, s.created_at, s.player_id`,
     )
     .bind(groupId, puzzle)
     .all<BoardEntry>();
