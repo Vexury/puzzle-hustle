@@ -29,12 +29,24 @@ export function readSession(): Session | null {
   }
 }
 
+// The single place a session write is announced. Every writeSession call site used to also
+// have to remember an explicit emit() right after it, and one — the 401 handler below — never
+// did, so a token going invalid never told the UI. Folding the notification into the write
+// itself means there is no separate step left to forget.
+const listeners = new Set<() => void>();
+
+export function subscribeSession(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
 export function writeSession(session: Session | null) {
   if (!session) {
     removeSetting(SESSION_KEY);
-    return;
+  } else {
+    writeSetting(SESSION_KEY, JSON.stringify(session));
   }
-  writeSetting(SESSION_KEY, JSON.stringify(session));
+  for (const l of listeners) l();
 }
 
 export async function apiFetch<T>(path: string, init: RequestInit & { auth?: boolean } = {}): Promise<T> {

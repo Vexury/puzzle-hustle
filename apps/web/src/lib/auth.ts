@@ -1,27 +1,23 @@
 import { useSyncExternalStore } from 'react';
-import { apiFetch, readSession, writeSession, type Session } from './api.ts';
-import { readSetting } from './storage.ts';
+import { apiFetch, readSession, subscribeSession, writeSession, type Session } from './api.ts';
+import { readSetting, writeSetting } from './storage.ts';
 import { toast } from '../components/Toast.tsx';
 
-const CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) ?? '';
+// Exported so a caller (the Profile tab's Friends card) can tell "sign-in is not configured
+// on this build" apart from "sign-in is configured but failed to load", instead of attempting
+// a sign-in that is guaranteed to throw.
+export const CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) ?? '';
 const GSI_SRC = 'https://accounts.google.com/gsi/client';
 
-const listeners = new Set<() => void>();
 let current: Session | null = readSession();
-
-function emit() {
+// Registered once at module load, so this always runs before any component's own listener
+// added later and `current` is never stale by the time React reads it.
+subscribeSession(() => {
   current = readSession();
-  for (const l of listeners) l();
-}
+});
 
 export function useSession(): Session | null {
-  return useSyncExternalStore(
-    (l) => {
-      listeners.add(l);
-      return () => listeners.delete(l);
-    },
-    () => current,
-  );
+  return useSyncExternalStore(subscribeSession, () => current);
 }
 
 let loading: Promise<void> | null = null;
@@ -81,7 +77,14 @@ export async function renderSignInButton(target: HTMLElement, onDone: (session: 
             }),
           });
           writeSession(session);
-          emit();
+          // Sign-in rejects an invalid offered name server-side and replaces it with a
+          // generated one without saying so. Keep the local name in step with whatever the
+          // server actually settled on, so Profile's field and the Friends card never
+          // disagree, and say so once rather than silently swapping the player's name.
+          if (session.player.name !== readSetting('ph:name')) {
+            writeSetting('ph:name', session.player.name);
+            toast(`Signed in as ${session.player.name}.`);
+          }
           onDone(session);
         } catch {
           toast('Sign-in failed. Try again.');
@@ -101,14 +104,12 @@ export function signOut() {
     // reason to keep the player signed in locally.
   }
   writeSession(null);
-  emit();
 }
 
 export async function setName(name: string): Promise<void> {
   const result = await apiFetch<{ name: string }>('/name', { method: 'POST', body: JSON.stringify({ name }), auth: true });
   const session = readSession();
   if (session) writeSession({ ...session, player: { ...session.player, name: result.name } });
-  emit();
 }
 
 export async function deleteAccount(): Promise<void> {

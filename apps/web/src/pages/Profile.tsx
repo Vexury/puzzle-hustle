@@ -3,7 +3,7 @@ import { PUZZLE_META, PUZZLE_TYPES } from '@puzzle-hustle/core';
 import { Flame } from './Daily.tsx';
 import { ACCENTS, ACCENT_NAMES, useAccent } from '../lib/accent.ts';
 import { adsAvailable, onAdsConsent, privacyOptionsAvailable, showPrivacyOptions } from '../lib/ads.ts';
-import { deleteAccount, renderSignInButton, setName as setAccountName, signOut, useSession } from '../lib/auth.ts';
+import { CLIENT_ID, deleteAccount, renderSignInButton, setName as setAccountName, signOut, useSession } from '../lib/auth.ts';
 import { ApiError, readSession } from '../lib/api.ts';
 import { buyUnlimitedHints, hasUnlimitedHints, onEntitlement } from '../lib/entitlement.ts';
 import { href, onLinkClick } from '../lib/router.ts';
@@ -237,7 +237,10 @@ function FriendsCard() {
   };
 
   useEffect(() => {
-    if (!session) attemptSignIn();
+    // With no client id configured, a sign-in attempt is guaranteed to throw immediately
+    // (renderSignInButton's own guard). That is "not configured", not "failed to load", and
+    // must never reach the player as an error with a retry link that cannot help.
+    if (!session && CLIENT_ID) attemptSignIn();
   }, [session]);
 
   // Mirrors ResetButton.tsx's arm/revert pattern: the timer lives in an effect keyed on the
@@ -249,6 +252,14 @@ function FriendsCard() {
   }, [confirmDelete]);
 
   if (!session) {
+    if (!CLIENT_ID) {
+      return (
+        <div className="card-lg">
+          <h2>Friends</h2>
+          <span className="muted small">Sign-in isn't set up on this build yet. Everything else works without an account.</span>
+        </div>
+      );
+    }
     return (
       <div className="card-lg">
         <h2>Friends</h2>
