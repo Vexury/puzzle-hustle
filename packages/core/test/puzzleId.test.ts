@@ -29,6 +29,7 @@ describe('parsePuzzleId', () => {
     expect(parsePuzzleId('sudoku:daily:2026-9-21')).toBeNull();
     expect(parsePuzzleId('sudoku:daily:2026-02-30')).toBeNull();
     expect(parsePuzzleId('sudoku:weekly:2026-W54')).toBeNull();
+    expect(parsePuzzleId('sudoku:weekly:2025-W53')).toBeNull(); // 2025 has 52 ISO weeks
     expect(parsePuzzleId('sudoku:monthly:2026-13')).toBeNull();
   });
 });

@@ -1,4 +1,4 @@
-import { nextPeriodStart, periodDifficulty } from './schedule.ts';
+import { isoWeek, nextPeriodStart, periodDifficulty } from './schedule.ts';
 import { isPeriod, isPuzzleTypeId, type Difficulty, type Period, type PuzzleTypeId } from './types.ts';
 
 export interface ParsedPuzzleId {
@@ -28,7 +28,9 @@ function dateInPeriod(period: Period, key: string): Date | null {
     const jan4 = new Date(Date.UTC(y, 0, 4, 12));
     const monday = jan4.getTime() - ((jan4.getUTCDay() || 7) - 1) * 86400000;
     const probe = new Date(monday + (w - 1) * 7 * 86400000);
-    if (probe.getUTCFullYear() > y + 1) return null;
+    // Verify the requested year and week match the computed date via roundtrip
+    const computed = isoWeek({ year: probe.getUTCFullYear(), month: probe.getUTCMonth() + 1, day: probe.getUTCDate() });
+    if (computed.year !== y || computed.week !== w) return null;
     return probe;
   }
   const m = /^(\d{4})-(\d{2})$/.exec(key);

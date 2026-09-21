@@ -15,6 +15,7 @@ const DAILY_FLOOR: Record<PuzzleTypeId, number> = {
   killer: 20,
 };
 
+// Rough scaling choice to be tuned from real data as the board runs
 const PERIOD_FACTOR: Record<Period, number> = {
   daily: 1,
   weekly: 1.4,
