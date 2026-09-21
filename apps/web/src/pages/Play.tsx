@@ -120,6 +120,8 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const [askAd, setAskAd] = useState(false);
   const adAnswer = useRef<((ok: boolean) => void) | null>(null);
   const [askLeave, setAskLeave] = useState(false);
+  const askLeaveRef = useRef(askLeave);
+  askLeaveRef.current = askLeave;
   const pausedSince = useRef<number | null>(null);
   const frozen = useRef<number | null>(null);
 
@@ -152,26 +154,16 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const elapsedNow = () =>
     frozen.current ?? (startedAt.current === null ? seconds : Math.floor((Date.now() - startedAt.current) / 1000));
 
-  // A back gesture next to the board is usually a slip of the thumb, so hold the puzzle and
-  // ask. The clock stops meanwhile, the question itself must not cost time.
-  useEffect(() => {
-    if (result) return;
-    setBackGuard(() => {
-      if (pausedSince.current === null) {
-        frozen.current = elapsedNow();
-        setSeconds(frozen.current);
-        pausedSince.current = Date.now();
-        setRunning(false);
-      }
-      setAskLeave(true);
-      return true;
-    });
-    return () => setBackGuard(null);
-  });
+  const pauseClock = () => {
+    if (startedAt.current === null || frozen.current !== null) return;
+    frozen.current = Math.floor((Date.now() - startedAt.current) / 1000);
+    setSeconds(frozen.current);
+    pausedSince.current = Date.now();
+    setRunning(false);
+  };
 
-  const stay = () => {
-    setAskLeave(false);
-    if (pausedSince.current === null) return;
+  const resumeClock = () => {
+    if (pausedSince.current === null || askLeaveRef.current) return;
     if (startedAt.current !== null) {
       startedAt.current += Date.now() - pausedSince.current;
       setRunning(true);
@@ -180,10 +172,29 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
     frozen.current = null;
   };
 
+  // A back gesture next to the board is usually a slip of the thumb, so hold the puzzle and
+  // ask. The clock stops meanwhile, the question itself must not cost time.
+  useEffect(() => {
+    if (result) return;
+    setBackGuard(() => {
+      pauseClock();
+      setAskLeave(true);
+      return true;
+    });
+    return () => setBackGuard(null);
+  });
+
+  const stay = () => {
+    setAskLeave(false);
+    askLeaveRef.current = false;
+    resumeClock();
+  };
+
   // Replace instead of push: a pushed entry would send the next back press straight back
   // into the puzzle we just left.
   const leave = () => {
     setAskLeave(false);
+    askLeaveRef.current = false;
     navigate(back.url, true);
   };
 
@@ -216,15 +227,22 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
     persist();
   };
 
+  // The clock is wall clock based and would keep running while the app sits in the
+  // background, so a phone call must not cost the player a minute.
   useEffect(() => {
-    const onHide = () => {
-      if (document.visibilityState === 'hidden') persist();
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') {
+        pauseClock();
+        persist();
+      } else {
+        resumeClock();
+      }
     };
-    document.addEventListener('visibilitychange', onHide);
+    document.addEventListener('visibilitychange', onVisibility);
     window.addEventListener('pagehide', persist);
     return () => {
       persist();
-      document.removeEventListener('visibilitychange', onHide);
+      document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('pagehide', persist);
     };
   }, []);
