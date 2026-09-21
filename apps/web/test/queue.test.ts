@@ -22,7 +22,7 @@ it('keeps only period puzzles and only the first entry per puzzle', () => {
   expect(readQueue()[0]?.seconds).toBe(200);
 });
 
-it('drops entries the server has answered and keeps the rest', async () => {
+it('clears the queue once the server has given every entry a terminal status', async () => {
   enqueue('sudoku:daily:2026-09-21', record);
   enqueue('crowns:daily:2026-09-21', record);
   vi.stubGlobal('fetch', async () =>
@@ -38,6 +38,27 @@ it('drops entries the server has answered and keeps the rest', async () => {
   );
   await flush();
   expect(readQueue()).toEqual([]);
+});
+
+it('keeps a throttled entry and stops instead of retrying immediately, while a terminal one in the same batch is dropped', async () => {
+  enqueue('sudoku:daily:2026-09-21', record);
+  enqueue('crowns:daily:2026-09-21', record);
+  const fetchMock = vi.fn(async () =>
+    new Response(
+      JSON.stringify({
+        results: [
+          { puzzle: 'sudoku:daily:2026-09-21', status: 'stored' },
+          { puzzle: 'crowns:daily:2026-09-21', status: 'throttled' },
+        ],
+      }),
+      { status: 200 },
+    ),
+  );
+  vi.stubGlobal('fetch', fetchMock);
+  await flush();
+  expect(readQueue().map((e) => e.puzzle)).toEqual(['crowns:daily:2026-09-21']);
+  await flush();
+  expect(fetchMock).toHaveBeenCalledTimes(1);
 });
 
 it('keeps everything when the network fails', async () => {
@@ -97,4 +118,48 @@ it("never submits another player's queued entry, but does once they sign back in
   );
   await flush();
   expect(readQueue()).toHaveLength(0);
+});
+
+// Regression coverage for the two "Important" fixes, beyond what was explicitly asked for: a
+// crash in the solve path and a cap that could evict the wrong player's real score are both bad
+// enough to want a test pinning the fix, not just the reasoning behind it.
+
+it('drops a stored queue entry it cannot make sense of instead of throwing', () => {
+  localStorage.setItem(
+    'ph:queue',
+    JSON.stringify([
+      null,
+      'not an object',
+      { puzzle: 'sudoku:daily:2026-01-01' }, // missing the numeric fields
+      { puzzle: 'crowns:daily:2026-01-01', seconds: 200, hints: 0, moves: 40, solvedAt: 1700000000000 },
+    ]),
+  );
+  expect(() => enqueue('sudoku:daily:2026-09-21', record)).not.toThrow();
+  expect(readQueue().map((e) => e.puzzle)).toEqual(['crowns:daily:2026-01-01', 'sudoku:daily:2026-09-21']);
+});
+
+it('evicts other players before evicting the one currently signed in when the cap is hit', () => {
+  const dailyId = (offsetDays: number) => {
+    const d = new Date(Date.UTC(2026, 0, 1) + offsetDays * 86400000);
+    const y = d.getUTCFullYear();
+    const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(d.getUTCDate()).padStart(2, '0');
+    return `sudoku:daily:${y}-${m}-${day}`;
+  };
+
+  writeSession({ token: 'a', player: { id: 'a', name: 'Alice' } });
+  enqueue(dailyId(0), record); // Alice's own real score, queued first
+
+  writeSession({ token: 'b', player: { id: 'b', name: 'Bob' } });
+  for (let i = 1; i <= 99; i++) enqueue(dailyId(i), record); // Bob fills the queue while offline
+
+  writeSession({ token: 'a', player: { id: 'a', name: 'Alice' } });
+  enqueue(dailyId(100), record); // Alice signs back in and solves one more: 101 entries, 1 over cap
+
+  const queue = readQueue();
+  expect(queue).toHaveLength(100);
+  expect(queue.some((e) => e.puzzle === dailyId(0))).toBe(true); // Alice's own entry survives
+  expect(queue.some((e) => e.puzzle === dailyId(100))).toBe(true); // and her new one
+  expect(queue.some((e) => e.puzzle === dailyId(1))).toBe(false); // Bob's oldest is the one dropped
+  expect(queue.filter((e) => e.playerId === 'b')).toHaveLength(98);
 });

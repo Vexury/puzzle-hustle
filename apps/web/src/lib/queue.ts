@@ -20,18 +20,56 @@ export interface QueuedScore {
   playerId?: string;
 }
 
+// A stored entry we cannot make sense of — most plausibly a Capacitor Preferences restore
+// carrying a queue written by an older or newer version of this code, since `ph:queue` travels
+// with that backup — is not worth a crash, and not worth a toast either. It is simply not ours
+// to understand; readQueue drops it and moves on.
+function isValidEntry(value: unknown): value is QueuedScore {
+  if (!value || typeof value !== 'object') return false;
+  const v = value as Record<string, unknown>;
+  if (typeof v.puzzle !== 'string') return false;
+  for (const field of ['seconds', 'hints', 'moves', 'solvedAt'] as const) {
+    if (typeof v[field] !== 'number') return false;
+  }
+  if (v.playerId !== undefined && typeof v.playerId !== 'string') return false;
+  return true;
+}
+
 export function readQueue(): QueuedScore[] {
   try {
     const raw = readSetting(KEY);
-    const parsed = raw ? (JSON.parse(raw) as QueuedScore[]) : [];
-    return Array.isArray(parsed) ? parsed : [];
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter(isValidEntry) : [];
   } catch {
     return [];
   }
 }
 
+// Trims to MAX_QUEUE by dropping the oldest entries that belong to somebody other than whoever
+// is signed in right now, before ever touching the current player's own entries. The cap exists
+// to bound damage, not to let a departed player's backlog crowd out the person actually holding
+// the device — falling back to oldest-overall only once no other-player entries are left to give
+// up. Not a scheduler: a plain two-pass trim is enough for a cap this small.
+function trim(entries: QueuedScore[]): QueuedScore[] {
+  const over = entries.length - MAX_QUEUE;
+  if (over <= 0) return entries;
+  const playerId = readSession()?.player.id;
+  const isMine = (entry: QueuedScore) => entry.playerId === undefined || entry.playerId === playerId;
+  let stillToDrop = over;
+  const kept = entries.filter((entry) => {
+    if (stillToDrop > 0 && !isMine(entry)) {
+      stillToDrop--;
+      return false;
+    }
+    return true;
+  });
+  // Not enough other-player entries existed to reach the cap alone; only the current player's
+  // own backlog is left, so fall back to dropping their own oldest, same as before this fix.
+  return stillToDrop > 0 ? kept.slice(stillToDrop) : kept;
+}
+
 function writeQueue(entries: QueuedScore[]) {
-  writeSetting(KEY, JSON.stringify(entries.slice(-MAX_QUEUE)));
+  writeSetting(KEY, JSON.stringify(trim(entries)));
 }
 
 export function enqueue(
@@ -91,11 +129,11 @@ async function run(): Promise<void> {
   let mine = readQueue().filter(isMine);
   while (mine.length > 0) {
     const batch = mine.slice(0, BATCH);
-    // The server answers one result per entry it was sent, in order, echoing the puzzle we
-    // sent it. Restricting matches to puzzles actually in this batch means a result naming a
-    // puzzle we never sent (the server falls back to an empty string for a malformed entry —
-    // never one of ours, since enqueue only accepts real period ids) can never be mistaken for
-    // an answer to something else in the queue.
+    // The server answers one result per entry it was sent, in order, echoing back the puzzle
+    // value it was given — it only substitutes '' when that field wasn't a string at all, which
+    // `enqueue` never sends. Restricting matches to puzzles actually in this batch means a
+    // result naming a puzzle we didn't just send (that '' case, or any other server quirk) can
+    // never be mistaken for an answer to some other entry sitting in the queue.
     const batchPuzzles = new Set(batch.map((entry) => entry.puzzle));
     let results: Array<{ puzzle: string; status: string }>;
     try {
