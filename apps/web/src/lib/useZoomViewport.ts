@@ -72,7 +72,9 @@ export function useZoomViewport(cols: number, reserve: number | ((cell: number) 
     maxCell.current = overflows ? MAX_CELL : initial;
     const saved = storageKey ? parseView(readSetting(storageKey)) : null;
     if (saved) {
-      const cell = Math.max(saved.cell, minCell.current);
+      // Auch nach oben klemmen: eine vor einer Layoutaenderung gespeicherte Groesse
+      // wuerde das Brett sonst weiter ueberlaufen lassen.
+      const cell = Math.min(Math.max(saved.cell, minCell.current), maxCell.current);
       restore.current = { ...saved, cell };
       setCellPx(cell);
       return;
@@ -140,6 +142,9 @@ export function useZoomViewport(cols: number, reserve: number | ((cell: number) 
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     e.currentTarget.setPointerCapture(e.pointerId);
     if (pointers.current.size === 2) {
+      // Fest eingestellte Bretter haben weder etwas zu zoomen noch zu schieben. Ohne diese
+      // Sperre schluckt die Geste zwei Finger und ruckelt den Ausschnitt um ein paar Pixel.
+      if (minCell.current >= maxCell.current) return true;
       const [a, b] = [...pointers.current.entries()] as [[number, { x: number; y: number }], [number, { x: number; y: number }]];
       pinch.current = {
         ids: [a[0], b[0]],
