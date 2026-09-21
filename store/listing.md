@@ -45,19 +45,25 @@ German is therefore written by hand: `store/paste/short-description-de.txt` and
 | --- | --- | --- |
 | App icon | 512x512, 32-bit PNG | `store/icon-512.png` |
 | Feature graphic | 1024x500, PNG or JPG | `store/feature-graphic.png` |
-| Phone screenshots | at least 2, 320-3840 px, long side at most twice the short side | `store/screenshots/phone/`, 6 shots, 1080x2160 |
+| Phone screenshots | at least 2, 320-3840 px, long side at most twice the short side | `store/screenshots/phone/`, 6 shots, 1080x1920 |
 | 7-inch tablet screenshots | own slot in the console | `store/screenshots/tablet7/`, 4 shots, 1200x1920 |
 | 10-inch tablet screenshots | own slot in the console | `store/screenshots/tablet10/`, 4 shots, 1600x2560 |
 
 Themes alternate across the set rather than being shown as a split image, so every shot is a real
-screen and Play sees no composite. Phone shots are 1080x2160 on purpose: Play rejects a screenshot
-whose long side is more than twice its short side, and a real 20:9 phone capture (1080x2340) misses
-that by a hair.
+screen and Play sees no composite. Phone shots are 1080x1920: Play rejects a screenshot whose long
+side is more than twice its short side, which a real 20:9 capture (1080x2340) misses by a hair, and
+2160 left a third of the frame empty under the shorter boards.
 
-Screenshots are taken from the live web build at puzzles.vexury.dev through Chrome with remote
-debugging, at the device sizes above and with `prefers-color-scheme` forced per shot. The web build
-and the app share the same UI code, and a puzzle screen can be addressed directly, for example
-`/play?t=killer&d=medium&s=<seed>&p=daily&k=<date>`, which beats tapping through the app.
+`node scripts/screenshots.mjs <base-url> <out-dir> phone` from `apps/web` takes the set through
+Chrome's remote debugging port, forcing `prefers-color-scheme` per shot. Point it at a local
+`vite preview` rather than the live site, or the images will show whatever was deployed last.
+
+It first seeds localStorage from `packages/core/scripts/screenshot-seed.ts`, which invents a week
+of solves, part finished boards and level progress. Without it every screen reads "0 solved", and a
+store listing that shows an untouched account sells nothing. Two rules that cost a reshoot each
+when broken: a type that carries a half finished board must not also have a solve record for the
+same day, because the record wins and puts a Solved banner over an untouched board; and the seed
+must not write `theme`, since it then overrides the emulated colour scheme.
 
 Both images are generated: `node scripts/android-icons.mjs` from `apps/web` renders the launcher
 icons, `node scripts/store-assets.mjs` the listing icon plus the PWA icons in `public/`, and
