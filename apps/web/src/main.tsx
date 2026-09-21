@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App.tsx';
+import { initBackButton } from './lib/back.ts';
 import { restoreBackup } from './lib/backup.ts';
 import { refreshEntitlement } from './lib/entitlement.ts';
 import { rehydrate } from './lib/storage.ts';
@@ -11,6 +12,7 @@ await restoreBackup();
 rehydrate();
 
 initTheme();
+initBackButton();
 void refreshEntitlement();
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

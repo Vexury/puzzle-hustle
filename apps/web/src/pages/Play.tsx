@@ -27,6 +27,7 @@ import {
   type PuzzleRef,
 } from '@puzzle-hustle/core';
 import { href, navigate, onLinkClick } from '../lib/router.ts';
+import { setBackGuard } from '../lib/back.ts';
 import { clearProgress, getSolve, readProgress, readSetting, recordSolve, useSolves, writeProgress, writeSetting, type SolveRecord } from '../lib/storage.ts';
 import { capitalize, formatSeconds, share, shareText } from '../lib/share.ts';
 import { currentHintProvider } from '../lib/hints.ts';
@@ -118,6 +119,9 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const [showHelp, setShowHelp] = useState(() => readSetting(seenKey) !== '1');
   const [askAd, setAskAd] = useState(false);
   const adAnswer = useRef<((ok: boolean) => void) | null>(null);
+  const [askLeave, setAskLeave] = useState(false);
+  const pausedSince = useRef<number | null>(null);
+  const frozen = useRef<number | null>(null);
 
   const confirmAd = () =>
     new Promise<boolean>((resolve) => {
@@ -143,7 +147,45 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
     return () => clearInterval(timer);
   }, [running]);
 
-  const elapsedNow = () => (startedAt.current === null ? seconds : Math.floor((Date.now() - startedAt.current) / 1000));
+  // The frozen value lives in a ref because `persist` runs from an unmount closure that
+  // still holds the seconds of the first render.
+  const elapsedNow = () =>
+    frozen.current ?? (startedAt.current === null ? seconds : Math.floor((Date.now() - startedAt.current) / 1000));
+
+  // A back gesture next to the board is usually a slip of the thumb, so hold the puzzle and
+  // ask. The clock stops meanwhile, the question itself must not cost time.
+  useEffect(() => {
+    if (result) return;
+    setBackGuard(() => {
+      if (pausedSince.current === null) {
+        frozen.current = elapsedNow();
+        setSeconds(frozen.current);
+        pausedSince.current = Date.now();
+        setRunning(false);
+      }
+      setAskLeave(true);
+      return true;
+    });
+    return () => setBackGuard(null);
+  });
+
+  const stay = () => {
+    setAskLeave(false);
+    if (pausedSince.current === null) return;
+    if (startedAt.current !== null) {
+      startedAt.current += Date.now() - pausedSince.current;
+      setRunning(true);
+    }
+    pausedSince.current = null;
+    frozen.current = null;
+  };
+
+  // Replace instead of push: a pushed entry would send the next back press straight back
+  // into the puzzle we just left.
+  const leave = () => {
+    setAskLeave(false);
+    navigate(back.url, true);
+  };
 
   const onMove = () => {
     counters.current.moves++;
@@ -354,6 +396,23 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
               </button>
               <button type="button" className="pill" onClick={() => answerAd(true)}>
                 Watch video
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {askLeave && (
+        <div className="ad-ask" role="dialog" aria-modal="true" aria-label="Leave this puzzle">
+          <div className="card-lg">
+            <b>Leave this puzzle?</b>
+            <span className="muted small">Your progress is kept. The clock is paused while you decide.</span>
+            <div className="ad-ask-row">
+              <button type="button" className="pill outline" onClick={leave}>
+                Leave
+              </button>
+              <button type="button" className="pill" onClick={stay}>
+                Keep playing
               </button>
             </div>
           </div>
