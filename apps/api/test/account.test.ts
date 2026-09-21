@@ -89,3 +89,41 @@ it('deletes the player, their scores and their memberships', async () => {
   }
   expect((await call('/groups', me.token)).status).toBe(401);
 });
+
+it('hands a deleted owner\'s group on to the longest-standing remaining member and leaves the others intact', async () => {
+  const owner = await signIn('s1', 'Moritz');
+  const group = (await (await call('/groups', owner.token, { method: 'POST', body: JSON.stringify({ name: 'Family' }) })).json()) as {
+    id: string;
+    code: string;
+  };
+  // Joined in this order, so on the owner's deletion the longest-standing of the two
+  // remaining members is Daniela, not Rude.
+  const second = await signIn('s2', 'Daniela');
+  await call('/groups/join', second.token, { method: 'POST', body: JSON.stringify({ code: group.code }) });
+  const third = await signIn('s3', 'Rude');
+  await call('/groups/join', third.token, { method: 'POST', body: JSON.stringify({ code: group.code }) });
+
+  expect((await call('/account', owner.token, { method: 'DELETE' })).status).toBe(200);
+
+  const list = (await (await call('/groups', second.token)).json()) as {
+    groups: Array<{ id: string; owner: boolean; members: number }>;
+  };
+  expect(list.groups).toHaveLength(1);
+  expect(list.groups[0]?.id).toBe(group.id);
+  expect(list.groups[0]?.owner).toBe(true);
+  expect(list.groups[0]?.members).toBe(2);
+
+  const thirdList = (await (await call('/groups', third.token)).json()) as { groups: Array<{ owner: boolean }> };
+  expect(thirdList.groups[0]?.owner).toBe(false);
+
+  const ownerRow = await env.DB.prepare('SELECT id FROM players WHERE id = ?').bind(owner.player.id).first();
+  expect(ownerRow).toBeNull();
+  const ownerScores = await env.DB.prepare('SELECT COUNT(*) AS n FROM scores WHERE player_id = ?')
+    .bind(owner.player.id)
+    .first<{ n: number }>();
+  expect(ownerScores?.n).toBe(0);
+  const ownerMemberships = await env.DB.prepare('SELECT COUNT(*) AS n FROM members WHERE player_id = ?')
+    .bind(owner.player.id)
+    .first<{ n: number }>();
+  expect(ownerMemberships?.n).toBe(0);
+});

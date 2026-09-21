@@ -32,6 +32,17 @@ describe('parsePuzzleId', () => {
     expect(parsePuzzleId('sudoku:weekly:2025-W53')).toBeNull(); // 2025 has 52 ISO weeks
     expect(parsePuzzleId('sudoku:monthly:2026-13')).toBeNull();
   });
+
+  it('accepts 2026-W53, the valid neighbour of the rejected 2025-W53', () => {
+    // 2026 genuinely has 53 ISO weeks, and that puzzle runs this December. A roundtrip check
+    // that over-corrected for the 2025-W53 rejection above would reject this too.
+    expect(parsePuzzleId('sudoku:weekly:2026-W53')).toEqual({
+      type: 'sudoku',
+      period: 'weekly',
+      key: '2026-W53',
+      difficulty: 'hard',
+    });
+  });
 });
 
 describe('periodEndsAt', () => {
