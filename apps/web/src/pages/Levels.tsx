@@ -98,6 +98,7 @@ function LevelGrid({ type }: { type: PuzzleTypeId }) {
         <p className="muted">
           {stat.levelsSolved}/{stat.levelsTotal} solved
         </p>
+        <ThemeToggle />
       </header>
 
       <div className="segmented" role="tablist" aria-label="Difficulty">
