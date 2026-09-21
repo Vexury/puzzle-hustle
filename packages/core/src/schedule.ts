@@ -52,6 +52,18 @@ export const PERIOD_DIFFICULTY: Record<Period, Difficulty> = {
   monthly: 'genius',
 };
 
+// Das tägliche Raetsel soll bei jedem Typ ungefaehr gleich lange dauern. Wo eine Stufe
+// deutlich daneben liegt, steht sie hier; alles andere bleibt bei PERIOD_DIFFICULTY.
+const DAILY_DIFFICULTY: Partial<Record<PuzzleTypeId, Difficulty>> = {
+  stars: 'easy',
+  sudoku: 'easy',
+  killer: 'easy',
+};
+
+export function periodDifficulty(type: PuzzleTypeId, period: Period): Difficulty {
+  return (period === 'daily' ? DAILY_DIFFICULTY[type] : undefined) ?? PERIOD_DIFFICULTY[period];
+}
+
 // Feste Reihenfolge, absichtlich von PUZZLE_TYPES entkoppelt: die Position bestimmt ueber
 // `periodPuzzleType`, welcher Typ ein Weekly oder Monthly ist. Wer hier umsortiert, wuerfelt
 // jede vergangene Periode neu und verwaist die zugehoerigen Loesungen. Zip fehlt, weil es

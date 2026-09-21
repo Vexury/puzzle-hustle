@@ -1,7 +1,7 @@
 import { levelEntry } from './levels.ts';
 import { adapter } from './registry.ts';
 import { hashString, randomSeed } from './rng.ts';
-import { PERIOD_DIFFICULTY, periodKey, periodPuzzleType } from './schedule.ts';
+import { periodDifficulty, periodKey, periodPuzzleType } from './schedule.ts';
 import { isDifficulty, isPeriod, isPuzzleTypeId, type Difficulty, type Period, type PuzzleTypeId } from './types.ts';
 
 export interface PuzzleRef {
@@ -15,21 +15,25 @@ export interface PuzzleRef {
 
 const PERIOD_ATTEMPTS = 24;
 
-const periodCache = new Map<string, PuzzleRef>();
+// Jeder Eintrag kostet einen Generatorlauf je Versuch, zusammen rund 180 ms fuer alle acht
+// Dailys. Einmal pro Tag und Sitzung ist das vertretbar, achtmal pro Render nicht.
+const scheduledCache = new Map<string, PuzzleRef>();
 
 export function periodRef(period: Period, date: Date = new Date()): PuzzleRef {
   const key = periodKey(period, date);
-  const cacheKey = `${period}|${key}`;
-  const cached = periodCache.get(cacheKey);
-  if (cached) return cached;
-  const type = periodPuzzleType(period, key);
-  const ref = { ...scheduledRef(type, period, key), period, key };
-  periodCache.set(cacheKey, ref);
-  return ref;
+  return { ...scheduledRef(periodPuzzleType(period, key), period, key), period, key };
+}
+
+export function dailyRef(type: PuzzleTypeId, date: Date = new Date()): PuzzleRef {
+  const key = periodKey('daily', date);
+  return { ...scheduledRef(type, 'daily', key), period: 'daily', key };
 }
 
 export function scheduledRef(type: PuzzleTypeId, period: Period, key: string): PuzzleRef {
-  const difficulty = PERIOD_DIFFICULTY[period];
+  const cacheKey = `${type}|${period}|${key}`;
+  const cached = scheduledCache.get(cacheKey);
+  if (cached) return cached;
+  const difficulty = periodDifficulty(type, period);
   const a = adapter(type);
   const options = a.options(period);
   let seed = 0;
@@ -37,7 +41,9 @@ export function scheduledRef(type: PuzzleTypeId, period: Period, key: string): P
     seed = hashString(`${type}|${period}|${key}|${attempt}`) % 0xffffffff;
     if (a.accepts(seed, difficulty, options)) break;
   }
-  return { type, difficulty, seed, period, key };
+  const ref: PuzzleRef = { type, difficulty, seed, period, key };
+  scheduledCache.set(cacheKey, ref);
+  return ref;
 }
 
 export function randomRef(type: PuzzleTypeId, difficulty: Difficulty): PuzzleRef {

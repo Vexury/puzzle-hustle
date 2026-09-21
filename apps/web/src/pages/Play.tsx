@@ -16,6 +16,7 @@ import {
   levelRef,
   mosaicAdapter,
   nonogramAdapter,
+  dailyRef,
   periodRef,
   randomRef,
   refId,
@@ -207,7 +208,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const nextLevel = puzzleRef.level ? levelRef(puzzleRef.type, puzzleRef.difficulty, puzzleRef.level + 1) : null;
   const nextChallenge = useMemo(() => {
     if (!puzzleRef.period) return null;
-    const candidates = [...PUZZLE_TYPES.map((type) => ({ ...periodRef('daily'), type })), periodRef('weekly'), periodRef('monthly')];
+    const candidates = [...PUZZLE_TYPES.map((type) => dailyRef(type)), periodRef('weekly'), periodRef('monthly')];
     return candidates.find((c) => refId(c) !== id && !solves[refId(c)]) ?? null;
   }, [puzzleRef, id, solves]);
   const toggleHelp = () => {
