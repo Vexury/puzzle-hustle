@@ -1,4 +1,4 @@
-import { minimumSeconds, parsePuzzleId, periodEndsAt, periodKey, periodPuzzleType } from '@puzzle-hustle/core';
+import { implausible, parsePuzzleId, periodEndsAt, periodKey, periodPuzzleType } from '@puzzle-hustle/core';
 
 export const GRACE_MS = 48 * 3600_000;
 export const DAILY_LIMIT = 40;
@@ -41,16 +41,15 @@ function judge(entry: ScoreEntry, now: number): SubmitStatus | null {
   const ends = periodEndsAt(parsed.period, parsed.key);
   if (!ends) return 'rejected';
   // Every daily type has its own daily, but a weekly or monthly key names exactly one type
-  // for that period. Without this, a submitter could pick whichever type has the lowest
-  // plausibility floor in the table and submit under it while claiming the weekly or monthly.
+  // for that period, so a submission claiming any other type is about a puzzle that never
+  // existed.
   if (parsed.period !== 'daily' && parsed.type !== periodPuzzleType(parsed.period, parsed.key)) return 'rejected';
   // A period that has not started yet cannot have been solved, whatever the client claims.
   // Every period key sorts lexicographically inside its own period, so a plain string
   // comparison against today's key is exact and needs no date arithmetic.
   if (parsed.key > periodKey(parsed.period, new Date(now))) return 'rejected';
   if (now > ends.getTime() + GRACE_MS) return 'expired';
-  if (entry.moves < 1) return 'rejected';
-  if (entry.seconds < minimumSeconds(parsed.type, parsed.period)) return 'rejected';
+  if (implausible(entry.seconds, entry.moves)) return 'rejected';
   if (entry.seconds > 24 * 3600) return 'rejected';
   return null;
 }

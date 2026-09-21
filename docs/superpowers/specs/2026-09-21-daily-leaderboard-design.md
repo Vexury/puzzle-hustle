@@ -119,7 +119,9 @@ All of these live in the worker, none in the client.
 
 - **First submission per (player, puzzle) wins.** A second one returns `duplicate` and the client drops it from the queue. Same semantics as `recordSolve`, which already keeps only the first local solve.
 - **The puzzle key is validated against the core**: the type exists, the period is `daily`, `weekly` or `monthly`, the key is well formed for that period, and the period is not in the future. Scoring closes 48 hours after the period ends; the puzzle stays playable locally, it just no longer counts.
-- **Plausibility floor per type and difficulty.** A new core helper derives, from the puzzle spec, both a minimum number of moves the board mechanically requires and a conservative minimum number of seconds. The floors reject only the physically impossible and get tuned from real submissions after the first weeks. A rejected row returns `rejected` and is dropped.
+- **Plausibility check.** A submission is refused when it claims no time, no moves, or more moves than a person can physically make in the time claimed. A rejected row returns `rejected` and is dropped.
+
+  This started as a table of per-type second floors and was replaced on 2026-09-22, an hour after the board went live, because the first real data it met was a daily Shapes solved in 3 seconds with 8 moves and no hints — and it threw that result away. The floors were guesses about how fast a person can be, they stopped nothing a determined cheat could not bypass, and erring strict is the worse error here by this document's own reasoning. What remains is the one bound that needs no data: hands have a maximum speed.
 - **Rate limit.** At most 40 stored scores per player per rolling 24 hours, counted from `scores.created_at`. The realistic maximum is eight dailies plus a weekly and a monthly. `POST /session` additionally sits behind Cloudflare's rate limiting binding, since it is the one unauthenticated route.
 - **Name validation.** Trimmed, whitespace collapsed, 2 to 24 characters, letters, digits, spaces and `. _ -` only, no URL-like substrings, checked against a small German and English blocklist. Invalid names are refused with a reason, not silently altered.
 
@@ -166,7 +168,7 @@ Milestones 1 to 4 ship to the web only and need no Play release at all. Mileston
 ## Testing
 
 - Worker unit tests with `@cloudflare/vitest-pool-workers` against a real D1 binding in Miniflare: token verification with a stubbed JWKS, duplicate submission, expired period, plausibility rejection, rate limit, group limits, board ordering and percentile edges, cascade on deletion.
-- Core tests for the key parser and the plausibility floors, including one case per puzzle type.
+- Core tests for the key parser and the plausibility check.
 - Client tests for the queue: enqueue on solve, flush order, removal on `duplicate`, retention on network failure, cap.
 - Device pass on the Galaxy S23: sign-in, join by link, solve offline in flight mode, flush after reconnect, sign-out, deletion.
 
@@ -175,5 +177,5 @@ Milestones 1 to 4 ship to the web only and need no Play release at all. Mileston
 - A release carrying sign-in runs through a fresh Play review and touches declarations that were only just settled. Timing is deliberate: web first, internal track next.
 - Google verification needs a Google Cloud project with two OAuth clients. If the Android fingerprint is wrong, the failure is silent and only visible in a signed build.
 - D1's free tier is ample here, but the percentile query scans a puzzle's rows. With `scores_by_puzzle` in place it stays an index range; if it ever bites, cache the two counts per puzzle in KV with a short TTL.
-- The plausibility floors start conservative and are guesses until real data exists. They reject only the impossible, so a wrong guess costs nothing but a missed cheat.
+- The plausibility check rejects only what is physically impossible, so a fast player is never refused. A fabricated time that respects human hand speed passes, which this document already accepts as unpreventable.
 - Group codes are guessable in principle. Six Crockford characters give about a billion combinations against a handful of live groups, and joining reveals only names and times. Acceptable.
