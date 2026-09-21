@@ -222,16 +222,31 @@ export function Profile() {
   );
 }
 
+const DELETE_CONFIRM_MS = 4000;
+
 function FriendsCard() {
   const session = useSession();
   const buttonHost = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  useEffect(() => {
-    if (session || !buttonHost.current) return;
+  const attemptSignIn = () => {
+    if (!buttonHost.current) return;
+    setFailed(false);
     renderSignInButton(buttonHost.current, () => setFailed(false)).catch(() => setFailed(true));
+  };
+
+  useEffect(() => {
+    if (!session) attemptSignIn();
   }, [session]);
+
+  // Mirrors ResetButton.tsx's arm/revert pattern: the timer lives in an effect keyed on the
+  // armed state so it is cleared on unmount or re-arm instead of firing into a stale closure.
+  useEffect(() => {
+    if (!confirmDelete) return;
+    const timer = setTimeout(() => setConfirmDelete(false), DELETE_CONFIRM_MS);
+    return () => clearTimeout(timer);
+  }, [confirmDelete]);
 
   if (!session) {
     return (
@@ -239,7 +254,11 @@ function FriendsCard() {
         <h2>Friends</h2>
         <span className="muted small">Sign in to compare your daily times with a group of friends. Everything else works without an account.</span>
         <div ref={buttonHost} />
-        {failed && <span className="muted small">Sign-in is unavailable right now.</span>}
+        {failed && (
+          <button type="button" className="linklike muted small" onClick={attemptSignIn}>
+            Sign-in is unavailable right now. Try again.
+          </button>
+        )}
       </div>
     );
   }
@@ -261,9 +280,9 @@ function FriendsCard() {
           onClick={() => {
             if (!confirmDelete) {
               setConfirmDelete(true);
-              setTimeout(() => setConfirmDelete(false), 4000);
               return;
             }
+            setConfirmDelete(false);
             void deleteAccount();
           }}
         >

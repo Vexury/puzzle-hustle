@@ -35,7 +35,11 @@ function loadGsi(): Promise<void> {
     script.src = GSI_SRC;
     script.async = true;
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error('gsi unavailable'));
+    script.onerror = () => {
+      // Let a later call try again instead of being stuck with this rejected promise forever.
+      loading = null;
+      reject(new Error('gsi unavailable'));
+    };
     document.head.append(script);
   });
   return loading;
@@ -103,6 +107,13 @@ export async function setName(name: string): Promise<void> {
 }
 
 export async function deleteAccount(): Promise<void> {
-  await apiFetch('/account', { method: 'DELETE', auth: true });
+  // A failed delete must not sign the player out: the account is still fully present on the
+  // server, and keeping the session is what lets them retry rather than silently doing nothing.
+  try {
+    await apiFetch('/account', { method: 'DELETE', auth: true });
+  } catch {
+    toast('Could not delete your account. Try again.');
+    return;
+  }
   signOut();
 }
