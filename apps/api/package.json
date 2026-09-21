@@ -16,9 +16,9 @@
     "@puzzle-hustle/core": "workspace:*"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "0.12.21",
+    "@cloudflare/vitest-pool-workers": "^0.22.0",
     "@cloudflare/workers-types": "^5.20260920.1",
-    "vitest": "3.2.7",
+    "vitest": "^4.1.11",
     "wrangler": "^4.135.0"
   }
 }
