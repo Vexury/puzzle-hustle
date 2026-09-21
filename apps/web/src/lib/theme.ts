@@ -1,11 +1,13 @@
-import { Capacitor } from '@capacitor/core';
-import { StatusBar, Style } from '@capacitor/status-bar';
+import { Capacitor, registerPlugin } from '@capacitor/core';
 import { useSyncExternalStore } from 'react';
 import { readSetting, writeSetting } from './storage.ts';
 
 export type Theme = 'light' | 'dark';
 export type ThemePref = Theme | 'system';
 export const THEME_PREFS: ThemePref[] = ['system', 'light', 'dark'];
+
+// Android only. iOS has no counterpart yet, see the open item in the wiki.
+const StatusBarStyle = registerPlugin<{ setStyle(options: { style: 'DARK' | 'LIGHT' }): Promise<void> }>('StatusBarStyle');
 
 const listeners = new Set<() => void>();
 const media = matchMedia('(prefers-color-scheme: dark)');
@@ -22,8 +24,8 @@ function resolve(p: ThemePref): Theme {
 function apply() {
   const theme = resolve(pref());
   document.documentElement.dataset['theme'] = theme;
-  if (Capacitor.isNativePlatform()) {
-    void StatusBar.setStyle({ style: theme === 'dark' ? Style.Dark : Style.Light });
+  if (Capacitor.getPlatform() === 'android') {
+    void StatusBarStyle.setStyle({ style: theme === 'dark' ? 'DARK' : 'LIGHT' });
   }
   for (const l of listeners) l();
 }

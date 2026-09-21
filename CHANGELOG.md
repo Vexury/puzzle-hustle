@@ -87,6 +87,14 @@ sits above By puzzle now, so the choice is visible without scrolling past the st
 
 ### Reliability
 
+**The status bar plugin is our own now.** The Play Console flagged the app for
+`Window.getStatusBarColor` and `setStatusBarColor`, which Android 15 dropped for edge-to-edge
+apps. Both came from `@capacitor/status-bar`, of which the app used exactly one thing: the
+colour of the status bar icons, which the plugin already sets through the modern
+`WindowInsetsControllerCompat`. The dead branches shipped in the APK regardless, so that one
+call is now twenty lines of our own plugin and the dependency is gone. iOS has no counterpart
+yet, and the call is limited to Android until it does.
+
 **A failing puzzle no longer takes the app with it.** The generators throw when a seed will
 not resolve and they run during render, which left a white page with no way back. Dailies are
 the same for everyone, so such a seed would hit every player that day at once.
