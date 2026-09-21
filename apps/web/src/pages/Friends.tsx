@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
+import { PUZZLE_META, PUZZLE_TYPES, dailyRef, periodRef, refId } from '@puzzle-hustle/core';
 import { ApiError, apiFetch, readSession } from '../lib/api.ts';
 import { useSession } from '../lib/auth.ts';
 import { href, onLinkClick } from '../lib/router.ts';
-import { joinUrl, share } from '../lib/share.ts';
+import { capitalize, joinUrl, share } from '../lib/share.ts';
 import { toast } from '../components/Toast.tsx';
+import { Board } from '../components/Board.tsx';
 
 export interface Group {
   id: string;
@@ -61,6 +63,9 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
   // from firing a second POST before the first one has come back.
   const [creating, setCreating] = useState(false);
   const [joining, setJoining] = useState(false);
+  const puzzles = [...PUZZLE_TYPES.map((type) => dailyRef(type)), periodRef('weekly'), periodRef('monthly')];
+  const [groupId, setGroupId] = useState<string | null>(null);
+  const [puzzleIndex, setPuzzleIndex] = useState(0);
 
   if (!session) {
     return (
@@ -113,11 +118,47 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
     }
   };
 
+  const active = groupId ?? groups[0]?.id ?? null;
+  const puzzle = puzzles[puzzleIndex]!;
+
   return (
     <>
       <section className="page-head">
         <h1>Friends</h1>
       </section>
+
+      {active && (
+        <section className="card-lg">
+          <h2>Standings</h2>
+          {groups.length > 1 && (
+            <div className="pill-row">
+              {groups.map((group) => (
+                <button
+                  key={group.id}
+                  type="button"
+                  className={group.id === active ? 'pill' : 'pill outline'}
+                  onClick={() => setGroupId(group.id)}
+                >
+                  {group.name}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="pill-row">
+            {puzzles.map((ref, index) => (
+              <button
+                key={refId(ref)}
+                type="button"
+                className={index === puzzleIndex ? 'pill' : 'pill outline'}
+                onClick={() => setPuzzleIndex(index)}
+              >
+                {ref.period === 'daily' ? PUZZLE_META[ref.type].name : capitalize(ref.period!)}
+              </button>
+            ))}
+          </div>
+          <Board groupId={active} puzzle={refId(puzzle)} meId={session.player.id} />
+        </section>
+      )}
 
       {groups.map((group) => (
         <div key={group.id} className="row-card friends-row">

@@ -304,6 +304,29 @@ p { margin: 0; }
 .row-sub .num { font-family: var(--font-num); }
 .row-card.solved .pill.outline { border-color: var(--success); color: var(--success); }
 
+.pill-row { display: flex; flex-wrap: wrap; gap: 0.4rem; overflow-x: auto; }
+
+/* One row per player: rank and name lead, an optional hint count and the time trail behind,
+   flexed rather than gridded so a row without a hint badge still lines its time up with one
+   that has it. */
+.leaderboard { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.leaderboard-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: var(--radius-sm); }
+.leaderboard-row.me { background: var(--accent-soft); }
+.leaderboard-rank { flex: none; width: 1.6rem; color: var(--text-muted); font-family: var(--font-num); }
+.leaderboard-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.leaderboard-time { flex: none; font-family: var(--font-num); font-weight: 700; }
+.leaderboard-report {
+  flex: none;
+  border: none;
+  background: none;
+  padding: 4px 6px;
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
 .actions { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 10px; width: 100%; margin-top: 4px; }
 .board-panel .actions { max-width: 520px; margin-left: auto; margin-right: auto; }
 .actions .btn {
@@ -627,4 +650,5 @@ p { margin: 0; }
   .tab:hover { color: var(--text); }
   .swatch:hover { transform: scale(1.08); }
   .icon-round:hover { background: var(--hover-bg); color: var(--hover-text); border-color: var(--hover-bg); }
+  .leaderboard-report:hover { color: var(--danger); }
 }

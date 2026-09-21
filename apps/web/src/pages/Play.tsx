@@ -34,6 +34,7 @@ import { currentHintProvider } from '../lib/hints.ts';
 import { enqueue, flush } from '../lib/queue.ts';
 import { HOW_TO } from '../lib/howto.ts';
 import { dailyNumber } from '../lib/stats.ts';
+import { useSession } from '../lib/auth.ts';
 import { ShapesGame } from '../shapes/ShapesGame.tsx';
 import { NonogramGame } from '../nonogram/NonogramGame.tsx';
 import { ZipGame } from '../zip/ZipGame.tsx';
@@ -42,6 +43,8 @@ import { SudokuGame } from '../sudoku/SudokuGame.tsx';
 import { RegionsGame } from '../regions/RegionsGame.tsx';
 import { Chevron } from '../components/Chevron.tsx';
 import { toast } from '../components/Toast.tsx';
+import { useBoard } from '../components/Board.tsx';
+import { useGroups } from './Friends.tsx';
 
 export function Play({ params }: { params: URLSearchParams }) {
   const ref = decodeRef(params);
@@ -392,6 +395,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           <span className="muted small">
             {result.moves} moves · {result.hints === 0 ? 'no hints' : `${result.hints} hint${result.hints === 1 ? '' : 's'}`}
           </span>
+          {puzzleRef.period && <Placement puzzle={id} />}
         </div>
       )}
 
@@ -463,6 +467,24 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
         </div>
       )}
     </section>
+  );
+}
+
+// Fetched after the solve is already submitted, so the player's own row is in the board by
+// the time this renders. Offline (submission still queued) or signed out or groupless, this
+// renders nothing rather than an error: the result screen must never look broken over it.
+function Placement({ puzzle }: { puzzle: string }) {
+  const session = useSession();
+  const { groups } = useGroups();
+  const group = groups[0] ?? null;
+  const { board } = useBoard(group?.id ?? null, puzzle);
+  if (!session || !group || !board?.me) return null;
+  const suffix = board.me === 1 ? 'st' : board.me === 2 ? 'nd' : board.me === 3 ? 'rd' : 'th';
+  return (
+    <span className="muted small">
+      {board.me}
+      {suffix} of {board.entries.length} in {group.name}
+    </span>
   );
 }
 
