@@ -68,6 +68,13 @@ the one screen of four that was missing it.
 dailies", explained itself to nobody standing in a grid of four numbers, and the daily
 progress bar already says how many are missing.
 
+**Two more things move: the tabs and the theme.** Switching tabs slides the page in from the
+side the tab sits on, with the 0.26 s ease-out the difficulty switcher already used, so the bar
+reads as one row rather than three separate screens. Light and dark no longer snap: the new
+theme grows out of the button that was pressed, a circle opening over a snapshot of the old
+screen through the View Transitions API. Where that API is missing, and whenever the system
+asks for less motion, both stay instant.
+
 **The crown in the Crowns icon shrank to the size of its neighbours.** It covered all nine
 cells of the little grid drawn behind it and carried about twice the ink of any other type
 icon in the list. It now sits centred at roughly the size of the star in the Stars icon.
@@ -86,6 +93,14 @@ script before the first frame, so nothing flashes orange on the way in. The Appe
 sits above By puzzle now, so the choice is visible without scrolling past the statistics.
 
 ### Reliability
+
+**The status bar plugin is our own now.** The Play Console flagged the app for
+`Window.getStatusBarColor` and `setStatusBarColor`, which Android 15 dropped for edge-to-edge
+apps. Both came from `@capacitor/status-bar`, of which the app used exactly one thing: the
+colour of the status bar icons, which the plugin already sets through the modern
+`WindowInsetsControllerCompat`. The dead branches shipped in the APK regardless, so that one
+call is now twenty lines of our own plugin and the dependency is gone. iOS has no counterpart
+yet, and the call is limited to Android until it does.
 
 **A failing puzzle no longer takes the app with it.** The generators throw when a seed will
 not resolve and they run during render, which left a white page with no way back. Dailies are

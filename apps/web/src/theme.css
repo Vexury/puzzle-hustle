@@ -146,10 +146,16 @@ p { margin: 0; }
 
 .app {
   max-width: 560px;
+  overflow-x: clip;
   margin: 0 auto;
   padding: calc(16px + env(safe-area-inset-top)) 16px calc(var(--tabbar-h) + 28px + env(safe-area-inset-bottom));
 }
 .app.play-mode { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+
+.page.slide-right { animation: page-slide-right 0.26s ease-out; }
+.page.slide-left { animation: page-slide-left 0.26s ease-out; }
+@keyframes page-slide-right { from { transform: translateX(26px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes page-slide-left { from { transform: translateX(-26px); opacity: 0; } to { transform: none; opacity: 1; } }
 
 .page-head { position: relative; margin: 8px 0 14px; display: flex; flex-direction: column; gap: 6px; }
 .theme-toggle { position: absolute; top: 0; right: 0; }
@@ -576,6 +582,16 @@ p { margin: 0; }
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
+}
+
+/* The theme swap grows out of the button that was pressed. Both snapshots hold still, the new
+   one is clipped to a circle that opens; the --reveal-* values come from lib/theme.ts. */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+[data-reveal]::view-transition-old(root) { z-index: 0; }
+[data-reveal]::view-transition-new(root) { z-index: 1; animation: theme-reveal 0.42s ease-out; }
+@keyframes theme-reveal {
+  from { clip-path: circle(0 at var(--reveal-x) var(--reveal-y)); }
+  to { clip-path: circle(var(--reveal-r) at var(--reveal-x) var(--reveal-y)); }
 }
 
 /* Touch devices keep the last hover state stuck on a button until the next tap. */

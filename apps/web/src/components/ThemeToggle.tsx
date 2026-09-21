@@ -1,10 +1,10 @@
-import { useTheme } from '../lib/theme.ts';
+import { centerOf, useTheme } from '../lib/theme.ts';
 
 export function ThemeToggle() {
   const { theme, toggle } = useTheme();
   const label = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
   return (
-    <button type="button" className="icon-round theme-toggle" onClick={toggle} aria-label={label} title={label}>
+    <button type="button" className="icon-round theme-toggle" onClick={(e) => toggle(centerOf(e.currentTarget))} aria-label={label} title={label}>
       {theme === 'dark' ? (
         <svg className="theme-icon" viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="12" r="4" />
