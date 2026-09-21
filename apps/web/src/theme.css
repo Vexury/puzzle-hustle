@@ -282,8 +282,12 @@ p { margin: 0; }
 .actions .btn:hover:not(:disabled) { background: var(--hover-bg); border-color: var(--hover-bg); color: var(--hover-text); }
 .actions .btn:disabled { opacity: 0.45; cursor: default; }
 
+.chevron { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
 .back {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
   color: var(--accent-deep);
   font-weight: 700;
   text-decoration: none;

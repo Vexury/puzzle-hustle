@@ -18,6 +18,7 @@ import { href, navigate, onLinkClick } from '../lib/router.ts';
 import { readSetting, useSolves, writeSetting, type SolveRecord } from '../lib/storage.ts';
 import { capitalize, formatSeconds } from '../lib/share.ts';
 import { typeStats } from '../lib/stats.ts';
+import { Chevron } from '../components/Chevron.tsx';
 import { ThemeToggle } from '../components/ThemeToggle.tsx';
 
 export function unlockedLevel(type: PuzzleTypeId, difficulty: Difficulty, solves: Record<string, SolveRecord>): number {
@@ -89,7 +90,7 @@ function LevelGrid({ type }: { type: PuzzleTypeId }) {
   return (
     <>
       <a href={href('/levels')} onClick={onLinkClick} className="back">
-        ‹ Puzzles
+        <Chevron size={20} /> Puzzles
       </a>
       <header className="page-head compact">
         <h1>

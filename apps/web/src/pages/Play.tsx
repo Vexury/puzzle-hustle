@@ -37,6 +37,7 @@ import { ZipGame } from '../zip/ZipGame.tsx';
 import { MosaicGame } from '../mosaic/MosaicGame.tsx';
 import { SudokuGame } from '../sudoku/SudokuGame.tsx';
 import { RegionsGame } from '../regions/RegionsGame.tsx';
+import { Chevron } from '../components/Chevron.tsx';
 import { toast } from '../components/Toast.tsx';
 
 export function Play({ params }: { params: URLSearchParams }) {
@@ -218,7 +219,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
     <section className="play">
       <div className="play-bar">
         <a href={back.url} onClick={onLinkClick} className="icon-round" aria-label={`Back to ${back.label}`}>
-          ‹
+          <Chevron />
         </a>
         <h1>
           {PUZZLE_META[puzzleRef.type].name} <span className="muted">· {subtitle(puzzleRef)}</span>
