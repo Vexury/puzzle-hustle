@@ -40,9 +40,7 @@ export interface NonogramOptions {
 }
 
 
-// Auf demselben Gitter reicht die Logiktiefe von etwa 44 bis 94, waehrend die Mediane der
-// Farbvarianten nur fuenf Punkte auseinanderliegen. Die Stufen trennt deshalb der Anspruch,
-// nicht die Groesse: der Generator sucht weiter, bis das Raetsel ins Fenster faellt.
+// Difficulty comes from these windows, not from the board size. See scripts/nono-stats.ts.
 const DEPTH_GATES: Partial<Record<Difficulty, { min?: number; max?: number }>> = {
   medium: { max: 42 },
   hard: { min: 42 },
@@ -118,7 +116,7 @@ export function generateNonogram(seed: number, difficulty: Difficulty, options: 
     const depth = nonogramDepth(solved.rounds, (solved.deducedPerRound[0] ?? 0) / cells);
     const miss = Math.max((gate.min ?? -Infinity) - depth, depth - (gate.max ?? Infinity), 0);
     if (miss === 0) return spec;
-    // Kein Seed darf leer ausgehen, sonst reisst der Zeitplan. Das knappste Verfehlen gewinnt.
+    // No seed may come back empty or the daily schedule throws; closest miss wins.
     if (miss < closestMiss) {
       closestMiss = miss;
       closest = spec;

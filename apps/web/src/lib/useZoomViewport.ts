@@ -4,8 +4,6 @@ import { readSetting, writeSetting } from './storage.ts';
 const MIN_CELL = 12;
 const MAX_CELL = 64;
 
-// Zwei Finger halten beim Schieben nie exakt denselben Abstand. Ohne Totzone
-// wandert der Zoom bei jedem Pan mit, was ein sauberes Verschieben unmoeglich macht.
 const ZOOM_DEADZONE = 0.15;
 
 interface Pinch {
@@ -32,9 +30,7 @@ export interface ZoomViewport {
   pointerCancel(e: React.PointerEvent<HTMLElement>): void;
 }
 
-// `reserve` ist der Platz neben dem Brett. Als Funktion, weil er bei Nonogramm von der
-// Zellgroesse abhaengt: die Hinweisziffern skalieren mit. Eine feste Schaetzung lag je nach
-// Raetsel 8 bis 13 Pixel daneben, genug, damit ein 10x10 knapp nicht mehr passte.
+// `reserve` is a function because the nonogram clue gutter scales with the cell size.
 export function useZoomViewport(cols: number, reserve: number | ((cell: number) => number), viewKey: string | undefined): ZoomViewport {
   const viewport = useRef<HTMLDivElement>(null);
   const [cellPx, setCellPx] = useState(24);
@@ -49,9 +45,8 @@ export function useZoomViewport(cols: number, reserve: number | ((cell: number) 
   useLayoutEffect(() => {
     const el = viewport.current;
     if (!el) return;
-    // Die eigene Breite taugt nicht: der Ausschnitt schrumpft auf den Inhalt, sobald das Brett
-    // passt, und die Rechnung waere zirkulaer. Also die Elternbreite, abzueglich Rahmen und
-    // Innenabstand des Ausschnitts, die vom Platz fuers Brett abgehen.
+    // Not el.clientWidth: the viewport shrinks to its content once the board fits, which
+    // makes the sum circular.
     const box = getComputedStyle(el);
     const chrome =
       parseFloat(box.borderLeftWidth) + parseFloat(box.borderRightWidth) + parseFloat(box.paddingLeft) + parseFloat(box.paddingRight);
@@ -64,18 +59,13 @@ export function useZoomViewport(cols: number, reserve: number | ((cell: number) 
         break;
       }
     }
-    // Lieber kleinere Zellen als ein abgeschnittenes Brett. Erst unter dieser Grenze wird
-    // geschrumpft sinnlos, dann laeuft das Brett bewusst ueber und bekommt dafuer Zoom.
     const initial = Math.max(fit, 20);
-    // Zoom gibt es nur, wo das Brett ueberhaupt ueberlaeuft. Passt es ohnehin in die Breite,
-    // bleibt die Groesse fest; unter die Einpassung zu gehen wuerde es nur schrumpfen lassen.
     const overflows = fit < initial;
     minCell.current = overflows ? Math.max(fit, MIN_CELL) : initial;
     maxCell.current = overflows ? MAX_CELL : initial;
     const saved = storageKey ? parseView(readSetting(storageKey)) : null;
     if (saved) {
-      // Auch nach oben klemmen: eine vor einer Layoutaenderung gespeicherte Groesse
-      // wuerde das Brett sonst weiter ueberlaufen lassen.
+      // Clamp both ways: a size saved before a layout change would keep overflowing.
       const cell = Math.min(Math.max(saved.cell, minCell.current), maxCell.current);
       restore.current = { ...saved, cell };
       setCellPx(cell);
@@ -144,8 +134,7 @@ export function useZoomViewport(cols: number, reserve: number | ((cell: number) 
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     e.currentTarget.setPointerCapture(e.pointerId);
     if (pointers.current.size === 2) {
-      // Fest eingestellte Bretter haben weder etwas zu zoomen noch zu schieben. Ohne diese
-      // Sperre schluckt die Geste zwei Finger und ruckelt den Ausschnitt um ein paar Pixel.
+      // Without this a fixed board still swallows the gesture and twitches by a few pixels.
       if (minCell.current >= maxCell.current) return true;
       const [a, b] = [...pointers.current.entries()] as [[number, { x: number; y: number }], [number, { x: number; y: number }]];
       pinch.current = {

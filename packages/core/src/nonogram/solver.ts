@@ -128,9 +128,8 @@ export interface NonogramDifficultyReport {
   cells: number;
 }
 
-// Der groessenunabhaengige Teil der Bewertung: wie tief die Logik reicht, ohne den Bonus
-// fuer die Brettgroesse. Die Schwellen der Stufen haengen daran, damit Weekly und Monthly
-// nicht allein wegen des groesseren Bretts in eine andere Stufe rutschen.
+// The size-independent part of the score. Difficulty thresholds use this and not the score
+// itself, so a larger weekly or monthly board does not drift into the next level by itself.
 export function nonogramDepth(rounds: number, firstRoundRatio: number): number {
   return rounds * 6 + (1 - firstRoundRatio) * 40;
 }

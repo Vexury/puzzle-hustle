@@ -3,8 +3,9 @@ import { Capacitor } from '@capacitor/core';
 
 const REWARD_UNIT = 'ca-app-pub-3552688457242630/8666936384';
 
-// Geraete, die statt echter Anzeigen immer Testanzeigen bekommen. Ein Klick von hier
-// zaehlt nicht als ungueltiger Traffic. Die ID steht beim ersten Anzeigenaufruf im Logcat.
+// Devices that always get test ads. Drop one from this list and a tap on a real ad from
+// that phone counts as invalid traffic, which can cost the AdMob account. The id is
+// printed to logcat on the first ad request.
 const TEST_DEVICES = ['8CC764321F12FA067B339B812405EE50'];
 
 const native = Capacitor.isNativePlatform();
@@ -26,9 +27,6 @@ export function privacyOptionsAvailable(): boolean {
   return privacyOptions;
 }
 
-// Nichts hiervon laeuft beim Start: das SDK wird erst wach, wenn der Spieler
-// zum ersten Mal eine Anzeige anfordert, damit der Einwilligungsdialog nicht
-// ungefragt den ersten Eindruck der App bestimmt.
 function prepare(): Promise<boolean> {
   ready ??= (async () => {
     await AdMob.initialize({
@@ -40,7 +38,7 @@ function prepare(): Promise<boolean> {
     if (info.isConsentFormAvailable && info.status === AdmobConsentStatus.REQUIRED) {
       info = await AdMob.showConsentForm();
     }
-    // Das Plugin exportiert PrivacyOptionsRequirementStatus nicht, daher der String.
+    // The plugin types this as an enum it never exports, hence the string compare.
     privacyOptions = String(info.privacyOptionsRequirementStatus) === 'REQUIRED';
     for (const l of listeners) l();
     return info.canRequestAds;
@@ -54,9 +52,8 @@ export async function showPrivacyOptions(): Promise<void> {
   await AdMob.showPrivacyOptionsForm();
 }
 
-// Laesst sich keine Anzeige ausliefern, bekommt der Spieler den Hint trotzdem.
-// Gescheitert ist das Netz oder die Fuellrate, nicht er, und verdient haette
-// die App an einer Anzeige, die es nie gab, ohnehin nichts.
+// Returns true when no ad could be delivered: the hint is granted anyway. That is
+// deliberate, not a missing error path.
 export async function showRewardedAd(): Promise<boolean> {
   if (!native) return false;
   if (!(await prepare())) return true;

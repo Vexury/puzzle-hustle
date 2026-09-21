@@ -10,10 +10,8 @@ interface State {
   failed: boolean;
 }
 
-// Die Generatoren werfen, wenn ein Seed nicht aufgeht, und sie laufen waehrend des Renderns.
-// Ohne diese Grenze reisst das den ganzen Baum ab: weisse Seite, und auf dem Play-Screen ohne
-// Tab-Leiste auch kein Weg zurueck. Dailys sind fuer alle gleich, ein solcher Seed traefe
-// also nicht einen Spieler, sondern an dem Tag jeden.
+// Generators throw during render, and a daily is the same puzzle for everyone, so one bad
+// seed would take every player's app down on the same day.
 export class ErrorBoundary extends Component<Props, State> {
   override state: State = { failed: false };
 
