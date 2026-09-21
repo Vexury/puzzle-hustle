@@ -1,6 +1,8 @@
+import { useId } from 'react';
 import type { PuzzleTypeId } from '@puzzle-hustle/core';
 
 export function PuzzleIcon({ type, size = 56 }: { type: PuzzleTypeId; size?: number }) {
+  const clip = useId();
   return (
     <span className="puzzle-icon" style={{ width: size, height: size }} aria-hidden="true">
       {type === 'shapes' ? (
@@ -13,9 +15,15 @@ export function PuzzleIcon({ type, size = 56 }: { type: PuzzleTypeId; size?: num
               <line key={`v${i}`} x1={6 + i * 9.33} y1="6" x2={6 + i * 9.33} y2="34" />
             ))}
           </g>
+          <defs>
+            <clipPath id={clip}>
+              <polygon points="17.67,24.67 24.67,17.67 31.67,24.67 24.67,31.67" />
+            </clipPath>
+          </defs>
           <polygon points="6,6 24.67,6 6,24.67" className="ic-a" />
           <rect x="24.67" y="24.67" width="9.33" height="9.33" className="ic-a" />
-          <polygon points="20,14.4 25.6,20 20,25.6 14.4,20" className="ic-a" />
+          <polygon points="17.67,24.67 24.67,17.67 31.67,24.67 24.67,31.67" className="ic-a" />
+          <rect x="24.67" y="24.67" width="9.33" height="9.33" className="ic-cut" clipPath={`url(#${clip})`} />
         </svg>
       ) : type === 'crowns' ? (
         <svg viewBox="0 0 40 40">
