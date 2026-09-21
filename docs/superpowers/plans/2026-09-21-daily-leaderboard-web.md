@@ -1032,18 +1032,25 @@ export interface Player {
 }
 
 export async function upsertPlayer(db: D1Database, provider: string, subject: string, name: string): Promise<Player> {
+  const inserted = await db
+    .prepare(
+      `INSERT INTO players (id, provider, subject, name, created_at)
+            VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT (provider, subject) DO NOTHING
+         RETURNING id, name`,
+    )
+    .bind(crypto.randomUUID(), provider, subject, name, Date.now())
+    .first<Player>();
+  if (inserted) return inserted;
+
+  // The row was already there, either from an earlier sign-in or from a request that
+  // raced this one. Either way the first name wins, which is what the caller expects.
   const existing = await db
     .prepare('SELECT id, name FROM players WHERE provider = ? AND subject = ?')
     .bind(provider, subject)
     .first<Player>();
-  if (existing) return existing;
-
-  const id = crypto.randomUUID();
-  await db
-    .prepare('INSERT INTO players (id, provider, subject, name, created_at) VALUES (?, ?, ?, ?, ?)')
-    .bind(id, provider, subject, name, Date.now())
-    .run();
-  return { id, name };
+  if (!existing) throw new Error('player upsert failed');
+  return existing;
 }
 
 export async function requirePlayer(request: Request, env: Env): Promise<string | null> {
