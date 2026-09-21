@@ -20,6 +20,7 @@ import {
   periodRef,
   randomRef,
   refId,
+  scheduledRef,
   shapesAdapter,
   starsAdapter,
   zipAdapter,
@@ -119,6 +120,10 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const counters = useRef({ moves: saved?.moves ?? 0, hints: saved?.hints ?? 0 });
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<SolveRecord | undefined>(existing);
+  // Gates Placement below: it must mount only once the solve just submitted has actually had
+  // its round trip, not the instant it is enqueued. A puzzle that was already solved in an
+  // earlier session has nothing racing it, so it starts settled.
+  const [scoreSettled, setScoreSettled] = useState(() => Boolean(existing));
   const seenKey = `ph:howto:${puzzleRef.type}`;
   const [showHelp, setShowHelp] = useState(() => readSetting(seenKey) !== '1');
   const helpSeen = useRef(readSetting(seenKey) === '1');
@@ -269,9 +274,14 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
     setSeconds(elapsed);
     setResult(record);
     recordSolve(id, record);
-    if (puzzleRef.period) {
+    // A shared /play link carries its seed and difficulty as plain query params, so both are
+    // forgeable: `s` can be edited to swap in an easier puzzle while `p`/`k` still claim today's
+    // real period id. Submitting is gated on the ref actually being the scheduled one for that
+    // period and key — local recording above is untouched, only what reaches the server changes.
+    const scheduled = puzzleRef.period && puzzleRef.key ? scheduledRef(puzzleRef.type, puzzleRef.period, puzzleRef.key) : null;
+    if (scheduled && scheduled.seed === puzzleRef.seed && scheduled.difficulty === puzzleRef.difficulty) {
       enqueue(id, record);
-      void flush();
+      void flush().finally(() => setScoreSettled(true));
     }
     clearProgress(id);
   };
@@ -395,7 +405,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           <span className="muted small">
             {result.moves} moves · {result.hints === 0 ? 'no hints' : `${result.hints} hint${result.hints === 1 ? '' : 's'}`}
           </span>
-          {puzzleRef.period && <Placement puzzle={id} />}
+          {puzzleRef.period && scoreSettled && <Placement puzzle={id} />}
         </div>
       )}
 
@@ -470,9 +480,11 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   );
 }
 
-// Fetched after the solve is already submitted, so the player's own row is in the board by
-// the time this renders. Offline (submission still queued) or signed out or groupless, this
-// renders nothing rather than an error: the result screen must never look broken over it.
+// Mounted only once PlayPuzzle's flush() attempt for this solve has settled (scoreSettled), so
+// this component's own GET /board never races the POST /scores from onSolved — the two need a
+// different number of sequential D1 round trips and neither was ever guaranteed to finish
+// first. Offline (submission still queued) or signed out or groupless, this renders nothing
+// rather than an error: the result screen must never look broken over it.
 function Placement({ puzzle }: { puzzle: string }) {
   const session = useSession();
   const { groups } = useGroups();
