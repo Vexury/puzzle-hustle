@@ -106,6 +106,15 @@ export async function renderSignInButton(
   // the rest of the app's buttons use. Width is measured rather than guessed so the button
   // spans its card instead of floating at whatever size the account name happens to need.
   // Re-rendering clears the host first: renderButton appends, it does not replace.
+  // If this button is on screen at all, the player is signed out of Puzzle Hustle. Telling
+  // Google so is simply true, and it stops it replacing the button a moment later with the
+  // personalised variant for whichever account it remembers — a variant that ignores the
+  // theme and shape asked for below, which is why a dark card briefly showed a white slab.
+  // On a shared device the plain button is also the safer one: it opens an account chooser
+  // instead of signing in as whoever Google saw last, which is the same mistake the score
+  // queue had to be taught not to make.
+  gsi.accounts.id.disableAutoSelect();
+
   const box = getComputedStyle(target);
   const width = Math.round(target.clientWidth - parseFloat(box.paddingLeft) - parseFloat(box.paddingRight));
   target.replaceChildren();
