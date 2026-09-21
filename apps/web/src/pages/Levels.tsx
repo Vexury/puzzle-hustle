@@ -136,11 +136,17 @@ function LevelGrid({ type }: { type: PuzzleTypeId }) {
         })}
       </div>
 
-      <div className="actions">
-        <button type="button" className="pill outline" onClick={() => navigate(href(`/play?${encodeRef(randomRef(type, difficulty))}`))}>
-          Random {capitalize(difficulty)}
-        </button>
-      </div>
+      {open > list.length ? (
+        <div className="actions">
+          <button type="button" className="pill outline" onClick={() => navigate(href(`/play?${encodeRef(randomRef(type, difficulty))}`))}>
+            Random {capitalize(difficulty)}
+          </button>
+        </div>
+      ) : (
+        <p className="muted small center">
+          Solve all {list.length} to unlock endless {difficulty} puzzles.
+        </p>
+      )}
     </>
   );
 }
