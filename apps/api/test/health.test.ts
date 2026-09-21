@@ -1,10 +1,14 @@
 import { applyD1Migrations, env } from 'cloudflare:test';
-import { beforeAll, expect, it } from 'vitest';
+import { beforeAll, beforeEach, expect, it } from 'vitest';
 import worker from '../src/index.ts';
 import { signSession } from '../src/token.ts';
 
 beforeAll(async () => {
   await applyD1Migrations(env.DB, env.TEST_MIGRATIONS);
+});
+
+beforeEach(async () => {
+  await env.DB.exec('DELETE FROM players');
 });
 
 it('answers the health route', async () => {

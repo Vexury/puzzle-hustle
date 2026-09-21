@@ -2,6 +2,7 @@ import { applyD1Migrations, env } from 'cloudflare:test';
 import { beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import worker from '../src/index.ts';
 import * as google from '../src/google.ts';
+import { upsertPlayer } from '../src/players.ts';
 import { signSession } from '../src/token.ts';
 
 beforeAll(async () => {
@@ -77,6 +78,22 @@ it('changes a name and refuses a bad one', async () => {
 
   const bad = await post('/name', { name: 'http://x.example' }, created.token);
   expect(bad.status).toBe(400);
+});
+
+it('resolves a duplicate sign-in for the same subject to the existing player instead of racing a second row', async () => {
+  vi.spyOn(google, 'verifyGoogleIdToken').mockResolvedValue('subject-4');
+  const first = (await (await post('/session', { provider: 'google', idToken: 'x', name: 'Moritz' })).json()) as {
+    player: { id: string; name: string };
+  };
+
+  // Simulate the losing side of a double-tapped sign-in: the row already exists (created
+  // above), so this call must resolve to it rather than throw on the unique constraint or
+  // create a second row.
+  const raced = await upsertPlayer(env.DB, 'google', 'subject-4', 'SomeoneElse');
+  expect(raced).toEqual(first.player);
+
+  const count = await env.DB.prepare('SELECT COUNT(*) AS n FROM players').first<{ n: number }>();
+  expect(count?.n).toBe(1);
 });
 
 it('refuses a request without or with a broken token', async () => {

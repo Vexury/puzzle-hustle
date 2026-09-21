@@ -14,11 +14,22 @@ export async function upsertPlayer(db: D1Database, provider: string, subject: st
   if (existing) return existing;
 
   const id = crypto.randomUUID();
-  await db
-    .prepare('INSERT INTO players (id, provider, subject, name, created_at) VALUES (?, ?, ?, ?, ?)')
-    .bind(id, provider, subject, name, Date.now())
-    .run();
-  return { id, name };
+  try {
+    await db
+      .prepare('INSERT INTO players (id, provider, subject, name, created_at) VALUES (?, ?, ?, ?, ?)')
+      .bind(id, provider, subject, name, Date.now())
+      .run();
+    return { id, name };
+  } catch {
+    // Someone else created this player between our select and our insert. The unique
+    // constraint did its job; read back what they wrote.
+    const raced = await db
+      .prepare('SELECT id, name FROM players WHERE provider = ? AND subject = ?')
+      .bind(provider, subject)
+      .first<Player>();
+    if (raced) return raced;
+    throw new Error('player insert failed');
+  }
 }
 
 export async function requirePlayer(request: Request, env: Env): Promise<string | null> {
