@@ -5,9 +5,17 @@ export function PuzzleIcon({ type, size = 56 }: { type: PuzzleTypeId; size?: num
     <span className="puzzle-icon" style={{ width: size, height: size }} aria-hidden="true">
       {type === 'shapes' ? (
         <svg viewBox="0 0 40 40">
-          <rect x="7" y="7" width="16" height="16" className="ic-a" />
-          <polygon points="25,13 37,25 25,37 13,25" className="ic-a" />
-          <polygon points="17,13 25,13 25,21" className="ic-cut" />
+          <g className="ic-grid">
+            {[1, 2].map((i) => (
+              <line key={`h${i}`} x1="6" y1={6 + i * 9.33} x2="34" y2={6 + i * 9.33} />
+            ))}
+            {[1, 2].map((i) => (
+              <line key={`v${i}`} x1={6 + i * 9.33} y1="6" x2={6 + i * 9.33} y2="34" />
+            ))}
+          </g>
+          <polygon points="6,6 24.67,6 6,24.67" className="ic-a" />
+          <rect x="24.67" y="24.67" width="9.33" height="9.33" className="ic-a" />
+          <polygon points="20,14.4 25.6,20 20,25.6 14.4,20" className="ic-a" />
         </svg>
       ) : type === 'crowns' ? (
         <svg viewBox="0 0 40 40">
