@@ -34,8 +34,8 @@ export function PuzzleIcon({ type, size = 56 }: { type: PuzzleTypeId; size?: num
               <line key={`v${i}`} x1={6 + i * 9.33} y1="6" x2={6 + i * 9.33} y2="34" />
             ))}
           </g>
-          <path d="M8 29 L7 14 L15 20 L20 10 L25 20 L33 14 L32 29 Z" className="ic-a" />
-          <rect x="8" y="30.5" width="24" height="3" rx="1" className="ic-a" />
+          <path d="M11.8 24.9 L11.2 14.7 L16.6 18.8 L20 12 L23.4 18.8 L28.8 14.7 L28.2 24.9 Z" className="ic-a" />
+          <rect x="11.8" y="26" width="16.4" height="2" rx="0.7" className="ic-a" />
         </svg>
       ) : type === 'stars' ? (
         <svg viewBox="0 0 40 40">

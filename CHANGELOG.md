@@ -64,6 +64,10 @@ and Crowns had drifted to smaller ones with their own opacities.
 looks like and sits in the middle of its button. The theme toggle reached the level picker,
 the one screen of four that was missing it.
 
+**The crown in the Crowns icon shrank to the size of its neighbours.** It covered all nine
+cells of the little grid drawn behind it and carried about twice the ink of any other type
+icon in the list. It now sits centred at roughly the size of the star in the Stars icon.
+
 **The tick on a solved daily is drawn, not set in type.** It was the Nunito glyph, which sat
 just under 3% of the badge diameter too high and stayed thinner than the circle around it.
 It is now a stroked path, centred on its own ink to the pixel and noticeably heavier.
