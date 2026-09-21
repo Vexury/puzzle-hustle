@@ -217,8 +217,11 @@ p { margin: 0; }
   transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 .row-card:active { transform: scale(0.99); }
-/* A row-card with no leading icon, such as a friends group: just the text and the action. */
+/* A row-card with no leading icon, such as a friends group: just the text and the action(s). */
 .row-card.friends-row { grid-template-columns: 1fr auto; }
+/* Wraps every action button in a friends-row so the grid still sees exactly two children
+   (text, actions) no matter how many buttons are in play; a later one slots in here too. */
+.friends-row-actions { display: flex; gap: 14px; }
 .row-icon { position: relative; display: inline-flex; }
 .row-check {
   position: absolute;

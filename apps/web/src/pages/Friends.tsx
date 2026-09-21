@@ -55,7 +55,7 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
   const session = useSession();
   const { groups, reload } = useGroups();
   const [name, setName] = useState('');
-  const [code, setCode] = useState(initialCode.toUpperCase().slice(0, 6));
+  const [code, setCode] = useState(initialCode.trim().toUpperCase().slice(0, 6));
   // Independent per-form flags, not useGroups's loading: that one is about the list refetch,
   // and a later task needs it for that. These exist only to stop a double-tap on a pill button
   // from firing a second POST before the first one has come back.
@@ -127,23 +127,25 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
               {group.members} member{group.members === 1 ? '' : 's'} · code <b className="num">{group.code}</b>
             </span>
           </span>
-          <button
-            type="button"
-            className="pill outline"
-            onClick={() =>
-              void share(`Join my Puzzle Hustle group "${group.name}"\nCode ${group.code}\n${joinUrl(group.code)}`).then(
-                (outcome) => {
-                  if (outcome === 'copied') toast('Link copied');
-                  else if (outcome === 'failed') toast('Could not share');
-                },
-              )
-            }
-          >
-            Invite
-          </button>
-          <button type="button" className="pill outline" onClick={() => void leave(group)}>
-            Leave
-          </button>
+          <span className="friends-row-actions">
+            <button
+              type="button"
+              className="pill outline"
+              onClick={() =>
+                void share(`Join my Puzzle Hustle group "${group.name}"\nCode ${group.code}\n${joinUrl(group.code)}`).then(
+                  (outcome) => {
+                    if (outcome === 'copied') toast('Link copied');
+                    else if (outcome === 'failed') toast('Could not share');
+                  },
+                )
+              }
+            >
+              Invite
+            </button>
+            <button type="button" className="pill outline" onClick={() => void leave(group)}>
+              Leave
+            </button>
+          </span>
         </div>
       ))}
 
@@ -162,7 +164,7 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
         <div className="friends-actions">
           <input
             value={code}
-            onChange={(e) => setCode(e.target.value.toUpperCase())}
+            onChange={(e) => setCode(e.target.value.trim().toUpperCase())}
             maxLength={6}
             placeholder="CODE"
             className="num"
