@@ -88,17 +88,23 @@ export async function joinGroup(
     .first<{ id: string; code: string; name: string; ownerId: string }>();
   if (!group) return { ok: false, reason: 'unknown' };
 
-  const mine = await db
-    .prepare('SELECT COUNT(*) AS n FROM members WHERE player_id = ?')
-    .bind(playerId)
-    .first<{ n: number }>();
-  if ((mine?.n ?? 0) >= MAX_GROUPS) return { ok: false, reason: 'limit' };
+  const already = await db
+    .prepare('SELECT 1 AS ok FROM members WHERE group_id = ? AND player_id = ?')
+    .bind(group.id, playerId)
+    .first<{ ok: number }>();
+  if (already) return { ok: false, reason: 'already' };
 
   const members = await db
     .prepare('SELECT COUNT(*) AS n FROM members WHERE group_id = ?')
     .bind(group.id)
     .first<{ n: number }>();
   if ((members?.n ?? 0) >= MAX_MEMBERS) return { ok: false, reason: 'full' };
+
+  const mine = await db
+    .prepare('SELECT COUNT(*) AS n FROM members WHERE player_id = ?')
+    .bind(playerId)
+    .first<{ n: number }>();
+  if ((mine?.n ?? 0) >= MAX_GROUPS) return { ok: false, reason: 'limit' };
 
   try {
     await db
@@ -118,8 +124,10 @@ export async function joinGroup(
 // hands the group to whoever has been in it longest.
 export async function leaveGroup(db: D1Database, playerId: string, groupId: string): Promise<void> {
   await db.prepare('DELETE FROM members WHERE group_id = ? AND player_id = ?').bind(groupId, playerId).run();
+  // player_id is only a tiebreaker for two members who joined in the same millisecond, so the
+  // pick is repeatable for the same data, not a claim that the id order means anything.
   const next = await db
-    .prepare('SELECT player_id AS id FROM members WHERE group_id = ? ORDER BY joined_at LIMIT 1')
+    .prepare('SELECT player_id AS id FROM members WHERE group_id = ? ORDER BY joined_at, player_id LIMIT 1')
     .bind(groupId)
     .first<{ id: string }>();
   if (!next) {

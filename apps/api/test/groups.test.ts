@@ -75,6 +75,17 @@ it('holds the group and membership limits', async () => {
   expect((await post('/groups', token, { name: 'One too many' })).status).toBe(403);
 });
 
+it('tells a player at their group cap who re-joins one of their own groups that they are already in it, not that they are at the cap', async () => {
+  const token = await signIn('s1', 'Moritz');
+  let firstCode = '';
+  for (let i = 0; i < 5; i++) {
+    const created = (await (await post('/groups', token, { name: `G${i}` })).json()) as { code: string };
+    if (i === 0) firstCode = created.code;
+  }
+  const rejoin = await post('/groups/join', token, { code: firstCode });
+  expect(rejoin.status).toBe(409);
+});
+
 it('refuses an invalid group name', async () => {
   const token = await signIn('s1', 'Moritz');
   expect((await post('/groups', token, { name: 'x' })).status).toBe(400);
