@@ -3,6 +3,21 @@
   --sudoku-peer: color-mix(in srgb, var(--accent) 9%, var(--board-cell));
   --sudoku-same: color-mix(in srgb, var(--accent) 24%, var(--board-cell));
   --sudoku-selected: color-mix(in srgb, var(--accent) 36%, var(--board-cell));
+  --sudoku-box: #6f6b64;
+  --cage-0: #a06a17;
+  --cage-1: #1a7a6c;
+  --cage-2: #6f56b5;
+  --cage-3: #a8446b;
+  --cage-4: #3d6ea8;
+}
+
+[data-theme="dark"] {
+  --sudoku-box: #968d7d;
+  --cage-0: #dda542;
+  --cage-1: #45c3ae;
+  --cage-2: #a892ff;
+  --cage-3: #e37fa2;
+  --cage-4: #7fb0e4;
 }
 
 .sudoku-wrap {
@@ -17,6 +32,7 @@
 }
 
 .sudoku-board {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(9, 1fr);
   grid-template-rows: repeat(9, 1fr);
@@ -41,8 +57,9 @@
   cursor: pointer;
   transition: background 0.08s;
 }
-.sudoku-cell.box-r { border-right: 2px solid var(--border-mid); }
-.sudoku-cell.box-b { border-bottom: 2px solid var(--border-mid); }
+.sudoku-board.board-frame { border-color: var(--sudoku-box); }
+.sudoku-cell.box-r { border-right: 2px solid var(--sudoku-box); }
+.sudoku-cell.box-b { border-bottom: 2px solid var(--sudoku-box); }
 .sudoku-cell.last-c { border-right: none; }
 .sudoku-cell.last-r { border-bottom: none; }
 .sudoku-cell.given { color: var(--text); font-weight: 700; }
@@ -58,49 +75,45 @@
 
 .sudoku-value { position: relative; z-index: 1; line-height: 1; }
 
-/* Striche als Verlauf statt als Rahmen: iOS WebKit zeichnet eine gestrichelte
-   Rahmenkante an einem nullbreiten Kasten nur als einzelnen Strich. */
-.sudoku-cage {
-  --in: 2px;
-  --line: 1.5px;
-  --dash: 3px;
-  --step: 6px;
+/* Eine Kontur je Kaefig statt vier Kanten je Zelle: nur so laeuft das Strichmuster
+   ohne Naht um die Ecke. Die Pfade kommen aus cages.ts, in Zelleinheiten. */
+.sudoku-cages {
   position: absolute;
-  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
-  opacity: 0.75;
+  z-index: 2;
 }
-.sudoku-cage.t,
-.sudoku-cage.b {
-  left: calc(var(--a) * var(--in));
-  right: calc(var(--b) * var(--in));
-  height: var(--line);
-  background: repeating-linear-gradient(to right, var(--text-muted) 0 var(--dash), transparent var(--dash) var(--step));
+.sudoku-cages path {
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 4.5 3.5;
+  vector-effect: non-scaling-stroke;
 }
-.sudoku-cage.l,
-.sudoku-cage.r {
-  top: calc(var(--a) * var(--in));
-  bottom: calc(var(--b) * var(--in));
-  width: var(--line);
-  background: repeating-linear-gradient(to bottom, var(--text-muted) 0 var(--dash), transparent var(--dash) var(--step));
-}
-.sudoku-cage.t { top: var(--in); }
-.sudoku-cage.b { bottom: var(--in); }
-.sudoku-cage.l { left: var(--in); }
-.sudoku-cage.r { right: var(--in); }
+.sudoku-cages .k0 { stroke: var(--cage-0); }
+.sudoku-cages .k1 { stroke: var(--cage-1); }
+.sudoku-cages .k2 { stroke: var(--cage-2); }
+.sudoku-cages .k3 { stroke: var(--cage-3); }
+.sudoku-cages .k4 { stroke: var(--cage-4); }
 
 .sudoku-cage-sum {
   position: absolute;
-  top: 4px;
-  left: 5px;
+  top: calc(1.6cqw + 1px);
+  left: calc(2.3cqw + 1px);
   z-index: 2;
   font-size: clamp(0.5rem, 2.7cqw, 0.8rem);
   font-weight: 700;
   line-height: 1;
   color: var(--text-muted);
 }
-.sudoku-cell.given .sudoku-cage-sum,
-.sudoku-cell.selected .sudoku-cage-sum { color: var(--text); }
+.sudoku-cage-sum.k0 { color: var(--cage-0); }
+.sudoku-cage-sum.k1 { color: var(--cage-1); }
+.sudoku-cage-sum.k2 { color: var(--cage-2); }
+.sudoku-cage-sum.k3 { color: var(--cage-3); }
+.sudoku-cage-sum.k4 { color: var(--cage-4); }
 
 .sudoku-notes {
   display: grid;
@@ -116,7 +129,7 @@
   color: var(--text-muted);
 }
 .sudoku-notes.with-sum {
-  padding-top: calc(4px + clamp(0.5rem, 2.7cqw, 0.8rem));
+  padding-top: calc(1.6cqw + 1px + clamp(0.5rem, 2.7cqw, 0.8rem));
   padding-bottom: 2px;
   font-size: clamp(0.4rem, 2.2cqw, 0.68rem);
 }
