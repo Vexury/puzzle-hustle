@@ -1,0 +1,24 @@
+{
+  "name": "@puzzle-hustle/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "migrate:local": "wrangler d1 migrations apply puzzle-hustle --local",
+    "migrate:remote": "wrangler d1 migrations apply puzzle-hustle --remote"
+  },
+  "dependencies": {
+    "@puzzle-hustle/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "0.12.21",
+    "@cloudflare/workers-types": "^5.20260920.1",
+    "vitest": "3.2.7",
+    "wrangler": "^4.135.0"
+  }
+}
