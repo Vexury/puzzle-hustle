@@ -1,3 +1,4 @@
+import { readBoard } from './board.ts';
 import { verifyGoogleIdToken } from './google.ts';
 import { createGroup, joinGroup, leaveGroup, listGroups, removeMember } from './groups.ts';
 import { cors, error, json, type Env } from './http.ts';
@@ -101,6 +102,14 @@ async function route(request: Request, env: Env): Promise<Response> {
     if (!Array.isArray(entries) || entries.length === 0) return error(400, 'missing_entries');
     if (entries.length > MAX_BATCH) return error(400, 'batch_too_large');
     return json({ results: await submitScores(env.DB, playerId, entries) });
+  }
+
+  if (method === 'GET' && path === '/board') {
+    const group = url.searchParams.get('group');
+    const puzzle = url.searchParams.get('puzzle');
+    if (!group || !puzzle) return error(400, 'missing_query');
+    const board = await readBoard(env.DB, playerId, group, puzzle);
+    return board ? json(board) : error(404, 'not_a_member');
   }
 
   return error(404, 'not_found');
