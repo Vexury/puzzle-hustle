@@ -233,3 +233,13 @@ export function zipCanonicalKey(spec: ZipPuzzle): string {
   }
   return `zip${n}|${best}`;
 }
+
+// Vocabulary: how long the path runs between consecutive numbers, plus how often it turns.
+export function zipFamilyKey(spec: ZipSpec): string {
+  const at: number[] = [];
+  spec.solution.forEach((cell, i) => {
+    if (spec.numbers[cell]! > 0) at.push(i);
+  });
+  const gaps = at.slice(1).map((position, i) => position - at[i]!);
+  return `t${zipDifficultyReport(spec).turns}/${gaps.sort((a, b) => a - b).join('.')}`;
+}

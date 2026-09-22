@@ -1,3 +1,4 @@
+import { countHistogram } from '../family.ts';
 import { MARKED_EMPTY, readLine, writeLine, type Clue } from './clues.ts';
 import type { NonogramSpec } from './puzzle.ts';
 
@@ -174,4 +175,11 @@ export function nonogramCanonicalKey(spec: NonogramSpec): string {
     if (best === '' || key < best) best = key;
   }
   return `${rows}x${cols}|${colors}|${best}`;
+}
+
+// Vocabulary: how many runs of each length and colour the clues ask for.
+export function nonogramFamilyKey(spec: NonogramSpec): string {
+  const runs: number[] = [];
+  for (const line of [...spec.rowClues, ...spec.colClues]) for (const clue of line) runs.push(clue.len * 10 + clue.color);
+  return `c${spec.config.colors}/${countHistogram(runs)}`;
 }
