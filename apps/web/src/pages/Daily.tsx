@@ -6,7 +6,6 @@ import { useSolves } from '../lib/storage.ts';
 import { capitalize, formatSeconds } from '../lib/share.ts';
 import { ThemeToggle } from '../components/ThemeToggle.tsx';
 import { STREAK_MIN, dailyNumber, dailyStreaks, formatDateLong, monthlyNumber, weeklyNumber } from '../lib/stats.ts';
-import { useGroups } from './Friends.tsx';
 
 export function useCountdown(period: Period): string {
   const [text, setText] = useState('');
@@ -48,22 +47,6 @@ function ChallengeCard({ puzzleRef, label }: { puzzleRef: PuzzleRef; label: stri
         </span>
       </span>
       <span className={solve ? 'pill outline' : 'pill'}>{solve ? formatSeconds(solve.seconds) : 'Play'}</span>
-    </a>
-  );
-}
-
-function FriendsRow() {
-  const { groups } = useGroups();
-  const group = groups[0];
-  return (
-    <a href={href('/friends')} onClick={onLinkClick} className="row-card friends-row">
-      <span className="row-text">
-        <span className="row-title">{group ? group.name : 'Friends'}</span>
-        <span className="row-sub">
-          {group ? `${group.members} member${group.members === 1 ? '' : 's'}` : 'Compare your times with a group'}
-        </span>
-      </span>
-      <span className="pill outline">{group ? 'Standings' : 'Open'}</span>
     </a>
   );
 }
@@ -119,8 +102,6 @@ export function Daily() {
       <div className="stack">
         <ChallengeCard puzzleRef={monthly} label={`Monthly #${monthlyNumber(monthly.key!)} ·`} />
       </div>
-
-      <FriendsRow />
     </>
   );
 }

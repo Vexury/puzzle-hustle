@@ -13,12 +13,12 @@ import { Play } from './pages/Play.tsx';
 import { Profile } from './pages/Profile.tsx';
 
 // Position in the tab bar, for the direction of the slide. A puzzle is -1: it sits below the
-// bar rather than on it and gets its own direction below. Friends is reached by a card link,
-// not a tab, and belongs to none of the three, so it stays still. /join renders the same page
-// from an invitation link and gets the same treatment. Achievements is reached the same way,
-// from a card on the Profile tab, and gets the same treatment.
+// bar rather than on it and gets its own direction below. Achievements is reached from a card
+// on the Profile tab rather than from the bar, so it stays still too. /join is the Social tab
+// entered through an invitation link and slides like the tab it is.
 function tabIndex(path: string): number {
-  if (path === '/play' || path === '/friends' || path === '/join' || path === '/achievements') return -1;
+  if (path === '/play' || path === '/achievements') return -1;
+  if (path === '/friends' || path === '/join') return 3;
   if (path === '/profile') return 2;
   if (path.startsWith('/levels')) return 1;
   return 0;

@@ -4,9 +4,10 @@ const TABS = [
   { path: '/', label: 'Daily', match: (p: string) => p === '/' },
   { path: '/levels', label: 'Puzzles', match: (p: string) => p.startsWith('/levels') },
   { path: '/profile', label: 'Profile', match: (p: string) => p === '/profile' },
+  { path: '/friends', label: 'Social', match: (p: string) => p === '/friends' || p === '/join' },
 ] as const;
 
-function Icon({ name }: { name: 'Daily' | 'Puzzles' | 'Profile' }) {
+function Icon({ name }: { name: 'Daily' | 'Puzzles' | 'Profile' | 'Social' }) {
   switch (name) {
     case 'Daily':
       return (
@@ -32,6 +33,15 @@ function Icon({ name }: { name: 'Daily' | 'Puzzles' | 'Profile' }) {
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="8" r="4" />
           <path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" />
+        </svg>
+      );
+    case 'Social':
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="9" cy="8" r="3.4" />
+          <path d="M2.5 20c0-3.4 2.9-5.8 6.5-5.8s6.5 2.4 6.5 5.8" />
+          <circle cx="17.5" cy="7" r="2.6" className="fill" />
+          <path d="M16 13.2c3.1-.6 5.5 1.6 5.5 4.6" />
         </svg>
       );
   }

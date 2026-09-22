@@ -3,7 +3,7 @@ import { ACHIEVEMENTS, DAILY_TYPES, PUZZLE_META } from '@puzzle-hustle/core';
 import { Flame } from './Daily.tsx';
 import { ACCENTS, ACCENT_NAMES, useAccent } from '../lib/accent.ts';
 import { adsAvailable, onAdsConsent, privacyOptionsAvailable, showPrivacyOptions } from '../lib/ads.ts';
-import { CLIENT_ID, deleteAccount, renderSignInButton, setName as setAccountName, signOut, useSession } from '../lib/auth.ts';
+import { setName as setAccountName, useSession } from '../lib/auth.ts';
 import { ApiError, readSession } from '../lib/api.ts';
 import { currentUnlocked } from '../lib/achievements.ts';
 import { buyUnlimitedHints, hasUnlimitedHints, onEntitlement } from '../lib/entitlement.ts';
@@ -80,38 +80,46 @@ export function Profile() {
       </header>
 
       <div className="stack">
-        <div className="card-lg">
-          <span className="label">Display name</span>
-          {editing ? (
-            <form
-              className="name-form"
-              onSubmit={(e) => {
-                e.preventDefault();
-                commitName();
-              }}
-            >
-              <input autoFocus value={name} onChange={(e) => setName(e.target.value)} onBlur={commitName} maxLength={24} placeholder="Your name" />
-            </form>
-          ) : (
-            <button type="button" className="name-btn" onClick={() => setEditing(true)}>
-              {name || 'Add a name'} <span className="muted">✎</span>
-            </button>
-          )}
-        </div>
-
-        <div className="card-lg">
-          <h2>Achievements</h2>
-          <span className="muted small">
-            {earned} of {ACHIEVEMENTS.length} earned
-          </span>
-          <div className="friends-actions">
-            <a href={href('/achievements')} className="pill outline" onClick={onLinkClick}>
-              Show ›
-            </a>
+        <div className="card-row">
+          <div className="card-lg">
+            <span className="label">Display name</span>
+            {editing ? (
+              <form
+                className="name-form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  commitName();
+                }}
+              >
+                <input autoFocus value={name} onChange={(e) => setName(e.target.value)} onBlur={commitName} maxLength={24} placeholder="Your name" />
+              </form>
+            ) : (
+              <button type="button" className="name-btn" onClick={() => setEditing(true)}>
+                {name || 'Add a name'}
+                {' '}
+                <span className="muted">✎</span>
+              </button>
+            )}
+          </div>
+          <div className="card-lg">
+            <h2>Achievements</h2>
+            <span className="muted small">
+              {earned} of {ACHIEVEMENTS.length} earned
+            </span>
+            <div className="friends-actions">
+              <a href={href('/achievements')} className="pill outline" onClick={onLinkClick}>
+                Show ›
+              </a>
+            </div>
           </div>
         </div>
 
-        <FriendsCard />
+        <div className="stat-grid">
+          <Stat value={streaks.current} label="day streak" flame />
+          <Stat value={streaks.best} label="best streak" />
+          <Stat value={streaks.daysPlayed} label="days played" />
+          <Stat value={totalSolved(solves)} label="puzzles solved" />
+        </div>
 
         <div className="card-lg streak-card">
           <span className="streak-badge">
@@ -123,13 +131,6 @@ export function Profile() {
             </b>
             <span className="muted small">All {DAILY_TYPES.length} dailies in one day</span>
           </span>
-        </div>
-
-        <div className="stat-grid">
-          <Stat value={streaks.current} label="day streak" flame />
-          <Stat value={streaks.best} label="best streak" />
-          <Stat value={streaks.daysPlayed} label="days played" />
-          <Stat value={totalSolved(solves)} label="puzzles solved" />
         </div>
 
         <div className="card-lg">
@@ -268,107 +269,6 @@ export function Profile() {
         </p>
       </div>
     </>
-  );
-}
-
-const DELETE_CONFIRM_MS = 4000;
-
-function FriendsCard() {
-  const session = useSession();
-  const { theme } = useTheme();
-  const buttonHost = useRef<HTMLDivElement>(null);
-  const [failed, setFailed] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  // Google's button is an iframe from accounts.google.com, and for an account that already
-  // consented it serves a white personalised variant regardless of the theme and shape asked
-  // for in the iframe's own URL. Nothing on our side can colour it. So it is not shown until
-  // the player asks for it: at rest the card carries an ordinary app button, and Google's
-  // control appears when it is the thing being looked at rather than a bright slab sitting in
-  // a dark card. Ours says only "Sign in" — the Google wording and mark belong on Google's.
-  const [asked, setAsked] = useState(false);
-
-  const attemptSignIn = () => {
-    if (!buttonHost.current) return;
-    setFailed(false);
-    renderSignInButton(buttonHost.current, () => setFailed(false), theme).catch(() => setFailed(true));
-  };
-
-  useEffect(() => {
-    // With no client id configured, a sign-in attempt is guaranteed to throw immediately
-    // (renderSignInButton's own guard). That is "not configured", not "failed to load", and
-    // must never reach the player as an error with a retry link that cannot help.
-    // Keyed on the theme as well: Google draws the button itself, so the only way it follows
-    // a theme switch is to draw it again.
-    if (asked && !session && CLIENT_ID) attemptSignIn();
-  }, [session, theme, asked]);
-
-  // Mirrors ResetButton.tsx's arm/revert pattern: the timer lives in an effect keyed on the
-  // armed state so it is cleared on unmount or re-arm instead of firing into a stale closure.
-  useEffect(() => {
-    if (!confirmDelete) return;
-    const timer = setTimeout(() => setConfirmDelete(false), DELETE_CONFIRM_MS);
-    return () => clearTimeout(timer);
-  }, [confirmDelete]);
-
-  if (!session) {
-    if (!CLIENT_ID) {
-      return (
-        <div className="card-lg">
-          <h2>Friends</h2>
-          <span className="muted small">Sign-in isn't set up on this build yet. Everything else works without an account.</span>
-        </div>
-      );
-    }
-    return (
-      <div className="card-lg">
-        <h2>Friends</h2>
-        <span className="muted small">Sign in to compare your daily times with a group of friends. Everything else works without an account.</span>
-        {!asked && (
-          // In the same wrapper the signed-in actions use: the card is a flex column, so a
-          // bare button stretches the full width and reads as a bar rather than a button.
-          <div className="friends-actions">
-            <button type="button" className="pill" onClick={() => setAsked(true)}>
-              Sign in
-            </button>
-          </div>
-        )}
-        {asked && <div className="gsi-host" ref={buttonHost} />}
-        {failed && (
-          <button type="button" className="linklike muted small" onClick={attemptSignIn}>
-            Sign-in is unavailable right now. Try again.
-          </button>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div className="card-lg">
-      <h2>Friends</h2>
-      <span className="muted small">Signed in as {session.player.name}.</span>
-      <div className="friends-actions">
-        <a href={href('/friends')} className="pill" onClick={onLinkClick}>
-          Groups ›
-        </a>
-        <button type="button" className="pill outline" onClick={signOut}>
-          Sign out
-        </button>
-        <button
-          type="button"
-          className={confirmDelete ? 'pill danger' : 'pill outline'}
-          onClick={() => {
-            if (!confirmDelete) {
-              setConfirmDelete(true);
-              return;
-            }
-            setConfirmDelete(false);
-            void deleteAccount();
-          }}
-        >
-          {confirmDelete ? 'Sure?' : 'Delete account'}
-        </button>
-      </div>
-    </div>
   );
 }
 

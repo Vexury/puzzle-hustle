@@ -164,6 +164,10 @@ p { margin: 0; }
 .section-h { margin: 36px 0 2px; font-size: var(--fs-lg); font-weight: 700; }
 .section-sub { margin-bottom: 10px; }
 .stack { display: flex; flex-direction: column; gap: 12px; }
+/* Name and achievements say little and said it across the full width each. Side by side they
+   fill the space they take, and the cards below start higher up the screen. */
+.card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: stretch; }
+.card-row > .card-lg { margin: 0; }
 
 .daily-progress {
   display: flex;
@@ -518,7 +522,7 @@ p { margin: 0; }
   width: min(calc(100% - 32px), 420px);
   height: var(--tabbar-h);
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   padding: 6px;
   gap: 4px;
   background: var(--card-bg);
