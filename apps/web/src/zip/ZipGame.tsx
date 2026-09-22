@@ -38,6 +38,28 @@ function stepToward(n: number, from: number, to: number): number {
   return -1;
 }
 
+// A drag walks the board cell by cell: it draws forward into free cells and rubs the line
+// out backwards, but only from the head. Landing on any other collected cell does nothing,
+// so brushing over an earlier part of the line mid-drag no longer cuts it back to there.
+// Tapping such a cell still jumps back, that goes through moveTo.
+export function zipDragPath(spec: ZipSpec, cur: ZipState, cell: number): ZipState | null {
+  const n = spec.config.size;
+  if (cur.length === 0) return cell === zipStart(spec) ? [cell] : null;
+  const next = [...cur];
+  let at = next[next.length - 1]!;
+  let changed = false;
+  while (at !== cell) {
+    const step = stepToward(n, at, cell);
+    if (step < 0) break;
+    if (next.length >= 2 && next[next.length - 2] === step) next.pop();
+    else if (!next.includes(step) && zipStepAllowed(spec, at, step)) next.push(step);
+    else break;
+    at = step;
+    changed = true;
+  }
+  return changed ? next : null;
+}
+
 function validInitial(spec: ZipSpec, initial: number[] | undefined): ZipState {
   if (!initial || initial.length === 0) return emptyZipState();
   const total = spec.config.size * spec.config.size;
@@ -114,6 +136,13 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, locke
     commit(next);
   }
 
+  function dragTo(cell: number, d: Drag): void {
+    const next = zipDragPath(spec, pathRef.current, cell);
+    if (!next) return;
+    rememberOnce(d);
+    commit(next);
+  }
+
   function retract(d: Drag | null): void {
     const cur = pathRef.current;
     if (cur.length === 0) return;
@@ -154,7 +183,7 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, locke
     const cell = cellAt(e);
     if (cell === null || cell === d.last) return;
     d.last = cell;
-    moveTo(cell, d);
+    dragTo(cell, d);
   }
 
   function endDrag(e: React.PointerEvent<SVGSVGElement>) {

@@ -136,6 +136,14 @@ sits above By puzzle now, so the choice is visible without scrolling past the st
 
 ### Reliability
 
+**Zip: a drag no longer cuts the line back to a cell it brushes.** Tapping a cell that is
+already on the path shortens the path back to it, which is how you take a wrong turn back.
+The drag handler ran through the same routine, so sweeping a finger over an earlier part of
+the line, typically a numbered cell one row up from where the path doubles back, threw away
+everything drawn after it. A drag now walks the board cell by cell from the head of the line:
+forward into free cells as before, backwards only over the cell it drew last. Any other
+collected cell it passes is ignored until the finger comes off. Tapping is untouched.
+
 **The clock stops behind the notification shade.** It was meant to stop whenever the app left
 the screen, but it only heard about that through `visibilitychange` and Capacitor's
 `appStateChange`, and both of those fire when Android stops the activity. The notification
