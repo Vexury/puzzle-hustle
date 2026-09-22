@@ -287,9 +287,13 @@ function FriendsCard() {
         <h2>Friends</h2>
         <span className="muted small">Sign in to compare your daily times with a group of friends. Everything else works without an account.</span>
         {!asked && (
-          <button type="button" className="pill" onClick={() => setAsked(true)}>
-            Sign in
-          </button>
+          // In the same wrapper the signed-in actions use: the card is a flex column, so a
+          // bare button stretches the full width and reads as a bar rather than a button.
+          <div className="friends-actions">
+            <button type="button" className="pill" onClick={() => setAsked(true)}>
+              Sign in
+            </button>
+          </div>
         )}
         {asked && <div className="gsi-host" ref={buttonHost} />}
         {failed && (
