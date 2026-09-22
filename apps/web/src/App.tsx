@@ -4,6 +4,7 @@ import { Intro } from './components/Intro.tsx';
 import { TabBar } from './components/TabBar.tsx';
 import { ToastHost } from './components/Toast.tsx';
 import { useRoute } from './lib/router.ts';
+import { Achievements } from './pages/Achievements.tsx';
 import { Daily } from './pages/Daily.tsx';
 import { Friends } from './pages/Friends.tsx';
 import { LevelsIndex, LevelsType } from './pages/Levels.tsx';
@@ -13,9 +14,10 @@ import { Profile } from './pages/Profile.tsx';
 // Position in the tab bar, for the direction of the slide. A puzzle is -1: opening or leaving
 // one is not a move along the bar and stays still. Friends is reached by a card link, not a
 // tab, and belongs to none of the three, so it stays still too. /join renders the same page
-// from an invitation link and gets the same treatment.
+// from an invitation link and gets the same treatment. Achievements is reached the same way,
+// from a card on the Profile tab, and gets the same treatment.
 function tabIndex(path: string): number {
-  if (path === '/play' || path === '/friends' || path === '/join') return -1;
+  if (path === '/play' || path === '/friends' || path === '/join' || path === '/achievements') return -1;
   if (path === '/profile') return 2;
   if (path.startsWith('/levels')) return 1;
   return 0;
@@ -39,6 +41,7 @@ export function App() {
   else if (route.path === '/profile') page = <Profile />;
   else if (route.path === '/friends') page = <Friends />;
   else if (route.path === '/join') page = <Friends code={route.params.get('c') ?? ''} />;
+  else if (route.path === '/achievements') page = <Achievements />;
   else page = <Daily />;
 
   return (

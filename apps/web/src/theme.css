@@ -253,6 +253,12 @@ p { margin: 0; }
 .row-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .row-title { font-weight: 700; font-size: var(--fs-md); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .row-sub { color: var(--text-muted); font-size: var(--fs-sm); }
+.achievement { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; padding: 6px 0; }
+.achievement-mark { font-size: var(--fs-lg); color: var(--border-mid); }
+.achievement.earned .achievement-mark { color: var(--accent); }
+.achievement-text { display: flex; flex-direction: column; }
+.achievement-title { font-weight: 700; }
+.achievement:not(.earned) .achievement-title { color: var(--text-muted); }
 .diff { font-weight: 700; }
 .diff.easy { color: var(--success); }
 .diff.medium { color: var(--accent-deep); }

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { PUZZLE_META, PUZZLE_TYPES } from '@puzzle-hustle/core';
+import { ACHIEVEMENTS, PUZZLE_META, PUZZLE_TYPES } from '@puzzle-hustle/core';
 import { Flame } from './Daily.tsx';
 import { ACCENTS, ACCENT_NAMES, useAccent } from '../lib/accent.ts';
 import { adsAvailable, onAdsConsent, privacyOptionsAvailable, showPrivacyOptions } from '../lib/ads.ts';
 import { CLIENT_ID, deleteAccount, renderSignInButton, setName as setAccountName, signOut, useSession } from '../lib/auth.ts';
 import { ApiError, readSession } from '../lib/api.ts';
+import { currentUnlocked } from '../lib/achievements.ts';
 import { buyUnlimitedHints, hasUnlimitedHints, onEntitlement } from '../lib/entitlement.ts';
 import { href, onLinkClick } from '../lib/router.ts';
 import { readSetting, resetProgress, useSolves, writeSetting } from '../lib/storage.ts';
@@ -36,6 +37,7 @@ export function Profile() {
   const [buying, setBuying] = useState(false);
 
   const [privacy, setPrivacy] = useState(privacyOptionsAvailable);
+  const earned = currentUnlocked().size;
 
   useEffect(() => onEntitlement(() => setUnlimited(hasUnlimitedHints())), []);
   useEffect(() => onAdsConsent(() => setPrivacy(privacyOptionsAvailable())), []);
@@ -94,6 +96,18 @@ export function Profile() {
               {name || 'Add a name'} <span className="muted">✎</span>
             </button>
           )}
+        </div>
+
+        <div className="card-lg">
+          <h2>Achievements</h2>
+          <span className="muted small">
+            {earned} of {ACHIEVEMENTS.length} earned
+          </span>
+          <div className="friends-actions">
+            <a href={href('/achievements')} className="pill outline" onClick={onLinkClick}>
+              Show ›
+            </a>
+          </div>
         </div>
 
         <FriendsCard />
