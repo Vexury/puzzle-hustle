@@ -18,7 +18,7 @@ afterEach(() => {
   container.remove();
 });
 
-it('lists all seventeen achievements under their group headings and marks the earned ones apart from the locked ones', () => {
+it('lists all eighteen achievements under their group headings and marks the earned ones apart from the locked ones', () => {
   const after = ACHIEVEMENTS_EPOCH + 86400000;
   localStorage.setItem(
     'ph:solves',
@@ -28,7 +28,7 @@ it('lists all seventeen achievements under their group headings and marks the ea
 
   container.innerHTML = renderToStaticMarkup(createElement(Achievements));
 
-  expect(ACHIEVEMENTS.length).toBe(17);
+  expect(ACHIEVEMENTS.length).toBe(18);
   for (const a of ACHIEVEMENTS) {
     expect(container.textContent).toContain(a.title);
   }
@@ -44,5 +44,5 @@ it('lists all seventeen achievements under their group headings and marks the ea
   const lockedRow = rows.find((r) => r.textContent?.includes('Fifty'));
   expect(earnedRow?.classList.contains('earned')).toBe(true);
   expect(lockedRow?.classList.contains('earned')).toBe(false);
-  expect(container.textContent).toContain('1 of 17 earned');
+  expect(container.textContent).toContain('1 of 18 earned');
 });

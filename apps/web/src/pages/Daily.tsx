@@ -127,9 +127,16 @@ export function Daily() {
 
 function DailyProgress({ solved, total }: { solved: number; total: number }) {
   const safe = solved >= STREAK_MIN;
+  const full = solved >= total;
   const missing = STREAK_MIN - solved;
   return (
-    <div className={safe ? 'daily-progress safe' : 'daily-progress'} role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={solved}>
+    <div
+      className={full ? 'daily-progress safe full' : safe ? 'daily-progress safe' : 'daily-progress'}
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={total}
+      aria-valuenow={solved}
+    >
       <div className="track">
         <span className="fill" style={{ width: `${Math.min(1, solved / total) * 100}%` }} />
         <span className="goal-badge" style={{ left: `${(STREAK_MIN / total) * 100}%` }}>
@@ -137,7 +144,8 @@ function DailyProgress({ solved, total }: { solved: number; total: number }) {
         </span>
       </div>
       <span className="small">
-        {solved}/{total} solved · {safe ? 'streak safe' : missing === 1 ? 'one more for your streak' : `${missing} more for your streak`}
+        {solved}/{total} solved ·{' '}
+        {full ? 'clean sweep' : safe ? 'streak safe' : missing === 1 ? 'one more for your streak' : `${missing} more for your streak`}
       </span>
     </div>
   );

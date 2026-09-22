@@ -117,10 +117,10 @@ export function Profile() {
             <Flame />
           </span>
           <span>
-            <b>{streaks.perfect}-day perfect streak</b>
-            <span className="muted small">
-              All {DAILY_TYPES.length} dailies every day · best {streaks.bestPerfect}
-            </span>
+            <b>
+              {streaks.perfectDays} perfect {streaks.perfectDays === 1 ? 'day' : 'days'}
+            </b>
+            <span className="muted small">All {DAILY_TYPES.length} dailies in one day</span>
           </span>
         </div>
 

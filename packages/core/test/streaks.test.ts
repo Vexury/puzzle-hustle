@@ -32,15 +32,19 @@ describe('dailyStreaks', () => {
 
   it('counts a perfect day only when every daily type is solved', () => {
     const short = dailyStreaks(day('2026-09-22', DAILY_TYPES.length - 1), at('2026-09-22'));
-    expect(short.perfect).toBe(0);
+    expect(short.perfectDays).toBe(0);
     const full = dailyStreaks(day('2026-09-22', DAILY_TYPES.length), at('2026-09-22'));
-    expect(full.perfect).toBe(1);
-    expect(full.bestPerfect).toBe(1);
+    expect(full.perfectDays).toBe(1);
+  });
+
+  it('counts perfect days that are not neighbours, a gap does not reset them', () => {
+    const ids = [...day('2026-09-18', DAILY_TYPES.length), ...day('2026-09-22', DAILY_TYPES.length)];
+    expect(dailyStreaks(ids, at('2026-09-22')).perfectDays).toBe(2);
   });
 
   it('does not let a Killer solve stand in for a missing daily', () => {
     const ids = [...day('2026-09-22', DAILY_TYPES.length - 1), 'killer:daily:2026-09-22'];
-    expect(dailyStreaks(ids, at('2026-09-22')).perfect).toBe(0);
+    expect(dailyStreaks(ids, at('2026-09-22')).perfectDays).toBe(0);
   });
 
   it('counts only types that still have a daily towards today', () => {
@@ -64,8 +68,7 @@ describe('dailyStreaks', () => {
       today: 0,
       current: 0,
       best: 0,
-      perfect: 0,
-      bestPerfect: 0,
+      perfectDays: 0,
       daysPlayed: 0,
     });
 

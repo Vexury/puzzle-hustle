@@ -36,7 +36,7 @@ describe('unlockedAchievements', () => {
 
   it('has a definition for every id it can return, and no duplicates', () => {
     expect(new Set(ids).size).toBe(ids.length);
-    expect(ACHIEVEMENTS.length).toBe(17);
+    expect(ACHIEVEMENTS.length).toBe(18);
     for (const a of ACHIEVEMENTS) {
       expect(a.title.length).toBeGreaterThan(0);
       expect(a.description.length).toBeGreaterThan(0);
@@ -82,21 +82,32 @@ describe('unlockedAchievements', () => {
     expect(unlocked(streakDays(3)).has('streak-3')).toBe(true);
     expect(unlocked(streakDays(6)).has('streak-7')).toBe(false);
     expect(unlocked(streakDays(7)).has('streak-7')).toBe(true);
-    expect(unlocked(streakDays(6)).has('perfect-week')).toBe(false);
-    expect(unlocked(streakDays(7)).has('perfect-week')).toBe(true);
     expect(unlocked(streakDays(29)).has('streak-30')).toBe(false);
     expect(unlocked(streakDays(30)).has('streak-30')).toBe(true);
   });
 
-  it('perfect-week wants seven *consecutive* perfect days, not seven perfect days total', () => {
-    // Every other day is perfect, with a completely empty day between each: seven perfect
-    // days across a 13-day span, but no run of them is longer than one.
+  it('the perfect-day counts', () => {
+    expect(unlocked(streakDays(9)).has('perfect-10')).toBe(false);
+    expect(unlocked(streakDays(10)).has('perfect-10')).toBe(true);
+    expect(unlocked(streakDays(49)).has('perfect-50')).toBe(false);
+    expect(unlocked(streakDays(50)).has('perfect-50')).toBe(true);
+  });
+
+  it('counts perfect days wherever they fall, a gap between them costs nothing', () => {
+    // Ten perfect days spread over a 19-day span with an empty day between each: no run is
+    // longer than one, and the count still reaches ten. That is the point of a count.
     const scattered: SolveEntry[] = [];
-    for (let i = 0; i <= 12; i += 2) {
+    for (let i = 0; i <= 18; i += 2) {
       const d = new Date(Date.parse('2026-06-01T12:00:00Z') + i * 86400000).toISOString().slice(0, 10);
-      scattered.push(...dailies(d, PUZZLE_TYPES.length));
+      scattered.push(...dailies(d, DAILY_TYPES.length));
     }
-    expect(unlocked(scattered).has('perfect-week')).toBe(false);
+    expect(unlocked(scattered).has('perfect-10')).toBe(true);
+  });
+
+  it('an incomplete day does not count towards the perfect days', () => {
+    const nine = streakDays(9);
+    const short = dailies('2026-07-01', DAILY_TYPES.length - 1);
+    expect(unlocked([...nine, ...short]).has('perfect-10')).toBe(false);
   });
 
   it('the skill achievements', () => {
@@ -241,7 +252,8 @@ describe('unlockedAchievements', () => {
       'streak-3': streakDays(3),
       'streak-7': streakDays(7),
       'streak-30': streakDays(30),
-      'perfect-week': streakDays(7),
+      'perfect-10': streakDays(10),
+      'perfect-50': streakDays(50),
       'daily-no-hint': [solve('zip:daily:2026-06-01')],
       'perfect-day': dailies('2026-06-01', DAILY_TYPES.length),
       'perfect-day-no-hint': dailies('2026-06-01', DAILY_TYPES.length),

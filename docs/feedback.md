@@ -17,10 +17,6 @@ Stand: 2026-09-22
   lange Spieler fuer die Dailys brauchen (Robert: 3 bis 5 min fuer alle drei).
 - [ ] **Robert** Daraus folgend: Usage-Daten in der App erheben, sonst bleibt die Streak-Laenge
   Bauchgefuehl.
-- [ ] **Michi** Die Perfect-Serie (alle Dailys an einem Tag, `perfect-day` und `perfect-week` in
-  `packages/core/src/achievements.ts`) zwingt dazu, auch die Typen zu spielen, die einem keinen
-  Spass machen; ihm liegt Stars nicht. Die normale Daily-Serie findet er richtig. Beruehrt
-  Roberts Streak-Punkt: beide fragen, wie viel Pflicht eine Serie vertraegt.
 - [ ] **Michi** Anzeigename direkt beim Erststart setzen. Die drei Intro-Karten gibt es seit dem
   21.09., ein Namensfeld hat `apps/web/src/components/Intro.tsx` nicht.
 - [ ] **Michi** Gefuehrtes Tutorial oder Video je Raetseltyp. Die acht Textanleitungen hinter dem
@@ -39,6 +35,11 @@ Stand: 2026-09-22
 
 ## Erledigt
 
+- [x] 2026-09-22 **Michi** Die Perfect-Serie zwang dazu, auch die Typen zu spielen, die einem
+  keinen Spass machen. Die Kette ist raus: `perfect-week` faellt weg, gezaehlt werden stattdessen
+  perfekte Tage (`perfect-10` und `perfect-50`, im Profil "N perfect days"). Ein ausgelassener
+  Tag kostet nichts mehr, er zaehlt nur nicht mit. Belohnt wird der Tag selbst: bei 7/7 wird der
+  Daily-Balken zur Flammenfarbe und sagt "clean sweep". `perfect-day` bleibt.
 - [x] 2026-09-22 **Pia** Normale Level zaehlten nur die erste Zeit. Eine Wiederholung ersetzt den
   Eintrag jetzt, wenn sie schneller war; das Datum des ersten Loesens bleibt stehen, damit ein
   spaeter wiederholtes Level nicht in die Achievements-Epoche rutscht. Dailys, Weekly und Monthly

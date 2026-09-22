@@ -192,6 +192,12 @@ p { margin: 0; }
 .daily-progress .goal-badge .flame { width: 18px; height: 18px; fill: var(--border-mid); transition: fill 0.25s; }
 .daily-progress.safe .goal-badge { border-color: var(--success); }
 .daily-progress.safe .goal-badge .flame { fill: var(--flame); }
+/* Every daily of the day is done. The bar turns to the flame colour and the badge fills, so
+   the full set is its own reward on the day itself instead of a streak to keep up. */
+.daily-progress.full { color: var(--flame); }
+.daily-progress.full .fill { background: var(--flame); box-shadow: 0 0 12px color-mix(in srgb, var(--flame) 55%, transparent); }
+.daily-progress.full .goal-badge { border-color: var(--flame); background: var(--flame); }
+.daily-progress.full .goal-badge .flame { fill: var(--on-accent); }
 
 .streak {
   display: inline-flex;

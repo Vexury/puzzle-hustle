@@ -18,8 +18,7 @@ export interface DailyStreaks {
   today: number;
   current: number;
   best: number;
-  perfect: number;
-  bestPerfect: number;
+  perfectDays: number;
   daysPlayed: number;
 }
 
@@ -38,12 +37,14 @@ export function dailyStreaks(ids: Iterable<string>, now: Date = new Date()): Dai
   const today = periodKey('daily', now);
   const todayIndex = dayIndex(today);
   const anyOn = (i: number) => (solvedTypesByDay.get(keyOfDayIndex(i))?.size ?? 0) >= STREAK_MIN;
-  // Only the types that have a daily count here. A Killer daily solved before Killer left the
-  // list still counts towards the plain streak above, it just cannot fill a gap any more.
-  const perfectOn = (i: number) => {
-    const solved = solvedTypesByDay.get(keyOfDayIndex(i));
-    return solved ? DAILY_TYPES.every((type) => solved.has(type)) : false;
-  };
+  // A count of whole days, deliberately not a run: a day that was skipped costs nothing, it
+  // only fails to add. Chaining perfect days pushed players into the types they do not enjoy
+  // (tester feedback, 2026-09-22). Only the types that have a daily count, so a Killer daily
+  // solved before Killer left the list cannot complete a day either.
+  let perfectDays = 0;
+  for (const solved of solvedTypesByDay.values()) {
+    if (DAILY_TYPES.every((type) => solved.has(type))) perfectDays++;
+  }
 
   const run = (test: (i: number) => boolean) => {
     let start = todayIndex;
@@ -78,8 +79,7 @@ export function dailyStreaks(ids: Iterable<string>, now: Date = new Date()): Dai
     today: todaySolved ? DAILY_TYPES.filter((type) => todaySolved.has(type)).length : 0,
     current: run(anyOn),
     best: Math.max(best(anyOn), run(anyOn)),
-    perfect: run(perfectOn),
-    bestPerfect: Math.max(best(perfectOn), run(perfectOn)),
+    perfectDays,
     daysPlayed: solvedTypesByDay.size,
   };
 }

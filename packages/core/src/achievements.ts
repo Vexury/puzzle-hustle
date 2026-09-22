@@ -45,7 +45,8 @@ export const ACHIEVEMENTS: readonly Achievement[] = [
   { id: 'streak-3', title: 'Three in a row', description: 'Keep a daily streak for 3 days.', group: 'habit' },
   { id: 'streak-7', title: 'A week in a row', description: 'Keep a daily streak for 7 days.', group: 'habit' },
   { id: 'streak-30', title: 'A month in a row', description: 'Keep a daily streak for 30 days.', group: 'habit' },
-  { id: 'perfect-week', title: 'Perfect week', description: 'Solve every daily, seven days running.', group: 'habit' },
+  { id: 'perfect-10', title: 'Ten perfect days', description: 'Solve every daily on ten days.', group: 'habit' },
+  { id: 'perfect-50', title: 'Fifty perfect days', description: 'Solve every daily on fifty days.', group: 'habit' },
 
   { id: 'daily-no-hint', title: 'Unaided', description: 'Solve a daily without a hint.', group: 'skill' },
   { id: 'perfect-day', title: 'Perfect day', description: 'Solve every daily in one day.', group: 'skill' },
@@ -66,7 +67,7 @@ interface Facts {
   monthly: boolean;
   genius: boolean;
   bestStreak: number;
-  bestPerfect: number;
+  perfectDays: number;
   dailyNoHint: boolean;
   perfectDay: boolean;
   perfectDayNoHint: boolean;
@@ -86,7 +87,7 @@ function gather(solves: readonly SolveEntry[]): Facts {
     monthly: false,
     genius: false,
     bestStreak: 0,
-    bestPerfect: 0,
+    perfectDays: 0,
     dailyNoHint: false,
     perfectDay: false,
     perfectDayNoHint: false,
@@ -132,6 +133,7 @@ function gather(solves: readonly SolveEntry[]): Facts {
   for (const day of dailiesByDay.values()) {
     if (!DAILY_TYPES.every((type) => day.types.has(type))) continue;
     facts.perfectDay = true;
+    facts.perfectDays++;
     if (!day.hinted) facts.perfectDayNoHint = true;
   }
 
@@ -145,7 +147,6 @@ function gather(solves: readonly SolveEntry[]): Facts {
 
   const streaks = dailyStreaks(solves.map((s) => s.id));
   facts.bestStreak = streaks.best;
-  facts.bestPerfect = streaks.bestPerfect;
 
   return facts;
 }
@@ -160,7 +161,8 @@ const CONDITIONS: Record<string, (f: Facts) => boolean> = {
   'streak-3': (f) => f.bestStreak >= 3,
   'streak-7': (f) => f.bestStreak >= 7,
   'streak-30': (f) => f.bestStreak >= 30,
-  'perfect-week': (f) => f.bestPerfect >= 7,
+  'perfect-10': (f) => f.perfectDays >= 10,
+  'perfect-50': (f) => f.perfectDays >= 50,
   'daily-no-hint': (f) => f.dailyNoHint,
   'perfect-day': (f) => f.perfectDay,
   'perfect-day-no-hint': (f) => f.perfectDayNoHint,
