@@ -16,6 +16,12 @@ public class MainActivity extends BridgeActivity {
         long start = System.currentTimeMillis();
         splash.setKeepOnScreenCondition(() -> System.currentTimeMillis() - start < SPLASH_MS);
         super.onCreate(savedInstanceState);
+        // A web view refuses to render text below 8 px by default, which is meant for pages
+        // nobody controls. Here it silently inflated the pencil marks and cage sums of a Killer
+        // cell, pushing them over the cage outline on a phone while a desktop browser drew the
+        // same board correctly. The board sizes its own text against the board width.
+        getBridge().getWebView().getSettings().setMinimumFontSize(1);
+        getBridge().getWebView().getSettings().setMinimumLogicalFontSize(1);
     }
 
     // The notification shade and other system overlays neither stop the activity nor change the

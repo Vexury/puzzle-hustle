@@ -115,24 +115,36 @@
 .sudoku-cage-sum.k2 { color: var(--cage-2); }
 .sudoku-cage-sum.k3 { color: var(--cage-3); }
 .sudoku-cage-sum.k4 { color: var(--cage-4); }
+/* Sharing the cell with nine pencil marks: the sum pulls into the corner and gives up a little
+   size, so the marks below it keep a readable row height. */
+.sudoku-cell:has(.sudoku-notes) .sudoku-cage-sum {
+  top: calc(1.2cqw + 1px);
+  font-size: clamp(0.42rem, 2.2cqw, 0.62rem);
+}
 
+/* Positioned in percent of the cell, not in padding: the cage outline runs 11 % in from the
+   cell edge (INSET in cages.ts) plus half its stroke, so the marks have to start inside that
+   on every side. The old padding box was taller than the cell once a cage sum pushed it down,
+   which put the bottom row of marks on top of the dashes. */
 .sudoku-notes {
+  position: absolute;
+  top: 14%;
+  right: 14%;
+  bottom: 14%;
+  left: 14%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  width: 100%;
-  height: 100%;
-  padding: 3px;
-  box-sizing: border-box;
-  font-size: clamp(0.45rem, 2.5cqw, 0.75rem);
+  font-size: clamp(0.4rem, 2.2cqw, 0.66rem);
   font-weight: 500;
   line-height: 1;
   color: var(--sudoku-note);
 }
+/* The cage sum owns the top-left corner. The marks start below it and shrink to fit what is
+   left, rather than growing out of the cell. */
 .sudoku-notes.with-sum {
-  padding-top: calc(1.6cqw + 1px + clamp(0.5rem, 2.7cqw, 0.8rem));
-  padding-bottom: 2px;
-  font-size: clamp(0.4rem, 2.2cqw, 0.68rem);
+  top: 36%;
+  font-size: clamp(0.3rem, 1.7cqw, 0.5rem);
 }
 .sudoku-notes i {
   display: flex;
@@ -140,12 +152,7 @@
   justify-content: center;
   font-style: normal;
 }
-.sudoku-notes i.on {
-  border-radius: 999px;
-  background: var(--sudoku-selected);
-  color: var(--accent-deep);
-  font-weight: 700;
-}
+.sudoku-notes i.on { color: var(--accent-deep); font-weight: 700; }
 
 .sudoku-pad {
   display: grid;
