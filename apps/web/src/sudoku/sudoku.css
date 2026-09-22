@@ -3,6 +3,7 @@
   --sudoku-peer: color-mix(in srgb, var(--accent) 9%, var(--board-cell));
   --sudoku-same: color-mix(in srgb, var(--accent) 24%, var(--board-cell));
   --sudoku-selected: color-mix(in srgb, var(--accent) 36%, var(--board-cell));
+  --sudoku-note: color-mix(in srgb, var(--text-muted) 78%, var(--board-cell));
   --sudoku-box: #6f6b64;
   --cage-0: #a06a17;
   --cage-1: #1a7a6c;
@@ -124,9 +125,9 @@
   padding: 3px;
   box-sizing: border-box;
   font-size: clamp(0.45rem, 2.5cqw, 0.75rem);
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1;
-  color: var(--text-muted);
+  color: var(--sudoku-note);
 }
 .sudoku-notes.with-sum {
   padding-top: calc(1.6cqw + 1px + clamp(0.5rem, 2.7cqw, 0.8rem));
@@ -138,6 +139,12 @@
   align-items: center;
   justify-content: center;
   font-style: normal;
+}
+.sudoku-notes i.on {
+  border-radius: 999px;
+  background: var(--sudoku-selected);
+  color: var(--accent-deep);
+  font-weight: 700;
 }
 
 .sudoku-pad {
@@ -169,6 +176,10 @@
 .sudoku-key:hover:not(:disabled) { border-color: var(--accent); }
 .sudoku-key:active:not(:disabled) { background: var(--sudoku-same); }
 .sudoku-key:disabled { opacity: 0.35; cursor: default; }
+/* A digit that is placed nine times cannot be entered any more, but tapping it still lights
+   the board up, so it stays a button and only looks spent. */
+.sudoku-key.done { color: var(--text-muted); opacity: 0.55; }
+.sudoku-key.lit { border-color: var(--accent); background: var(--sudoku-same); color: var(--accent-deep); opacity: 1; }
 
 .sudoku-wrap .actions { max-width: var(--sudoku-max); }
 .sudoku-wrap .actions .btn.active { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }

@@ -8,13 +8,11 @@ Stand: 2026-09-22
 
 ## Offen
 
+- [ ] **Pia** Schalter im Profil fuer das Leuchten der gleichen Zahlen im Sudoku, falls es beim
+  Spielen zu unruhig wirkt. Das Leuchten selbst steht seit dem 22.09.
 - [ ] **Pia** Bei den normalen Leveln zaehlt nur die erste Zeit. Wiederholen soll die Bestzeit
   verbessern koennen. `recordSolve` in `apps/web/src/lib/storage.ts` steigt derzeit bei
   vorhandenem Eintrag frueh aus (`if (cache[id]) return`).
-- [ ] **Jonas, Pia** Sudoku: eine Zahl in der Leiste antippen soll alle gleichen Zahlen auf dem
-  Brett leuchten lassen, auch ohne sie zu setzen. Pia will das am 22.09. auch fuer die Notizen und
-  schlaegt einen Schalter im Profil vor, falls es zu unruhig wird.
-- [ ] **Jonas** Sudoku: Notiz-8 und gesetzte 8 sehen zu aehnlich aus, man stolpert darueber.
 - [ ] **Jonas** Mosaik-Frage vom 20.09. noch unbeantwortet: warum eine 8 ohne X nicht satisfied
   ist, mit X aber schon. Entweder Regelmissverstaendnis oder ein Fehler im Zaehler.
 - [ ] **Jonas** Zwei Sprachnachrichten vom 22.09. (11:53 und 15:15) sind noch nicht ausgewertet.
@@ -44,6 +42,12 @@ Stand: 2026-09-22
 
 ## Erledigt
 
+- [x] 2026-09-22 **Jonas, Pia** Eine Zahl in der Sudoku-Leiste antippen leuchtet jetzt alle
+  gleichen Zahlen auf dem Brett an, Notizen eingeschlossen, ohne sie zu setzen. Ist eine Zelle
+  ausgewaehlt, setzt derselbe Tipp die Zahl wie bisher und leuchtet zusaetzlich. Eine Ziffer, die
+  neunmal liegt, bleibt tippbar und leuchtet nur noch.
+- [x] 2026-09-22 **Jonas** Notiz-Ziffern und gesetzte Ziffern sahen zu aehnlich aus. Notizen haben
+  jetzt eine eigene, blassere Farbe und ein leichteres Gewicht.
 - [x] 2026-09-22 **Dani** Das Ende der Progressbar sah falsch aus. Ursache war der Zaehler: eine
   vor der Umstellung geloeste Killer-Daily zaehlte weiter mit, die Fuellung lief bei 8/7 ueber das
   abgerundete Ende hinaus. Der Zaehler nimmt nur noch die Typen, die einen Daily haben, und die

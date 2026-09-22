@@ -60,6 +60,7 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
   const [state, setState] = useState<SudokuState>(() => initialSudokuState(spec, initialState));
   const [selected, setSelected] = useState<number | null>(null);
   const [notesMode, setNotesMode] = useState(false);
+  const [highlight, setHighlight] = useState(0);
   const [flash, setFlash] = useState<number | null>(null);
   const [hintBusy, setHintBusy] = useState(false);
   const history = useHistory<SudokuState>();
@@ -153,6 +154,18 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
 
   const remaining = DIGITS.map((d) => 9 - values.reduce((n, v) => n + (v === d ? 1 : 0), 0));
   const selectedValue = selected === null ? 0 : values[selected]!;
+  // The digit the board lights up: the one in the selected cell, otherwise the one tapped in
+  // the pad. Tapping a digit that cannot be entered anywhere only lights it up.
+  const marked = selectedValue || highlight;
+
+  const tapDigit = (d: number) => {
+    if (!frozen && selected !== null && !spec.givens[selected] && remaining[d - 1]! > 0) {
+      enter(d);
+      setHighlight(d);
+      return;
+    }
+    setHighlight((h) => (h === d ? 0 : d));
+  };
   const peers = useMemo(() => (selected === null ? new Set<number>() : new Set(sudokuPeers(selected))), [selected]);
 
   const cellClass = (i: number) => {
@@ -166,7 +179,7 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
     if (spec.givens[i]) cls.push('given');
     if (!solved) {
       if (i === selected) cls.push('selected');
-      else if (selectedValue && values[i] === selectedValue) cls.push('same');
+      else if (marked && values[i] === marked) cls.push('same');
       else if (peers.has(i)) cls.push('peer');
       if (conflicts[i]) cls.push('conflict');
     }
@@ -189,7 +202,9 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
               ) : notes ? (
                 <span className={sum !== null ? 'sudoku-notes with-sum' : 'sudoku-notes'}>
                   {DIGITS.map((d) => (
-                    <i key={d}>{notes & (1 << (d - 1)) ? d : ''}</i>
+                    <i key={d} className={marked === d && notes & (1 << (d - 1)) ? 'on' : undefined}>
+                      {notes & (1 << (d - 1)) ? d : ''}
+                    </i>
                   ))}
                 </span>
               ) : null}
@@ -209,7 +224,15 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
         <>
           <div className="sudoku-pad">
             {DIGITS.map((d, k) => (
-              <button type="button" key={d} className="sudoku-key" onClick={() => enter(d)} disabled={locked || remaining[k]! <= 0} aria-label={`Enter ${d}`}>
+              <button
+                type="button"
+                key={d}
+                className={`sudoku-key${remaining[k]! <= 0 ? ' done' : ''}${highlight === d ? ' lit' : ''}`}
+                onClick={() => tapDigit(d)}
+                disabled={locked}
+                aria-pressed={highlight === d}
+                aria-label={`Enter ${d}`}
+              >
                 {d}
                 <small>{remaining[k]}</small>
               </button>
