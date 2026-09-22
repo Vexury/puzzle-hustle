@@ -1,4 +1,7 @@
 export const SESSION_DAYS = 30;
+// A token in use gets swapped for a fresh one once it is this old, so only a player who stays
+// away for the full SESSION_DAYS has to sign in again.
+export const RENEW_AFTER_DAYS = 7;
 
 const encoder = new TextEncoder();
 
@@ -56,4 +59,12 @@ export async function verifySession(token: string, secret: string, now = Date.no
   } catch {
     return null;
   }
+}
+
+export async function renewSession(token: string, secret: string, now = Date.now()): Promise<string | null> {
+  const playerId = await verifySession(token, secret, now);
+  if (!playerId) return null;
+  const { iat } = JSON.parse(new TextDecoder().decode(unb64url(token.split('.')[1]!))) as { iat?: unknown };
+  if (typeof iat === 'number' && now - iat * 1000 < RENEW_AFTER_DAYS * 86400000) return null;
+  return signSession(playerId, secret, now);
 }

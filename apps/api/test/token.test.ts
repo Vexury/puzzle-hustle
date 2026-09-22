@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { SESSION_DAYS, signSession, verifySession } from '../src/token.ts';
+import { RENEW_AFTER_DAYS, SESSION_DAYS, renewSession, signSession, verifySession } from '../src/token.ts';
 
 const SECRET = 'test-secret';
 
@@ -36,4 +36,22 @@ it('treats a token that expires exactly now as expired', async () => {
   const token = await signSession('player-1', SECRET, issued);
   const expiresAt = (Math.floor(issued / 1000) + SESSION_DAYS * 86400) * 1000;
   await expect(verifySession(token, SECRET, expiresAt)).resolves.toBeNull();
+});
+
+it('leaves a fresh token alone', async () => {
+  const token = await signSession('player-1', SECRET);
+  await expect(renewSession(token, SECRET)).resolves.toBeNull();
+});
+
+it('swaps an older token for a fresh one of the same player', async () => {
+  const issued = Date.now() - (RENEW_AFTER_DAYS + 1) * 86400000;
+  const renewed = await renewSession(await signSession('player-1', SECRET, issued), SECRET);
+  expect(renewed).not.toBeNull();
+  await expect(verifySession(renewed!, SECRET, issued + (SESSION_DAYS + 1) * 86400000)).resolves.toBe('player-1');
+});
+
+it('does not revive an expired or forged token', async () => {
+  const expired = await signSession('player-1', SECRET, Date.now() - 31 * 86400000);
+  await expect(renewSession(expired, SECRET)).resolves.toBeNull();
+  await expect(renewSession(await signSession('player-1', 'other-secret', Date.now() - 8 * 86400000), SECRET)).resolves.toBeNull();
 });

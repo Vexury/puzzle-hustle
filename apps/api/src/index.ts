@@ -5,7 +5,7 @@ import { cors, error, json, type Env } from './http.ts';
 import { generatedName, validateName } from './names.ts';
 import { requirePlayer, upsertPlayer } from './players.ts';
 import { MAX_BATCH, submitScores } from './scores.ts';
-import { signSession } from './token.ts';
+import { renewSession, signSession } from './token.ts';
 
 async function body(request: Request): Promise<Record<string, unknown>> {
   try {
@@ -146,11 +146,25 @@ async function route(request: Request, env: Env): Promise<Response> {
   return error(404, 'not_found');
 }
 
+// Rides on any successful authenticated response instead of a refresh route, so a client that
+// keeps talking to the API never has to remember to renew. Not after deleting the account:
+// the token would outlive the player it names.
+async function withRenewal(request: Request, env: Env, response: Response): Promise<Response> {
+  const header = request.headers.get('Authorization');
+  if (!response.ok || !header?.startsWith('Bearer ')) return response;
+  if (request.method === 'DELETE' && new URL(request.url).pathname === '/account') return response;
+  const renewed = await renewSession(header.slice(7), env.SESSION_SECRET);
+  if (!renewed) return response;
+  const headers = new Headers(response.headers);
+  headers.set('X-Session-Token', renewed);
+  return new Response(response.body, { status: response.status, headers });
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (request.method === 'OPTIONS') return cors(request, new Response(null, { status: 204 }));
     try {
-      return cors(request, await route(request, env));
+      return cors(request, await withRenewal(request, env, await route(request, env)));
     } catch {
       return cors(request, error(500, 'internal'));
     }

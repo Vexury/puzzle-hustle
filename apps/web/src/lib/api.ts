@@ -53,10 +53,10 @@ export async function apiFetch<T>(path: string, init: RequestInit & { auth?: boo
   const { auth, ...rest } = init;
   const headers = new Headers(rest.headers);
   if (rest.body) headers.set('Content-Type', 'application/json');
+  const sent = auth ? readSession()?.token : undefined;
   if (auth) {
-    const session = readSession();
-    if (!session) throw new ApiError('unauthorized', 401);
-    headers.set('Authorization', `Bearer ${session.token}`);
+    if (!sent) throw new ApiError('unauthorized', 401);
+    headers.set('Authorization', `Bearer ${sent}`);
   }
 
   let response: Response;
@@ -79,5 +79,11 @@ export async function apiFetch<T>(path: string, init: RequestInit & { auth?: boo
     throw new ApiError(data.error ?? 'failed', response.status);
   }
   if (!parsed) throw new ApiError('bad_response', response.status);
+  // The server swaps an ageing token for a fresh one on the way back. Only take it while the
+  // session that sent the request is still the current one; a sign-out or account switch in
+  // the meantime must not be undone by a late response.
+  const renewed = response.headers.get('X-Session-Token');
+  const current = readSession();
+  if (renewed && current && current.token === sent) writeSession({ ...current, token: renewed });
   return data as T;
 }

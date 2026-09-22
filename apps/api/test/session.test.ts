@@ -101,3 +101,17 @@ it('refuses a request without or with a broken token', async () => {
   const stale = await signSession('nobody', env.SESSION_SECRET);
   expect((await post('/name', { name: 'Danny' }, stale)).status).toBe(401);
 });
+
+it('hands a renewed token back on a request made with an older one', async () => {
+  const player = await upsertPlayer(env.DB, 'google', 'subject-renew', 'Moritz');
+  const old = await signSession(player.id, env.SESSION_SECRET, Date.now() - 8 * 86400000);
+  const response = await post('/name', { name: 'Moritz' }, old);
+  expect(response.status).toBe(200);
+  const renewed = response.headers.get('X-Session-Token');
+  expect(renewed).toBeTruthy();
+  expect(renewed).not.toBe(old);
+
+  const fresh = await post('/name', { name: 'Moritz' }, renewed!);
+  expect(fresh.status).toBe(200);
+  expect(fresh.headers.get('X-Session-Token')).toBeNull();
+});
