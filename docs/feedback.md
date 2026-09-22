@@ -13,8 +13,9 @@ Stand: 2026-09-22
   vorhandenem Eintrag frueh aus (`if (cache[id]) return`).
 - [ ] **Pia** Nach dem Hint-Video ist nicht zu sehen, welche Zelle dazugekommen ist. Die gruene
   Markierung gibt es, sie ist nur zu kurz und zu leise.
-- [ ] **Jonas** Sudoku: eine Zahl in der Leiste antippen soll alle gleichen Zahlen auf dem Brett
-  leuchten lassen, auch ohne sie zu setzen. Gleiche Rueckmeldung kam aus der Gruppe.
+- [ ] **Jonas, Pia** Sudoku: eine Zahl in der Leiste antippen soll alle gleichen Zahlen auf dem
+  Brett leuchten lassen, auch ohne sie zu setzen. Pia will das am 22.09. auch fuer die Notizen und
+  schlaegt einen Schalter im Profil vor, falls es zu unruhig wird.
 - [ ] **Jonas** Sudoku: Notiz-8 und gesetzte 8 sehen zu aehnlich aus, man stolpert darueber.
 - [ ] **Jonas** Mosaik-Frage vom 20.09. noch unbeantwortet: warum eine 8 ohne X nicht satisfied
   ist, mit X aber schon. Entweder Regelmissverstaendnis oder ein Fehler im Zaehler.
@@ -23,6 +24,10 @@ Stand: 2026-09-22
   lange Spieler fuer die Dailys brauchen (Robert: 3 bis 5 min fuer alle drei).
 - [ ] **Robert** Daraus folgend: Usage-Daten in der App erheben, sonst bleibt die Streak-Laenge
   Bauchgefuehl.
+- [ ] **Michi** Die Perfect-Serie (alle Dailys an einem Tag, `perfect-day` und `perfect-week` in
+  `packages/core/src/achievements.ts`) zwingt dazu, auch die Typen zu spielen, die einem keinen
+  Spass machen; ihm liegt Stars nicht. Die normale Daily-Serie findet er richtig. Beruehrt
+  Roberts Streak-Punkt: beide fragen, wie viel Pflicht eine Serie vertraegt.
 - [ ] **Michi** Anzeigename direkt beim Erststart setzen. Die drei Intro-Karten gibt es seit dem
   21.09., ein Namensfeld hat `apps/web/src/components/Intro.tsx` nicht.
 - [ ] **Michi** Gefuehrtes Tutorial oder Video je Raetseltyp. Die acht Textanleitungen hinter dem
