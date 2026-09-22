@@ -152,7 +152,7 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
 
   function undo() {
     if (frozen) return;
-    const prev = history.undo();
+    const prev = history.undo(stateRef.current);
     if (prev) commit(prev, false);
   }
 

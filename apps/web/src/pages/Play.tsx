@@ -30,7 +30,7 @@ import {
 import { syncAchievements } from '../lib/achievements.ts';
 import { href, navigate, onLinkClick } from '../lib/router.ts';
 import { setBackGuard } from '../lib/back.ts';
-import { clearProgress, getSolve, readProgress, readSetting, recordSolve, useSolves, writeProgress, writeSetting, type SolveRecord } from '../lib/storage.ts';
+import { clearProgress, getSolve, keepFinalBoard, readProgress, readSetting, recordSolve, useSolves, writeProgress, writeSetting, type SolveRecord } from '../lib/storage.ts';
 import { capitalize, formatSeconds, share, shareText } from '../lib/share.ts';
 import { currentHintProvider } from '../lib/hints.ts';
 import { enqueue, flush } from '../lib/queue.ts';
@@ -117,7 +117,11 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
         : 'clues' in spec
         ? `${spec.config.rows}×${spec.config.cols}, ${[...spec.clues].filter((c) => c >= 0).length} clues`
         : `${spec.config.rows}×${spec.config.cols}${spec.config.colors > 1 ? `, ${spec.config.colors} colors` : ''}`;
-  const saved = useMemo(() => (existing && !replayable ? null : readProgress(id)), [id, existing, replayable]);
+  // A solved period comes back with its finished board, which the game shows solved and frozen.
+  // Solves from before boards were kept have none, and an empty board under "Solved!" would be
+  // playable again, so those show the result alone.
+  const saved = useMemo(() => readProgress(id), [id]);
+  const showBoard = useRef(replayable || !existing || saved !== null).current;
   const [moves, setMoves] = useState(saved?.moves ?? 0);
   const [hints, setHints] = useState(saved?.hints ?? 0);
   const [seconds, setSeconds] = useState(saved?.seconds ?? 0);
@@ -289,7 +293,8 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
       void flush().finally(() => setScoreSettled(true));
     }
     syncAchievements();
-    clearProgress(id);
+    if (replayable) clearProgress(id);
+    else if (lastState.current) keepFinalBoard(id, { state: lastState.current, seconds: elapsed, moves: record.moves, hints: record.hints });
   };
 
   const doShare = async () => {
@@ -332,7 +337,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
         {result ? <span className="diff-pill solved">Solved</span> : <span className={`diff-pill ${puzzleRef.difficulty}`}>{puzzleRef.difficulty}</span>}
       </div>
 
-      {'pieces' in spec ? (
+      {!showBoard ? null : 'pieces' in spec ? (
         <ShapesGame
           spec={spec}
           onMove={onMove}

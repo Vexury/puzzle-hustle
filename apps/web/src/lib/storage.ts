@@ -89,6 +89,23 @@ export function writeProgress(id: string, progress: Progress) {
   }
 }
 
+// A solved daily, weekly or monthly keeps its finished board so reopening it shows the solve.
+// Only the latest one per type and period stays; there is no way back to an earlier day.
+export function keepFinalBoard(id: string, progress: Progress) {
+  const series = PROGRESS_PREFIX + id.slice(0, id.lastIndexOf(':') + 1);
+  try {
+    const stale: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(series) && k !== PROGRESS_PREFIX + id) stale.push(k);
+    }
+    for (const k of stale) localStorage.removeItem(k);
+  } catch {
+    /* storage unavailable */
+  }
+  writeProgress(id, progress);
+}
+
 export function clearProgress(id: string) {
   try {
     localStorage.removeItem(PROGRESS_PREFIX + id);

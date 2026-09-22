@@ -247,7 +247,7 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, locke
 
   function undo() {
     if (locked || solved) return;
-    const prev = history.undo();
+    const prev = history.undo(pathRef.current);
     if (prev) commit(prev);
   }
 

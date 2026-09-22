@@ -170,7 +170,7 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
 
   function undo() {
     if (locked || solved) return;
-    const prev = history.undo();
+    const prev = history.undo(state);
     if (!prev) return;
     setState(prev);
     setSelected(null);

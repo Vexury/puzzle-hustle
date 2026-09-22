@@ -1,5 +1,5 @@
 import { beforeEach, expect, it } from 'vitest';
-import { getSolve, recordSolve, rehydrate } from '../src/lib/storage.ts';
+import { getSolve, keepFinalBoard, readProgress, recordSolve, rehydrate, writeProgress } from '../src/lib/storage.ts';
 
 beforeEach(() => {
   localStorage.clear();
@@ -32,4 +32,16 @@ it('improves a seeded practice puzzle like a level', () => {
   recordSolve('zip:medium:1a2b', record(80, '2026-09-22T10:00:00.000Z'));
   recordSolve('zip:medium:1a2b', record(70, '2026-09-22T11:00:00.000Z'));
   expect(getSolve('zip:medium:1a2b')!.seconds).toBe(70);
+});
+
+it('keeps only the latest finished board per type and period', () => {
+  const board = (n: number) => ({ state: [n], seconds: 60, moves: 10, hints: 0 });
+  keepFinalBoard('zip:daily:2026-09-22', board(1));
+  writeProgress('crowns:daily:2026-09-22', board(2));
+  writeProgress('zip:weekly:2026-W39', board(3));
+  keepFinalBoard('zip:daily:2026-09-23', board(4));
+  expect(readProgress('zip:daily:2026-09-22')).toBeNull();
+  expect(readProgress('zip:daily:2026-09-23')!.state).toEqual([4]);
+  expect(readProgress('crowns:daily:2026-09-22')!.state).toEqual([2]);
+  expect(readProgress('zip:weekly:2026-W39')!.state).toEqual([3]);
 });

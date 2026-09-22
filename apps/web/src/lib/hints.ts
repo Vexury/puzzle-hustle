@@ -1,3 +1,4 @@
+import { toast } from '../components/Toast.tsx';
 import { adsAvailable, showRewardedAd } from './ads.ts';
 import { hasUnlimitedHints } from './entitlement.ts';
 
@@ -21,7 +22,9 @@ export function currentHintProvider(used: number, confirm: () => Promise<boolean
     label: 'Watch ad',
     async request() {
       if (!(await confirm())) return false;
-      return showRewardedAd();
+      const rewarded = await showRewardedAd();
+      if (!rewarded) toast('Closed early, no hint this time');
+      return rewarded;
     },
   };
 }

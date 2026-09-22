@@ -182,7 +182,7 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
 
   function undo() {
     if (locked || solved) return;
-    const prev = history.undo();
+    const prev = history.undo(stateRef.current);
     if (prev) commit(prev);
   }
 

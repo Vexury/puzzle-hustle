@@ -148,6 +148,20 @@ sits above By puzzle now, so the choice is visible without scrolling past the st
 
 ### Reliability
 
+**A solved daily, weekly or monthly opens with its finished board.** Reopening one showed
+"Solved!" above an empty board that could be played again, because the board was thrown away
+on the solve and nothing locked the game. The finished board now stays, and the game shows it
+solved and frozen. Only the latest board per type and period is kept, there is no way back to
+an earlier day anyway. Solves from before this change have no board and show the result alone.
+
+**Undo no longer spends a press on nothing.** Nonogram, Mosaic, Crowns and Stars remember the
+board as soon as a finger lands, before they know whether the touch changes anything. A tap on
+the clues or the start of a pinch left a step behind that undid nothing. Undo now skips steps
+that are still the current board.
+
+**Closing the video early says so.** A rewarded ad closed before its end gives no hint, and the
+Hint button used to do nothing visible. A toast now says that the hint was not earned.
+
 **Zip: a drag no longer cuts the line back to a cell it brushes.** Tapping a cell that is
 already on the path shortens the path back to it, which is how you take a wrong turn back.
 The drag handler ran through the same routine, so sweeping a finger over an earlier part of

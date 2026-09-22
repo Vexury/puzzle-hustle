@@ -203,7 +203,7 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
 
   function undo() {
     if (locked || solved) return;
-    const prev = history.undo();
+    const prev = history.undo(stateRef.current);
     if (prev) commit(prev);
   }
 
