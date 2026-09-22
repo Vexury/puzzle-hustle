@@ -1,0 +1,20 @@
+<en-US>
+Seventeen achievements, fuller level packs and a calmer daily.
+
+- Seventeen achievements in Profile, earned from what you solve
+- A banner announces each one the first time you earn it
+- Every level pack now holds 50 puzzles
+- Killer Sudoku left the dailies, seven puzzles a day remain
+- Zip comes first in the daily order, Shapes is harder now
+- Zip: dragging back over your own line no longer cuts it
+</en-US>
+<de-DE>
+Siebzehn Erfolge, vollere Level-Pakete und ein ruhigerer Daily.
+
+- Siebzehn Erfolge im Profil, verdient aus dem, was du löst
+- Ein Banner meldet jeden Erfolg beim ersten Mal
+- Jedes Level-Paket enthält jetzt 50 Rätsel
+- Killer Sudoku ist raus aus den Dailys, sieben Rätsel pro Tag bleiben
+- Zip steht im Daily vorn, Shapes ist schwerer geworden
+- Zip: Ziehen über die eigene Linie schneidet sie nicht mehr ab
+</de-DE>
