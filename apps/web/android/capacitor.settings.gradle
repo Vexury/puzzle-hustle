@@ -14,5 +14,8 @@ project(':capacitor-preferences').projectDir = new File('../../../node_modules/.
 include ':capacitor-share'
 project(':capacitor-share').projectDir = new File('../../../node_modules/.pnpm/@capacitor+share@8.0.2_@capacitor+core@8.5.2/node_modules/@capacitor/share/android')
 
+include ':capgo-capacitor-social-login'
+project(':capgo-capacitor-social-login').projectDir = new File('../../../node_modules/.pnpm/@capgo+capacitor-social-login@8.5.10_@capacitor+core@8.5.2/node_modules/@capgo/capacitor-social-login/android')
+
 include ':capgo-native-purchases'
 project(':capgo-native-purchases').projectDir = new File('../../../node_modules/.pnpm/@capgo+native-purchases@8.7.0_@capacitor+core@8.5.2/node_modules/@capgo/native-purchases/android')

@@ -1,13 +1,69 @@
 import { useSyncExternalStore } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { SocialLogin } from '@capgo/capacitor-social-login';
 import { apiFetch, readSession, subscribeSession, writeSession, type Session } from './api.ts';
 import { readSetting, writeSetting } from './storage.ts';
 import { toast } from '../components/Toast.tsx';
 
-// Exported so a caller (the Profile tab's Friends card) can tell "sign-in is not configured
-// on this build" apart from "sign-in is configured but failed to load", instead of attempting
-// a sign-in that is guaranteed to throw.
-export const CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) || '';
+// The Web client's ID, public by design, so native builds made without the CI variable still
+// carry it. Android's Credential Manager wants this one too: the Android OAuth clients only
+// vouch for package name and signing key in the Cloud Console and never appear in code.
+export const CLIENT_ID =
+  (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) ||
+  '455101583494-lfg3kbscmqgubeqrsocg0919269n2a23.apps.googleusercontent.com';
 const GSI_SRC = 'https://accounts.google.com/gsi/client';
+
+// Android signs in natively with Google, the web through Google's widget. iOS will offer Apple
+// alone (decision 2026-09-22) and has no sign-in until that exists.
+export const NATIVE_GOOGLE = Capacitor.getPlatform() === 'android';
+export const SIGN_IN_AVAILABLE = NATIVE_GOOGLE || !Capacitor.isNativePlatform();
+
+async function startSession(idToken: string): Promise<Session> {
+  const session = await apiFetch<Session>('/session', {
+    method: 'POST',
+    body: JSON.stringify({ provider: 'google', idToken, name: readSetting('ph:name') ?? undefined }),
+  });
+  writeSession(session);
+  // Sign-in rejects an invalid offered name server-side and replaces it with a generated one
+  // without saying so. Keep the local name in step with whatever the server settled on, so
+  // Profile's field and the Friends card never disagree. Only toast about it when a local name
+  // existed to be overridden: a first-ever sign-in has none, and announcing the generated name
+  // would read as an error on the one screen meant to make signing in feel harmless.
+  const offered = readSetting('ph:name');
+  if (session.player.name !== offered) {
+    writeSetting('ph:name', session.player.name);
+    if (offered) toast(`Signed in as ${session.player.name}.`);
+  }
+  return session;
+}
+
+let nativeReady: Promise<void> | null = null;
+
+function initNative(): Promise<void> {
+  nativeReady ??= SocialLogin.initialize({ google: { webClientId: CLIENT_ID } }).catch((err: unknown) => {
+    nativeReady = null;
+    throw err;
+  });
+  return nativeReady;
+}
+
+// Resolves false when the player dismissed Google's sheet, which is a choice, not a failure.
+export async function nativeSignIn(): Promise<boolean> {
+  try {
+    await initNative();
+    // No scopes: the ID token is all the server needs, and asking for any on Android would
+    // route through the AuthorizationClient, which the plugin only allows with a patched activity.
+    const login = await SocialLogin.login({ provider: 'google', options: {} });
+    const idToken = login.result.responseType === 'online' ? login.result.idToken : null;
+    if (!idToken) throw new Error('no id token');
+    await startSession(idToken);
+    return true;
+  } catch (err) {
+    if ((err as { code?: string }).code === 'USER_CANCELLED') return false;
+    toast('Sign-in failed. Try again.');
+    return false;
+  }
+}
 
 let current: Session | null = readSession();
 // Registered once at module load, so this always runs before any component's own listener
@@ -72,28 +128,7 @@ export async function renderSignInButton(
     callback: (response) => {
       void (async () => {
         try {
-          const session = await apiFetch<Session>('/session', {
-            method: 'POST',
-            body: JSON.stringify({
-              provider: 'google',
-              idToken: response.credential,
-              name: readSetting('ph:name') ?? undefined,
-            }),
-          });
-          writeSession(session);
-          // Sign-in rejects an invalid offered name server-side and replaces it with a
-          // generated one without saying so. Keep the local name in step with whatever the
-          // server actually settled on, so Profile's field and the Friends card never
-          // disagree. Only toast about it when a local name existed to be overridden — a
-          // first-ever sign-in has none, so the server's generated name is not a change from
-          // anything the player had, and announcing one would read as an error on the one
-          // screen meant to make signing in feel harmless.
-          const offered = readSetting('ph:name');
-          if (session.player.name !== offered) {
-            writeSetting('ph:name', session.player.name);
-            if (offered) toast(`Signed in as ${session.player.name}.`);
-          }
-          onDone(session);
+          onDone(await startSession(response.credential));
         } catch {
           toast('Sign-in failed. Try again.');
         }
@@ -136,6 +171,13 @@ export function signOut() {
   } catch {
     // Google's auto-select hint is a convenience. If the browser refuses it, that is no
     // reason to keep the player signed in locally.
+  }
+  // The Android counterpart: clears Credential Manager's remembered choice so the next sign-in
+  // asks for an account again instead of silently picking the last one.
+  if (NATIVE_GOOGLE) {
+    void initNative()
+      .then(() => SocialLogin.logout({ provider: 'google' }))
+      .catch(() => undefined);
   }
   writeSession(null);
 }

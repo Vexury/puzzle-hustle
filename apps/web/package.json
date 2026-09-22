@@ -16,6 +16,7 @@
     "@capacitor/core": "^8.5.2",
     "@capacitor/preferences": "^8.0.1",
     "@capacitor/share": "^8.0.2",
+    "@capgo/capacitor-social-login": "^8.5.10",
     "@capgo/native-purchases": "^8.7.0",
     "@puzzle-hustle/core": "workspace:*",
     "react": "19.3.0",

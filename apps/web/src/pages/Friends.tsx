@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DAILY_TYPES, PUZZLE_META, dailyRef, periodRef, refId } from '@puzzle-hustle/core';
 import { ApiError, apiFetch, readSession } from '../lib/api.ts';
-import { CLIENT_ID, deleteAccount, renderSignInButton, signOut, useSession } from '../lib/auth.ts';
+import {
+  NATIVE_GOOGLE,
+  SIGN_IN_AVAILABLE,
+  deleteAccount,
+  nativeSignIn,
+  renderSignInButton,
+  signOut,
+  useSession,
+} from '../lib/auth.ts';
 import { href, onLinkClick } from '../lib/router.ts';
 import { capitalize, joinUrl, share } from '../lib/share.ts';
 import { toast } from '../components/Toast.tsx';
@@ -257,6 +265,7 @@ function AccountCard() {
   // control appears when it is the thing being looked at rather than a bright slab sitting in
   // a dark card. Ours says only "Sign in" — the Google wording and mark belong on Google's.
   const [asked, setAsked] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
 
   const attemptSignIn = () => {
     if (!buttonHost.current) return;
@@ -265,12 +274,9 @@ function AccountCard() {
   };
 
   useEffect(() => {
-    // With no client id configured, a sign-in attempt is guaranteed to throw immediately
-    // (renderSignInButton's own guard). That is "not configured", not "failed to load", and
-    // must never reach the player as an error with a retry link that cannot help.
     // Keyed on the theme as well: Google draws the button itself, so the only way it follows
-    // a theme switch is to draw it again.
-    if (asked && !session && CLIENT_ID) attemptSignIn();
+    // a theme switch is to draw it again. Android has no widget to draw, its sheet is native.
+    if (asked && !session && !NATIVE_GOOGLE) attemptSignIn();
   }, [session, theme, asked]);
 
   // Mirrors ResetButton.tsx's arm/revert pattern: the timer lives in an effect keyed on the
@@ -282,7 +288,7 @@ function AccountCard() {
   }, [confirmDelete]);
 
   if (!session) {
-    if (!CLIENT_ID) {
+    if (!SIGN_IN_AVAILABLE) {
       return (
         <div className="card-lg">
           <h2>Account</h2>
@@ -298,9 +304,23 @@ function AccountCard() {
           // In the same wrapper the signed-in actions use: the card is a flex column, so a
           // bare button stretches the full width and reads as a bar rather than a button.
           <div className="friends-actions">
-            <button type="button" className="pill" onClick={() => setAsked(true)}>
-              Sign in
-            </button>
+            {NATIVE_GOOGLE ? (
+              <button
+                type="button"
+                className="pill"
+                disabled={signingIn}
+                onClick={() => {
+                  setSigningIn(true);
+                  void nativeSignIn().finally(() => setSigningIn(false));
+                }}
+              >
+                Sign in with Google
+              </button>
+            ) : (
+              <button type="button" className="pill" onClick={() => setAsked(true)}>
+                Sign in
+              </button>
+            )}
           </div>
         )}
         {asked && <div className="gsi-host" ref={buttonHost} />}
