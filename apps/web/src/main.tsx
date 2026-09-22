@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App.tsx';
+import { syncAchievements } from './lib/achievements.ts';
 import { initAccent } from './lib/accent.ts';
 import { initBackButton } from './lib/back.ts';
 import { restoreBackup } from './lib/backup.ts';
@@ -17,6 +18,7 @@ initTheme();
 initAccent();
 initBackButton();
 initQueue();
+syncAchievements();
 void refreshEntitlement();
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

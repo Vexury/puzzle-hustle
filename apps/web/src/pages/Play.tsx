@@ -27,6 +27,7 @@ import {
   zipNumberCount,
   type PuzzleRef,
 } from '@puzzle-hustle/core';
+import { syncAchievements } from '../lib/achievements.ts';
 import { href, navigate, onLinkClick } from '../lib/router.ts';
 import { setBackGuard } from '../lib/back.ts';
 import { clearProgress, getSolve, readProgress, readSetting, recordSolve, useSolves, writeProgress, writeSetting, type SolveRecord } from '../lib/storage.ts';
@@ -283,6 +284,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
       enqueue(id, record);
       void flush().finally(() => setScoreSettled(true));
     }
+    syncAchievements();
     clearProgress(id);
   };
 

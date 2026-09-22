@@ -26,6 +26,10 @@ export function rehydrate() {
   for (const l of listeners) l();
 }
 
+export function allSolves(): Record<string, SolveRecord> {
+  return cache;
+}
+
 export function getSolve(id: string): SolveRecord | undefined {
   return cache[id];
 }
