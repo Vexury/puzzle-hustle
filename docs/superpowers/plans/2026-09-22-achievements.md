@@ -20,7 +20,7 @@
 - `apps/web` and `apps/api` typecheck under `tsconfig.base.json`: `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`. Under the last one an optional property must be omitted, not set to `undefined`.
 - Stage files explicitly with `git add <paths>`, never `git add -A`.
 - Commit subject: imperative, plain English, no `feat:`/`fix:` prefix. Blank line, then exactly `Implemented with assistance from Claude Opus 5.` No `Co-Authored-By` trailer.
-- Verify with `pnpm -r test` and `pnpm -r typecheck`. The suite is at 220 tests and must stay green.
+- Verify with `pnpm -r test` and `pnpm -r typecheck`. The suite was at 221 tests when this plan was written and must stay green; every task adds to it.
 
 ---
 
