@@ -68,7 +68,7 @@ export function AchievementBannerHost() {
 
   return (
     <div className="achievement-banner" data-phase={phase} role="status" ref={pill}>
-      <span className="achievement-banner-text">Achievement unlocked: {current}</span>
+      <span className="achievement-banner-text">{current}</span>
     </div>
   );
 }

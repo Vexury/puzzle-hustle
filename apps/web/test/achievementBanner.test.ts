@@ -65,6 +65,14 @@ it('shows an announced achievement as a status region with its title', () => {
   expect(status?.textContent).toContain('Weekly done');
 });
 
+it('shows the bare title, without an "Achievement unlocked" prefix', () => {
+  act(() => {
+    announceAchievement('Two hundred and fifty');
+  });
+  openTick();
+  expect(container.querySelector('[role="status"]')?.textContent).toBe('Two hundred and fifty');
+});
+
 it('queues a second announcement instead of overwriting the first', () => {
   act(() => {
     announceAchievement('First one');
