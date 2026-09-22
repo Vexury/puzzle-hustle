@@ -50,6 +50,16 @@ export function percentileText(percentile: BoardData['percentile'], period: Peri
   return `Faster than ${Math.round((beaten / others) * 100)}% of all players ${when}`;
 }
 
+const MEDALS = ['gold', 'silver', 'bronze'] as const;
+
+function Crown() {
+  return (
+    <svg className="leaderboard-crown" viewBox="0 0 24 16" aria-hidden="true">
+      <path d="M2 14 L4 4 L9 9 L12 2 L15 9 L20 4 L22 14 Z" />
+    </svg>
+  );
+}
+
 export function Board({ groupId, puzzle, meId }: { groupId: string; puzzle: string; meId: string }) {
   const { board, loading } = useBoard(groupId, puzzle);
   if (loading && !board) return <p className="muted small">Loading…</p>;
@@ -61,8 +71,14 @@ export function Board({ groupId, puzzle, meId }: { groupId: string; puzzle: stri
     <>
       <ol className="leaderboard">
         {board.entries.map((entry, index) => (
-          <li key={entry.playerId} className={entry.playerId === meId ? 'leaderboard-row me' : 'leaderboard-row'}>
-            <span className="leaderboard-rank">{index + 1}</span>
+          <li
+            key={entry.playerId}
+            className={`leaderboard-row${index < 3 ? ` podium ${MEDALS[index]}` : ''}${entry.playerId === meId ? ' me' : ''}`}
+          >
+            <span className="leaderboard-rank">
+              {index === 0 && <Crown />}
+              {index + 1}
+            </span>
             <span className="leaderboard-name">{entry.name}</span>
             {entry.hints > 0 && <span className="muted small">{entry.hints} hint{entry.hints === 1 ? '' : 's'}</span>}
             <span className="leaderboard-time">{formatSeconds(entry.seconds)}</span>

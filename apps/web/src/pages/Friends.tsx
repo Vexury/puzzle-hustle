@@ -146,96 +146,100 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
         <h1>Social</h1>
       </section>
 
-      <AccountCard />
+      <div className="stack">
+        <AccountCard />
 
-      {active && (
-        <section className="card-lg">
-          <h2>Standings</h2>
-          {groups.length > 1 && (
+        <div className="card-row">
+          <section className="card-lg">
+            <h2>New group</h2>
+            <div className="friends-actions stacked">
+              <input value={name} onChange={(e) => setName(e.target.value)} maxLength={24} placeholder="Group name" />
+              <button type="button" className="pill" onClick={() => void create()} disabled={name.trim().length < 2 || creating}>
+                Create
+              </button>
+            </div>
+          </section>
+
+          <section className="card-lg">
+            <h2>Join a group</h2>
+            <div className="friends-actions stacked">
+              <input
+                value={code}
+                onChange={(e) => setCode(e.target.value.trim().toUpperCase())}
+                maxLength={6}
+                placeholder="CODE"
+                className="num"
+              />
+              <button type="button" className="pill" onClick={() => void join()} disabled={code.length !== 6 || joining}>
+                Join
+              </button>
+            </div>
+          </section>
+        </div>
+
+        {active && (
+          <section className="card-lg">
+            <h2>Standings</h2>
+            {groups.length > 1 && (
+              <div className="pill-row">
+                {groups.map((group) => (
+                  <button
+                    key={group.id}
+                    type="button"
+                    className={group.id === active ? 'pill' : 'pill outline'}
+                    onClick={() => setGroupId(group.id)}
+                  >
+                    {group.name}
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="pill-row">
-              {groups.map((group) => (
+              {puzzles.map((ref, index) => (
                 <button
-                  key={group.id}
+                  key={refId(ref)}
                   type="button"
-                  className={group.id === active ? 'pill' : 'pill outline'}
-                  onClick={() => setGroupId(group.id)}
+                  className={index === puzzleIndex ? 'pill' : 'pill outline'}
+                  onClick={() => setPuzzleIndex(index)}
                 >
-                  {group.name}
+                  {ref.period === 'daily' ? PUZZLE_META[ref.type].name : capitalize(ref.period!)}
                 </button>
               ))}
             </div>
-          )}
-          <div className="pill-row">
-            {puzzles.map((ref, index) => (
-              <button
-                key={refId(ref)}
-                type="button"
-                className={index === puzzleIndex ? 'pill' : 'pill outline'}
-                onClick={() => setPuzzleIndex(index)}
-              >
-                {ref.period === 'daily' ? PUZZLE_META[ref.type].name : capitalize(ref.period!)}
-              </button>
-            ))}
-          </div>
-          <Board groupId={active} puzzle={refId(puzzle)} meId={session.player.id} />
-        </section>
-      )}
+            <Board groupId={active} puzzle={refId(puzzle)} meId={session.player.id} />
+          </section>
+        )}
 
-      {groups.map((group) => (
-        <div key={group.id} className="row-card friends-row">
-          <span className="row-text">
-            <span className="row-title">{group.name}</span>
-            <span className="row-sub">
-              {group.members} member{group.members === 1 ? '' : 's'} · code <b className="num">{group.code}</b>
+        {groups.map((group) => (
+          <div key={group.id} className="row-card friends-row">
+            <span className="row-text">
+              <span className="row-title">{group.name}</span>
+              <span className="row-sub">
+                {group.members} member{group.members === 1 ? '' : 's'} · code <b className="num">{group.code}</b>
+              </span>
             </span>
-          </span>
-          <span className="friends-row-actions">
-            <button
-              type="button"
-              className="pill outline"
-              onClick={() =>
-                void share(`Join my Puzzle Hustle group "${group.name}"\nCode ${group.code}\n${joinUrl(group.code)}`).then(
-                  (outcome) => {
-                    if (outcome === 'copied') toast('Link copied');
-                    else if (outcome === 'failed') toast('Could not share');
-                  },
-                )
-              }
-            >
-              Invite
-            </button>
-            <button type="button" className="pill outline" onClick={() => void leave(group)}>
-              Leave
-            </button>
-          </span>
-        </div>
-      ))}
-
-      <section className="card-lg">
-        <h2>New group</h2>
-        <div className="friends-actions">
-          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={24} placeholder="Group name" />
-          <button type="button" className="pill" onClick={() => void create()} disabled={name.trim().length < 2 || creating}>
-            Create
-          </button>
-        </div>
-      </section>
-
-      <section className="card-lg">
-        <h2>Join a group</h2>
-        <div className="friends-actions">
-          <input
-            value={code}
-            onChange={(e) => setCode(e.target.value.trim().toUpperCase())}
-            maxLength={6}
-            placeholder="CODE"
-            className="num"
-          />
-          <button type="button" className="pill" onClick={() => void join()} disabled={code.length !== 6 || joining}>
-            Join
-          </button>
-        </div>
-      </section>
+            <span className="friends-row-actions">
+              <button
+                type="button"
+                className="pill outline"
+                onClick={() =>
+                  void share(`Join my Puzzle Hustle group "${group.name}"\nCode ${group.code}\n${joinUrl(group.code)}`).then(
+                    (outcome) => {
+                      if (outcome === 'copied') toast('Link copied');
+                      else if (outcome === 'failed') toast('Could not share');
+                    },
+                  )
+                }
+              >
+                Invite
+              </button>
+              <button type="button" className="pill outline" onClick={() => void leave(group)}>
+                Leave
+              </button>
+            </span>
+          </div>
+        ))}
+      </div>
     </>
   );
 }
