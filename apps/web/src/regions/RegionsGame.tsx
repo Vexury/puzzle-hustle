@@ -175,7 +175,7 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
     history.remember(stateRef.current);
     setCell(idx, h.value);
     setFlash(idx);
-    setTimeout(() => setFlash(null), 1800);
+    setTimeout(() => setFlash(null), 3000);
   }
 
   function reset() {

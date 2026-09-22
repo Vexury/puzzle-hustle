@@ -11,8 +11,6 @@ Stand: 2026-09-22
 - [ ] **Pia** Bei den normalen Leveln zaehlt nur die erste Zeit. Wiederholen soll die Bestzeit
   verbessern koennen. `recordSolve` in `apps/web/src/lib/storage.ts` steigt derzeit bei
   vorhandenem Eintrag frueh aus (`if (cache[id]) return`).
-- [ ] **Pia** Nach dem Hint-Video ist nicht zu sehen, welche Zelle dazugekommen ist. Die gruene
-  Markierung gibt es, sie ist nur zu kurz und zu leise.
 - [ ] **Jonas, Pia** Sudoku: eine Zahl in der Leiste antippen soll alle gleichen Zahlen auf dem
   Brett leuchten lassen, auch ohne sie zu setzen. Pia will das am 22.09. auch fuer die Notizen und
   schlaegt einen Schalter im Profil vor, falls es zu unruhig wird.
@@ -47,6 +45,9 @@ Stand: 2026-09-22
 
 ## Erledigt
 
+- [x] 2026-09-22 **Pia** Die Hint-Markierung war zu kurz und zu leise. Sie haelt jetzt 3 statt
+  1,8 Sekunden, pulst viermal, faerbt die Zelle zusaetzlich zum gruenen Rahmen ein und gilt so in
+  allen acht Typen.
 - [x] 2026-09-22 **Michi** Shapes war im Daily zu leicht. Daily-Shapes steht jetzt auf Hard.
 - [x] 2026-09-22 **Pia** Shapes Easy 34, 35 und 36 verlangten dieselben Formen in derselben Anzahl.
   Easy hat jetzt vier Teile statt drei, damit 4604 statt 202 moegliche Raetsel (SHAPES_VERSION 3).

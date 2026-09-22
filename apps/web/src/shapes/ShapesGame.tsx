@@ -156,7 +156,7 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
     place(h.pieceId, h.placement);
     raise(h.pieceId);
     setFlash(h.pieceId);
-    setTimeout(() => setFlash(null), 1800);
+    setTimeout(() => setFlash(null), 3000);
   }
 
   function reset() {

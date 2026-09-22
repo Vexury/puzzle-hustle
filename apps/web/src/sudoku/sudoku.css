@@ -67,10 +67,10 @@
 .sudoku-cell.same { background: var(--sudoku-same); }
 .sudoku-cell.selected { background: var(--sudoku-selected); box-shadow: inset 0 0 0 2px var(--accent); }
 .sudoku-cell.conflict .sudoku-value { color: var(--danger); }
-.sudoku-cell.flash { animation: sudoku-flash 0.6s ease-out 3; }
+.sudoku-cell.flash { animation: sudoku-flash 0.75s ease-out 4; }
 @keyframes sudoku-flash {
-  0% { box-shadow: inset 0 0 0 3px var(--success); }
-  100% { box-shadow: inset 0 0 0 0 transparent; }
+  0%, 45% { box-shadow: inset 0 0 0 3px var(--success), inset 0 0 0 100px color-mix(in srgb, var(--success) 22%, transparent); }
+  100% { box-shadow: inset 0 0 0 0 transparent, inset 0 0 0 100px transparent; }
 }
 
 .sudoku-value { position: relative; z-index: 1; line-height: 1; }

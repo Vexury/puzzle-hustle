@@ -236,7 +236,7 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, locke
     next.push(h.index);
     commit(next);
     setFlash(h.index);
-    setTimeout(() => setFlash(null), 1800);
+    setTimeout(() => setFlash(null), 3000);
   }
 
   function reset() {

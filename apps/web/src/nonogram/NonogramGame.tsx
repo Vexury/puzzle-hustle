@@ -192,7 +192,7 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
     history.remember(stateRef.current);
     setCells([idx], h.value);
     setFlash(idx);
-    setTimeout(() => setFlash(null), 1800);
+    setTimeout(() => setFlash(null), 3000);
   }
 
   function reset() {

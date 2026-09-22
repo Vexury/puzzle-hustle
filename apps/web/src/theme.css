@@ -625,8 +625,8 @@ p { margin: 0; }
 .piece-outline.selected { stroke: var(--accent-text); stroke-width: 0.07; }
 .piece-hit { fill: transparent; cursor: grab; stroke: transparent; stroke-width: 0.12; }
 .piece-hit:active { cursor: grabbing; }
-.hint-flash { fill: none; stroke: var(--success); stroke-width: 0.08; animation: flash 0.9s ease-out 2; pointer-events: none; }
-@keyframes flash { 0% { opacity: 1; } 100% { opacity: 0.1; } }
+.hint-flash { fill: none; stroke: var(--success); stroke-width: 0.13; animation: flash 0.75s ease-out 4; pointer-events: none; }
+@keyframes flash { 0%, 45% { opacity: 1; } 100% { opacity: 0.15; } }
 
 .toast {
   position: fixed;

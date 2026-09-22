@@ -137,7 +137,7 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
     setValue(h.cell, h.value);
     setSelected(h.cell);
     setFlash(h.cell);
-    setTimeout(() => setFlash(null), 1800);
+    setTimeout(() => setFlash(null), 3000);
   }
 
   function reset() {

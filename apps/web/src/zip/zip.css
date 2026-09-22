@@ -33,9 +33,9 @@
   transition: fill 0.1s;
 }
 .zip-cell.filled { fill: var(--accent-soft); }
-.zip-cell.flash { animation: zip-flash 0.6s ease-out 3; }
+.zip-cell.flash { animation: zip-flash 0.75s ease-out 4; }
 @keyframes zip-flash {
-  0% { fill: var(--success-soft); stroke: var(--success); stroke-width: 0.08; }
+  0%, 45% { fill: color-mix(in srgb, var(--success) 22%, transparent); stroke: var(--success); stroke-width: 0.12; }
   100% { fill: var(--accent-soft); stroke: var(--board-line); stroke-width: 0.03; }
 }
 
