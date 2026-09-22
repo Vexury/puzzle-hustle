@@ -394,6 +394,7 @@ p { margin: 0; }
   margin: 6px 0 16px;
 }
 .segmented.three { grid-template-columns: repeat(3, 1fr); margin-bottom: 0; }
+.segmented.two { grid-template-columns: repeat(2, 1fr); margin-bottom: 0; }
 .seg {
   display: flex;
   flex-direction: column;

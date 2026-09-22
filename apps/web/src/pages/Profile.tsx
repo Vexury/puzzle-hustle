@@ -32,6 +32,7 @@ export function Profile() {
   const session = useSession();
   const [name, setName] = useState(readSetting('ph:name') ?? '');
   const [editing, setEditing] = useState(false);
+  const [numberHighlight, setNumberHighlight] = useState(readSetting('ph:sudokuHighlight') !== '0');
   const [confirmReset, setConfirmReset] = useState(false);
   const [unlimited, setUnlimited] = useState(hasUnlimitedHints);
   const [buying, setBuying] = useState(false);
@@ -157,6 +158,28 @@ export function Profile() {
             ))}
           </div>
           <span className="muted small">{ACCENT_NAMES[accent]}</span>
+        </div>
+
+        <div className="card-lg">
+          <b>Highlight matching numbers</b>
+          <span className="muted small">Sudoku lights up every cell and note with the number you tap.</span>
+          <div className="segmented two" role="radiogroup" aria-label="Highlight matching numbers">
+            {[true, false].map((on) => (
+              <button
+                key={String(on)}
+                type="button"
+                role="radio"
+                aria-checked={numberHighlight === on}
+                className={numberHighlight === on ? 'seg active' : 'seg'}
+                onClick={() => {
+                  setNumberHighlight(on);
+                  writeSetting('ph:sudokuHighlight', on ? '1' : '0');
+                }}
+              >
+                {on ? 'On' : 'Off'}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="card-lg">

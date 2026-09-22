@@ -13,6 +13,7 @@ import {
 } from '@puzzle-hustle/core';
 import './sudoku.css';
 import { useHistory } from '../lib/useHistory.ts';
+import { readSetting } from '../lib/storage.ts';
 import { cageLayout } from './cages.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
 
@@ -61,6 +62,9 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
   const [selected, setSelected] = useState<number | null>(null);
   const [notesMode, setNotesMode] = useState(false);
   const [highlight, setHighlight] = useState(0);
+  // Read once per puzzle: the switch lives on the Profile tab, which cannot be open while a
+  // board is.
+  const highlightEnabled = useRef(readSetting('ph:sudokuHighlight') !== '0').current;
   const [flash, setFlash] = useState<number | null>(null);
   const [hintBusy, setHintBusy] = useState(false);
   const history = useHistory<SudokuState>();
@@ -161,10 +165,10 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
   const tapDigit = (d: number) => {
     if (!frozen && selected !== null && !spec.givens[selected] && remaining[d - 1]! > 0) {
       enter(d);
-      setHighlight(d);
+      if (highlightEnabled) setHighlight(d);
       return;
     }
-    setHighlight((h) => (h === d ? 0 : d));
+    if (highlightEnabled) setHighlight((h) => (h === d ? 0 : d));
   };
   const peers = useMemo(() => (selected === null ? new Set<number>() : new Set(sudokuPeers(selected))), [selected]);
 
@@ -202,7 +206,7 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
               ) : notes ? (
                 <span className={sum !== null ? 'sudoku-notes with-sum' : 'sudoku-notes'}>
                   {DIGITS.map((d) => (
-                    <i key={d} className={marked === d && notes & (1 << (d - 1)) ? 'on' : undefined}>
+                    <i key={d} className={highlightEnabled && marked === d && notes & (1 << (d - 1)) ? 'on' : undefined}>
                       {notes & (1 << (d - 1)) ? d : ''}
                     </i>
                   ))}
@@ -229,7 +233,7 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
                 key={d}
                 className={`sudoku-key${remaining[k]! <= 0 ? ' done' : ''}${highlight === d ? ' lit' : ''}`}
                 onClick={() => tapDigit(d)}
-                disabled={locked}
+                disabled={locked || (!highlightEnabled && remaining[k]! <= 0)}
                 aria-pressed={highlight === d}
                 aria-label={`Enter ${d}`}
               >

@@ -8,8 +8,6 @@ Stand: 2026-09-22
 
 ## Offen
 
-- [ ] **Pia** Schalter im Profil fuer das Leuchten der gleichen Zahlen im Sudoku, falls es beim
-  Spielen zu unruhig wirkt. Das Leuchten selbst steht seit dem 22.09.
 - [ ] **Jonas** Mosaik-Frage vom 20.09. noch unbeantwortet: warum eine 8 ohne X nicht satisfied
   ist, mit X aber schon. Entweder Regelmissverstaendnis oder ein Fehler im Zaehler.
 - [ ] **Jonas** Zwei Sprachnachrichten vom 22.09. (11:53 und 15:15) sind noch nicht ausgewertet.
@@ -33,6 +31,11 @@ Stand: 2026-09-22
 
 ## Erledigt
 
+- [x] 2026-09-22 **Pia** Schalter im Profil fuer das Leuchten der gleichen Zahlen im Sudoku,
+  "Highlight matching numbers", Standard an, gespeichert als `ph:sudokuHighlight`. Aus heisst:
+  das Antippen in der Leiste setzt nur noch die Zahl, Notizen leuchten nicht, und eine neunmal
+  gelegte Ziffer ist wieder ausgegraut. Dass eine ausgewaehlte Zelle ihre Zwillinge markiert,
+  bleibt in beiden Stellungen.
 - [x] 2026-09-22 **Michi** Slide beim Wechsel in den Play-Screen. Ein Raetsel ist eine Ebene
   tiefer, nicht ein Schritt zur Seite: es kommt von rechts herein, beim Zurueck schiebt sich die
   Liste von links wieder ins Bild. Die Tab-Wechsel behalten ihre eigene Richtung.
