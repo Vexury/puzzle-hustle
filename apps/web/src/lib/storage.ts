@@ -100,7 +100,15 @@ export function resetProgress() {
     const doomed: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
-      if (k && (k === KEY || k.startsWith(PROGRESS_PREFIX) || k.startsWith('ph:howto:') || k.startsWith('ph:difficulty:'))) doomed.push(k);
+      if (
+        k &&
+        (k === KEY ||
+          k === 'ph:achievements' ||
+          k.startsWith(PROGRESS_PREFIX) ||
+          k.startsWith('ph:howto:') ||
+          k.startsWith('ph:difficulty:'))
+      )
+        doomed.push(k);
     }
     for (const k of doomed) localStorage.removeItem(k);
     scheduleBackup();

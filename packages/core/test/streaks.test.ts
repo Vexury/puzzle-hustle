@@ -41,4 +41,25 @@ describe('dailyStreaks', () => {
     const s = dailyStreaks(['sudoku:weekly:2026-W39', 'shapes:level:easy:3', 'zip:medium:1a2b'], at('2026-09-22'));
     expect(s.daysPlayed).toBe(0);
   });
+
+  it('ignores a daily id whose day key does not parse into a real day, instead of throwing', () => {
+    expect(() => dailyStreaks(['shapes:daily:zzz'], at('2026-09-22'))).not.toThrow();
+    expect(dailyStreaks(['shapes:daily:zzz'], at('2026-09-22'))).toEqual({
+      today: 0,
+      current: 0,
+      best: 0,
+      perfect: 0,
+      bestPerfect: 0,
+      daysPlayed: 0,
+    });
+
+    expect(() => dailyStreaks(['shapes:daily:2026-09'], at('2026-09-22'))).not.toThrow();
+    expect(dailyStreaks(['shapes:daily:2026-09'], at('2026-09-22')).daysPlayed).toBe(0);
+  });
+
+  it('a junk daily id mixed into a real history does not disturb the real numbers', () => {
+    const ids = [...day('2026-09-20', 8), ...day('2026-09-21', 8), ...day('2026-09-22', 8), 'shapes:daily:zzz'];
+    const clean = [...day('2026-09-20', 8), ...day('2026-09-21', 8), ...day('2026-09-22', 8)];
+    expect(dailyStreaks(ids, at('2026-09-22'))).toEqual(dailyStreaks(clean, at('2026-09-22')));
+  });
 });

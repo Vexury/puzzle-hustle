@@ -25,7 +25,15 @@ export interface Achievement {
 // release at zero like everyone else. Move this to the production release date when that
 // happens; achievements earned before then re-lock, which is intended and belongs in the
 // release notes.
-export const ACHIEVEMENTS_EPOCH = Date.parse('2026-09-22T00:00:00Z');
+//
+// Pinned to Berlin midnight, not UTC midnight, because the streak and perfect-day conditions
+// group solves by Berlin period keys (see schedule.ts). A UTC-midnight epoch would sit two
+// hours into the Berlin day, so a daily solved in those first two hours would carry a
+// post-epoch period key while its instant reads as pre-epoch: it would count on the Profile's
+// streak but vanish from the achievement streak. Whoever moves this constant to the production
+// release date must use that date's own Berlin offset (+01:00 or +02:00, depending on DST),
+// not reuse +02:00 blindly.
+export const ACHIEVEMENTS_EPOCH = Date.parse('2026-09-22T00:00:00+02:00');
 
 export const ACHIEVEMENTS: readonly Achievement[] = [
   { id: 'every-type', title: 'One of each', description: 'Solve at least one puzzle of every type.', group: 'arrival' },
@@ -48,7 +56,7 @@ export const ACHIEVEMENTS: readonly Achievement[] = [
   { id: 'solved-1000', title: 'A thousand', description: 'Solve 1000 puzzles.', group: 'volume' },
 
   { id: 'night-owl', title: 'Night owl', description: 'Solve a daily between midnight and four.', group: 'oddity' },
-  { id: 'early-bird', title: 'Early bird', description: 'Solve a daily before six in the morning.', group: 'oddity' },
+  { id: 'early-bird', title: 'Early bird', description: 'Solve a daily between four and six in the morning.', group: 'oddity' },
 ];
 
 interface Facts {
@@ -112,7 +120,7 @@ function gather(solves: readonly SolveEntry[]): Facts {
     // puzzle on the same day everywhere, "solved at one in the morning" is about them.
     const hour = new Date(entry.solvedAt).getHours();
     if (hour < 4) facts.nightOwl = true;
-    if (hour < 6) facts.earlyBird = true;
+    if (hour >= 4 && hour < 6) facts.earlyBird = true;
 
     const day = dailiesByDay.get(parsed.key) ?? { types: new Set<PuzzleTypeId>(), hinted: false };
     day.types.add(parsed.type);

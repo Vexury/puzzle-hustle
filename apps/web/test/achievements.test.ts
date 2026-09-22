@@ -5,7 +5,7 @@ vi.mock('../src/components/Toast.tsx', () => ({ toast: vi.fn() }));
 
 import { currentUnlocked, pendingAnnouncements, syncAchievements } from '../src/lib/achievements.ts';
 import { toast } from '../src/components/Toast.tsx';
-import { recordSolve, rehydrate } from '../src/lib/storage.ts';
+import { recordSolve, rehydrate, resetProgress } from '../src/lib/storage.ts';
 
 // storedSolves() reads the storage.ts in-memory cache, not localStorage directly (recordSolve()
 // updates that cache before it writes localStorage, and syncAchievements() runs right after a
@@ -114,6 +114,28 @@ it('toasts several simultaneous unlocks in catalog order', () => {
   const toastedTitles = vi.mocked(toast).mock.calls.map(([message]) => message);
   const expectedTitles = catalogOrder.map((id) => `Achievement unlocked: ${ACHIEVEMENTS.find((a) => a.id === id)!.title}`);
   expect(toastedTitles).toEqual(expectedTitles);
+});
+
+it('does not write ph:achievements on a sync that changes nothing, notably a clean install', () => {
+  // A clean install with no solves has nothing unlocked and nothing previously announced: the
+  // sync is a true no-op. Writing the key anyway would make isBackedUp() see it as already
+  // present, and restoreBackup() then refuses forever to restore a native backup, because it
+  // only restores when none of the backed-up keys exist yet.
+  expect(localStorage.getItem('ph:achievements')).toBeNull();
+  syncAchievements();
+  expect(localStorage.getItem('ph:achievements')).toBeNull();
+
+  const setItem = vi.spyOn(Storage.prototype, 'setItem');
+  syncAchievements();
+  expect(setItem).not.toHaveBeenCalledWith('ph:achievements', expect.anything());
+});
+
+it('resetProgress also clears the announced-achievements list', () => {
+  // Otherwise: reset progress, then re-earn the same achievement in the same session, and no
+  // toast fires, because the stale announced list (only pruned by the next sync) still lists it.
+  localStorage.setItem('ph:achievements', JSON.stringify(['first-weekly']));
+  resetProgress();
+  expect(localStorage.getItem('ph:achievements')).toBeNull();
 });
 
 it('never throws, whatever storage holds', () => {

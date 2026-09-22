@@ -139,6 +139,15 @@ describe('unlockedAchievements', () => {
     expect(unlocked(many(1000)).has('solved-1000')).toBe(true);
   });
 
+  it('a malformed daily id does not crash unlockedAchievements and leaves other facts intact', () => {
+    const junk = [solve('shapes:daily:zzz'), solve('shapes:daily:2026-09')];
+    expect(() => unlocked(junk)).not.toThrow();
+    expect(unlocked(junk).size).toBe(0);
+
+    const real = dailies('2026-06-01', PUZZLE_TYPES.length);
+    expect(unlocked([...real, ...junk])).toEqual(unlocked(real));
+  });
+
   it('night-owl and early-bird only count dailies', () => {
     expect(unlocked([solve('zip:medium:1a2b', '2026-06-01', 1)]).has('night-owl')).toBe(false);
     expect(unlocked([solve('zip:medium:1a2b', '2026-06-01', 1)]).has('early-bird')).toBe(false);
@@ -163,7 +172,9 @@ describe('unlockedAchievements', () => {
       });
 
       expect(unlocked([atLocalHour(1)]).has('night-owl')).toBe(true);
+      expect(unlocked([atLocalHour(1)]).has('early-bird')).toBe(false); // night-owl and early-bird are disjoint
       expect(unlocked([atLocalHour(4)]).has('night-owl')).toBe(false); // boundary: 4 is not "before four"
+      expect(unlocked([atLocalHour(4)]).has('early-bird')).toBe(true); // boundary: 4 is "between four and six"
       expect(unlocked([atLocalHour(5)]).has('night-owl')).toBe(false);
       expect(unlocked([atLocalHour(5)]).has('early-bird')).toBe(true);
       expect(unlocked([atLocalHour(6)]).has('early-bird')).toBe(false); // boundary: 6 is not "before six"
@@ -171,11 +182,12 @@ describe('unlockedAchievements', () => {
 
       // Local hour 0 in Europe/Berlin is 22:00 UTC the day before: opposite sides of both
       // windows depending on which clock you read. A getUTCHours() mutant sees 22 here, which
-      // is in neither window, and would report both of these as false.
+      // is in neither window; night-owl should still fire (0 is "before four") and early-bird
+      // should not (0 is not "between four and six").
       const crossesMidnightInUtc = atLocalHour(0);
       expect(new Date(crossesMidnightInUtc.solvedAt).getUTCHours()).toBe(22);
       expect(unlocked([crossesMidnightInUtc]).has('night-owl')).toBe(true);
-      expect(unlocked([crossesMidnightInUtc]).has('early-bird')).toBe(true);
+      expect(unlocked([crossesMidnightInUtc]).has('early-bird')).toBe(false);
     } finally {
       if (originalTz === undefined) delete process.env.TZ;
       else process.env.TZ = originalTz;

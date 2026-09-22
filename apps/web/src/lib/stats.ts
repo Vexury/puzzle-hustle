@@ -2,6 +2,7 @@ import {
   LAUNCH_DAY,
   PUZZLE_TYPES,
   dailyStreaks as coreDailyStreaks,
+  dayIndex,
   isoWeek,
   levelList,
   localDateParts,
@@ -12,11 +13,6 @@ import {
 import type { SolveRecord } from './storage.ts';
 
 export { LAUNCH_DAY, STREAK_MIN, type DailyStreaks } from '@puzzle-hustle/core';
-
-function dayIndex(key: string): number {
-  const [y, m, d] = key.split('-').map(Number);
-  return Math.floor(Date.UTC(y!, m! - 1, d!) / 86400000);
-}
 
 export function dailyNumber(key: string): number {
   return dayIndex(key) - dayIndex(LAUNCH_DAY) + 1;

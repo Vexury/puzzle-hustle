@@ -4,7 +4,7 @@ import { periodKey } from './schedule.ts';
 export const LAUNCH_DAY = '2026-09-18';
 export const STREAK_MIN = Math.min(3, PUZZLE_TYPES.length);
 
-function dayIndex(key: string): number {
+export function dayIndex(key: string): number {
   const [y, m, d] = key.split('-').map(Number);
   return Math.floor(Date.UTC(y!, m! - 1, d!) / 86400000);
 }
@@ -28,6 +28,10 @@ export function dailyStreaks(ids: Iterable<string>, now: Date = new Date()): Dai
   for (const id of ids) {
     const [type, period, key] = id.split(':');
     if (period !== 'daily' || !key) continue;
+    // A malformed or truncated key (a mangled share link, say) parses to a non-finite day
+    // index. keyOfDayIndex would then hand new Date() a NaN and throw on toISOString(), so
+    // such an id is skipped here rather than let junk into the day map at all.
+    if (!Number.isFinite(dayIndex(key))) continue;
     if (!solvedTypesByDay.has(key)) solvedTypesByDay.set(key, new Set());
     solvedTypesByDay.get(key)!.add(type as PuzzleTypeId);
   }

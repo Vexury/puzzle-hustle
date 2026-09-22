@@ -63,11 +63,21 @@ const CATALOG_ORDER = new Map(ACHIEVEMENTS.map((a, i) => [a.id, i]));
 export function syncAchievements(): void {
   try {
     const unlocked = currentUnlocked();
-    const { toAnnounce, nextAnnounced } = pendingAnnouncements(unlocked, announced());
-    // Written even when nothing is new. When the epoch moves forward an achievement re-locks,
-    // and its id has to leave the stored list right then, or it is still there when the player
-    // earns it again and the second unlock passes silently.
-    writeSetting(KEY, JSON.stringify(nextAnnounced));
+    const previouslyAnnounced = announced();
+    const { toAnnounce, nextAnnounced } = pendingAnnouncements(unlocked, previouslyAnnounced);
+    // Written only when the list actually changes. When the epoch moves forward an achievement
+    // re-locks and its id has to leave the stored list right then (that IS a difference, so it
+    // still writes), or it is still there when the player earns it again and the second unlock
+    // passes silently. But a sync that changes nothing — notably the very first launch, before
+    // anything is unlocked — must not write at all: writing an empty ph:achievements key on a
+    // clean install makes isBackedUp() see it as already present, and restoreBackup() then
+    // refuses to ever restore a native backup because "some backed-up key already exists".
+    // Order is deterministic (nextAnnounced is [...kept, ...new] in the same relative order as
+    // previouslyAnnounced), so a positional compare is enough to detect no-op syncs.
+    const unchanged =
+      nextAnnounced.length === previouslyAnnounced.length &&
+      nextAnnounced.every((id, i) => id === previouslyAnnounced[i]);
+    if (!unchanged) writeSetting(KEY, JSON.stringify(nextAnnounced));
     // Sorted explicitly by catalog position rather than trusting the order toAnnounce already
     // happens to arrive in: pendingAnnouncements is deliberately generic and does not know about
     // ACHIEVEMENTS, so nothing upstream guarantees an order a future core refactor couldn't
