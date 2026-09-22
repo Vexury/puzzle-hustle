@@ -1,0 +1,20 @@
+<en-US>
+Sharper hints, Sudoku that answers back, and levels worth replaying.
+
+- Tap a digit in the Sudoku pad to light up every matching digit and note
+- Pencil marks are easier to tell apart from placed digits
+- A hint marks its cell longer and more clearly, in every puzzle
+- Replay a level to beat your own time, dailies keep their first run
+- The daily bar counts the seven dailies again, no more 8/7
+- The achievement banner no longer cuts off its title
+</en-US>
+<de-DE>
+Deutlichere Hints, ein Sudoku, das mitdenkt, und Level, die sich lohnen.
+
+- Eine Ziffer in der Sudoku-Leiste antippen lässt alle gleichen Ziffern und Notizen leuchten
+- Notizen sind klarer von gesetzten Ziffern zu unterscheiden
+- Ein Hint markiert sein Feld länger und deutlicher, in jedem Rätsel
+- Level lassen sich für eine bessere Zeit wiederholen, Dailys behalten ihren ersten Lauf
+- Der Daily-Balken zählt wieder die sieben Dailys, kein 8/7 mehr
+- Das Achievement-Banner schneidet seinen Titel nicht mehr ab
+</de-DE>
