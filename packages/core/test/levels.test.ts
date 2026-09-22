@@ -7,7 +7,7 @@ import { NONOGRAM_VERSION, generateNonogram } from '../src/nonogram/puzzle.ts';
 import { isLineSolvable, nonogramCanonicalKey } from '../src/nonogram/solver.ts';
 import { MOSAIC_VERSION, generateMosaic } from '../src/mosaic/puzzle.ts';
 import { isMosaicLogicSolvable, mosaicCanonicalKey } from '../src/mosaic/solver.ts';
-import { SUDOKU_VERSION, generateKiller, generateSudoku } from '../src/sudoku/puzzle.ts';
+import { KILLER_VERSION, SUDOKU_VERSION, generateKiller, generateSudoku } from '../src/sudoku/puzzle.ts';
 import { isSudokuUnique, sudokuCanonicalKey } from '../src/sudoku/solver.ts';
 import { REGIONS_VERSION, generateCrowns, generateStars } from '../src/regions/puzzle.ts';
 import { isRegionsUnique, regionsCanonicalKey } from '../src/regions/solver.ts';
@@ -21,7 +21,7 @@ describe('level pack', () => {
     expect(LEVEL_PACK.versions.nonogram).toBe(NONOGRAM_VERSION);
     expect(LEVEL_PACK.versions.mosaic).toBe(MOSAIC_VERSION);
     expect(LEVEL_PACK.versions.sudoku).toBe(SUDOKU_VERSION);
-    expect(LEVEL_PACK.versions.killer).toBe(SUDOKU_VERSION);
+    expect(LEVEL_PACK.versions.killer).toBe(KILLER_VERSION);
     expect(LEVEL_PACK.versions.crowns).toBe(REGIONS_VERSION);
     expect(LEVEL_PACK.versions.stars).toBe(REGIONS_VERSION);
     expect(LEVEL_PACK.versions.zip).toBe(ZIP_VERSION);

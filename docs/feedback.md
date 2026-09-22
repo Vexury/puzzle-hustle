@@ -31,6 +31,10 @@ Stand: 2026-09-22
 
 ## Erledigt
 
+- [x] 2026-09-22 Killer Easy ist deutlich leichter geworden, weil der Killer jetzt den Daily
+  traegt und der in der Rueckmeldung als zu schwer ankam. 24 Givens statt 10: der Score faellt
+  von 134 bis 224 auf 65 bis 120, die naechsten vierzehn Dailys von im Mittel 178 auf 97. Genius
+  bleibt, wo er war (279 bis 624), die Spanne wird also groesser statt verschoben.
 - [x] 2026-09-22 **Pia** Schalter im Profil fuer das Leuchten der gleichen Zahlen im Sudoku,
   "Highlight matching numbers", Standard an, gespeichert als `ph:sudokuHighlight`. Aus heisst:
   das Antippen in der Leiste setzt nur noch die Zahl, Notizen leuchten nicht, und eine neunmal

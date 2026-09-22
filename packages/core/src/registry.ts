@@ -5,7 +5,7 @@ import { nonogramCanonicalKey, nonogramDifficultyReport, nonogramFamilyKey } fro
 import { generateCrowns, generateStars, REGIONS_VERSION, type RegionsOptions } from './regions/puzzle.ts';
 import { regionsCanonicalKey, regionsDifficultyReport, regionsFamilyKey } from './regions/solver.ts';
 import { generateShapes, SHAPES_VERSION, type ShapesOptions } from './shapes/puzzle.ts';
-import { generateKiller, generateSudoku, SUDOKU_VERSION, type SudokuOptions, type SudokuSpec } from './sudoku/puzzle.ts';
+import { generateKiller, generateSudoku, KILLER_VERSION, SUDOKU_VERSION, type SudokuOptions, type SudokuSpec } from './sudoku/puzzle.ts';
 import { killerFamilyKey, sudokuCanonicalKey, sudokuDifficultyReport } from './sudoku/solver.ts';
 import { canonicalKey, difficultyReport, isUnique, shapesFamilyKey } from './shapes/solver.ts';
 import { generateZip, ZIP_VERSION, type ZipOptions } from './zip/puzzle.ts';
@@ -137,10 +137,10 @@ export const mosaicAdapter: PuzzleAdapter<MosaicOptions> = {
   },
 };
 
-function sudokuLikeAdapter(generate: typeof generateSudoku, familyKey?: (spec: SudokuSpec) => string): PuzzleAdapter<SudokuOptions> {
+function sudokuLikeAdapter(generate: typeof generateSudoku, version: number, familyKey?: (spec: SudokuSpec) => string): PuzzleAdapter<SudokuOptions> {
   const build = reuse(generate);
   const puzzle: PuzzleAdapter<SudokuOptions> = {
-    version: SUDOKU_VERSION,
+    version,
     options() {
       return {};
     },
@@ -200,8 +200,8 @@ export const crownsAdapter = regionsAdapter(generateCrowns, (period) => {
 });
 export const starsAdapter = regionsAdapter(generateStars, () => ({}));
 
-export const sudokuAdapter = sudokuLikeAdapter(generateSudoku);
-export const killerAdapter = sudokuLikeAdapter(generateKiller, killerFamilyKey);
+export const sudokuAdapter = sudokuLikeAdapter(generateSudoku, SUDOKU_VERSION);
+export const killerAdapter = sudokuLikeAdapter(generateKiller, KILLER_VERSION, killerFamilyKey);
 
 export const zipAdapter: PuzzleAdapter<ZipOptions> = {
   version: ZIP_VERSION,

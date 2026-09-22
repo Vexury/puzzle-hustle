@@ -12,6 +12,10 @@ import {
 } from './solver.ts';
 
 export const SUDOKU_VERSION = 1;
+// Killer counts its own generations. The two share a generator but not their presets, and a
+// shared number would throw away and renumber the 200 plain Sudoku levels every time a cage
+// setting moves. 2 since 2026-09-22, when easy went from 10 to 24 givens.
+export const KILLER_VERSION = 2;
 
 const N = 81;
 
@@ -54,7 +58,10 @@ export const SUDOKU_PRESETS: Record<Difficulty, SudokuConfig> = {
 };
 
 export const KILLER_PRESETS: Record<Difficulty, SudokuConfig> = {
-  easy: { givensTarget: 10, cages: true, maxCage: 3, techniques: [...SINGLES, 'cage-sum'] },
+  // 24 givens, not 10: at 10 the easy board scored a median of 185 against 43 to 56 for a plain
+  // Sudoku easy, which is no easy at all, and it carried the daily from 2026-09-22 on. 24 halves
+  // that to 93 and still sits far enough above plain Sudoku that the cages are the point.
+  easy: { givensTarget: 24, cages: true, maxCage: 3, techniques: [...SINGLES, 'cage-sum'] },
   medium: { givensTarget: 3, cages: true, maxCage: 4, techniques: [...SINGLES, 'cage-sum', 'pointing', 'box-line'] },
   hard: { givensTarget: 0, cages: true, maxCage: 5, techniques: [...SINGLES, 'cage-sum', 'pointing', 'box-line', 'naked-pair', 'hidden-pair', 'innie-outie'] },
   genius: { givensTarget: 0, cages: true, maxCage: 5, techniques: [...SUDOKU_TECHNIQUES] },
@@ -285,12 +292,12 @@ function buildKiller(spec: SudokuSpec, rng: Rng): void {
   }
 }
 
-export function generateSudokuLike(seed: number, difficulty: Difficulty, config: SudokuConfig): SudokuSpec {
+export function generateSudokuLike(seed: number, difficulty: Difficulty, config: SudokuConfig, version = SUDOKU_VERSION): SudokuSpec {
   const rng = new Rng(seed);
   for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
     const solution = randomSolution(rng);
     if (!solution) continue;
-    const spec: SudokuSpec = { version: SUDOKU_VERSION, seed, difficulty, config, solution, givens: Uint8Array.from(solution), cages: [] };
+    const spec: SudokuSpec = { version, seed, difficulty, config, solution, givens: Uint8Array.from(solution), cages: [] };
     if (config.cages) buildKiller(spec, rng);
     else removeGivens(spec, rng);
     if (acceptable(spec)) return spec;
@@ -303,7 +310,7 @@ export function generateSudoku(seed: number, difficulty: Difficulty, _options: S
 }
 
 export function generateKiller(seed: number, difficulty: Difficulty, _options: SudokuOptions = {}): SudokuSpec {
-  return generateSudokuLike(seed, difficulty, KILLER_PRESETS[difficulty]);
+  return generateSudokuLike(seed, difficulty, KILLER_PRESETS[difficulty], KILLER_VERSION);
 }
 
 function blankState(): SudokuState {

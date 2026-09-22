@@ -116,11 +116,14 @@ describe('generation', () => {
     }
   }
 
-  it('killer easy keeps a handful of givens', () => {
+  it('killer easy hands out a good share of givens, harder killers next to none', () => {
+    // Easy carries the daily and leans on its givens: 24 of them halve the solving effort of
+    // the old ten. Medium and up keep the cages as the way in.
     for (let seed = 1; seed <= 5; seed++) {
       const n = givenCount(generateKiller(seed, 'easy'));
-      expect(n).toBeGreaterThanOrEqual(6);
-      expect(n).toBeLessThanOrEqual(14);
+      expect(n).toBeGreaterThanOrEqual(20);
+      expect(n).toBeLessThanOrEqual(28);
+      expect(givenCount(generateKiller(seed, 'hard'))).toBeLessThanOrEqual(4);
     }
   });
 });

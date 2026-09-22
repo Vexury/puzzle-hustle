@@ -7,7 +7,7 @@
     "crowns": 1,
     "stars": 1,
     "sudoku": 1,
-    "killer": 1,
+    "killer": 2,
     "zip": 1
   },
   "levels": {
@@ -4874,204 +4874,204 @@
     "killer": {
       "easy": [
         {
-          "seed": 1011,
-          "score": 134
-        },
-        {
-          "seed": 1163,
-          "score": 148
-        },
-        {
-          "seed": 1141,
-          "score": 153
-        },
-        {
-          "seed": 1009,
-          "score": 158
-        },
-        {
-          "seed": 1093,
-          "score": 159.5
-        },
-        {
           "seed": 1054,
-          "score": 160
+          "score": 65
         },
         {
-          "seed": 1133,
-          "score": 162.5
-        },
-        {
-          "seed": 1106,
-          "score": 163.5
-        },
-        {
-          "seed": 1121,
-          "score": 164.5
-        },
-        {
-          "seed": 1139,
-          "score": 166
-        },
-        {
-          "seed": 1067,
-          "score": 167
-        },
-        {
-          "seed": 1124,
-          "score": 167.5
-        },
-        {
-          "seed": 1132,
-          "score": 168
-        },
-        {
-          "seed": 1117,
-          "score": 168.5
-        },
-        {
-          "seed": 1073,
-          "score": 169.5
-        },
-        {
-          "seed": 1167,
-          "score": 170.5
-        },
-        {
-          "seed": 1037,
-          "score": 171.5
-        },
-        {
-          "seed": 1177,
-          "score": 172.5
-        },
-        {
-          "seed": 1104,
-          "score": 174
-        },
-        {
-          "seed": 1176,
-          "score": 174
-        },
-        {
-          "seed": 1075,
-          "score": 176
-        },
-        {
-          "seed": 1181,
-          "score": 176
-        },
-        {
-          "seed": 1063,
-          "score": 177
-        },
-        {
-          "seed": 1168,
-          "score": 178
-        },
-        {
-          "seed": 1055,
-          "score": 179.5
-        },
-        {
-          "seed": 1144,
-          "score": 181.5
-        },
-        {
-          "seed": 1003,
-          "score": 182
-        },
-        {
-          "seed": 1142,
-          "score": 182
+          "seed": 1149,
+          "score": 78.5
         },
         {
           "seed": 1076,
-          "score": 183
+          "score": 80.5
+        },
+        {
+          "seed": 1043,
+          "score": 82.5
+        },
+        {
+          "seed": 1065,
+          "score": 84
+        },
+        {
+          "seed": 1017,
+          "score": 84.5
+        },
+        {
+          "seed": 1140,
+          "score": 84.5
+        },
+        {
+          "seed": 1011,
+          "score": 85.5
+        },
+        {
+          "seed": 1132,
+          "score": 85.5
+        },
+        {
+          "seed": 1090,
+          "score": 86
+        },
+        {
+          "seed": 1031,
+          "score": 87.5
+        },
+        {
+          "seed": 1094,
+          "score": 88
+        },
+        {
+          "seed": 1028,
+          "score": 89
+        },
+        {
+          "seed": 1003,
+          "score": 89.5
+        },
+        {
+          "seed": 1124,
+          "score": 90.5
+        },
+        {
+          "seed": 1030,
+          "score": 91
+        },
+        {
+          "seed": 1128,
+          "score": 91
+        },
+        {
+          "seed": 1120,
+          "score": 91.5
         },
         {
           "seed": 1079,
-          "score": 183
-        },
-        {
-          "seed": 1081,
-          "score": 183
-        },
-        {
-          "seed": 1088,
-          "score": 184
-        },
-        {
-          "seed": 1171,
-          "score": 186
-        },
-        {
-          "seed": 1041,
-          "score": 186.5
-        },
-        {
-          "seed": 1164,
-          "score": 187.5
-        },
-        {
-          "seed": 1111,
-          "score": 189
-        },
-        {
-          "seed": 1101,
-          "score": 192
-        },
-        {
-          "seed": 1158,
-          "score": 194.5
-        },
-        {
-          "seed": 1002,
-          "score": 195
-        },
-        {
-          "seed": 1137,
-          "score": 196
-        },
-        {
-          "seed": 1125,
-          "score": 197.5
+          "score": 92
         },
         {
           "seed": 1115,
-          "score": 199
+          "score": 92.5
         },
         {
-          "seed": 1146,
-          "score": 202
+          "seed": 1009,
+          "score": 93
         },
         {
-          "seed": 1008,
-          "score": 202.5
+          "seed": 1046,
+          "score": 94
         },
         {
-          "seed": 1057,
-          "score": 203.5
+          "seed": 1047,
+          "score": 94
         },
         {
-          "seed": 1110,
-          "score": 207
+          "seed": 1141,
+          "score": 94
         },
         {
-          "seed": 1122,
-          "score": 210.5
+          "seed": 1138,
+          "score": 94.5
+        },
+        {
+          "seed": 1026,
+          "score": 95.5
+        },
+        {
+          "seed": 1109,
+          "score": 95.5
+        },
+        {
+          "seed": 1020,
+          "score": 96
+        },
+        {
+          "seed": 1105,
+          "score": 96
+        },
+        {
+          "seed": 1012,
+          "score": 96.5
+        },
+        {
+          "seed": 1052,
+          "score": 96.5
+        },
+        {
+          "seed": 1045,
+          "score": 97.5
+        },
+        {
+          "seed": 1116,
+          "score": 98
+        },
+        {
+          "seed": 1101,
+          "score": 99
+        },
+        {
+          "seed": 1137,
+          "score": 100
+        },
+        {
+          "seed": 1093,
+          "score": 100.5
+        },
+        {
+          "seed": 1139,
+          "score": 101
+        },
+        {
+          "seed": 1055,
+          "score": 101.5
+        },
+        {
+          "seed": 1147,
+          "score": 102
         },
         {
           "seed": 1084,
-          "score": 212
+          "score": 103.5
         },
         {
-          "seed": 1159,
-          "score": 220.5
+          "seed": 1111,
+          "score": 104
         },
         {
-          "seed": 1062,
-          "score": 224.5
+          "seed": 1117,
+          "score": 104.5
+        },
+        {
+          "seed": 1121,
+          "score": 105
+        },
+        {
+          "seed": 1041,
+          "score": 106
+        },
+        {
+          "seed": 1002,
+          "score": 107
+        },
+        {
+          "seed": 1015,
+          "score": 107.5
+        },
+        {
+          "seed": 1018,
+          "score": 111
+        },
+        {
+          "seed": 1096,
+          "score": 111
+        },
+        {
+          "seed": 1144,
+          "score": 115
+        },
+        {
+          "seed": 1108,
+          "score": 120.5
         }
       ],
       "medium": [
