@@ -4,12 +4,13 @@ import { decodeRef, encodeRef, periodRef, scheduledRef } from '../src/ref.ts';
 import { PUZZLE_TYPES } from '../src/types.ts';
 
 describe('DAILY_TYPES', () => {
-  it('is every type but Killer Sudoku, in the order of PUZZLE_TYPES', () => {
-    expect(DAILY_TYPES).toEqual(PUZZLE_TYPES.filter((t) => t !== 'killer'));
-    expect(DAILY_TYPES).not.toContain('killer');
+  it('is every type but plain Sudoku, in the order of PUZZLE_TYPES', () => {
+    expect(DAILY_TYPES).toEqual(PUZZLE_TYPES.filter((t) => t !== 'sudoku'));
+    expect(DAILY_TYPES).not.toContain('sudoku');
+    expect(DAILY_TYPES).toContain('killer');
   });
 
-  it('leaves the weekly and monthly rotation alone: Killer still shows up there', () => {
+  it('leaves the weekly and monthly rotation alone: both Sudokus still show up there', () => {
     expect(PERIOD_TYPES).toContain('killer');
     expect(PERIOD_TYPES).toContain('sudoku');
   });

@@ -55,18 +55,21 @@ export const PERIOD_DIFFICULTY: Record<Period, Difficulty> = {
 const DAILY_DIFFICULTY: Partial<Record<PuzzleTypeId, Difficulty>> = {
   shapes: 'hard',
   stars: 'easy',
-  sudoku: 'easy',
+  // Killer is the hardest type of the eight and carries the daily from 2026-09-22 on. Easy
+  // keeps the set of seven inside the few minutes it is meant to take.
+  killer: 'easy',
 };
 
 export function periodDifficulty(type: PuzzleTypeId, period: Period): Difficulty {
   return (period === 'daily' ? DAILY_DIFFICULTY[type] : undefined) ?? PERIOD_DIFFICULTY[period];
 }
 
-// The dailies, in the order PUZZLE_TYPES gives them. Killer Sudoku sits out: plain Sudoku
-// carries the daily and Killer is the one for experts, reachable through its levels and
-// through the weekly and monthly rotation below. Unlike PERIOD_TYPES this is derived, because
-// nothing here depends on the position, only on membership.
-export const DAILY_TYPES: readonly PuzzleTypeId[] = PUZZLE_TYPES.filter((type) => type !== 'killer');
+// The dailies, in the order PUZZLE_TYPES gives them. Plain Sudoku sits out and Killer takes
+// the slot: the two are one puzzle apart, and the cages are what makes the daily worth opening.
+// Both stay playable through their levels and through the weekly and monthly rotation below.
+// Unlike PERIOD_TYPES this is derived, because nothing here depends on the position, only on
+// membership.
+export const DAILY_TYPES: readonly PuzzleTypeId[] = PUZZLE_TYPES.filter((type) => type !== 'sudoku');
 
 // Deliberately not derived from PUZZLE_TYPES: the position here decides which type a weekly
 // or monthly is. Reordering rewrites every past period and orphans the solves recorded

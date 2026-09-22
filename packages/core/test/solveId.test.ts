@@ -3,8 +3,8 @@ import { parseSolveId } from '../src/solveId.ts';
 
 describe('parseSolveId', () => {
   it('reads a period solve and resolves its difficulty', () => {
-    expect(parseSolveId('sudoku:daily:2026-09-22')).toEqual({
-      type: 'sudoku',
+    expect(parseSolveId('killer:daily:2026-09-22')).toEqual({
+      type: 'killer',
       mode: 'period',
       difficulty: 'easy',
       period: 'daily',

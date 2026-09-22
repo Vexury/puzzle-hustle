@@ -67,7 +67,9 @@ Stand: 2026-09-22
 - [x] 2026-09-22 **Pia** Shapes Easy 34, 35 und 36 verlangten dieselben Formen in derselben Anzahl.
   Easy hat jetzt vier Teile statt drei, damit 4604 statt 202 moegliche Raetsel (SHAPES_VERSION 3).
 - [x] 2026-09-22 Killer Sudoku ist aus den Dailys raus und wird ein Schwierigkeitsgrad von Sudoku.
-  Idee von Moritz und Daniela, von Robert bestaetigt.
+  Idee von Moritz und Daniela, von Robert bestaetigt. Am selben Abend umgedreht (Entscheidung
+  Moritz): Killer traegt den Daily auf Easy, plain Sudoku sitzt aus. Beide bleiben unter Puzzles
+  und in der Weekly- und Monthly-Rotation, es bleiben sieben Dailys.
 - [x] 2026-09-21 **Michi** Timer startete erst beim ersten Zug, damit war Loesung merken und dann
   auf Geschwindigkeit eingeben der schnellste Weg. Laeuft jetzt ab dem Oeffnen des Raetsels.
 - [x] 2026-09-21 **Michi** Timer lief weiter, wenn man die Benachrichtigungsleiste aufzog. Eigenes

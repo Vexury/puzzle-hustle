@@ -39,8 +39,8 @@ export function dailyStreaks(ids: Iterable<string>, now: Date = new Date()): Dai
   const anyOn = (i: number) => (solvedTypesByDay.get(keyOfDayIndex(i))?.size ?? 0) >= STREAK_MIN;
   // A count of whole days, deliberately not a run: a day that was skipped costs nothing, it
   // only fails to add. Chaining perfect days pushed players into the types they do not enjoy
-  // (tester feedback, 2026-09-22). Only the types that have a daily count, so a Killer daily
-  // solved before Killer left the list cannot complete a day either.
+  // (tester feedback, 2026-09-22). Only the types that have a daily count, so a Sudoku daily
+  // solved before Sudoku left the list cannot complete a day either.
   let perfectDays = 0;
   for (const solved of solvedTypesByDay.values()) {
     if (DAILY_TYPES.every((type) => solved.has(type))) perfectDays++;

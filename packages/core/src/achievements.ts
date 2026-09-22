@@ -152,7 +152,7 @@ function gather(solves: readonly SolveEntry[]): Facts {
 }
 
 const CONDITIONS: Record<string, (f: Facts) => boolean> = {
-  // The daily types, not every type there is: Killer Sudoku left the daily list and asking for
+  // The daily types, not every type there is: plain Sudoku left the daily list and asking for
   // it here would put a level, a weekly or a monthly between a player and their first badge.
   'every-type': (f) => DAILY_TYPES.every((type) => f.types.has(type)),
   'first-weekly': (f) => f.weekly,

@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { PUZZLE_TYPES } from '../src/types.ts';
 import { STREAK_MIN, dailyStreaks } from '../src/streaks.ts';
 import { DAILY_TYPES } from '../src/schedule.ts';
 
 // Berlin noon, so no time zone can move a solve into a neighbouring day.
 const at = (day: string) => new Date(`${day}T10:00:00Z`);
-const day = (key: string, count: number) => PUZZLE_TYPES.slice(0, count).map((t) => `${t}:daily:${key}`);
+const day = (key: string, count: number) => DAILY_TYPES.slice(0, count).map((t) => `${t}:daily:${key}`);
 
 describe('dailyStreaks', () => {
   it('counts a day only once it reaches the minimum', () => {
@@ -42,18 +41,18 @@ describe('dailyStreaks', () => {
     expect(dailyStreaks(ids, at('2026-09-22')).perfectDays).toBe(2);
   });
 
-  it('does not let a Killer solve stand in for a missing daily', () => {
-    const ids = [...day('2026-09-22', DAILY_TYPES.length - 1), 'killer:daily:2026-09-22'];
+  it('does not let a Sudoku solve stand in for a missing daily', () => {
+    const ids = [...day('2026-09-22', DAILY_TYPES.length - 1), 'sudoku:daily:2026-09-22'];
     expect(dailyStreaks(ids, at('2026-09-22')).perfectDays).toBe(0);
   });
 
   it('counts only types that still have a daily towards today', () => {
-    const ids = [...DAILY_TYPES.map((t) => `${t}:daily:2026-09-22`), 'killer:daily:2026-09-22'];
+    const ids = [...DAILY_TYPES.map((t) => `${t}:daily:2026-09-22`), 'sudoku:daily:2026-09-22'];
     expect(dailyStreaks(ids, at('2026-09-22')).today).toBe(DAILY_TYPES.length);
   });
 
-  it('still counts a Killer daily from before the change towards the plain streak', () => {
-    const ids = ['killer:daily:2026-09-22', ...day('2026-09-22', STREAK_MIN - 1)];
+  it('still counts a Sudoku daily from before the change towards the plain streak', () => {
+    const ids = ['sudoku:daily:2026-09-22', ...day('2026-09-22', STREAK_MIN - 1)];
     expect(dailyStreaks(ids, at('2026-09-22')).current).toBe(1);
   });
 

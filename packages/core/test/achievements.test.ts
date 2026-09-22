@@ -59,14 +59,14 @@ describe('unlockedAchievements', () => {
     expect(unlockedAchievements([atEpoch], EPOCH).has('first-weekly')).toBe(true);
   });
 
-  it('every-type wants one of each daily type, in any mode, and never asks for Killer', () => {
+  it('every-type wants one of each daily type, in any mode, and never asks for plain Sudoku', () => {
     const mixed = DAILY_TYPES.map((t, i) =>
       i % 2 === 0 ? solve(`${t}:daily:2026-06-01`) : solve(`${t}:medium:1a2b${i}`),
     );
     expect(unlocked(mixed).has('every-type')).toBe(true);
     expect(unlocked(mixed.slice(0, -1)).has('every-type')).toBe(false);
-    const killerInstead = [...mixed.slice(0, -1), solve('killer:daily:2026-06-01')];
-    expect(unlocked(killerInstead).has('every-type')).toBe(false);
+    const sudokuInstead = [...mixed.slice(0, -1), solve('sudoku:daily:2026-06-01')];
+    expect(unlocked(sudokuInstead).has('every-type')).toBe(false);
   });
 
   it('first-weekly, first-monthly and first-genius', () => {
@@ -136,11 +136,11 @@ describe('unlockedAchievements', () => {
     expect(unlocked(split).has('perfect-day-no-hint')).toBe(false);
   });
 
-  it('a Killer daily does not complete a perfect day, but every other type without it does', () => {
-    const withoutKiller = dailies('2026-06-01', DAILY_TYPES.length);
-    expect(unlocked(withoutKiller).has('perfect-day')).toBe(true);
-    const killerInstead = [...dailies('2026-06-02', DAILY_TYPES.length - 1), solve('killer:daily:2026-06-02', '2026-06-02')];
-    expect(unlocked(killerInstead).has('perfect-day')).toBe(false);
+  it('a Sudoku daily does not complete a perfect day, but every other type without it does', () => {
+    const withoutSudoku = dailies('2026-06-01', DAILY_TYPES.length);
+    expect(unlocked(withoutSudoku).has('perfect-day')).toBe(true);
+    const sudokuInstead = [...dailies('2026-06-02', DAILY_TYPES.length - 1), solve('sudoku:daily:2026-06-02', '2026-06-02')];
+    expect(unlocked(sudokuInstead).has('perfect-day')).toBe(false);
   });
 
   it('pack-complete wants every level of one type at one difficulty', () => {

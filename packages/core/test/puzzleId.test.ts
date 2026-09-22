@@ -3,8 +3,8 @@ import { parsePuzzleId, periodEndsAt } from '../src/puzzleId.ts';
 
 describe('parsePuzzleId', () => {
   it('reads a daily id and resolves its difficulty', () => {
-    expect(parsePuzzleId('sudoku:daily:2026-09-21')).toEqual({
-      type: 'sudoku',
+    expect(parsePuzzleId('killer:daily:2026-09-21')).toEqual({
+      type: 'killer',
       period: 'daily',
       key: '2026-09-21',
       difficulty: 'easy',
