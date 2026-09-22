@@ -25,8 +25,6 @@ Stand: 2026-09-22
 - [ ] **Michi** Anreiz, jeden Typ ein paar Mal zu spielen, bevor die App auf die Dailys schiebt.
 - [ ] **Michi** Ist die App vollstaendig offline nutzbar? Frage vom 21.09., noch nicht beantwortet
   (er fliegt naechste Woche und will offline spielen).
-- [ ] **Michi** Slide-Animation beim Wechsel in den Play-Screen und zurueck. Reiterwechsel und
-  Themewechsel sind seit dem 21.09. drin.
 - [ ] **Dani** Das Achievement-Unlock-Banner passt optisch nicht zum Rest der App.
 - [ ] **Dani** Fehlendes Wort in einem Satz (Screenshot vom 21.09., 15:59). Stelle nicht gefunden,
   an den Hint- und Kauftexten hat sich seit dem 20.09. nichts geaendert. Screenshot neu anfragen.
@@ -35,6 +33,9 @@ Stand: 2026-09-22
 
 ## Erledigt
 
+- [x] 2026-09-22 **Michi** Slide beim Wechsel in den Play-Screen. Ein Raetsel ist eine Ebene
+  tiefer, nicht ein Schritt zur Seite: es kommt von rechts herein, beim Zurueck schiebt sich die
+  Liste von links wieder ins Bild. Die Tab-Wechsel behalten ihre eigene Richtung.
 - [x] 2026-09-22 **Michi** Die Perfect-Serie zwang dazu, auch die Typen zu spielen, die einem
   keinen Spass machen. Die Kette ist raus: `perfect-week` faellt weg, gezaehlt werden stattdessen
   perfekte Tage (`perfect-10` und `perfect-50`, im Profil "N perfect days"). Ein ausgelassener

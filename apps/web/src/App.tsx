@@ -12,9 +12,9 @@ import { LevelsIndex, LevelsType } from './pages/Levels.tsx';
 import { Play } from './pages/Play.tsx';
 import { Profile } from './pages/Profile.tsx';
 
-// Position in the tab bar, for the direction of the slide. A puzzle is -1: opening or leaving
-// one is not a move along the bar and stays still. Friends is reached by a card link, not a
-// tab, and belongs to none of the three, so it stays still too. /join renders the same page
+// Position in the tab bar, for the direction of the slide. A puzzle is -1: it sits below the
+// bar rather than on it and gets its own direction below. Friends is reached by a card link,
+// not a tab, and belongs to none of the three, so it stays still. /join renders the same page
 // from an invitation link and gets the same treatment. Achievements is reached the same way,
 // from a card on the Profile tab, and gets the same treatment.
 function tabIndex(path: string): number {
@@ -30,7 +30,20 @@ export function App() {
   if (nav.path !== route.path) {
     const from = tabIndex(nav.path);
     const to = tabIndex(route.path);
-    setNav({ path: route.path, slide: from < 0 || to < 0 || from === to ? '' : to > from ? ' slide-right' : ' slide-left' });
+    // A puzzle is a level deeper, not a step sideways: opening one comes in from the right,
+    // leaving it brings the list back in from the left. Both directions are checked before the
+    // tab axis, which only describes moves along the bar.
+    const slide =
+      route.path === '/play'
+        ? ' slide-right'
+        : nav.path === '/play'
+          ? ' slide-left'
+          : from < 0 || to < 0 || from === to
+            ? ''
+            : to > from
+              ? ' slide-right'
+              : ' slide-left';
+    setNav({ path: route.path, slide });
   }
   let page: React.ReactNode;
   let chrome = true;
