@@ -1,5 +1,6 @@
 import { levelList } from './levels.ts';
 import { parseSolveId } from './solveId.ts';
+import { DAILY_TYPES } from './schedule.ts';
 import { dailyStreaks } from './streaks.ts';
 import { DIFFICULTIES, PUZZLE_TYPES, type PuzzleTypeId } from './types.ts';
 
@@ -36,7 +37,7 @@ export interface Achievement {
 export const ACHIEVEMENTS_EPOCH = Date.parse('2026-09-22T00:00:00+02:00');
 
 export const ACHIEVEMENTS: readonly Achievement[] = [
-  { id: 'every-type', title: 'One of each', description: 'Solve at least one puzzle of every type.', group: 'arrival' },
+  { id: 'every-type', title: 'One of each', description: 'Solve at least one puzzle of every daily type.', group: 'arrival' },
   { id: 'first-weekly', title: 'Weekly done', description: 'Solve a Weekly.', group: 'arrival' },
   { id: 'first-monthly', title: 'Monthly done', description: 'Solve a Monthly.', group: 'arrival' },
   { id: 'first-genius', title: 'Genius', description: 'Solve a puzzle on Genius.', group: 'arrival' },
@@ -129,7 +130,7 @@ function gather(solves: readonly SolveEntry[]): Facts {
   }
 
   for (const day of dailiesByDay.values()) {
-    if (day.types.size < PUZZLE_TYPES.length) continue;
+    if (!DAILY_TYPES.every((type) => day.types.has(type))) continue;
     facts.perfectDay = true;
     if (!day.hinted) facts.perfectDayNoHint = true;
   }
@@ -150,7 +151,9 @@ function gather(solves: readonly SolveEntry[]): Facts {
 }
 
 const CONDITIONS: Record<string, (f: Facts) => boolean> = {
-  'every-type': (f) => f.types.size >= PUZZLE_TYPES.length,
+  // The daily types, not every type there is: Killer Sudoku left the daily list and asking for
+  // it here would put a level, a weekly or a monthly between a player and their first badge.
+  'every-type': (f) => DAILY_TYPES.every((type) => f.types.has(type)),
   'first-weekly': (f) => f.weekly,
   'first-monthly': (f) => f.monthly,
   'first-genius': (f) => f.genius,

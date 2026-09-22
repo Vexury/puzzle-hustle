@@ -1,6 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { nextPeriodStart, periodKey } from '../src/schedule.ts';
+import { DAILY_TYPES, PERIOD_TYPES, nextPeriodStart, periodKey } from '../src/schedule.ts';
 import { decodeRef, encodeRef, periodRef, scheduledRef } from '../src/ref.ts';
+import { PUZZLE_TYPES } from '../src/types.ts';
+
+describe('DAILY_TYPES', () => {
+  it('is every type but Killer Sudoku, in the order of PUZZLE_TYPES', () => {
+    expect(DAILY_TYPES).toEqual(PUZZLE_TYPES.filter((t) => t !== 'killer'));
+    expect(DAILY_TYPES).not.toContain('killer');
+  });
+
+  it('leaves the weekly and monthly rotation alone: Killer still shows up there', () => {
+    expect(PERIOD_TYPES).toContain('killer');
+    expect(PERIOD_TYPES).toContain('sudoku');
+  });
+});
 
 describe('periodKey (Europe/Berlin)', () => {
   it('rolls the day at Berlin midnight, not UTC', () => {

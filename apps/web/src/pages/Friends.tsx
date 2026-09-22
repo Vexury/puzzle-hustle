@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { PUZZLE_META, PUZZLE_TYPES, dailyRef, periodRef, refId } from '@puzzle-hustle/core';
+import { DAILY_TYPES, PUZZLE_META, dailyRef, periodRef, refId } from '@puzzle-hustle/core';
 import { ApiError, apiFetch, readSession } from '../lib/api.ts';
 import { useSession } from '../lib/auth.ts';
 import { href, onLinkClick } from '../lib/router.ts';
@@ -97,9 +97,9 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
     );
   }
 
-  // Ten generator runs a signed-out (or still-loading) player never needs, so this stays below
+  // Nine generator runs a signed-out (or still-loading) player never needs, so this stays below
   // both early returns above and only runs once we know it will actually be rendered.
-  const puzzles = [...PUZZLE_TYPES.map((type) => dailyRef(type)), periodRef('weekly'), periodRef('monthly')];
+  const puzzles = [...DAILY_TYPES.map((type) => dailyRef(type)), periodRef('weekly'), periodRef('monthly')];
 
   const create = async () => {
     setCreating(true);

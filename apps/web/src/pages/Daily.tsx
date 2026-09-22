@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { PUZZLE_META, PUZZLE_TYPES, dailyRef, encodeRef, nextPeriodStart, periodRef, refId, type Period, type PuzzleRef } from '@puzzle-hustle/core';
+import { DAILY_TYPES, PUZZLE_META, dailyRef, encodeRef, nextPeriodStart, periodRef, refId, type Period, type PuzzleRef } from '@puzzle-hustle/core';
 import { PuzzleIcon } from '../components/PuzzleIcon.tsx';
 import { href, onLinkClick } from '../lib/router.ts';
 import { useSolves } from '../lib/storage.ts';
@@ -71,7 +71,7 @@ function FriendsRow() {
 export function Daily() {
   const solves = useSolves();
   const streaks = dailyStreaks(solves);
-  const dailies = PUZZLE_TYPES.map((type) => dailyRef(type));
+  const dailies = DAILY_TYPES.map((type) => dailyRef(type));
   const weekly = periodRef('weekly');
   const monthly = periodRef('monthly');
   const dayLeft = useCountdown('daily');

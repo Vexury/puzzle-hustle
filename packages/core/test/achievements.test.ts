@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PUZZLE_TYPES } from '../src/types.ts';
+import { DAILY_TYPES } from '../src/schedule.ts';
 import { levelList } from '../src/levels.ts';
 import { ACHIEVEMENTS, ACHIEVEMENTS_EPOCH, unlockedAchievements, type SolveEntry } from '../src/achievements.ts';
 
@@ -11,7 +12,7 @@ function solve(id: string, day = '2026-06-01', hour = 12, hints = 0): SolveEntry
 }
 
 function dailies(day: string, count: number, hints = 0): SolveEntry[] {
-  return PUZZLE_TYPES.slice(0, count).map((t) => solve(`${t}:daily:${day}`, day, 12, hints));
+  return DAILY_TYPES.slice(0, count).map((t) => solve(`${t}:daily:${day}`, day, 12, hints));
 }
 
 // A run of `days` consecutive perfect days starting 2026-06-01, used by both the streak
@@ -20,7 +21,7 @@ function streakDays(days: number): SolveEntry[] {
   const out: SolveEntry[] = [];
   for (let i = 0; i < days; i++) {
     const d = new Date(Date.parse('2026-06-01T12:00:00Z') + i * 86400000).toISOString().slice(0, 10);
-    out.push(...dailies(d, PUZZLE_TYPES.length));
+    out.push(...dailies(d, DAILY_TYPES.length));
   }
   return out;
 }
@@ -58,12 +59,14 @@ describe('unlockedAchievements', () => {
     expect(unlockedAchievements([atEpoch], EPOCH).has('first-weekly')).toBe(true);
   });
 
-  it('every-type wants one of each, in any mode', () => {
-    const mixed = PUZZLE_TYPES.map((t, i) =>
+  it('every-type wants one of each daily type, in any mode, and never asks for Killer', () => {
+    const mixed = DAILY_TYPES.map((t, i) =>
       i % 2 === 0 ? solve(`${t}:daily:2026-06-01`) : solve(`${t}:medium:1a2b${i}`),
     );
     expect(unlocked(mixed).has('every-type')).toBe(true);
     expect(unlocked(mixed.slice(0, -1)).has('every-type')).toBe(false);
+    const killerInstead = [...mixed.slice(0, -1), solve('killer:daily:2026-06-01')];
+    expect(unlocked(killerInstead).has('every-type')).toBe(false);
   });
 
   it('first-weekly, first-monthly and first-genius', () => {
@@ -100,11 +103,11 @@ describe('unlockedAchievements', () => {
     expect(unlocked([solve('zip:daily:2026-06-01')]).has('daily-no-hint')).toBe(true);
     expect(unlocked([solve('zip:daily:2026-06-01', '2026-06-01', 12, 1)]).has('daily-no-hint')).toBe(false);
 
-    const full = dailies('2026-06-01', PUZZLE_TYPES.length);
+    const full = dailies('2026-06-01', DAILY_TYPES.length);
     expect(unlocked(full).has('perfect-day')).toBe(true);
     expect(unlocked(full).has('perfect-day-no-hint')).toBe(true);
 
-    const hinted = dailies('2026-06-02', PUZZLE_TYPES.length, 1);
+    const hinted = dailies('2026-06-02', DAILY_TYPES.length, 1);
     expect(unlocked(hinted).has('perfect-day')).toBe(true);
     expect(unlocked(hinted).has('perfect-day-no-hint')).toBe(false);
   });
@@ -114,12 +117,19 @@ describe('unlockedAchievements', () => {
     expect(unlocked(notDaily).has('daily-no-hint')).toBe(false);
   });
 
-  it('perfect-day wants all eight on the same day, not eight solves spread over two days', () => {
+  it('perfect-day wants every daily on the same day, not the same number spread over two days', () => {
     const onOneDay = (day: string, types: readonly (typeof PUZZLE_TYPES)[number][]) =>
       types.map((t) => solve(`${t}:daily:${day}`, day));
-    const split = [...onOneDay('2026-06-01', PUZZLE_TYPES.slice(0, 4)), ...onOneDay('2026-06-02', PUZZLE_TYPES.slice(4, 8))];
+    const split = [...onOneDay('2026-06-01', DAILY_TYPES.slice(0, 4)), ...onOneDay('2026-06-02', DAILY_TYPES.slice(4))];
     expect(unlocked(split).has('perfect-day')).toBe(false);
     expect(unlocked(split).has('perfect-day-no-hint')).toBe(false);
+  });
+
+  it('a Killer daily does not complete a perfect day, but every other type without it does', () => {
+    const withoutKiller = dailies('2026-06-01', DAILY_TYPES.length);
+    expect(unlocked(withoutKiller).has('perfect-day')).toBe(true);
+    const killerInstead = [...dailies('2026-06-02', DAILY_TYPES.length - 1), solve('killer:daily:2026-06-02', '2026-06-02')];
+    expect(unlocked(killerInstead).has('perfect-day')).toBe(false);
   });
 
   it('pack-complete wants every level of one type at one difficulty', () => {
@@ -201,7 +211,7 @@ describe('unlockedAchievements', () => {
   });
 
   it('returns exactly the achievements a handcrafted history earns, and no others', () => {
-    const oneFullDay = dailies('2026-06-01', PUZZLE_TYPES.length);
+    const oneFullDay = dailies('2026-06-01', DAILY_TYPES.length);
     expect([...unlocked(oneFullDay)].sort()).toEqual(
       ['daily-no-hint', 'every-type', 'perfect-day', 'perfect-day-no-hint'].sort(),
     );
@@ -224,7 +234,7 @@ describe('unlockedAchievements', () => {
     // id ACHIEVEMENTS declares, is a black-box way to prove each lookup actually fires.
     const n = levelList('zip', 'easy').length;
     const fixtures: Record<string, SolveEntry[]> = {
-      'every-type': PUZZLE_TYPES.map((t) => solve(`${t}:daily:2026-06-01`)),
+      'every-type': DAILY_TYPES.map((t) => solve(`${t}:daily:2026-06-01`)),
       'first-weekly': [solve('sudoku:weekly:2026-W23')],
       'first-monthly': [solve('sudoku:monthly:2026-06')],
       'first-genius': [solve('shapes:level:genius:1')],
@@ -233,8 +243,8 @@ describe('unlockedAchievements', () => {
       'streak-30': streakDays(30),
       'perfect-week': streakDays(7),
       'daily-no-hint': [solve('zip:daily:2026-06-01')],
-      'perfect-day': dailies('2026-06-01', PUZZLE_TYPES.length),
-      'perfect-day-no-hint': dailies('2026-06-01', PUZZLE_TYPES.length),
+      'perfect-day': dailies('2026-06-01', DAILY_TYPES.length),
+      'perfect-day-no-hint': dailies('2026-06-01', DAILY_TYPES.length),
       'pack-complete': Array.from({ length: n }, (_, i) => solve(`zip:level:easy:${i + 1}`)),
       'solved-50': Array.from({ length: 50 }, (_, i) => solve(`zip:medium:seed${i}`)),
       'solved-250': Array.from({ length: 250 }, (_, i) => solve(`zip:medium:seed${i}`)),

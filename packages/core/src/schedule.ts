@@ -1,5 +1,5 @@
 import { hashString } from './rng.ts';
-import { type Difficulty, type Period, type PuzzleTypeId } from './types.ts';
+import { PUZZLE_TYPES, type Difficulty, type Period, type PuzzleTypeId } from './types.ts';
 
 export const TIME_ZONE = 'Europe/Berlin';
 
@@ -56,12 +56,17 @@ const DAILY_DIFFICULTY: Partial<Record<PuzzleTypeId, Difficulty>> = {
   shapes: 'hard',
   stars: 'easy',
   sudoku: 'easy',
-  killer: 'easy',
 };
 
 export function periodDifficulty(type: PuzzleTypeId, period: Period): Difficulty {
   return (period === 'daily' ? DAILY_DIFFICULTY[type] : undefined) ?? PERIOD_DIFFICULTY[period];
 }
+
+// The dailies, in the order PUZZLE_TYPES gives them. Killer Sudoku sits out: plain Sudoku
+// carries the daily and Killer is the one for experts, reachable through its levels and
+// through the weekly and monthly rotation below. Unlike PERIOD_TYPES this is derived, because
+// nothing here depends on the position, only on membership.
+export const DAILY_TYPES: readonly PuzzleTypeId[] = PUZZLE_TYPES.filter((type) => type !== 'killer');
 
 // Deliberately not derived from PUZZLE_TYPES: the position here decides which type a weekly
 // or monthly is. Reordering rewrites every past period and orphans the solves recorded

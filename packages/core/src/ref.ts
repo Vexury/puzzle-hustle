@@ -15,7 +15,7 @@ export interface PuzzleRef {
 
 const PERIOD_ATTEMPTS = 24;
 
-// Each entry costs a generator run per attempt, about 180 ms for all eight dailies. Once a
+// Each entry costs a generator run per attempt, about 160 ms for all seven dailies. Once a
 // day is fine, once per render is not.
 const scheduledCache = new Map<string, PuzzleRef>();
 

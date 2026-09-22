@@ -1,5 +1,5 @@
 import { PUZZLE_TYPES, type PuzzleTypeId } from './types.ts';
-import { periodKey } from './schedule.ts';
+import { DAILY_TYPES, periodKey } from './schedule.ts';
 
 export const LAUNCH_DAY = '2026-09-18';
 export const STREAK_MIN = Math.min(3, PUZZLE_TYPES.length);
@@ -38,7 +38,12 @@ export function dailyStreaks(ids: Iterable<string>, now: Date = new Date()): Dai
   const today = periodKey('daily', now);
   const todayIndex = dayIndex(today);
   const anyOn = (i: number) => (solvedTypesByDay.get(keyOfDayIndex(i))?.size ?? 0) >= STREAK_MIN;
-  const perfectOn = (i: number) => (solvedTypesByDay.get(keyOfDayIndex(i))?.size ?? 0) >= PUZZLE_TYPES.length;
+  // Only the types that have a daily count here. A Killer daily solved before Killer left the
+  // list still counts towards the plain streak above, it just cannot fill a gap any more.
+  const perfectOn = (i: number) => {
+    const solved = solvedTypesByDay.get(keyOfDayIndex(i));
+    return solved ? DAILY_TYPES.every((type) => solved.has(type)) : false;
+  };
 
   const run = (test: (i: number) => boolean) => {
     let start = todayIndex;

@@ -11,6 +11,18 @@ newer than that build.
 
 ### Puzzles
 
+**Killer Sudoku is not one of the dailies any more.** Two of the eight daily cards were a
+Sudoku, and the harder of the two is a poor thing to meet first thing in the morning. Plain
+Sudoku carries the daily now and Killer is the one for experts: it keeps its own level packs
+at all four difficulties and still comes up in the weekly and monthly rotation. The daily list
+is seven cards, so a perfect day is seven dailies. Perfect days already earned stay earned,
+because a day with all eight solved still holds all seven, while a day where Killer stood in
+for a missing type was never a full set and does not become one. Killer dailies solved before
+the change keep counting in the statistics and towards the ordinary streak, and a shared link
+to one still opens. No achievement asks for Killer any more: "One of each" wants one of every
+daily type, so a full day of dailies still earns it. The store text promised eight fresh
+puzzles a day and now promises seven.
+
 **Every pack holds 50 levels, and Zip finally has all four.** Zip hard and genius shipped as
 empty packs because their generator was thought too slow to fill them. Measured, it is not:
 1.4 s and 4.3 s per puzzle with every seed accepted, so the two packs cost a quarter of an

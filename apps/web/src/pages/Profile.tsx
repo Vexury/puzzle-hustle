@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ACHIEVEMENTS, PUZZLE_META, PUZZLE_TYPES } from '@puzzle-hustle/core';
+import { ACHIEVEMENTS, DAILY_TYPES, PUZZLE_META } from '@puzzle-hustle/core';
 import { Flame } from './Daily.tsx';
 import { ACCENTS, ACCENT_NAMES, useAccent } from '../lib/accent.ts';
 import { adsAvailable, onAdsConsent, privacyOptionsAvailable, showPrivacyOptions } from '../lib/ads.ts';
@@ -119,7 +119,7 @@ export function Profile() {
           <span>
             <b>{streaks.perfect}-day perfect streak</b>
             <span className="muted small">
-              All {PUZZLE_TYPES.length} dailies every day · best {streaks.bestPerfect}
+              All {DAILY_TYPES.length} dailies every day · best {streaks.bestPerfect}
             </span>
           </span>
         </div>

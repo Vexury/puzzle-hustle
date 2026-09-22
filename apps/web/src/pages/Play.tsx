@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   PUZZLE_META,
-  PUZZLE_TYPES,
+  DAILY_TYPES,
   decodeRef,
   encodeRef,
   crownsAdapter,
@@ -298,7 +298,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const nextLevel = puzzleRef.level ? levelRef(puzzleRef.type, puzzleRef.difficulty, puzzleRef.level + 1) : null;
   const nextChallenge = useMemo(() => {
     if (!puzzleRef.period) return null;
-    const candidates = [...PUZZLE_TYPES.map((type) => dailyRef(type)), periodRef('weekly'), periodRef('monthly')];
+    const candidates = [...DAILY_TYPES.map((type) => dailyRef(type)), periodRef('weekly'), periodRef('monthly')];
     return candidates.find((c) => refId(c) !== id && !solves[refId(c)]) ?? null;
   }, [puzzleRef, id, solves]);
   const toggleHelp = () => {
