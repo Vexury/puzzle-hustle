@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 let enqueue: ((title: string) => void) | null = null;
 
@@ -39,13 +39,17 @@ export function AchievementBannerHost() {
     setPhase('enter');
   }, [queue, current]);
 
-  // A class/attribute change applied in the same tick as the mount would not transition (the
-  // browser never paints the collapsed 'enter' state to transition away from), so the move to
-  // 'open' happens one tick later.
-  useEffect(() => {
+  // A transition needs two separate style resolutions to interpolate between, and a freshly
+  // inserted element has had none. Scheduling the move to 'open' on a timer is the usual trick
+  // and the usual bug: the callback can run before the browser has resolved the collapsed state,
+  // both attribute values collapse into one recalculation, and the banner snaps open instead of
+  // widening. Reading a layout property here forces that first resolution while it is still
+  // collapsed, so the change to 'open' is genuinely the second one. Frame timing stops mattering.
+  const pill = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
     if (current === null || phase !== 'enter') return;
-    const timer = window.setTimeout(() => setPhase('open'), 0);
-    return () => clearTimeout(timer);
+    void pill.current?.offsetWidth;
+    setPhase('open');
   }, [current, phase]);
 
   useEffect(() => {
@@ -63,7 +67,7 @@ export function AchievementBannerHost() {
   if (current === null) return null;
 
   return (
-    <div className="achievement-banner" data-phase={phase} role="status">
+    <div className="achievement-banner" data-phase={phase} role="status" ref={pill}>
       <span className="achievement-banner-text">Achievement unlocked: {current}</span>
     </div>
   );
