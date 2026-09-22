@@ -53,6 +53,7 @@ export const PERIOD_DIFFICULTY: Record<Period, Difficulty> = {
 };
 
 const DAILY_DIFFICULTY: Partial<Record<PuzzleTypeId, Difficulty>> = {
+  shapes: 'hard',
   stars: 'easy',
   sudoku: 'easy',
   killer: 'easy',
