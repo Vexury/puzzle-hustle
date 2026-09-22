@@ -1,10 +1,10 @@
 import { beforeEach, expect, it, vi } from 'vitest';
 import { ACHIEVEMENTS, ACHIEVEMENTS_EPOCH } from '@puzzle-hustle/core';
 
-vi.mock('../src/components/Toast.tsx', () => ({ toast: vi.fn() }));
+vi.mock('../src/components/AchievementBanner.tsx', () => ({ announceAchievement: vi.fn() }));
 
 import { currentUnlocked, pendingAnnouncements, syncAchievements } from '../src/lib/achievements.ts';
-import { toast } from '../src/components/Toast.tsx';
+import { announceAchievement } from '../src/components/AchievementBanner.tsx';
 import { recordSolve, rehydrate, resetProgress } from '../src/lib/storage.ts';
 
 // storedSolves() reads the storage.ts in-memory cache, not localStorage directly (recordSolve()
@@ -15,7 +15,7 @@ beforeEach(() => {
   localStorage.clear();
   rehydrate();
   vi.restoreAllMocks();
-  vi.mocked(toast).mockClear();
+  vi.mocked(announceAchievement).mockClear();
 });
 
 const after = ACHIEVEMENTS_EPOCH + 86400000;
@@ -76,27 +76,27 @@ it('ignores a stored history it cannot make sense of instead of throwing', () =>
   expect(() => currentUnlocked()).not.toThrow();
 });
 
-it('toasts once per achievement and not again on a second run', () => {
+it('announces once per achievement and not again on a second run', () => {
   localStorage.setItem(
     'ph:solves',
     JSON.stringify({ 'zip:weekly:2026-W39': { solvedAt: new Date(after).toISOString(), seconds: 60, hints: 0, moves: 10 } }),
   );
   rehydrate();
   syncAchievements();
-  expect(toast).toHaveBeenCalledTimes(1);
-  expect(toast).toHaveBeenCalledWith('Achievement unlocked: Weekly done');
+  expect(announceAchievement).toHaveBeenCalledTimes(1);
+  expect(announceAchievement).toHaveBeenCalledWith('Weekly done');
   const stored = JSON.parse(localStorage.getItem('ph:achievements') ?? '[]') as string[];
   expect(stored).toContain('first-weekly');
   syncAchievements();
-  expect(toast).toHaveBeenCalledTimes(1);
+  expect(announceAchievement).toHaveBeenCalledTimes(1);
   expect(JSON.parse(localStorage.getItem('ph:achievements') ?? '[]')).toEqual(stored);
 });
 
-it('toasts several simultaneous unlocks in catalog order', () => {
+it('announces several simultaneous unlocks in catalog order', () => {
   // Deliberately does not hardcode which ids unlock: night-owl/early-bird depend on the test
   // runner's local timezone (parsed.solvedAt's local hour), so the set of what fires alongside
   // first-weekly/first-monthly/first-genius/daily-no-hint can vary. What must not vary is that,
-  // whatever unlocks, the toasts fire in ACHIEVEMENTS catalog order.
+  // whatever unlocks, the banner announcements fire in ACHIEVEMENTS catalog order.
   const solvedAt = new Date(after).toISOString();
   localStorage.setItem(
     'ph:solves',
@@ -111,9 +111,9 @@ it('toasts several simultaneous unlocks in catalog order', () => {
   expect(unlocked.size).toBeGreaterThanOrEqual(3); // several at once, not just one
   const catalogOrder = ACHIEVEMENTS.map((a) => a.id).filter((id) => unlocked.has(id));
   syncAchievements();
-  const toastedTitles = vi.mocked(toast).mock.calls.map(([message]) => message);
-  const expectedTitles = catalogOrder.map((id) => `Achievement unlocked: ${ACHIEVEMENTS.find((a) => a.id === id)!.title}`);
-  expect(toastedTitles).toEqual(expectedTitles);
+  const announcedTitles = vi.mocked(announceAchievement).mock.calls.map(([title]) => title);
+  const expectedTitles = catalogOrder.map((id) => ACHIEVEMENTS.find((a) => a.id === id)!.title);
+  expect(announcedTitles).toEqual(expectedTitles);
 });
 
 it('does not write ph:achievements on a sync that changes nothing, notably a clean install', () => {

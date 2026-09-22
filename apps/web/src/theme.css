@@ -642,8 +642,78 @@ p { margin: 0; }
   z-index: 60;
 }
 
+/* Sits a little above the toast (28px + 44px vs. the toast's 28px) so the two never overlap if
+   both fire at once: the toast is roughly 30-34px tall, this leaves a clear gap above it.
+   Collapsed, it is a 36px circle (min-width == height, fully rounded); [data-phase="open"]
+   widens the single grid column from 0fr to 1fr, which animates because .achievement-banner-text
+   is the sole track and has overflow: hidden; min-width: 0, so its max-content width becomes the
+   1fr target instead of an auto that could not be transitioned. */
+.achievement-banner {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--tabbar-h) + 72px + env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-columns: 0fr;
+  align-items: center;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 0 6px 18px var(--accent-strong);
+  opacity: 0;
+  transform: translateX(-50%) scale(0.55);
+  z-index: 61;
+  transition:
+    opacity 0.18s ease-out,
+    transform 0.18s ease-out,
+    grid-template-columns 0.34s cubic-bezier(0.22, 1, 0.36, 1) 0.1s;
+}
+.achievement-banner[data-phase='open'] {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+  grid-template-columns: 1fr;
+}
+.achievement-banner[data-phase='exit'] {
+  opacity: 0;
+  transform: translateX(-50%) scale(0.55);
+  grid-template-columns: 0fr;
+  transition:
+    grid-template-columns 0.24s cubic-bezier(0.4, 0, 1, 1),
+    opacity 0.2s ease-in 0.2s,
+    transform 0.2s ease-in 0.2s;
+}
+.achievement-banner-text {
+  overflow: hidden;
+  min-width: 0;
+  white-space: nowrap;
+  padding: 0 16px;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  opacity: 0;
+  transition: opacity 0.16s ease-out;
+}
+.achievement-banner[data-phase='open'] .achievement-banner-text {
+  opacity: 1;
+  transition-delay: 0.3s;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The blanket rule above already kills the width/scale transitions; this restores just a
+     plain fade, the way .level-grid and .solved-head drop their motion but stay visible. */
+  .achievement-banner {
+    grid-template-columns: 1fr !important;
+    transform: translateX(-50%) !important;
+    transition: opacity 0.2s ease-out !important;
+  }
+  .achievement-banner-text {
+    transition: opacity 0.2s ease-out !important;
+  }
 }
 
 /* The theme swap grows out of the button that was pressed. Both snapshots hold still, the new

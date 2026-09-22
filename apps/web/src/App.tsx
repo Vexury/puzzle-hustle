@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AchievementBannerHost } from './components/AchievementBanner.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import { Intro } from './components/Intro.tsx';
 import { TabBar } from './components/TabBar.tsx';
@@ -54,6 +55,7 @@ export function App() {
       {chrome && <TabBar />}
       {chrome && <Intro />}
       <ToastHost />
+      <AchievementBannerHost />
     </div>
   );
 }
