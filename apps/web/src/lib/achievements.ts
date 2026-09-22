@@ -56,6 +56,8 @@ export function pendingAnnouncements(
   return { toAnnounce, nextAnnounced: [...known, ...toAnnounce] };
 }
 
+const CATALOG_ORDER = new Map(ACHIEVEMENTS.map((a, i) => [a.id, i]));
+
 // Called after a solve and on app start. Must never throw: a player does not lose their
 // finished-puzzle screen, or their session start, over a collectible.
 export function syncAchievements(): void {
@@ -66,7 +68,12 @@ export function syncAchievements(): void {
     // and its id has to leave the stored list right then, or it is still there when the player
     // earns it again and the second unlock passes silently.
     writeSetting(KEY, JSON.stringify(nextAnnounced));
-    for (const id of toAnnounce) {
+    // Sorted explicitly by catalog position rather than trusting the order toAnnounce already
+    // happens to arrive in: pendingAnnouncements is deliberately generic and does not know about
+    // ACHIEVEMENTS, so nothing upstream guarantees an order a future core refactor couldn't
+    // silently disturb.
+    const ordered = [...toAnnounce].sort((a, b) => (CATALOG_ORDER.get(a) ?? 0) - (CATALOG_ORDER.get(b) ?? 0));
+    for (const id of ordered) {
       const achievement = ACHIEVEMENTS.find((a) => a.id === id);
       if (achievement) toast(`Achievement unlocked: ${achievement.title}`);
     }
