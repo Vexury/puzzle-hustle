@@ -1,0 +1,22 @@
+<en-US>
+Killer takes over the daily, and it got a lot friendlier on the way.
+
+- Killer Sudoku is the daily now, plain Sudoku keeps its levels and the weekly and monthly
+- Killer easy is far easier than it was, the daily included
+- Pencil marks in a cage stay inside it and no longer sit under the cage sum
+- Friends have their own Social tab, sign-in included
+- Profile: name and achievements share a row, perfect days sit with the other numbers
+- Perfect days are counted now instead of chained, so a skipped day costs nothing
+- Opening a puzzle slides it in, and the number highlight can be switched off in Profile
+</en-US>
+<de-DE>
+Killer übernimmt den Daily und ist dabei deutlich freundlicher geworden.
+
+- Killer Sudoku ist jetzt der Daily, plain Sudoku behält seine Level sowie Weekly und Monthly
+- Killer Easy ist viel leichter als vorher, der Daily eingeschlossen
+- Notizen in einem Käfig bleiben darin und liegen nicht mehr unter der Käfigsumme
+- Freunde haben einen eigenen Social-Tab, die Anmeldung inklusive
+- Profil: Name und Erfolge teilen sich eine Zeile, Perfect Days stehen bei den übrigen Zahlen
+- Perfect Days werden gezählt statt verkettet, ein ausgelassener Tag kostet also nichts
+- Ein Rätsel schiebt sich beim Öffnen herein, und das Ziffern-Leuchten lässt sich im Profil abschalten
+</de-DE>
