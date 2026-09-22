@@ -584,6 +584,8 @@ p { margin: 0; }
 @media (prefers-reduced-motion: reduce) { .solved-head, .solved .solve-fx { animation: none !important; } }
 .solved-head h2 { color: var(--success); font-size: var(--fs-xl); font-weight: 800; }
 .big-time { font-size: 2.4rem; line-height: 1.1; color: var(--accent-deep); }
+.best-note { font-size: var(--fs-sm); font-weight: 600; color: var(--text-muted); }
+.best-note.better { color: var(--success); }
 .solved-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; }
 .solved-actions > :only-child { margin-left: auto; }
 .share-icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }

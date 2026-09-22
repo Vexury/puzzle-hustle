@@ -34,9 +34,15 @@ export function getSolve(id: string): SolveRecord | undefined {
   return cache[id];
 }
 
+const PERIOD_ID = /:(daily|weekly|monthly):/;
+
 export function recordSolve(id: string, record: SolveRecord) {
-  if (cache[id]) return;
-  cache = { ...cache, [id]: record };
+  const previous = cache[id];
+  // Dailies, Weeklies and Monthlies keep their first run, that is the time the leaderboard got.
+  // Everything else is repeatable, so a faster run replaces the old one. The first solve date
+  // stays, otherwise replaying an old level would drag it past the achievements epoch.
+  if (previous && (PERIOD_ID.test(id) || record.seconds >= previous.seconds)) return;
+  cache = { ...cache, [id]: previous ? { ...record, solvedAt: previous.solvedAt } : record };
   try {
     localStorage.setItem(KEY, JSON.stringify(cache));
     scheduleBackup();

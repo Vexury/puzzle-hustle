@@ -10,9 +10,6 @@ Stand: 2026-09-22
 
 - [ ] **Pia** Schalter im Profil fuer das Leuchten der gleichen Zahlen im Sudoku, falls es beim
   Spielen zu unruhig wirkt. Das Leuchten selbst steht seit dem 22.09.
-- [ ] **Pia** Bei den normalen Leveln zaehlt nur die erste Zeit. Wiederholen soll die Bestzeit
-  verbessern koennen. `recordSolve` in `apps/web/src/lib/storage.ts` steigt derzeit bei
-  vorhandenem Eintrag frueh aus (`if (cache[id]) return`).
 - [ ] **Jonas** Mosaik-Frage vom 20.09. noch unbeantwortet: warum eine 8 ohne X nicht satisfied
   ist, mit X aber schon. Entweder Regelmissverstaendnis oder ein Fehler im Zaehler.
 - [ ] **Jonas** Zwei Sprachnachrichten vom 22.09. (11:53 und 15:15) sind noch nicht ausgewertet.
@@ -42,6 +39,12 @@ Stand: 2026-09-22
 
 ## Erledigt
 
+- [x] 2026-09-22 **Pia** Normale Level zaehlten nur die erste Zeit. Eine Wiederholung ersetzt den
+  Eintrag jetzt, wenn sie schneller war; das Datum des ersten Loesens bleibt stehen, damit ein
+  spaeter wiederholtes Level nicht in die Achievements-Epoche rutscht. Dailys, Weekly und Monthly
+  behalten ihren ersten Lauf, das ist die Zeit, die in der Bestenliste steht. Ein wieder
+  geoeffnetes Level startet darum einen frischen Lauf mit laufender Uhr und zeigt nach dem Loesen,
+  ob es eine neue Bestzeit war.
 - [x] 2026-09-22 **Jonas, Pia** Eine Zahl in der Sudoku-Leiste antippen leuchtet jetzt alle
   gleichen Zahlen auf dem Brett an, Notizen eingeschlossen, ohne sie zu setzen. Ist eine Zelle
   ausgewaehlt, setzt derselbe Tipp die Zahl wie bisher und leuchtet zusaetzlich. Eine Ziffer, die

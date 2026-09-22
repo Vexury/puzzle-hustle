@@ -80,6 +80,10 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const id = refId(puzzleRef);
   const solves = useSolves();
   const existing = solves[id];
+  // A level or a seeded practice puzzle can be played again for a better time, so reopening one
+  // starts a fresh run. A period keeps its first run, that is the time the leaderboard got.
+  const replayable = !puzzleRef.period;
+  const bestBefore = useRef(existing?.seconds ?? null).current;
   const spec = useMemo(
     () =>
       puzzleRef.type === 'zip'
@@ -113,14 +117,14 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
         : 'clues' in spec
         ? `${spec.config.rows}×${spec.config.cols}, ${[...spec.clues].filter((c) => c >= 0).length} clues`
         : `${spec.config.rows}×${spec.config.cols}${spec.config.colors > 1 ? `, ${spec.config.colors} colors` : ''}`;
-  const saved = useMemo(() => (existing ? null : readProgress(id)), [id, existing]);
+  const saved = useMemo(() => (existing && !replayable ? null : readProgress(id)), [id, existing, replayable]);
   const [moves, setMoves] = useState(saved?.moves ?? 0);
   const [hints, setHints] = useState(saved?.hints ?? 0);
   const [seconds, setSeconds] = useState(saved?.seconds ?? 0);
   const startedAt = useRef<number | null>(null);
   const counters = useRef({ moves: saved?.moves ?? 0, hints: saved?.hints ?? 0 });
   const [running, setRunning] = useState(false);
-  const [result, setResult] = useState<SolveRecord | undefined>(existing);
+  const [result, setResult] = useState<SolveRecord | undefined>(replayable ? undefined : existing);
   // Gates Placement below: it must mount only once the solve just submitted has actually had
   // its round trip, not the instant it is enqueued. A puzzle that was already solved in an
   // earlier session has nothing racing it, so it starts settled.
@@ -407,6 +411,11 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           <span className="muted small">
             {result.moves} moves · {result.hints === 0 ? 'no hints' : `${result.hints} hint${result.hints === 1 ? '' : 's'}`}
           </span>
+          {replayable && bestBefore !== null && (
+            <span className={result.seconds < bestBefore ? 'best-note better' : 'best-note'}>
+              {result.seconds < bestBefore ? `New best, ${formatSeconds(bestBefore)} before` : `Your best stays ${formatSeconds(bestBefore)}`}
+            </span>
+          )}
           {puzzleRef.period && scoreSettled && <Placement puzzle={id} />}
         </div>
       )}
