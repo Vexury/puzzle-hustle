@@ -37,7 +37,6 @@ Stand: 2026-09-22
 - [ ] **Michi** Slide-Animation beim Wechsel in den Play-Screen und zurueck. Reiterwechsel und
   Themewechsel sind seit dem 21.09. drin.
 - [ ] **Dani** Das Achievement-Unlock-Banner passt optisch nicht zum Rest der App.
-- [ ] **Dani** Das Ende der Progressbar abrunden wie den Anfang und vor dem Bildschirmrand enden.
 - [ ] **Dani** Fehlendes Wort in einem Satz (Screenshot vom 21.09., 15:59). Stelle nicht gefunden,
   an den Hint- und Kauftexten hat sich seit dem 20.09. nichts geaendert. Screenshot neu anfragen.
 - [ ] **Frieder** Rueckmeldung zur Shapes-Startanordnung auf Genius steht noch aus. Easy bis Hard
@@ -45,6 +44,10 @@ Stand: 2026-09-22
 
 ## Erledigt
 
+- [x] 2026-09-22 **Dani** Das Ende der Progressbar sah falsch aus. Ursache war der Zaehler: eine
+  vor der Umstellung geloeste Killer-Daily zaehlte weiter mit, die Fuellung lief bei 8/7 ueber das
+  abgerundete Ende hinaus. Der Zaehler nimmt nur noch die Typen, die einen Daily haben, und die
+  Fuellung ist bei 100 Prozent gedeckelt.
 - [x] 2026-09-22 **Pia** Die Hint-Markierung war zu kurz und zu leise. Sie haelt jetzt 3 statt
   1,8 Sekunden, pulst viermal, faerbt die Zelle zusaetzlich zum gruenen Rahmen ein und gilt so in
   allen acht Typen.

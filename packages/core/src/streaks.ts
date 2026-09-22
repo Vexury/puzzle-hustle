@@ -71,8 +71,11 @@ export function dailyStreaks(ids: Iterable<string>, now: Date = new Date()): Dai
     return bestRun;
   };
 
+  const todaySolved = solvedTypesByDay.get(today);
   return {
-    today: solvedTypesByDay.get(today)?.size ?? 0,
+    // Only the types that still have a daily, so the Daily progress bar cannot read 8/7 for
+    // someone who solved a Killer daily before Killer left the list.
+    today: todaySolved ? DAILY_TYPES.filter((type) => todaySolved.has(type)).length : 0,
     current: run(anyOn),
     best: Math.max(best(anyOn), run(anyOn)),
     perfect: run(perfectOn),

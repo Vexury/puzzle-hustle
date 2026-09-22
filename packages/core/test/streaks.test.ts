@@ -43,6 +43,11 @@ describe('dailyStreaks', () => {
     expect(dailyStreaks(ids, at('2026-09-22')).perfect).toBe(0);
   });
 
+  it('counts only types that still have a daily towards today', () => {
+    const ids = [...DAILY_TYPES.map((t) => `${t}:daily:2026-09-22`), 'killer:daily:2026-09-22'];
+    expect(dailyStreaks(ids, at('2026-09-22')).today).toBe(DAILY_TYPES.length);
+  });
+
   it('still counts a Killer daily from before the change towards the plain streak', () => {
     const ids = ['killer:daily:2026-09-22', ...day('2026-09-22', STREAK_MIN - 1)];
     expect(dailyStreaks(ids, at('2026-09-22')).current).toBe(1);

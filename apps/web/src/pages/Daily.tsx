@@ -131,7 +131,7 @@ function DailyProgress({ solved, total }: { solved: number; total: number }) {
   return (
     <div className={safe ? 'daily-progress safe' : 'daily-progress'} role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={solved}>
       <div className="track">
-        <span className="fill" style={{ width: `${(solved / total) * 100}%` }} />
+        <span className="fill" style={{ width: `${Math.min(1, solved / total) * 100}%` }} />
         <span className="goal-badge" style={{ left: `${(STREAK_MIN / total) * 100}%` }}>
           <Flame />
         </span>
