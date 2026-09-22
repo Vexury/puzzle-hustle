@@ -1,0 +1,91 @@
+# Tester-Feedback
+
+Quelle ist die WhatsApp-Gruppe "Puzzle Hustle" (seit 18.09.2026) und die Einzelchats mit den Testern.
+Neue Punkte kommen unter "Offen", erledigte wandern mit Datum nach "Erledigt". Ein Punkt gehoert
+in denselben Commit wie sein Fix.
+
+Stand: 2026-09-22
+
+## Offen
+
+- [ ] **Pia** Bei den normalen Leveln zaehlt nur die erste Zeit. Wiederholen soll die Bestzeit
+  verbessern koennen. `recordSolve` in `apps/web/src/lib/storage.ts` steigt derzeit bei
+  vorhandenem Eintrag frueh aus (`if (cache[id]) return`).
+- [ ] **Pia** Nach dem Hint-Video ist nicht zu sehen, welche Zelle dazugekommen ist. Die gruene
+  Markierung gibt es, sie ist nur zu kurz und zu leise.
+- [ ] **Jonas** Sudoku: eine Zahl in der Leiste antippen soll alle gleichen Zahlen auf dem Brett
+  leuchten lassen, auch ohne sie zu setzen. Gleiche Rueckmeldung kam aus der Gruppe.
+- [ ] **Jonas** Sudoku: Notiz-8 und gesetzte 8 sehen zu aehnlich aus, man stolpert darueber.
+- [ ] **Jonas** Mosaik-Frage vom 20.09. noch unbeantwortet: warum eine 8 ohne X nicht satisfied
+  ist, mit X aber schon. Entweder Regelmissverstaendnis oder ein Fehler im Zaehler.
+- [ ] **Jonas** Zwei Sprachnachrichten vom 22.09. (11:53 und 15:15) sind noch nicht ausgewertet.
+- [ ] **Robert** Streak auf ein Raetsel pro Tag statt drei. Offen bis es Nutzungsdaten gibt, wie
+  lange Spieler fuer die Dailys brauchen (Robert: 3 bis 5 min fuer alle drei).
+- [ ] **Robert** Daraus folgend: Usage-Daten in der App erheben, sonst bleibt die Streak-Laenge
+  Bauchgefuehl.
+- [ ] **Michi** Anzeigename direkt beim Erststart setzen. Die drei Intro-Karten gibt es seit dem
+  21.09., ein Namensfeld hat `apps/web/src/components/Intro.tsx` nicht.
+- [ ] **Michi** Gefuehrtes Tutorial oder Video je Raetseltyp. Die acht Textanleitungen hinter dem
+  Fragezeichen reichen ihm nicht.
+- [ ] **Michi** Teilen als Grafik statt Textlink (Anzeigename, Zeit, kleines Brett).
+- [ ] **Michi** Anreiz, jeden Typ ein paar Mal zu spielen, bevor die App auf die Dailys schiebt.
+- [ ] **Michi** Ist die App vollstaendig offline nutzbar? Frage vom 21.09., noch nicht beantwortet
+  (er fliegt naechste Woche und will offline spielen).
+- [ ] **Michi** Slide-Animation beim Wechsel in den Play-Screen und zurueck. Reiterwechsel und
+  Themewechsel sind seit dem 21.09. drin.
+- [ ] **Dani** Das Achievement-Unlock-Banner passt optisch nicht zum Rest der App.
+- [ ] **Dani** Das Ende der Progressbar abrunden wie den Anfang und vor dem Bildschirmrand enden.
+- [ ] **Dani** Fehlendes Wort in einem Satz (Screenshot vom 21.09., 15:59). Stelle nicht gefunden,
+  an den Hint- und Kauftexten hat sich seit dem 20.09. nichts geaendert. Screenshot neu anfragen.
+- [ ] **Frieder** Rueckmeldung zur Shapes-Startanordnung auf Genius steht noch aus. Easy bis Hard
+  hat er am 20.09. als "perfekt" gegengetestet.
+
+## Erledigt
+
+- [x] 2026-09-22 **Michi** Shapes war im Daily zu leicht. Daily-Shapes steht jetzt auf Hard.
+- [x] 2026-09-22 **Pia** Shapes Easy 34, 35 und 36 verlangten dieselben Formen in derselben Anzahl.
+  Easy hat jetzt vier Teile statt drei, damit 4604 statt 202 moegliche Raetsel (SHAPES_VERSION 3).
+- [x] 2026-09-22 Killer Sudoku ist aus den Dailys raus und wird ein Schwierigkeitsgrad von Sudoku.
+  Idee von Moritz und Daniela, von Robert bestaetigt.
+- [x] 2026-09-21 **Michi** Timer startete erst beim ersten Zug, damit war Loesung merken und dann
+  auf Geschwindigkeit eingeben der schnellste Weg. Laeuft jetzt ab dem Oeffnen des Raetsels.
+- [x] 2026-09-21 **Michi** Timer lief weiter, wenn man die Benachrichtigungsleiste aufzog. Eigenes
+  `appBlur`/`appFocus`-Signal aus `MainActivity`, weil System-Overlays die Activity nicht stoppen.
+- [x] 2026-09-21 **Michi** Wischgeste konnte mitten im Raetsel die App verlassen. Die Zurueck-Geste
+  fragt jetzt nach.
+- [x] 2026-09-21 **Michi** "Could not share" erschien auch beim Abbrechen des Teilens, und der Link
+  stand doppelt in der Nachricht.
+- [x] 2026-09-21 **Michi** Kein Logo beim Start. Splash-Logo haelt jetzt kurz.
+- [x] 2026-09-21 **Michi** Keine Animationen. Reiterwechsel schiebt die Seite, der Themewechsel
+  waechst als Kreis aus dem gedrueckten Knopf.
+- [x] 2026-09-21 **Michi** Farbschema. Sechs Akzentfarben im Profil, Teal ist dabei.
+- [x] 2026-09-21 **Michi** Killer-Kaefige: gestrichelte Linien und kleine Zahlen schlecht lesbar,
+  vor allem wenn ein Kaefig ueber die 3x3-Grenze geht. Kaefig ist jetzt eine durchgehende Linie in
+  eigener Farbe, die 3x3-Bloecke haben eine eigene Linienfarbe, dazu der Hinweis, dass die
+  Kaefigfarben keine Bedeutung tragen.
+- [x] 2026-09-21 **Michi** Geloester Zustand sprang optisch auf halbfertig zurueck.
+- [x] 2026-09-21 **Michi** Erststart ohne Einfuehrung. Drei Intro-Karten beim ersten Oeffnen.
+  Das Namensfeld daraus fehlt noch, siehe Offen.
+- [x] 2026-09-21 **Pia** Rueckfrage vor dem Reset, damit das Brett nicht versehentlich wegfliegt.
+- [x] 2026-09-20 **Dani** Killer-Kaefiglinien auf iOS, am iPhone gegengetestet.
+- [x] 2026-09-20 Aus der Gruppe, vor dem Umzug in diese Datei: Mosaik-Ausgrauen und X-Groesse,
+  Levels-Slide beim Stufenwechsel, Shapes-Puls synchron, Daily-Balken, Brett-Rahmen.
+- [x] 2026-09-19 **Dani** Long-Press bei Mosaik zu traege. 300 statt 450 ms, gilt auch fuer
+  Nonogramm, Crowns und Stars.
+- [x] 2026-09-19 **Frieder** Bei Shapes verdeckten die Startteile das Zielmuster. Sie liegen jetzt
+  moeglichst daneben: Ring zuerst, sonst der Platz mit den wenigsten verdeckten Zielatomen.
+- [x] 2026-09-18 **Pia** Killer-Notizen lagen auf der Kaefigsumme und waren nicht davon zu
+  unterscheiden. Notizen rutschen in solchen Zellen unter die Summe.
+
+## Laeuft
+
+- **Michi** Daily-Leaderboard. Gebaut als Gruppen-Bestenliste (Code statt globaler Liste), im Web
+  vollstaendig, nativ offen. Siehe den Punkt "Bestenliste in Betrieb nehmen" im Hub-Wiki.
+
+## Verworfen
+
+- **Robert** Stars und Crowns zu einem Typ zusammenlegen, analog zu Killer und Sudoku. Anderer
+  Fall: die beiden teilen keine Regelbasis. Falls ein Typ weichen muss, faellt Stars, weil Crowns
+  beliebter ist.
+- 2026-09-19 Kleine Zielvorschau ueber dem Shapes-Brett. War einen Tag drin, die neue
+  Startanordnung reicht und das Brett bleibt aufgeraeumt.
