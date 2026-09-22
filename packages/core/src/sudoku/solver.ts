@@ -1,3 +1,4 @@
+import { countHistogram } from '../family.ts';
 import type { SudokuCage, SudokuSpec } from './puzzle.ts';
 
 export const SUDOKU_TECHNIQUES = [
@@ -712,4 +713,12 @@ export function sudokuCanonicalKey(spec: Pick<SudokuSpec, 'solution' | 'givens' 
     if (best === '' || key < best) best = key;
   }
   return `9x9|${best}`;
+}
+
+// Vocabulary: the cage size distribution plus the givens. Plain sudoku gets no family key
+// at all, because every puzzle there uses the same nine digits and the only thing such a
+// key could separate is the difficulty, which the presets already fix.
+export function killerFamilyKey(spec: SudokuSpec): string {
+  const givens = [...spec.givens].filter((v) => v > 0).length;
+  return `g${givens}/${countHistogram(spec.cages.map((cage) => cage.cells.length))}`;
 }

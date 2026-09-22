@@ -1,3 +1,4 @@
+import { countHistogram } from '../family.ts';
 import type { MosaicSpec } from './puzzle.ts';
 
 export const MOSAIC_MARKED_EMPTY = 255;
@@ -210,4 +211,9 @@ export function mosaicCanonicalKey(spec: MosaicSpec): string {
     if (best === '' || key < best) best = key;
   }
   return `${rows}x${cols}|${best}`;
+}
+
+// Vocabulary: how many clues of each value survive the reduction.
+export function mosaicFamilyKey(spec: MosaicSpec): string {
+  return countHistogram([...spec.clues].filter((v) => v >= 0));
 }

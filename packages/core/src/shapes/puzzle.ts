@@ -2,7 +2,7 @@ import { Rng } from '../rng.ts';
 import type { Difficulty } from '../types.ts';
 import { SHAPES, atomIndex, type AtomOffset, type ShapeKind } from './shapes.ts';
 
-export const SHAPES_VERSION = 2;
+export const SHAPES_VERSION = 3;
 
 export interface ShapesPreset {
   inner: number;
@@ -47,7 +47,10 @@ const ALL: ShapeKind[] = [...MEDIUM, 'dia2'];
 export const SHAPES_MARGIN = 1;
 
 export const SHAPES_PRESETS: Record<Difficulty, ShapesPreset> = {
-  easy: { inner: 3, pieceCount: 3, kinds: SMALL, minOverlapAtoms: 1, maxLitRatio: 0.8 },
+  // Four pieces, not three: with three the whole difficulty holds 202 puzzles built from
+  // only 37 piece combinations, so levels kept repeating the same shapes elsewhere on the
+  // board. Four lifts that to 4,604 puzzles from 97 combinations on the same 5x5 board.
+  easy: { inner: 3, pieceCount: 4, kinds: SMALL, minOverlapAtoms: 1, maxLitRatio: 0.8 },
   medium: { inner: 4, pieceCount: 4, kinds: MEDIUM, minOverlapAtoms: 2, maxLitRatio: 0.75 },
   hard: { inner: 5, pieceCount: 6, kinds: MEDIUM, minOverlapAtoms: 6, maxLitRatio: 0.7 },
   genius: { inner: 6, pieceCount: 8, kinds: ALL, minOverlapAtoms: 12, maxLitRatio: 0.7 },

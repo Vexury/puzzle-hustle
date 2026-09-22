@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DIFFICULTIES } from '../src/types.ts';
+import { DIFFICULTIES, PUZZLE_TYPES } from '../src/types.ts';
 import { LEVEL_PACK, levelList } from '../src/levels.ts';
 import { SHAPES_VERSION, generateShapes, isSolved } from '../src/shapes/puzzle.ts';
 import { canonicalKey, isUnique } from '../src/shapes/solver.ts';
@@ -27,10 +27,27 @@ describe('level pack', () => {
     expect(LEVEL_PACK.versions.zip).toBe(ZIP_VERSION);
   });
 
-  it('has 20 distinct, unique zip levels for easy and medium', () => {
+  // Every type and difficulty, without generating anything: a short or unsorted pack is
+  // caught here even for the types whose generators are too slow to re-verify in CI.
+  it('ships 50 levels per type and difficulty, ascending by score', () => {
+    for (const type of PUZZLE_TYPES) {
+      for (const difficulty of DIFFICULTIES) {
+        const list = levelList(type, difficulty);
+        expect(`${type}/${difficulty}: ${list.length}`).toBe(`${type}/${difficulty}: 50`);
+        list.forEach((entry, i) => {
+          if (i > 0) expect(entry.score).toBeGreaterThanOrEqual(list[i - 1]!.score);
+        });
+      }
+    }
+  });
+
+  // Zip hard and genius cost 1.4 s and 4.3 s per puzzle, so re-verifying their 100 levels
+  // would add six minutes to every CI run. The generator only ever returns unique zip
+  // puzzles, and `pnpm levels` checks each one as it writes it.
+  it('has 50 distinct, unique zip levels for easy and medium', () => {
     for (const difficulty of ['easy', 'medium'] as const) {
       const list = levelList('zip', difficulty);
-      expect(list.length).toBe(20);
+      expect(list.length).toBe(50);
       const keys = new Set<string>();
       list.forEach((entry, i) => {
         const spec = generateZip(entry.seed, difficulty);
@@ -40,13 +57,13 @@ describe('level pack', () => {
       });
       expect(keys.size).toBe(list.length);
     }
-  }, 120_000);
+  }, 180_000);
 
 
-  it('has 20 distinct, line-solvable, ascending nonogram levels per difficulty', () => {
+  it('has 50 distinct, line-solvable, ascending nonogram levels per difficulty', () => {
     for (const difficulty of DIFFICULTIES) {
       const list = levelList('nonogram', difficulty);
-      expect(list.length).toBe(20);
+      expect(list.length).toBe(50);
       const keys = new Set<string>();
       list.forEach((entry, i) => {
         const spec = generateNonogram(entry.seed, difficulty);

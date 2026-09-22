@@ -11,6 +11,36 @@ newer than that build.
 
 ### Puzzles
 
+**Every pack holds 50 levels, and Zip finally has all four.** Zip hard and genius shipped as
+empty packs because their generator was thought too slow to fill them. Measured, it is not:
+1.4 s and 4.3 s per puzzle with every seed accepted, so the two packs cost a quarter of an
+hour of offline generation between them and nothing at runtime. The other six types went from
+20 levels per difficulty to 50 in the same run. Counting was never the limit anywhere except
+Shapes easy: `scripts/capacity.ts` puts the reachable puzzles per type between several
+thousand and over a million, and the only real cost of a bigger pack is the time it takes to
+build one.
+
+**Consecutive levels no longer use the same building blocks.** A tester found Shapes easy 34,
+35 and 36 asking for the same three fragments in the same counts, placed elsewhere on the
+board, which is a dull way to spend three levels. The duplicate filter could not see it: it
+compares whole puzzles, and those were genuinely different puzzles. Each type now also has a
+family key naming its vocabulary and nothing else — which fragments for Shapes, which clue run
+lengths for Nonogram, which region sizes for Crowns and Stars, which cage sizes for Killer —
+and the level generator spends its freedom within the difficulty curve on keeping neighbours
+out of the same family. Every pack now ships with zero adjacent repeats. Sudoku gets no family
+key on purpose: every sudoku uses the same nine digits, so the only thing such a key could
+separate there is the difficulty the presets already fix.
+
+**Shapes easy puzzles are built from four fragments instead of three.** With three, the whole
+difficulty contained 202 puzzles drawn from 37 fragment combinations, so a 50-level pack had
+to reuse combinations no matter how it was ordered. Four lifts that to 4,604 puzzles from 97
+combinations without growing the 5x5 board. Easy is a little harder than it was.
+
+**Level numbers changed in every pack.** A pack that grows has to be re-sorted by score, and
+the variety rule only works if it may choose freely, so old numbers point at different puzzles
+now. Solved marks and unlock progress are kept by count and survive; a shared link carrying a
+level number resolves to a different puzzle than the sender saw.
+
 **Nonogram difficulty is now set by logic, not by board size.** Measuring first paid off:
 medium and hard were statistically the same puzzle, both sitting at a median score of 54,
 because the generator returned the first grid its line solver could crack and only the board

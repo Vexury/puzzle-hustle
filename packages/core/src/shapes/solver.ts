@@ -197,3 +197,11 @@ export function canonicalKey(spec: ShapesSpec): string {
   }
   return best;
 }
+
+// Vocabulary: the multiset of fragments the player pushes around.
+export function shapesFamilyKey(spec: ShapesSpec): string {
+  return spec.pieces
+    .map((p) => p.kind)
+    .sort()
+    .join(',');
+}

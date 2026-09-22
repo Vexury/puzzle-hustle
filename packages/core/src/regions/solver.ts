@@ -1,3 +1,4 @@
+import { countHistogram } from '../family.ts';
 import type { RegionsSpec } from './puzzle.ts';
 
 export const REGIONS_MARKED_EMPTY = 255;
@@ -351,4 +352,11 @@ export function regionsCanonicalKey(spec: RegionsSpec): string {
     if (best === '' || key < best) best = key;
   }
   return `${n}x${n}s${spec.config.stars}|${best}`;
+}
+
+// Vocabulary: the region size distribution. Where the regions sit is not part of it.
+export function regionsFamilyKey(spec: RegionsSpec): string {
+  const sizes = new Map<number, number>();
+  for (const r of spec.regions) sizes.set(r, (sizes.get(r) ?? 0) + 1);
+  return countHistogram(sizes.values());
 }
