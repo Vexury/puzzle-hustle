@@ -14,6 +14,7 @@ import { href, onLinkClick } from '../lib/router.ts';
 import { capitalize, joinUrl, share } from '../lib/share.ts';
 import { toast } from '../components/Toast.tsx';
 import { Board } from '../components/Board.tsx';
+import { CoinPill } from '../components/CoinPill.tsx';
 import { useTheme } from '../lib/theme.ts';
 
 // How long the delete button stays armed before it falls back to asking again.
@@ -88,6 +89,7 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
       <>
         <section className="page-head">
           <h1>Social</h1>
+          <CoinPill />
         </section>
         <AccountCard />
       </>
@@ -152,6 +154,7 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
     <>
       <section className="page-head">
         <h1>Social</h1>
+        <CoinPill />
       </section>
 
       <div className="stack">
@@ -293,6 +296,11 @@ function AccountCard() {
         <div className="card-lg">
           <h2>Account</h2>
           <span className="muted small">Sign-in isn't set up on this build yet. Everything else works without an account.</span>
+          <div className="friends-actions">
+            <a href={href('/shop')} className="pill outline" onClick={onLinkClick}>
+              Customize
+            </a>
+          </div>
         </div>
       );
     }
@@ -329,6 +337,11 @@ function AccountCard() {
             Sign-in is unavailable right now. Try again.
           </button>
         )}
+        <div className="friends-actions">
+          <a href={href('/shop')} className="pill outline" onClick={onLinkClick}>
+            Customize
+          </a>
+        </div>
       </div>
     );
   }
@@ -338,6 +351,9 @@ function AccountCard() {
       <h2>Friends</h2>
       <span className="muted small">Signed in as {session.player.name}.</span>
       <div className="friends-actions">
+        <a href={href('/shop')} className="pill outline" onClick={onLinkClick}>
+          Customize
+        </a>
         <button type="button" className="pill outline" onClick={signOut}>
           Sign out
         </button>

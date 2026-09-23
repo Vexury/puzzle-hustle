@@ -11,13 +11,14 @@ import { Friends } from './pages/Friends.tsx';
 import { LevelsIndex, LevelsType } from './pages/Levels.tsx';
 import { Play } from './pages/Play.tsx';
 import { Profile } from './pages/Profile.tsx';
+import { Shop } from './pages/Shop.tsx';
 
 // Position in the tab bar, for the direction of the slide. A puzzle is -1: it sits below the
-// bar rather than on it and gets its own direction below. Achievements is reached from a card
-// on the Profile tab rather than from the bar, so it stays still too. /join is the Social tab
+// bar rather than on it and gets its own direction below. Achievements and the shop are each
+// reached from a card rather than from the bar, so they stay still too. /join is the Social tab
 // entered through an invitation link and slides like the tab it is.
 function tabIndex(path: string): number {
-  if (path === '/play' || path === '/achievements') return -1;
+  if (path === '/play' || path === '/achievements' || path === '/shop') return -1;
   if (path === '/friends' || path === '/join') return 3;
   if (path === '/profile') return 2;
   if (path.startsWith('/levels')) return 1;
@@ -56,6 +57,7 @@ export function App() {
   else if (route.path === '/friends') page = <Friends />;
   else if (route.path === '/join') page = <Friends code={route.params.get('c') ?? ''} />;
   else if (route.path === '/achievements') page = <Achievements />;
+  else if (route.path === '/shop') page = <Shop />;
   else page = <Daily />;
 
   return (

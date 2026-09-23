@@ -821,3 +821,15 @@ p { margin: 0; }
 .leaderboard-who .leaderboard-name { flex: none; display: flex; align-items: center; gap: 4px; min-width: 0; }
 .badge-icon { width: 1em; height: 1em; flex: none; color: var(--accent-text); }
 .leaderboard-flair { font-size: var(--fs-xs); color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.coin-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); font-family: var(--font-num); }
+.coin-pill svg { width: 1em; height: 1em; }
+.shop-preview { gap: 6px; }
+.shop-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.shop-tile { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 4px; border-radius: 12px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); font-family: var(--font-num); }
+.shop-badge { width: 28px; height: 28px; color: var(--accent-text); }
+.shop-tile.locked, .shop-row.locked { opacity: 0.5; }
+.shop-tile.equipped, .shop-row.equipped { border-color: var(--accent); background: var(--accent-soft); }
+.shop-tile.armed, .shop-row.armed { border-color: var(--danger); color: var(--danger); }
+.shop-list { display: flex; flex-direction: column; gap: 8px; }
+.shop-row { display: flex; justify-content: space-between; align-items: center; width: 100%; text-align: left; }

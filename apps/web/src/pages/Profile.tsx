@@ -6,6 +6,7 @@ import { adsAvailable, onAdsConsent, privacyOptionsAvailable, showPrivacyOptions
 import { setName as setAccountName, useSession } from '../lib/auth.ts';
 import { ApiError, readSession } from '../lib/api.ts';
 import { currentUnlocked } from '../lib/achievements.ts';
+import { useBalance } from '../lib/coins.ts';
 import { buyUnlimitedHints, hasUnlimitedHints, onEntitlement } from '../lib/entitlement.ts';
 import { HAPTICS_KEY, hapticsAvailable, tap } from '../lib/haptics.ts';
 import { href, onLinkClick } from '../lib/router.ts';
@@ -26,6 +27,7 @@ const NAME_REJECTION_MESSAGES: Record<string, string> = {
 
 export function Profile() {
   const solves = useSolves();
+  const coins = useBalance();
   const streaks = dailyStreaks(solves);
   const stats = typeStats(solves);
   const { pref, setPref } = useTheme();
@@ -121,6 +123,10 @@ export function Profile() {
           <Stat value={streaks.best} label="best streak" />
           <Stat value={streaks.daysPlayed} label="days played" />
           <Stat value={totalSolved(solves)} label="puzzles solved" />
+        </div>
+
+        <div className="stat-grid">
+          <Stat value={coins} label="coins" />
         </div>
 
         <div className="card-lg streak-card">
