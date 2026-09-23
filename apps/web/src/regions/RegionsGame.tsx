@@ -17,6 +17,7 @@ import { useHistory } from '../lib/useHistory.ts';
 import { press } from '../lib/haptics.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
+import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 
 const REGION_COLORS = 12;
 
@@ -35,6 +36,7 @@ export interface RegionsGameProps {
   onSolved(): void;
   onHintUsed(): void;
   requestHint(): Promise<boolean>;
+  hintAd?: boolean;
   locked: boolean;
   initialState?: number[] | undefined;
   onStateChange?(state: number[]): void;
@@ -71,7 +73,7 @@ function Glyph({ symbol }: { symbol: 'crown' | 'star' }) {
   );
 }
 
-export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, requestHint, locked, initialState, onStateChange }: RegionsGameProps) {
+export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, requestHint, hintAd, locked, initialState, onStateChange }: RegionsGameProps) {
   const n = spec.config.size;
   const [state, setState] = useState<RegionsState>(() => (initialState && initialState.length === spec.config.size * spec.config.size ? Uint8Array.from(initialState) : emptyRegionsState(spec)));
   const [flash, setFlash] = useState<number | null>(null);
@@ -232,14 +234,10 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
       </div>
 
       {!solved && (
-        <div className="actions">
+        <div className="tools">
           <ResetButton onReset={reset} disabled={locked} />
-          <button type="button" className="btn" onClick={undo} disabled={locked || !history.canUndo}>
-            Undo
-          </button>
-          <button type="button" className="btn" onClick={useHint} disabled={locked || hintBusy}>
-            Hint
-          </button>
+          <ToolButton icon="undo" label="Undo" onClick={undo} disabled={locked || !history.canUndo} />
+          <ToolButton icon="hint" label="Hint" onClick={useHint} disabled={locked || hintBusy} badge={hintAd ? <AdBadge /> : null} />
         </div>
       )}
     </div>

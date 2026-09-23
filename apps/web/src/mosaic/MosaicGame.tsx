@@ -16,6 +16,7 @@ import { useHistory } from '../lib/useHistory.ts';
 import { press } from '../lib/haptics.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
+import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 
 interface Drag {
   pointerId: number;
@@ -34,6 +35,7 @@ export interface MosaicGameProps {
   onSolved(): void;
   onHintUsed(): void;
   requestHint(): Promise<boolean>;
+  hintAd?: boolean;
   locked: boolean;
   initialState?: number[] | undefined;
   onStateChange?(state: number[]): void;
@@ -53,7 +55,7 @@ function nextValue(current: number, mark: boolean): number {
   return MOSAIC_MARKED_EMPTY;
 }
 
-export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, locked, initialState, onStateChange, viewKey }: MosaicGameProps) {
+export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintAd, locked, initialState, onStateChange, viewKey }: MosaicGameProps) {
   const { rows, cols } = spec.config;
   const [state, setState] = useState<MosaicState>(() => (initialState && initialState.length === emptyMosaicState(spec).length ? Uint8Array.from(initialState) : emptyMosaicState(spec)));
   const [flash, setFlash] = useState<number | null>(null);
@@ -228,14 +230,10 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
       </div>
 
       {!solved && (
-        <div className="actions">
+        <div className="tools">
           <ResetButton onReset={reset} disabled={locked} />
-          <button type="button" className="btn" onClick={undo} disabled={locked || !history.canUndo}>
-            Undo
-          </button>
-          <button type="button" className="btn" onClick={useHint} disabled={locked || hintBusy}>
-            Hint
-          </button>
+          <ToolButton icon="undo" label="Undo" onClick={undo} disabled={locked || !history.canUndo} />
+          <ToolButton icon="hint" label="Hint" onClick={useHint} disabled={locked || hintBusy} badge={hintAd ? <AdBadge /> : null} />
         </div>
       )}
     </div>

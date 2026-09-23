@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { emptyZipState, isZipSolved, zipHint, zipStart, zipStepAllowed, type ZipSpec, type ZipState } from '@puzzle-hustle/core';
 import { useHistory } from '../lib/useHistory.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
+import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 import './zip.css';
 
 export interface ZipGameProps {
@@ -10,6 +11,7 @@ export interface ZipGameProps {
   onSolved(): void;
   onHintUsed(): void;
   requestHint(): Promise<boolean>;
+  hintAd?: boolean;
   locked: boolean;
   initialState?: number[] | undefined;
   onStateChange?(state: number[]): void;
@@ -74,7 +76,7 @@ function validInitial(spec: ZipSpec, initial: number[] | undefined): ZipState {
   return [...initial];
 }
 
-export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, locked, initialState, onStateChange }: ZipGameProps) {
+export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintAd, locked, initialState, onStateChange }: ZipGameProps) {
   const n = spec.config.size;
   const start = zipStart(spec);
   const [path, setPath] = useState<ZipState>(() => validInitial(spec, initialState));
@@ -308,14 +310,10 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, locke
       </div>
 
       {!solved && (
-        <div className="actions">
+        <div className="tools">
           <ResetButton onReset={reset} disabled={locked} />
-          <button type="button" className="btn" onClick={undo} disabled={locked || !history.canUndo}>
-            Undo
-          </button>
-          <button type="button" className="btn" onClick={useHint} disabled={locked || hintBusy}>
-            Hint
-          </button>
+          <ToolButton icon="undo" label="Undo" onClick={undo} disabled={locked || !history.canUndo} />
+          <ToolButton icon="hint" label="Hint" onClick={useHint} disabled={locked || hintBusy} badge={hintAd ? <AdBadge /> : null} />
         </div>
       )}
     </div>

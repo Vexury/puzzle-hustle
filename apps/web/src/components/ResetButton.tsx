@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ToolButton } from './ToolButton.tsx';
 
 const REVERT_MS = 4000;
 
@@ -13,9 +14,10 @@ export function ResetButton({ onReset, disabled }: { onReset: () => void; disabl
   }, [armed]);
 
   return (
-    <button
-      type="button"
-      className={armed ? 'btn danger' : 'btn warn'}
+    <ToolButton
+      icon="reset"
+      label={armed ? 'Sure?' : 'Reset'}
+      className={armed ? 'danger' : 'warn'}
       onClick={() => {
         if (!armed) {
           setArmed(true);
@@ -25,8 +27,6 @@ export function ResetButton({ onReset, disabled }: { onReset: () => void; disabl
         onReset();
       }}
       disabled={disabled}
-    >
-      {armed ? 'Sure?' : 'Reset'}
-    </button>
+    />
   );
 }

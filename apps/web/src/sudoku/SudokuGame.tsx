@@ -16,6 +16,7 @@ import { useHistory } from '../lib/useHistory.ts';
 import { readSetting } from '../lib/storage.ts';
 import { cageLayout } from './cages.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
+import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 
 const DIGITS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -25,6 +26,7 @@ export interface SudokuGameProps {
   onSolved(): void;
   onHintUsed(): void;
   requestHint(): Promise<boolean>;
+  hintAd?: boolean;
   locked: boolean;
   initialState?: number[] | undefined;
   onStateChange?(state: number[]): void;
@@ -57,7 +59,7 @@ function moveSelection(from: number | null, key: string): number {
   return r * 9 + ((c + 1) % 9);
 }
 
-export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, locked, initialState, onStateChange }: SudokuGameProps) {
+export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintAd, locked, initialState, onStateChange }: SudokuGameProps) {
   const [state, setState] = useState<SudokuState>(() => initialSudokuState(spec, initialState));
   const [selected, setSelected] = useState<number | null>(null);
   const [notesMode, setNotesMode] = useState(false);
@@ -242,20 +244,12 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
               </button>
             ))}
           </div>
-          <div className="actions">
-            <button type="button" className={notesMode ? 'btn active' : 'btn'} onClick={() => setNotesMode((v) => !v)} disabled={locked} aria-pressed={notesMode}>
-              Notes
-            </button>
-            <button type="button" className="btn" onClick={erase} disabled={locked}>
-              Erase
-            </button>
+          <div className="tools">
+            <ToolButton icon="notes" label="Notes" className={notesMode ? 'active' : ''} onClick={() => setNotesMode((v) => !v)} disabled={locked} pressed={notesMode} />
+            <ToolButton icon="erase" label="Erase" onClick={erase} disabled={locked} />
             <ResetButton onReset={reset} disabled={locked} />
-            <button type="button" className="btn" onClick={undo} disabled={locked || !history.canUndo}>
-              Undo
-            </button>
-            <button type="button" className="btn" onClick={useHint} disabled={locked || hintBusy}>
-              Hint
-            </button>
+            <ToolButton icon="undo" label="Undo" onClick={undo} disabled={locked || !history.canUndo} />
+            <ToolButton icon="hint" label="Hint" onClick={useHint} disabled={locked || hintBusy} badge={hintAd ? <AdBadge /> : null} />
           </div>
         </>
       )}

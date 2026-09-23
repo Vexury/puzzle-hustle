@@ -188,6 +188,5 @@
 .sudoku-key.done { color: var(--text-muted); opacity: 0.55; }
 .sudoku-key.lit { border-color: var(--accent); background: var(--sudoku-same); color: var(--accent-deep); opacity: 1; }
 
-.sudoku-wrap .actions { max-width: var(--sudoku-max); }
-.sudoku-wrap .actions .btn.active { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.sudoku-wrap .tools { max-width: var(--sudoku-max); }
 .sudoku-board.solved .sudoku-value { display: inline-block; animation: solve-text 0.8s ease-out both; animation-delay: calc(var(--r, 0) * 60ms); }

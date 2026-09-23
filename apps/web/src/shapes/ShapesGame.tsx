@@ -15,6 +15,7 @@ import {
 import { outlinePoints } from './PieceShape.tsx';
 import { useHistory } from '../lib/useHistory.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
+import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 
 interface Drag {
   pieceId: number;
@@ -32,13 +33,14 @@ export interface ShapesGameProps {
   onSolved(): void;
   onHintUsed(): void;
   requestHint(): Promise<boolean>;
+  hintAd?: boolean;
   locked: boolean;
   initialState?: number[] | undefined;
   onStateChange?(state: number[]): void;
   viewKey?: string | undefined;
 }
 
-export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, locked, initialState, onStateChange }: ShapesGameProps) {
+export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintAd, locked, initialState, onStateChange }: ShapesGameProps) {
   const size = spec.config.size;
   const [state, setState] = useState<ShapesState>(() =>
     initialState && initialState.length === spec.pieces.length * 2
@@ -242,14 +244,10 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
           </svg>
 
           {!solved && (
-            <div className="actions">
+            <div className="tools">
               <ResetButton onReset={reset} disabled={locked} />
-              <button type="button" className="btn" onClick={undo} disabled={locked || !history.canUndo}>
-                Undo
-              </button>
-              <button type="button" className="btn" onClick={useHint} disabled={locked || hintBusy}>
-                Hint
-              </button>
+              <ToolButton icon="undo" label="Undo" onClick={undo} disabled={locked || !history.canUndo} />
+              <ToolButton icon="hint" label="Hint" onClick={useHint} disabled={locked || hintBusy} badge={hintAd ? <AdBadge /> : null} />
             </div>
           )}
         </div>

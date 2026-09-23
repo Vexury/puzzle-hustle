@@ -15,7 +15,7 @@
   touch-action: none;
   line-height: 0;
 }
-.zip-wrap .actions { width: calc(var(--size) * var(--cell) + 4px); max-width: 100%; }
+.zip-wrap .tools { width: calc(var(--size) * var(--cell) + 4px); max-width: 100%; }
 
 .zip-svg {
   width: calc(var(--size) * var(--cell));

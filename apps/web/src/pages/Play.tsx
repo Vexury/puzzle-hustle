@@ -32,7 +32,7 @@ import { href, navigate, onLinkClick } from '../lib/router.ts';
 import { setBackGuard } from '../lib/back.ts';
 import { clearProgress, getSolve, keepFinalBoard, readProgress, readSetting, recordSolve, useSolves, writeProgress, writeSetting, type SolveRecord } from '../lib/storage.ts';
 import { capitalize, formatSeconds, share, shareText } from '../lib/share.ts';
-import { currentHintProvider } from '../lib/hints.ts';
+import { currentHintProvider, freeHints } from '../lib/hints.ts';
 import { enqueue, flush } from '../lib/queue.ts';
 import { HOW_TO } from '../lib/howto.ts';
 import { dailyNumber } from '../lib/stats.ts';
@@ -347,6 +347,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           onSolved={onSolved}
           onHintUsed={onHintUsed}
           requestHint={() => hintProvider.request()}
+          hintAd={hintProvider !== freeHints}
           locked={false}
           initialState={saved?.state}
           onStateChange={onStateChange}
@@ -360,6 +361,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           onSolved={onSolved}
           onHintUsed={onHintUsed}
           requestHint={() => hintProvider.request()}
+          hintAd={hintProvider !== freeHints}
           locked={false}
           initialState={saved?.state}
           onStateChange={onStateChange}
@@ -371,6 +373,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           onSolved={onSolved}
           onHintUsed={onHintUsed}
           requestHint={() => hintProvider.request()}
+          hintAd={hintProvider !== freeHints}
           locked={false}
           initialState={saved?.state}
           onStateChange={onStateChange}
@@ -382,6 +385,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           onSolved={onSolved}
           onHintUsed={onHintUsed}
           requestHint={() => hintProvider.request()}
+          hintAd={hintProvider !== freeHints}
           locked={false}
           initialState={saved?.state}
           onStateChange={onStateChange}
@@ -393,6 +397,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           onSolved={onSolved}
           onHintUsed={onHintUsed}
           requestHint={() => hintProvider.request()}
+          hintAd={hintProvider !== freeHints}
           locked={false}
           initialState={saved?.state}
           onStateChange={onStateChange}
@@ -405,6 +410,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           onSolved={onSolved}
           onHintUsed={onHintUsed}
           requestHint={() => hintProvider.request()}
+          hintAd={hintProvider !== freeHints}
           locked={false}
           initialState={saved?.state}
           onStateChange={onStateChange}

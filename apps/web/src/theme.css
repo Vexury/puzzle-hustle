@@ -393,24 +393,33 @@ p { margin: 0; }
 }
 
 .actions { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 10px; width: 100%; margin-top: 4px; }
-.board-panel .actions { max-width: 520px; margin-left: auto; margin-right: auto; }
-.actions .btn {
-  display: inline-flex;
+.tools { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; width: 100%; margin-top: 4px; }
+.board-panel .tools { max-width: 520px; margin-left: auto; margin-right: auto; }
+.tool {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
-  padding: 8px 6px;
-  border-radius: 999px;
+  gap: 3px;
+  min-height: 58px;
+  padding: 7px 2px 6px;
+  border-radius: 16px;
   border: 2px solid var(--border-mid);
   background: transparent;
   color: var(--text);
-  font-weight: 700;
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
-.actions .btn:disabled { opacity: 0.45; cursor: default; }
-.actions .btn.warn { color: var(--danger); }
-.actions .btn.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+.tool-glyph { position: relative; display: block; width: 24px; height: 24px; }
+.tool-icon { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tool-label { font-size: var(--fs-xs); font-weight: 700; line-height: 1; }
+.tool-badge { position: absolute; right: -7px; top: -5px; width: 13px; height: 13px; }
+.tool-badge circle { fill: var(--accent); }
+.tool-badge path { fill: var(--on-accent); }
+.tool:disabled { opacity: 0.45; cursor: default; }
+.tool.warn { color: var(--danger); }
+.tool.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+.tool.active { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 
 .chevron { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 
@@ -790,8 +799,8 @@ p { margin: 0; }
   .pill.danger:hover { background: var(--hover-bg); border-color: var(--hover-bg); color: var(--hover-text); }
   .pill.outline:hover:not(:disabled) { background: var(--hover-bg); border-color: var(--hover-bg); color: var(--hover-text); }
   .row-card.solved .pill.outline:hover { background: var(--success); border-color: var(--success); color: #fff; }
-  .actions .btn:hover:not(:disabled) { background: var(--hover-bg); border-color: var(--hover-bg); color: var(--hover-text); }
-  .actions .btn.danger:hover:not(:disabled) { background: var(--danger); border-color: var(--danger); color: #fff; }
+  .tool:hover:not(:disabled) { background: var(--hover-bg); border-color: var(--hover-bg); color: var(--hover-text); }
+  .tool.danger:hover:not(:disabled) { background: var(--danger); border-color: var(--danger); color: #fff; }
   .tile:not(.locked):hover { border-color: var(--hover-bg); }
   .tab:hover { color: var(--text); }
   .swatch:hover { transform: scale(1.08); }

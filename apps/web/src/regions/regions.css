@@ -57,7 +57,7 @@
   max-width: 100%;
   touch-action: none;
 }
-.regions-wrap .actions { width: calc(var(--size) * var(--cell) + 4px); max-width: 100%; }
+.regions-wrap .tools { width: calc(var(--size) * var(--cell) + 4px); max-width: 100%; }
 
 .regions-cell {
   position: relative;

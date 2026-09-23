@@ -83,6 +83,11 @@ based id, so progress on one is saved but can never be reached again.
 
 ### Board and layout
 
+**The buttons under the board are icons with a label.** Reset, Undo and Hint, and Sudoku's
+Notes and Erase, show an icon over a short word instead of a word alone, so a fourth or sixth
+button still fits a phone. The word stays because a circular arrow alone reads as undo as
+easily as reset. When the next hint costs a video, the bulb carries a small play mark.
+
 **Started puzzles say so.** A daily, weekly or monthly with a board in progress shows
 "Continue" instead of "Play", as does a type in the Puzzles list with a level in progress, and
 the level tile itself reads "continue". Once the next open level has scrolled out of the first

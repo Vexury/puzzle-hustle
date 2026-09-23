@@ -17,6 +17,7 @@ import { useHistory } from '../lib/useHistory.ts';
 import { press } from '../lib/haptics.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
+import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 
 interface Drag {
   pointerId: number;
@@ -34,6 +35,7 @@ export interface NonogramGameProps {
   onSolved(): void;
   onHintUsed(): void;
   requestHint(): Promise<boolean>;
+  hintAd?: boolean;
   locked: boolean;
   initialState?: number[] | undefined;
   onStateChange?(state: number[]): void;
@@ -67,7 +69,7 @@ function ClueList({ clues, done, broken, axis, index }: { clues: Clue[]; done: b
   );
 }
 
-export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, locked, initialState, onStateChange, viewKey }: NonogramGameProps) {
+export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintAd, locked, initialState, onStateChange, viewKey }: NonogramGameProps) {
   const { rows, cols, colors } = spec.config;
   const [state, setState] = useState<NonogramState>(() => (initialState && initialState.length === emptyState(spec).length ? Uint8Array.from(initialState) : emptyState(spec)));
   const [color, setColor] = useState(1);
@@ -266,14 +268,10 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
       )}
 
       {!solved && (
-        <div className="actions">
+        <div className="tools">
           <ResetButton onReset={reset} disabled={locked} />
-          <button type="button" className="btn" onClick={undo} disabled={locked || !history.canUndo}>
-            Undo
-          </button>
-          <button type="button" className="btn" onClick={useHint} disabled={locked || hintBusy}>
-            Hint
-          </button>
+          <ToolButton icon="undo" label="Undo" onClick={undo} disabled={locked || !history.canUndo} />
+          <ToolButton icon="hint" label="Hint" onClick={useHint} disabled={locked || hintBusy} badge={hintAd ? <AdBadge /> : null} />
         </div>
       )}
     </div>
