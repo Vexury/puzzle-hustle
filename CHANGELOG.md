@@ -185,8 +185,10 @@ board as soon as a finger lands, before they know whether the touch changes anyt
 the clues or the start of a pinch left a step behind that undid nothing. Undo now skips steps
 that are still the current board.
 
-**Closing the video early says so.** A rewarded ad closed before its end gives no hint, and the
-Hint button used to do nothing visible. A toast now says that the hint was not earned.
+**A rewarded video that pays nothing says so.** If the ad SDK ends a video without granting the
+reward, the Hint button used to do nothing visible; a toast now says that no hint came of it. A
+player cannot cause this by closing the video, the SDK holds back X and the back key until the
+reward is earned, so this only covers a fault in the plugin.
 
 **Zip: a drag no longer cuts the line back to a cell it brushes.** Tapping a cell that is
 already on the path shortens the path back to it, which is how you take a wrong turn back.
