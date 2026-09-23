@@ -144,6 +144,11 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
       if (next) {
         rememberOnce(d);
         commit(next);
+        // One fast pointermove can complete the track mid-loop; stop laying stray edges past B.
+        if (isTracksSolved(spec, stateRef.current)) {
+          drag.current = null;
+          return;
+        }
       }
       d.last = step;
       d.moved = true;
@@ -161,6 +166,12 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     commit(next);
   }
 
+  function cancelDrag(e: React.PointerEvent<SVGSVGElement>) {
+    const d = drag.current;
+    if (!d || d.pointerId !== e.pointerId) return;
+    drag.current = null;
+  }
+
   async function useHint() {
     if (hintBusy || locked || solved) return;
     const h = tracksHint(spec, stateRef.current);
@@ -169,10 +180,12 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     const ok = await requestHint();
     setHintBusy(false);
     if (!ok) return;
+    const fresh = tracksHint(spec, stateRef.current);
+    if (!fresh) return;
     onHintUsed();
     history.remember(stateRef.current);
-    commit(applyTracksHint(spec, stateRef.current, h));
-    const at = h.kind === 'remove-edge' ? h.a : h.cell;
+    commit(applyTracksHint(spec, stateRef.current, fresh));
+    const at = fresh.kind === 'remove-edge' ? fresh.a : fresh.cell;
     setFlash(at);
     setTimeout(() => setFlash(null), 3000);
   }
@@ -242,7 +255,7 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
           onPointerDown={startDrag}
           onPointerMove={moveDrag}
           onPointerUp={endDrag}
-          onPointerCancel={endDrag}
+          onPointerCancel={cancelDrag}
           onContextMenu={(e) => e.preventDefault()}
         >
           <g className="tracks-cells">{cells}</g>

@@ -231,7 +231,11 @@ export function validTracksState(spec: TracksSpec, initial: number[] | undefined
 }
 
 // The edge between a and its neighbour in direction bit d, as the pair (lower cell, own bit).
-function edgeSlot(cols: number, a: number, b: number): [number, number] | null {
+// Both cells must land on the board: a stub neighbour (A's west, B's south) sits outside it and
+// is never a real edge, and JS's `%` keeps the sign of a negative left operand, so a neighbour
+// index of -1 must be rejected explicitly rather than trusted to fail the column-wrap check.
+function edgeSlot(cols: number, total: number, a: number, b: number): [number, number] | null {
+  if (a < 0 || b < 0 || a >= total || b >= total) return null;
   if (b === a + 1 && a % cols !== cols - 1) return [a, TRACKS_STATE_E];
   if (b === a - 1 && b % cols !== cols - 1) return [b, TRACKS_STATE_E];
   if (b === a + cols) return [a, TRACKS_STATE_S];
@@ -246,7 +250,7 @@ function givenEdge(spec: TracksSpec, low: number, bit: number): boolean {
 }
 
 export function tracksHasEdge(spec: TracksSpec, state: TracksState, a: number, b: number): boolean {
-  const slot = edgeSlot(spec.config.cols, a, b);
+  const slot = edgeSlot(spec.config.cols, spec.config.cols * spec.config.rows, a, b);
   if (!slot) return false;
   return (state[slot[0]]! & slot[1]) !== 0 || givenEdge(spec, slot[0], slot[1]);
 }
@@ -271,8 +275,7 @@ function bits(m: number): number {
 
 export function tracksSetEdge(spec: TracksSpec, state: TracksState, a: number, b: number, on: boolean): TracksState | null {
   const total = spec.config.cols * spec.config.rows;
-  if (a < 0 || b < 0 || a >= total || b >= total) return null;
-  const slot = edgeSlot(spec.config.cols, a, b);
+  const slot = edgeSlot(spec.config.cols, total, a, b);
   if (!slot) return null;
   const [low, bit] = slot;
   if (givenEdge(spec, low, bit)) return null;
@@ -335,10 +338,11 @@ export function tracksHint(spec: TracksSpec, state: TracksState): TracksHint | n
 }
 
 export function applyTracksHint(spec: TracksSpec, state: TracksState, hint: TracksHint): TracksState {
-  const cols = spec.config.cols;
+  const { cols, rows } = spec.config;
+  const total = cols * rows;
   const next = [...state];
   if (hint.kind === 'remove-edge') {
-    const slot = edgeSlot(cols, hint.a, hint.b)!;
+    const slot = edgeSlot(cols, total, hint.a, hint.b)!;
     next[slot[0]] = next[slot[0]]! & ~slot[1];
     return next;
   }
@@ -347,7 +351,10 @@ export function applyTracksHint(spec: TracksSpec, state: TracksState, hint: Trac
     return next;
   }
   const cell = hint.cell;
-  const want = spec.solution[cell]!;
+  // Exclude the outside A/B stub bits: they are not real neighbour edges, and for a cell on the
+  // rim (entryRow 0, or exitCol at the last row) the "neighbour" in that direction sits off the
+  // board entirely.
+  const want = spec.solution[cell]! & ~tracksOutside(spec, cell);
   const neighbours: [number, number][] = [
     [TRACK_N, cell - cols],
     [TRACK_E, cell + 1],
@@ -356,7 +363,7 @@ export function applyTracksHint(spec: TracksSpec, state: TracksState, hint: Trac
   ];
   for (const [dir, other] of neighbours) {
     if (!(want & dir)) continue;
-    const slot = edgeSlot(cols, cell, other);
+    const slot = edgeSlot(cols, total, cell, other);
     if (!slot || givenEdge(spec, slot[0], slot[1])) continue;
     next[slot[0]] = next[slot[0]]! | slot[1];
     next[other] = next[other]! & ~TRACKS_STATE_X;

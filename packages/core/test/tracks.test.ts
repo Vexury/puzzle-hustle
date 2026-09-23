@@ -370,6 +370,22 @@ describe('tracks state', () => {
     expect(tracksHint(spec, s)).toEqual({ kind: 'remove-edge', a: wrong![0], b: wrong![1] });
   });
 
+  // Regression: the A cell's solution mask carries the outside west stub bit (the B cell carries
+  // south), so applying a 'place' hint on it must not chase a neighbour off the board. entryRow 0
+  // puts that stub on a cell whose "north" neighbour index is -1; seeds 1090 and 1098 land there
+  // for a medium board.
+  it('applies hints on an entryRow-0 board without writing an off-board edge', () => {
+    let spec = generateTracks(1090, 'medium');
+    if (spec.entryRow !== 0) spec = generateTracks(1098, 'medium');
+    expect(spec.entryRow).toBe(0);
+    let s = emptyTracksState(spec);
+    let guard = 0;
+    for (let hint = tracksHint(spec, s); hint && guard < 1000; hint = tracksHint(spec, s), guard++) s = applyTracksHint(spec, s, hint);
+    expect(isTracksSolved(spec, s)).toBe(true);
+    expect(Object.keys(s).length).toBe(spec.config.cols * spec.config.rows);
+    expect(Object.prototype.hasOwnProperty.call(s, '-1')).toBe(false);
+  });
+
   it('reaches the solution from a messy board by hints alone', () => {
     const m = generateTracks(3, 'medium');
     const mc = m.config.cols;
