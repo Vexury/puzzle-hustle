@@ -49,10 +49,13 @@ function reveal(origin: Origin | undefined, swap: () => void) {
     swap();
     return;
   }
+  // Percentages of the snapshot, not pixels: Android WebView 151 lays the snapshot out in device
+  // pixels, so a pixel origin landed at a third of the way to the button on a 3x screen. A
+  // circle radius in percent is measured against the box diagonal divided by the square root of 2.
   const radius = Math.hypot(Math.max(origin.x, innerWidth - origin.x), Math.max(origin.y, innerHeight - origin.y));
-  root.style.setProperty('--reveal-x', `${origin.x}px`);
-  root.style.setProperty('--reveal-y', `${origin.y}px`);
-  root.style.setProperty('--reveal-r', `${radius}px`);
+  root.style.setProperty('--reveal-x', `${(origin.x / innerWidth) * 100}%`);
+  root.style.setProperty('--reveal-y', `${(origin.y / innerHeight) * 100}%`);
+  root.style.setProperty('--reveal-r', `${(radius / (Math.hypot(innerWidth, innerHeight) / Math.SQRT2)) * 100}%`);
   root.dataset['reveal'] = 'on';
   const done = () => delete root.dataset['reveal'];
   document.startViewTransition(() => flushSync(swap)).finished.then(done, done);
