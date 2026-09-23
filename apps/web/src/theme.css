@@ -834,3 +834,9 @@ p { margin: 0; }
 .shop-tile.armed, .shop-row.armed { border-color: var(--danger); color: var(--danger); }
 .shop-list { display: flex; flex-direction: column; gap: 8px; }
 .shop-row { display: flex; justify-content: space-between; align-items: center; width: 100%; text-align: left; }
+.shop-flair-group { display: flex; flex-direction: column; gap: 6px; }
+.shop-flair-heading { font-size: var(--fs-sm); color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; }
+.shop-flair-tiers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.shop-flair-tile { flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px; text-align: left; width: 100%; min-width: 0; }
+.shop-flair-tile .row-title { font-size: var(--fs-sm); width: 100%; min-width: 0; }
+.shop-flair-tile .row-sub { width: 100%; min-width: 0; }

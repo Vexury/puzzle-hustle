@@ -1,5 +1,5 @@
 import { beforeEach, expect, it, vi } from 'vitest';
-import { ACHIEVEMENTS_EPOCH } from '@puzzle-hustle/core';
+import { ACHIEVEMENTS_EPOCH, levelList } from '@puzzle-hustle/core';
 import { recordSolve, rehydrate, resetProgress } from '../src/lib/storage.ts';
 import { balance, buyItem, canAffordHint, equip, owned, readEquipped, readSpent, solveCoinLine, spendHint } from '../src/lib/coins.ts';
 
@@ -16,6 +16,14 @@ function earnSome(n: number) {
   }
 }
 
+// Solves every level of the Zip Easy pack, which earns the 'basic-zipper' flair.
+function earnBasicZipper() {
+  const n = levelList('zip', 'easy').length;
+  for (let i = 1; i <= n; i++) {
+    recordSolve(`zip:level:easy:${i}`, { solvedAt: '2026-09-23T10:00:00.000Z', seconds: 60, hints: 0, moves: 10 });
+  }
+}
+
 it('reads a missing or malformed spend log as empty', () => {
   expect(readSpent()).toEqual([]);
   localStorage.setItem('ph:coins:spent', '{not json');
@@ -27,9 +35,9 @@ it('reads a missing or malformed spend log as empty', () => {
 it('reads malformed equipped cosmetics as nothing equipped', () => {
   localStorage.setItem('ph:cosmetics', '"bolt"');
   expect(readEquipped()).toEqual({ badge: null, flair: null });
-  localStorage.setItem('ph:coins:spent', JSON.stringify([{ kind: 'item', item: 'hustler', coins: 500, at: Date.now() }]));
-  localStorage.setItem('ph:cosmetics', JSON.stringify({ badge: 'crown', flair: 'hustler' }));
-  expect(readEquipped()).toEqual({ badge: null, flair: 'hustler' });
+  earnBasicZipper();
+  localStorage.setItem('ph:cosmetics', JSON.stringify({ badge: 'crown', flair: 'basic-zipper' }));
+  expect(readEquipped()).toEqual({ badge: null, flair: 'basic-zipper' });
 });
 
 it('unequips a cosmetic once it falls out of ownership because the epoch moved past its purchase', () => {
@@ -67,6 +75,28 @@ it('buys an item once with an exactly sufficient balance and then refuses', () =
 it('refuses to buy an unknown id', () => {
   earnSome(50);
   expect(buyItem('crown')).toBe(false);
+});
+
+it('refuses to buy a flair, whatever the balance: flairs are earned, never bought', () => {
+  earnSome(50);
+  expect(buyItem('hustler')).toBe(false);
+  expect(buyItem('basic-zipper')).toBe(false);
+  expect(readSpent()).toEqual([]);
+});
+
+it('owns a flair once it is earned by solving, with no spend entry involved', () => {
+  expect(owned().has('basic-zipper')).toBe(false);
+  earnBasicZipper();
+  expect(owned().has('basic-zipper')).toBe(true);
+  expect(readSpent()).toEqual([]);
+});
+
+it('refunds a flair bought before flairs became earned: not owned, and its coins are not spent', () => {
+  earnSome(50);
+  const before = balance();
+  localStorage.setItem('ph:coins:spent', JSON.stringify([{ kind: 'item', item: 'hustler', coins: 500, at: Date.now() }]));
+  expect(balance()).toBe(before);
+  expect(owned().has('hustler')).toBe(false);
 });
 
 it('equips only owned items of the right kind and unequips with null', () => {

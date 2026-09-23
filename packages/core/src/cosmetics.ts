@@ -8,6 +8,9 @@ export type Cosmetic =
   | { id: string; kind: 'badge'; title: string; price: number }
   | { id: string; kind: 'flair'; title: string; requires: FlairRequirement };
 
+export type BadgeCosmetic = Extract<Cosmetic, { kind: 'badge' }>;
+export type FlairCosmetic = Extract<Cosmetic, { kind: 'flair' }>;
+
 // Ids are forever: a board row carries them to clients of every age, so an id may be added but
 // never renamed or removed. No crown (place 1 wears one) and no flame (the streak colour).
 const BADGES: readonly Cosmetic[] = [
@@ -74,18 +77,18 @@ const PACK_FLAIRS: Record<PuzzleTypeId, Record<Difficulty, { id: string; title: 
   },
 };
 
-function packFlair(type: PuzzleTypeId, difficulty: Difficulty): Cosmetic {
+function packFlair(type: PuzzleTypeId, difficulty: Difficulty): FlairCosmetic {
   const { id, title } = PACK_FLAIRS[type][difficulty];
   return { id, kind: 'flair', title, requires: { pack: type, difficulty } };
 }
 
 // One block per puzzle type, Easy to Genius, in the order the shop lists them.
-export const FLAIRS_BY_TYPE: Readonly<Record<PuzzleTypeId, readonly Cosmetic[]>> = Object.fromEntries(
+export const FLAIRS_BY_TYPE: Readonly<Record<PuzzleTypeId, readonly FlairCosmetic[]>> = Object.fromEntries(
   PUZZLE_TYPES.map((type) => [type, DIFFICULTIES.map((difficulty) => packFlair(type, difficulty))]),
-) as unknown as Record<PuzzleTypeId, readonly Cosmetic[]>;
+) as unknown as Record<PuzzleTypeId, readonly FlairCosmetic[]>;
 
 // Earned when the named achievement unlocks, rather than by finishing a pack.
-export const ACTIVITY_FLAIRS: readonly Cosmetic[] = [
+export const ACTIVITY_FLAIRS: readonly FlairCosmetic[] = [
   { id: 'puzzler', kind: 'flair', title: 'Puzzler', requires: { achievement: 'every-type' } },
   { id: 'night-shift', kind: 'flair', title: 'Night Shift', requires: { achievement: 'night-owl' } },
   { id: 'morning-person', kind: 'flair', title: 'Morning Person', requires: { achievement: 'early-bird' } },

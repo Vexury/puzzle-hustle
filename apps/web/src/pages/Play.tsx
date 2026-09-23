@@ -35,6 +35,7 @@ import { setBackGuard } from '../lib/back.ts';
 import { clearProgress, getSolve, keepFinalBoard, readProgress, readSetting, recordSolve, useSolves, writeProgress, writeSetting, type SolveRecord } from '../lib/storage.ts';
 import { capitalize, formatSeconds, share, shareText } from '../lib/share.ts';
 import { balance, solveCoinLine } from '../lib/coins.ts';
+import { syncFlairs } from '../lib/flairs.ts';
 import { currentHintProvider, freeHints, type HintChoice } from '../lib/hints.ts';
 import { enqueue, flush } from '../lib/queue.ts';
 import { HOW_TO } from '../lib/howto.ts';
@@ -318,6 +319,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
       void flush().finally(() => setScoreSettled(true));
     }
     syncAchievements();
+    syncFlairs();
     if (replayable) clearProgress(id);
     else if (lastState.current) keepFinalBoard(id, { state: lastState.current, seconds: elapsed, moves: record.moves, hints: record.hints });
   };

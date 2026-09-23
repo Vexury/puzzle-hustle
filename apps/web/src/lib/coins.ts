@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react';
 import {
   coinBalance,
   coinsEarned,
+  earnedFlairs,
   findCosmetic,
   HINT_PRICE,
   ownedItems,
@@ -77,13 +78,15 @@ export function spendHint(puzzle: string): boolean {
   return true;
 }
 
+// Bought badges plus earned flairs: a flair is never in ph:coins:spent (buyItem refuses it), so
+// the two sources never overlap.
 export function owned(): Set<string> {
-  return ownedItems(readSpent());
+  return new Set([...ownedItems(readSpent()), ...earnedFlairs(storedSolves())]);
 }
 
 export function buyItem(id: string): boolean {
   const item = findCosmetic(id);
-  if (!item || owned().has(id) || balance() < item.price) return false;
+  if (!item || item.kind !== 'badge' || owned().has(id) || balance() < item.price) return false;
   appendSpent({ kind: 'item', item: id, coins: item.price, at: Date.now() });
   return true;
 }

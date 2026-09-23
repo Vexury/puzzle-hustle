@@ -144,6 +144,7 @@ export function resetProgress() {
         k &&
         (k === KEY ||
           k === 'ph:achievements' ||
+          k === 'ph:flairs' ||
           k === 'ph:coins:spent' ||
           k === 'ph:cosmetics' ||
           k.startsWith(PROGRESS_PREFIX) ||
