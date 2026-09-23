@@ -127,13 +127,40 @@ describe('tracks solver', () => {
     }
   });
 
-  it('uses the given pieces', () => {
-    // 3x3, A at row 0, B at column 2: the path runs along the top row and down the right column.
-    const path = [0, 1, 2, 5, 8];
-    const p = puzzleFromPath(3, 3, 0, 2, path);
-    const res = solveTracks(p, 3);
+  it('uses a given piece to resolve an otherwise ambiguous puzzle', () => {
+    // 3x3, A at row 0, B at column 2, path visiting every cell: rowCounts and colCounts alone are
+    // [3,3,3]/[3,3,3], which just says every cell is track and leaves two different routings
+    // between A and B, so the clues alone must not pin down a unique solution.
+    const path = [0, 1, 2, 5, 4, 3, 6, 7, 8];
+    const base = puzzleFromPath(3, 3, 0, 2, path);
+    expect(countTracksSolutions(base, 5).count).toBe(2);
+    const baseRes = solveTracks(base, 3);
+    expect(baseRes.solved).toBe(false);
+    expect(baseRes.contradiction).toBe(false);
+
+    // Revealing the center cell's given piece (it runs straight through, W-E) rules out the other
+    // routing and the puzzle solves to exactly this path.
+    const masks = masksOf(3, 3, 0, 2, path);
+    const given = new Uint8Array(9);
+    given[4] = masks[4]!;
+    const res = solveTracks({ ...base, given }, 3);
     expect(res.solved).toBe(true);
-    expect([...res.masks]).toEqual([...masksOf(3, 3, 0, 2, path)]);
+    expect([...res.masks]).toEqual([...masks]);
+  });
+
+  it('reports a contradiction when a given piece cannot be part of any solution', () => {
+    // 3x3, A at row 0, B at column 2: the path runs along the top row and down the right column,
+    // which leaves the center cell empty in the only solution.
+    const path = [0, 1, 2, 5, 8];
+    const base = puzzleFromPath(3, 3, 0, 2, path);
+    expect(solveTracks(base, 3).solved).toBe(true);
+
+    // Force the center cell to be a track piece running N-S, which the puzzle cannot fit anywhere.
+    const given = new Uint8Array(9);
+    given[4] = TRACK_N | TRACK_S;
+    const withGiven = { ...base, given };
+    expect(solveTracks(withGiven, 3).contradiction).toBe(true);
+    expect(countTracksSolutions(withGiven, 2).count).toBe(0);
   });
 
   it('reports contradictory clues', () => {
@@ -141,5 +168,35 @@ describe('tracks solver', () => {
     p.rowCounts[1] = 3;
     expect(solveTracks(p, 3).contradiction).toBe(true);
     expect(countTracksSolutions(p, 2).count).toBe(0);
+  });
+
+  it('needs tier 2 for some unique puzzles and tier 3 for others, never doing more work than the ceiling allows', () => {
+    const rng = new Rng(17);
+    let sawTier2Needed = false;
+    let sawTier3Needed = false;
+    for (let t = 0; t < 300 && !(sawTier2Needed && sawTier3Needed); t++) {
+      const entryRow = rng.int(4);
+      const exitCol = 1 + rng.int(4);
+      const paths = allPaths(5, 5, entryRow, exitCol);
+      const pick = paths[rng.int(paths.length)]!;
+      const p = puzzleFromPath(5, 5, entryRow, exitCol, pick);
+      if (countTracksSolutions(p, 2).count !== 1) continue;
+      const r1 = solveTracks(p, 1);
+      if (r1.solved) continue;
+      // Tier 1 alone was insufficient: the tiers above it must never have run.
+      expect(r1.steps[1]).toBe(0);
+      expect(r1.steps[2]).toBe(0);
+      const r2 = solveTracks(p, 2);
+      if (!sawTier2Needed && r2.solved) {
+        expect(r2.steps[2]).toBe(0);
+        sawTier2Needed = true;
+      }
+      if (!sawTier3Needed && !r2.solved) {
+        expect(solveTracks(p, 3).solved).toBe(true);
+        sawTier3Needed = true;
+      }
+    }
+    expect(sawTier2Needed).toBe(true);
+    expect(sawTier3Needed).toBe(true);
   });
 });
