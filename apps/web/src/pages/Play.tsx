@@ -13,6 +13,7 @@ import {
   generateStars,
   generateSudoku,
   generateZip,
+  HINT_PRICE,
   levelRef,
   mosaicAdapter,
   nonogramAdapter,
@@ -32,7 +33,8 @@ import { href, navigate, onLinkClick } from '../lib/router.ts';
 import { setBackGuard } from '../lib/back.ts';
 import { clearProgress, getSolve, keepFinalBoard, readProgress, readSetting, recordSolve, useSolves, writeProgress, writeSetting, type SolveRecord } from '../lib/storage.ts';
 import { capitalize, formatSeconds, share, shareText } from '../lib/share.ts';
-import { currentHintProvider, freeHints } from '../lib/hints.ts';
+import { balance } from '../lib/coins.ts';
+import { currentHintProvider, freeHints, type HintChoice } from '../lib/hints.ts';
 import { enqueue, flush } from '../lib/queue.ts';
 import { HOW_TO } from '../lib/howto.ts';
 import { dailyNumber } from '../lib/stats.ts';
@@ -137,29 +139,29 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const seenKey = `ph:howto:${puzzleRef.type}`;
   const [showHelp, setShowHelp] = useState(() => readSetting(seenKey) !== '1');
   const helpSeen = useRef(readSetting(seenKey) === '1');
-  const [askAd, setAskAd] = useState(false);
+  const [askHint, setAskHint] = useState<{ canPay: boolean } | null>(null);
   const [adWait, setAdWait] = useState(false);
   const adWaitRef = useRef(false);
-  const adAnswer = useRef<((ok: boolean) => void) | null>(null);
+  const hintAnswer = useRef<((choice: HintChoice) => void) | null>(null);
   const [askLeave, setAskLeave] = useState(false);
   const askLeaveRef = useRef(askLeave);
   askLeaveRef.current = askLeave;
   const pausedSince = useRef<number | null>(null);
   const frozen = useRef<number | null>(null);
 
-  const confirmAd = () =>
-    new Promise<boolean>((resolve) => {
-      adAnswer.current = resolve;
-      setAskAd(true);
+  const askForHint = (canPay: boolean) =>
+    new Promise<HintChoice>((resolve) => {
+      hintAnswer.current = resolve;
+      setAskHint({ canPay });
     });
 
-  const answerAd = (ok: boolean) => {
-    setAskAd(false);
-    adAnswer.current?.(ok);
-    adAnswer.current = null;
+  const answerHint = (choice: HintChoice) => {
+    setAskHint(null);
+    hintAnswer.current?.(choice);
+    hintAnswer.current = null;
   };
 
-  useEffect(() => () => adAnswer.current?.(false), []);
+  useEffect(() => () => hintAnswer.current?.(null), []);
 
   // Between "Watch video" and the video itself the ad takes a moment to load. The puzzle must not
   // take input or be left in that gap, and the clock stands, as it does during the video.
@@ -170,7 +172,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
     else resumeClock();
   };
 
-  const hintProvider = currentHintProvider(hints, confirmAd, waitForAd);
+  const hintProvider = currentHintProvider(hints, id, askForHint, waitForAd);
   const back = backTarget(puzzleRef);
 
   // The clock runs from the moment the puzzle is on screen. Starting it on the first move
@@ -469,16 +471,26 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
         </div>
       )}
 
-      {askAd && (
-        <div className="ad-ask" role="dialog" aria-modal="true" aria-label="Watch a video for a hint">
+      {askHint && (
+        <div className="ad-ask" role="dialog" aria-modal="true" aria-label="Get another hint">
           <div className="card-lg">
             <b>One more hint?</b>
-            <span className="muted small">Watch a short video and the next hint is yours. Your first hint on every puzzle is always free.</span>
+            <span className="muted small">
+              {askHint.canPay
+                ? `Pay ${HINT_PRICE} coins or watch a short video. Your first hint on every puzzle is always free.`
+                : 'Watch a short video and the next hint is yours. Your first hint on every puzzle is always free.'}
+            </span>
+            {!askHint.canPay && <span className="muted small">{HINT_PRICE} coins needed, you have {balance()}.</span>}
             <div className="ad-ask-row">
-              <button type="button" className="pill outline" onClick={() => answerAd(false)}>
+              <button type="button" className="pill outline" onClick={() => answerHint(null)}>
                 Not now
               </button>
-              <button type="button" className="pill" onClick={() => answerAd(true)}>
+              {askHint.canPay && (
+                <button type="button" className="pill" onClick={() => answerHint('coins')}>
+                  Use {HINT_PRICE} coins
+                </button>
+              )}
+              <button type="button" className={askHint.canPay ? 'pill outline' : 'pill'} onClick={() => answerHint('video')}>
                 Watch video
               </button>
             </div>
