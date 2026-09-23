@@ -1,7 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../src/rng.ts';
 import { DIFFICULTIES } from '../src/types.ts';
-import { TRACKS_PRESETS, generateTracks } from '../src/tracks/puzzle.ts';
+import {
+  TRACKS_PRESETS,
+  applyTracksHint,
+  emptyTracksState,
+  generateTracks,
+  isTracksSolved,
+  tracksHasEdge,
+  tracksHint,
+  tracksLineCounts,
+  tracksMask,
+  tracksSetEdge,
+  tracksStepToward,
+  tracksToggleCross,
+  validTracksState,
+} from '../src/tracks/puzzle.ts';
 import {
   TRACK_E,
   TRACK_N,
@@ -256,4 +270,107 @@ describe('tracks generator', () => {
     expect([spec.config.cols, spec.config.rows]).toEqual([10, 15]);
     expect(solveTracks(spec, 3).solved).toBe(true);
   }, 60_000);
+});
+
+describe('tracks state', () => {
+  const spec = generateTracks(2, 'easy');
+  const cols = spec.config.cols;
+  const free = (() => {
+    // Two horizontally adjacent cells with no given piece and no stub, for edit tests.
+    for (let i = 0; i < spec.solution.length - 2; i++) {
+      if (i % cols >= cols - 2) continue;
+      if (!spec.given[i] && !spec.given[i + 1] && !spec.given[i + 2] && !tracksMask(spec, emptyTracksState(spec), i) && !tracksMask(spec, emptyTracksState(spec), i + 1) && !tracksMask(spec, emptyTracksState(spec), i + 2)) return i;
+    }
+    throw new Error('no free cells');
+  })();
+
+  it('lays and lifts an edge', () => {
+    const s1 = tracksSetEdge(spec, emptyTracksState(spec), free, free + 1, true)!;
+    expect(tracksHasEdge(spec, s1, free, free + 1)).toBe(true);
+    expect(tracksHasEdge(spec, s1, free + 1, free)).toBe(true);
+    const s2 = tracksSetEdge(spec, s1, free + 1, free, false)!;
+    expect(tracksHasEdge(spec, s2, free, free + 1)).toBe(false);
+  });
+
+  it('refuses a third connection, a diagonal and a given edge', () => {
+    let s = emptyTracksState(spec);
+    s = tracksSetEdge(spec, s, free, free + 1, true)!;
+    s = tracksSetEdge(spec, s, free + 1, free + 2, true)!;
+    const below = free + 1 + cols < spec.solution.length ? free + 1 + cols : free + 1 - cols;
+    expect(tracksSetEdge(spec, s, free + 1, below, true)).toBeNull();
+    expect(tracksSetEdge(spec, s, free, free + 1 + cols, true)).toBeNull();
+    const g = spec.given.findIndex((m) => m !== 0 && (m & TRACK_E) !== 0);
+    if (g >= 0) expect(tracksSetEdge(spec, s, g, g + 1, false)).toBeNull();
+  });
+
+  it('clears a cross when track is laid through it, and only crosses empty cells', () => {
+    let s = tracksToggleCross(spec, emptyTracksState(spec), free)!;
+    expect(s[free]! & 4).toBe(4);
+    s = tracksSetEdge(spec, s, free, free + 1, true)!;
+    expect(s[free]! & 4).toBe(0);
+    expect(tracksToggleCross(spec, s, free)).toBeNull();
+  });
+
+  it('steps straight toward a target, never diagonally', () => {
+    expect(tracksStepToward(8, 0, 2)).toBe(1);
+    expect(tracksStepToward(8, 0, 16)).toBe(8);
+    expect(tracksStepToward(8, 0, 17)).toBe(8);
+    expect(tracksStepToward(8, 0, 10)).toBe(1);
+    expect(tracksStepToward(8, 9, 9)).toBe(9);
+  });
+
+  it('drops a saved state that does not fit the board', () => {
+    const n = spec.solution.length;
+    expect(validTracksState(spec, undefined)).toEqual(emptyTracksState(spec));
+    expect(validTracksState(spec, [1, 2])).toEqual(emptyTracksState(spec));
+    expect(validTracksState(spec, new Array(n).fill(9))).toEqual(emptyTracksState(spec));
+    const eastOffBoard = new Array(n).fill(0);
+    eastOffBoard[cols - 1] = 1;
+    expect(validTracksState(spec, eastOffBoard)).toEqual(emptyTracksState(spec));
+    const ok = tracksSetEdge(spec, emptyTracksState(spec), free, free + 1, true)!;
+    expect(validTracksState(spec, ok)).toEqual(ok);
+  });
+
+  it('is solved exactly when the track matches, and counts lines', () => {
+    let s = emptyTracksState(spec);
+    expect(isTracksSolved(spec, s)).toBe(false);
+    for (let hint = tracksHint(spec, s); hint; hint = tracksHint(spec, s)) s = applyTracksHint(spec, s, hint);
+    expect(isTracksSolved(spec, s)).toBe(true);
+    const counts = tracksLineCounts(spec, s);
+    expect(counts.rows).toEqual([...spec.rowCounts]);
+    expect(counts.cols).toEqual([...spec.colCounts]);
+  });
+
+  it('removes a wrong piece before laying anything', () => {
+    let s = emptyTracksState(spec);
+    let wrong: [number, number] | null = null;
+    for (let i = 0; i < spec.solution.length && !wrong; i++) {
+      if (i % cols === cols - 1) continue;
+      if (spec.solution[i]! & TRACK_E) continue;
+      const next = tracksSetEdge(spec, s, i, i + 1, true);
+      if (next) {
+        s = next;
+        wrong = [i, i + 1];
+      }
+    }
+    expect(tracksHint(spec, s)).toEqual({ kind: 'remove-edge', a: wrong![0], b: wrong![1] });
+  });
+
+  it('reaches the solution from a messy board by hints alone', () => {
+    const m = generateTracks(3, 'medium');
+    const mc = m.config.cols;
+    let s = emptyTracksState(m);
+    const rng = new Rng(5);
+    for (let k = 0; k < 40; k++) {
+      const a = rng.int(m.solution.length);
+      const b = a % mc < mc - 1 && rng.int(2) ? a + 1 : a + mc;
+      if (b >= m.solution.length) continue;
+      s = tracksSetEdge(m, s, a, b, true) ?? s;
+      if (rng.int(4) === 0) s = tracksToggleCross(m, s, rng.int(m.solution.length)) ?? s;
+    }
+    let guard = 0;
+    for (let hint = tracksHint(m, s); hint && guard < 500; hint = tracksHint(m, s), guard++) s = applyTracksHint(m, s, hint);
+    expect(isTracksSolved(m, s)).toBe(true);
+    expect(tracksHint(m, s)).toBeNull();
+  });
 });

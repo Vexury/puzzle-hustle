@@ -1,6 +1,6 @@
 import { Rng } from '../rng.ts';
 import type { Difficulty } from '../types.ts';
-import { TRACK_E, TRACK_N, TRACK_S, TRACK_W, solveTracks, tracksGivenCount, type TracksPuzzle } from './solver.ts';
+import { TRACK_E, TRACK_N, TRACK_S, TRACK_W, solveTracks, tracksGivenCount, tracksOutside, type TracksPuzzle } from './solver.ts';
 
 export const TRACKS_VERSION = 1;
 
@@ -171,4 +171,161 @@ export function generateTracks(seed: number, difficulty: Difficulty): TracksSpec
     return { ...puzzle, version: TRACKS_VERSION, seed, difficulty, config: cfg, solution, path: Uint16Array.from(path) };
   }
   throw new Error(`could not generate tracks puzzle for seed ${seed} / ${cols}x${rows}`);
+}
+
+export const TRACKS_STATE_E = 1;
+export const TRACKS_STATE_S = 2;
+export const TRACKS_STATE_X = 4;
+
+export type TracksState = number[];
+
+export function emptyTracksState(spec: TracksSpec): TracksState {
+  return new Array<number>(spec.config.cols * spec.config.rows).fill(0);
+}
+
+export function validTracksState(spec: TracksSpec, initial: number[] | undefined): TracksState {
+  const { cols, rows } = spec.config;
+  if (!initial || initial.length !== cols * rows) return emptyTracksState(spec);
+  for (let i = 0; i < initial.length; i++) {
+    const v = initial[i]!;
+    if (!Number.isInteger(v) || v < 0 || v > 7) return emptyTracksState(spec);
+    if (v & TRACKS_STATE_E && i % cols === cols - 1) return emptyTracksState(spec);
+    if (v & TRACKS_STATE_S && Math.floor(i / cols) === rows - 1) return emptyTracksState(spec);
+  }
+  return [...initial];
+}
+
+// The edge between a and its neighbour in direction bit d, as the pair (lower cell, own bit).
+function edgeSlot(cols: number, a: number, b: number): [number, number] | null {
+  if (b === a + 1 && a % cols !== cols - 1) return [a, TRACKS_STATE_E];
+  if (b === a - 1 && b % cols !== cols - 1) return [b, TRACKS_STATE_E];
+  if (b === a + cols) return [a, TRACKS_STATE_S];
+  if (b === a - cols) return [b, TRACKS_STATE_S];
+  return null;
+}
+
+function givenEdge(spec: TracksSpec, low: number, bit: number): boolean {
+  const cols = spec.config.cols;
+  if (bit === TRACKS_STATE_E) return (spec.given[low]! & TRACK_E) !== 0 || (spec.given[low + 1]! & TRACK_W) !== 0;
+  return (spec.given[low]! & TRACK_S) !== 0 || (spec.given[low + cols]! & TRACK_N) !== 0;
+}
+
+export function tracksHasEdge(spec: TracksSpec, state: TracksState, a: number, b: number): boolean {
+  const slot = edgeSlot(spec.config.cols, a, b);
+  if (!slot) return false;
+  return (state[slot[0]]! & slot[1]) !== 0 || givenEdge(spec, slot[0], slot[1]);
+}
+
+export function tracksMask(spec: TracksSpec, state: TracksState, cell: number): number {
+  const { cols, rows } = spec.config;
+  const r = Math.floor(cell / cols);
+  const c = cell % cols;
+  let m = tracksOutside(spec, cell);
+  if (r > 0 && tracksHasEdge(spec, state, cell, cell - cols)) m |= TRACK_N;
+  if (c < cols - 1 && tracksHasEdge(spec, state, cell, cell + 1)) m |= TRACK_E;
+  if (r < rows - 1 && tracksHasEdge(spec, state, cell, cell + cols)) m |= TRACK_S;
+  if (c > 0 && tracksHasEdge(spec, state, cell, cell - 1)) m |= TRACK_W;
+  return m;
+}
+
+function bits(m: number): number {
+  let n = 0;
+  for (; m; m &= m - 1) n++;
+  return n;
+}
+
+export function tracksSetEdge(spec: TracksSpec, state: TracksState, a: number, b: number, on: boolean): TracksState | null {
+  const total = spec.config.cols * spec.config.rows;
+  if (a < 0 || b < 0 || a >= total || b >= total) return null;
+  const slot = edgeSlot(spec.config.cols, a, b);
+  if (!slot) return null;
+  const [low, bit] = slot;
+  if (givenEdge(spec, low, bit)) return null;
+  const has = (state[low]! & bit) !== 0;
+  if (has === on) return null;
+  if (on && (bits(tracksMask(spec, state, a)) >= 2 || bits(tracksMask(spec, state, b)) >= 2)) return null;
+  const next = [...state];
+  next[low] = on ? next[low]! | bit : next[low]! & ~bit;
+  if (on) {
+    next[a] = next[a]! & ~TRACKS_STATE_X;
+    next[b] = next[b]! & ~TRACKS_STATE_X;
+  }
+  return next;
+}
+
+export function tracksToggleCross(spec: TracksSpec, state: TracksState, cell: number): TracksState | null {
+  if (cell < 0 || cell >= state.length || tracksMask(spec, state, cell) !== 0) return null;
+  const next = [...state];
+  next[cell] = next[cell]! ^ TRACKS_STATE_X;
+  return next;
+}
+
+// One straight step from `from` toward `to`. A swipe that jumped diagonally between two
+// pointer events walks the longer axis first, so no diagonal or skipping edge ever appears.
+export function tracksStepToward(cols: number, from: number, to: number): number {
+  const dr = Math.floor(to / cols) - Math.floor(from / cols);
+  const dc = (to % cols) - (from % cols);
+  if (dr === 0 && dc === 0) return from;
+  if (Math.abs(dc) >= Math.abs(dr)) return from + Math.sign(dc);
+  return from + cols * Math.sign(dr);
+}
+
+export function isTracksSolved(spec: TracksSpec, state: TracksState): boolean {
+  for (let i = 0; i < spec.solution.length; i++) if (tracksMask(spec, state, i) !== spec.solution[i]) return false;
+  return true;
+}
+
+export function tracksLineCounts(spec: TracksSpec, state: TracksState): { rows: number[]; cols: number[] } {
+  const { cols, rows } = spec.config;
+  const out = { rows: new Array<number>(rows).fill(0), cols: new Array<number>(cols).fill(0) };
+  for (let i = 0; i < cols * rows; i++) {
+    if (!tracksMask(spec, state, i)) continue;
+    out.rows[Math.floor(i / cols)]!++;
+    out.cols[i % cols]!++;
+  }
+  return out;
+}
+
+export type TracksHint = { kind: 'remove-edge'; a: number; b: number } | { kind: 'remove-cross'; cell: number } | { kind: 'place'; cell: number };
+
+export function tracksHint(spec: TracksSpec, state: TracksState): TracksHint | null {
+  const cols = spec.config.cols;
+  for (let i = 0; i < state.length; i++) {
+    if (state[i]! & TRACKS_STATE_E && !(spec.solution[i]! & TRACK_E)) return { kind: 'remove-edge', a: i, b: i + 1 };
+    if (state[i]! & TRACKS_STATE_S && !(spec.solution[i]! & TRACK_S)) return { kind: 'remove-edge', a: i, b: i + cols };
+  }
+  for (let i = 0; i < state.length; i++) if (state[i]! & TRACKS_STATE_X && spec.solution[i]) return { kind: 'remove-cross', cell: i };
+  for (const cell of spec.path) if (tracksMask(spec, state, cell) !== spec.solution[cell]) return { kind: 'place', cell };
+  return null;
+}
+
+export function applyTracksHint(spec: TracksSpec, state: TracksState, hint: TracksHint): TracksState {
+  const cols = spec.config.cols;
+  const next = [...state];
+  if (hint.kind === 'remove-edge') {
+    const slot = edgeSlot(cols, hint.a, hint.b)!;
+    next[slot[0]] = next[slot[0]]! & ~slot[1];
+    return next;
+  }
+  if (hint.kind === 'remove-cross') {
+    next[hint.cell] = next[hint.cell]! & ~TRACKS_STATE_X;
+    return next;
+  }
+  const cell = hint.cell;
+  const want = spec.solution[cell]!;
+  const neighbours: [number, number][] = [
+    [TRACK_N, cell - cols],
+    [TRACK_E, cell + 1],
+    [TRACK_S, cell + cols],
+    [TRACK_W, cell - 1],
+  ];
+  for (const [dir, other] of neighbours) {
+    if (!(want & dir)) continue;
+    const slot = edgeSlot(cols, cell, other);
+    if (!slot || givenEdge(spec, slot[0], slot[1])) continue;
+    next[slot[0]] = next[slot[0]]! | slot[1];
+    next[other] = next[other]! & ~TRACKS_STATE_X;
+  }
+  next[cell] = next[cell]! & ~TRACKS_STATE_X;
+  return next;
 }
