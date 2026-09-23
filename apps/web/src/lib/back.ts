@@ -20,14 +20,27 @@ export function pushBackGuard(fn: Guard): () => void {
 }
 
 // Legacy single-slot API, kept for callers that only ever hold one guard of their own at a
-// time (Play.tsx, Intro.tsx): setBackGuard(fn) replaces whatever this caller previously held
-// on the stack, setBackGuard(null) releases it. Both go through pushBackGuard, so a guard
-// pushed on top by something else (the unlock modal) still wins over it.
+// time (Play.tsx, Intro.tsx): setBackGuard(fn) replaces whatever this caller previously held,
+// setBackGuard(null) releases it. Play.tsx's guard effect has no dependency array and so calls
+// setBackGuard(fn) again on every render while the puzzle is unsolved; a naive pop-then-push
+// implementation would move it to the top of the stack each time, letting it jump back above a
+// guard something else (the unlock modal) had since pushed on top of it. Instead this dispatches
+// through one stable wrapper that stays at whatever stack position it was first pushed at, and
+// setBackGuard only ever swaps which function that wrapper delegates to.
+let legacyGuard: Guard | null = null;
 let releaseLegacy: (() => void) | null = null;
 
+function dispatchLegacy(): boolean {
+  return legacyGuard?.() ?? false;
+}
+
 export function setBackGuard(fn: Guard | null): void {
-  releaseLegacy?.();
-  releaseLegacy = fn ? pushBackGuard(fn) : null;
+  legacyGuard = fn;
+  if (fn && !releaseLegacy) releaseLegacy = pushBackGuard(dispatchLegacy);
+  else if (!fn && releaseLegacy) {
+    releaseLegacy();
+    releaseLegacy = null;
+  }
 }
 
 // The decision a back press resolves to, exercised directly in back.test.ts without the

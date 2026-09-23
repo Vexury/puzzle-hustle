@@ -1,13 +1,10 @@
-import { beforeEach, expect, it } from 'vitest';
+import { expect, it } from 'vitest';
 import { handleBackPress, pushBackGuard, setBackGuard } from '../src/lib/back.ts';
 
 // initBackButton() itself just wires handleBackPress to the native listener and isn't tested
 // here (it needs a native platform); these exercise the stack and its LIFO handling directly.
-
-beforeEach(() => {
-  // Guards are held in module scope so a leftover from one test would otherwise bleed into
-  // the next; each test pushes and pops its own.
-});
+// Guards are held in module scope, so every test pushes and pops (or setBackGuard(null)s) its
+// own, leaving the stack empty for the next one, rather than relying on a reset hook.
 
 it('with no guard registered, a back press is not handled', () => {
   expect(handleBackPress(true)).toBe('back');
@@ -78,6 +75,31 @@ it('setBackGuard sits beneath a guard pushed on top of it', () => {
   removeModal();
   // The legacy guard is still there underneath once the modal's guard is gone.
   expect(handleBackPress(true)).toBe('guarded');
+  setBackGuard(null);
+  expect(handleBackPress(true)).toBe('back');
+});
+
+it('re-registering a legacy guard (Play.tsx re-rendering) does not jump it above a guard pushed on top', () => {
+  const calls: string[] = [];
+  setBackGuard(() => {
+    calls.push('legacy');
+    return true;
+  });
+  const removeModal = pushBackGuard(() => {
+    calls.push('modal');
+    return true;
+  });
+  // Simulates Play.tsx's no-dependency-array effect re-running setBackGuard on every render
+  // while the modal is open on top of it.
+  setBackGuard(() => {
+    calls.push('legacy-again');
+    return true;
+  });
+  expect(handleBackPress(true)).toBe('guarded');
+  expect(calls).toEqual(['modal']);
+  removeModal();
+  expect(handleBackPress(true)).toBe('guarded');
+  expect(calls).toEqual(['modal', 'legacy-again']);
   setBackGuard(null);
   expect(handleBackPress(true)).toBe('back');
 });
