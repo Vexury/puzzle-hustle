@@ -1,0 +1,14 @@
+<en-US>
+Smaller fixes from your feedback.
+
+- The puzzle holds still while a hint video loads, no stray moves in the gap
+- A Mosaic number greys out as soon as enough cells are filled
+- Clearer message when a video ends without a hint
+</en-US>
+<de-DE>
+Kleinere Verbesserungen aus eurem Feedback.
+
+- Das Rätsel bleibt ruhig, während ein Hint-Video lädt, keine Züge mehr in der Pause
+- Eine Mosaik-Zahl wird grau, sobald genug Felder gefüllt sind
+- Klarere Meldung, wenn ein Video ohne Hint endet
+</de-DE>
