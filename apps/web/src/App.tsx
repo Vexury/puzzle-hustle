@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import { Intro } from './components/Intro.tsx';
 import { TabBar } from './components/TabBar.tsx';
-import { ToastHost } from './components/Toast.tsx';
+import { ToastHost, toast } from './components/Toast.tsx';
 import { UnlockModalHost } from './components/UnlockModal.tsx';
-import { useRoute } from './lib/router.ts';
+import { SIGN_IN_AVAILABLE, useSession } from './lib/auth.ts';
+import { href, navigate, useRoute } from './lib/router.ts';
 import { Achievements } from './pages/Achievements.tsx';
 import { Daily } from './pages/Daily.tsx';
 import { Friends } from './pages/Friends.tsx';
@@ -27,7 +28,34 @@ function tabIndex(path: string): number {
 
 export function App() {
   const route = useRoute();
+  const session = useSession();
   const [nav, setNav] = useState({ path: route.path, slide: '' });
+  // An invitation opened while signed out. Signing in happens on Profile only, so the code
+  // waits here and the player is sent on to the group once the session exists.
+  const [pendingJoin, setPendingJoin] = useState<string | null>(null);
+  const social = route.path === '/friends' || route.path === '/join';
+
+  useEffect(() => {
+    if (session || !social) return;
+    const code = route.params.get('c')?.trim().toUpperCase().slice(0, 6);
+    if (route.path === '/join' && code && SIGN_IN_AVAILABLE) setPendingJoin(code);
+    navigate(href('/profile'), true);
+  }, [session, route]);
+
+  // Only a sign-in during this run counts: a session restored at startup is already there on
+  // the first render, so it never looks like a change from signed out.
+  const signedIn = useRef(session !== null);
+  useEffect(() => {
+    const was = signedIn.current;
+    signedIn.current = session !== null;
+    if (!session || was) return;
+    if (pendingJoin) {
+      setPendingJoin(null);
+      navigate(href(`/join?c=${pendingJoin}`));
+    } else {
+      toast('Social is now in the tab bar');
+    }
+  }, [session]);
   if (nav.path !== route.path) {
     const from = tabIndex(nav.path);
     const to = tabIndex(route.path);
@@ -53,7 +81,7 @@ export function App() {
     chrome = false;
   } else if (route.path === '/levels') page = <LevelsIndex />;
   else if (route.path.startsWith('/levels/')) page = <LevelsType type={route.path.slice('/levels/'.length)} />;
-  else if (route.path === '/profile') page = <Profile />;
+  else if (route.path === '/profile' || (social && !session)) page = <Profile joinCode={pendingJoin} />;
   else if (route.path === '/friends') page = <Friends />;
   else if (route.path === '/join') page = <Friends code={route.params.get('c') ?? ''} />;
   else if (route.path === '/achievements') page = <Achievements />;

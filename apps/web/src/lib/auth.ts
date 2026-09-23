@@ -33,7 +33,7 @@ async function startSession(idToken: string): Promise<Session> {
   void pushCosmetics();
   // Sign-in rejects an invalid offered name server-side and replaces it with a generated one
   // without saying so. Keep the local name in step with whatever the server settled on, so
-  // Profile's field and the Friends card never disagree. Only toast about it when a local name
+  // the Profile name field never disagrees with the server. Only toast about it when a local name
   // existed to be overridden: a first-ever sign-in has none, and announcing the generated name
   // would read as an error on the one screen meant to make signing in feel harmless.
   const offered = readSetting('ph:name');

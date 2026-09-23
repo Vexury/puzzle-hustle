@@ -1,24 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { DAILY_TYPES, PUZZLE_META, dailyRef, periodRef, refId } from '@puzzle-hustle/core';
 import { ApiError, apiFetch, readSession } from '../lib/api.ts';
-import {
-  NATIVE_GOOGLE,
-  SIGN_IN_AVAILABLE,
-  deleteAccount,
-  nativeSignIn,
-  renderSignInButton,
-  signOut,
-  useSession,
-} from '../lib/auth.ts';
-import { href, onLinkClick } from '../lib/router.ts';
+import { useSession } from '../lib/auth.ts';
 import { capitalize, joinUrl, share } from '../lib/share.ts';
 import { toast } from '../components/Toast.tsx';
 import { Board } from '../components/Board.tsx';
 import { CoinPill } from '../components/CoinPill.tsx';
-import { useTheme } from '../lib/theme.ts';
-
-// How long the delete button stays armed before it falls back to asking again.
-const DELETE_CONFIRM_MS = 4000;
 
 export interface Group {
   id: string;
@@ -84,17 +71,8 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
   const [groupId, setGroupId] = useState<string | null>(null);
   const [puzzleIndex, setPuzzleIndex] = useState(0);
 
-  if (!session) {
-    return (
-      <>
-        <section className="page-head">
-          <h1>Social</h1>
-          <CoinPill />
-        </section>
-        <AccountCard />
-      </>
-    );
-  }
+  // App sends a signed-out player to Profile instead; this only covers the render before it does.
+  if (!session) return null;
 
   if (loading && groups.length === 0) {
     return (
@@ -159,8 +137,6 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
       </section>
 
       <div className="stack">
-        <AccountCard />
-
         <div className="card-row">
           <section className="card-lg">
             <h2>New group</h2>
@@ -253,126 +229,5 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
         ))}
       </div>
     </>
-  );
-}
-
-function AccountCard() {
-  const session = useSession();
-  const { theme } = useTheme();
-  const buttonHost = useRef<HTMLDivElement>(null);
-  const [failed, setFailed] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  // Google's button is an iframe from accounts.google.com, and for an account that already
-  // consented it serves a white personalised variant regardless of the theme and shape asked
-  // for in the iframe's own URL. Nothing on our side can colour it. So it is not shown until
-  // the player asks for it: at rest the card carries an ordinary app button, and Google's
-  // control appears when it is the thing being looked at rather than a bright slab sitting in
-  // a dark card. Ours says only "Sign in" — the Google wording and mark belong on Google's.
-  const [asked, setAsked] = useState(false);
-  const [signingIn, setSigningIn] = useState(false);
-
-  const attemptSignIn = () => {
-    if (!buttonHost.current) return;
-    setFailed(false);
-    renderSignInButton(buttonHost.current, () => setFailed(false), theme).catch(() => setFailed(true));
-  };
-
-  useEffect(() => {
-    // Keyed on the theme as well: Google draws the button itself, so the only way it follows
-    // a theme switch is to draw it again. Android has no widget to draw, its sheet is native.
-    if (asked && !session && !NATIVE_GOOGLE) attemptSignIn();
-  }, [session, theme, asked]);
-
-  // Mirrors ResetButton.tsx's arm/revert pattern: the timer lives in an effect keyed on the
-  // armed state so it is cleared on unmount or re-arm instead of firing into a stale closure.
-  useEffect(() => {
-    if (!confirmDelete) return;
-    const timer = setTimeout(() => setConfirmDelete(false), DELETE_CONFIRM_MS);
-    return () => clearTimeout(timer);
-  }, [confirmDelete]);
-
-  if (!session) {
-    if (!SIGN_IN_AVAILABLE) {
-      return (
-        <div className="card-lg">
-          <h2>Account</h2>
-          <span className="muted small">Sign-in isn't set up on this build yet. Everything else works without an account.</span>
-          <div className="friends-actions">
-            <a href={href('/shop')} className="pill outline" onClick={onLinkClick}>
-              Customize
-            </a>
-          </div>
-        </div>
-      );
-    }
-    return (
-      <div className="card-lg">
-        <h2>Account</h2>
-        <span className="muted small">Sign in to compare your daily times with a group of friends. Everything else works without an account.</span>
-        {!asked && (
-          // In the same wrapper the signed-in actions use: the card is a flex column, so a
-          // bare button stretches the full width and reads as a bar rather than a button.
-          <div className="friends-actions">
-            {NATIVE_GOOGLE ? (
-              <button
-                type="button"
-                className="pill"
-                disabled={signingIn}
-                onClick={() => {
-                  setSigningIn(true);
-                  void nativeSignIn().finally(() => setSigningIn(false));
-                }}
-              >
-                Sign in with Google
-              </button>
-            ) : (
-              <button type="button" className="pill" onClick={() => setAsked(true)}>
-                Sign in
-              </button>
-            )}
-          </div>
-        )}
-        {asked && <div className="gsi-host" ref={buttonHost} />}
-        {failed && (
-          <button type="button" className="linklike muted small" onClick={attemptSignIn}>
-            Sign-in is unavailable right now. Try again.
-          </button>
-        )}
-        <div className="friends-actions">
-          <a href={href('/shop')} className="pill outline" onClick={onLinkClick}>
-            Customize
-          </a>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="card-lg">
-      <h2>Friends</h2>
-      <span className="muted small">Signed in as {session.player.name}.</span>
-      <div className="friends-actions">
-        <a href={href('/shop')} className="pill outline" onClick={onLinkClick}>
-          Customize
-        </a>
-        <button type="button" className="pill outline" onClick={signOut}>
-          Sign out
-        </button>
-        <button
-          type="button"
-          className={confirmDelete ? 'pill danger' : 'pill outline'}
-          onClick={() => {
-            if (!confirmDelete) {
-              setConfirmDelete(true);
-              return;
-            }
-            setConfirmDelete(false);
-            void deleteAccount();
-          }}
-        >
-          {confirmDelete ? 'Sure?' : 'Delete account'}
-        </button>
-      </div>
-    </div>
   );
 }

@@ -1,12 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ACHIEVEMENTS, DAILY_TYPES, PUZZLE_META } from '@puzzle-hustle/core';
 import { Flame } from './Daily.tsx';
 import { ACCENTS, ACCENT_NAMES, useAccent } from '../lib/accent.ts';
 import { adsAvailable, onAdsConsent, privacyOptionsAvailable, showPrivacyOptions } from '../lib/ads.ts';
-import { setName as setAccountName, useSession } from '../lib/auth.ts';
-import { ApiError, readSession } from '../lib/api.ts';
 import { currentUnlocked } from '../lib/achievements.ts';
-import { pushCosmetics, useBalance } from '../lib/coins.ts';
+import { pushCosmetics } from '../lib/coins.ts';
 import { buyUnlimitedHints, hasUnlimitedHints, onEntitlement } from '../lib/entitlement.ts';
 import { HAPTICS_KEY, hapticsAvailable, tap } from '../lib/haptics.ts';
 import { href, onLinkClick } from '../lib/router.ts';
@@ -14,27 +12,16 @@ import { readSetting, resetProgress, useSolves, writeSetting } from '../lib/stor
 import { formatSeconds } from '../lib/share.ts';
 import { dailyStreaks, totalSolved, typeStats } from '../lib/stats.ts';
 import { THEME_PREFS, centerOf, useTheme, type ThemePref } from '../lib/theme.ts';
+import { AccountCard } from '../components/AccountCard.tsx';
+import { CoinPill } from '../components/CoinPill.tsx';
 import { ThemeToggle } from '../components/ThemeToggle.tsx';
-import { toast } from '../components/Toast.tsx';
 
-// Once signed in, the server's name is the source of truth. A rejected rename must not leave
-// the local field and the Friends card silently showing two different names.
-const NAME_REJECTION_MESSAGES: Record<string, string> = {
-  name_length: 'Names are 2 to 24 characters',
-  name_characters: 'Letters, digits, spaces, dots, dashes and underscores only',
-  name_blocked: 'Pick a different name',
-};
-
-export function Profile() {
+export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) {
   const solves = useSolves();
-  const coins = useBalance();
   const streaks = dailyStreaks(solves);
   const stats = typeStats(solves);
   const { pref, setPref } = useTheme();
   const { accent, setAccent } = useAccent();
-  const session = useSession();
-  const [name, setName] = useState(readSetting('ph:name') ?? '');
-  const [editing, setEditing] = useState(false);
   const [numberHighlight, setNumberHighlight] = useState(readSetting('ph:sudokuHighlight') !== '0');
   const [hapticsOn, setHapticsOn] = useState(readSetting(HAPTICS_KEY) !== '0');
   const [confirmReset, setConfirmReset] = useState(false);
@@ -47,75 +34,37 @@ export function Profile() {
   useEffect(() => onEntitlement(() => setUnlimited(hasUnlimitedHints())), []);
   useEffect(() => onAdsConsent(() => setPrivacy(privacyOptionsAvailable())), []);
 
-  // FriendsCard, a child, is where sign-in actually happens; this component never re-renders
-  // on its own just because the session changed. Follow the signed-in player's name so the
-  // field and the Friends card below it never show two different names. Reading `editing` via
-  // a ref (rather than a dependency) means finishing an edit doesn't re-run this against a
-  // session that hasn't caught up yet and clobber what the player just typed.
-  const editingRef = useRef(editing);
-  editingRef.current = editing;
-  useEffect(() => {
-    if (session && !editingRef.current) setName(session.player.name);
-  }, [session?.player.name]);
-
-  const commitName = () => {
-    const v = name.trim().slice(0, 24);
-    setName(v);
-    writeSetting('ph:name', v);
-    if (readSession()) {
-      void setAccountName(v).catch((err: unknown) => {
-        const code = err instanceof ApiError ? err.code : undefined;
-        toast(code && code in NAME_REJECTION_MESSAGES ? NAME_REJECTION_MESSAGES[code]! : 'Could not save your name');
-        if (code && code in NAME_REJECTION_MESSAGES) {
-          const serverName = readSession()?.player.name ?? '';
-          setName(serverName);
-          writeSetting('ph:name', serverName);
-        }
-      });
-    }
-    setEditing(false);
-  };
-
   return (
     <>
       <header className="page-head">
         <h1>Profile</h1>
-        <ThemeToggle />
+        <div className="head-actions">
+          <CoinPill />
+          <ThemeToggle />
+        </div>
       </header>
 
       <div className="stack">
-        <div className="card-row">
+        {joinCode && (
           <div className="card-lg">
-            <span className="label">Display name</span>
-            {editing ? (
-              <form
-                className="name-form"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  commitName();
-                }}
-              >
-                <input autoFocus value={name} onChange={(e) => setName(e.target.value)} onBlur={commitName} maxLength={24} placeholder="Your name" />
-              </form>
-            ) : (
-              <button type="button" className="name-btn" onClick={() => setEditing(true)}>
-                {name || 'Add a name'}
-                {' '}
-                <span className="muted">✎</span>
-              </button>
-            )}
+            <b>
+              Join group <span className="num">{joinCode}</span>
+            </b>
+            <span className="muted small">Sign in below and you go straight to the group.</span>
           </div>
-          <div className="card-lg">
-            <h2>Achievements</h2>
+        )}
+        <AccountCard />
+
+        <div className="card-lg row-between">
+          <span>
+            <b>Achievements</b>
             <span className="muted small">
               {earned} of {ACHIEVEMENTS.length} earned
             </span>
-            <div className="friends-actions">
-              <a href={href('/achievements')} className="pill outline" onClick={onLinkClick}>
-                Show ›
-              </a>
-            </div>
-          </div>
+          </span>
+          <a href={href('/achievements')} className="pill outline" onClick={onLinkClick}>
+            Show ›
+          </a>
         </div>
 
         <div className="stat-grid">
@@ -123,10 +72,6 @@ export function Profile() {
           <Stat value={streaks.best} label="best streak" />
           <Stat value={streaks.daysPlayed} label="days played" />
           <Stat value={totalSolved(solves)} label="puzzles solved" />
-        </div>
-
-        <div className="stat-grid">
-          <Stat value={coins} label="coins" />
         </div>
 
         <div className="card-lg streak-card">

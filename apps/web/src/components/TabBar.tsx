@@ -1,3 +1,4 @@
+import { useSession } from '../lib/auth.ts';
 import { href, onLinkClick, useRoute } from '../lib/router.ts';
 
 const TABS = [
@@ -49,9 +50,13 @@ function Icon({ name }: { name: 'Daily' | 'Puzzles' | 'Profile' | 'Social' }) {
 
 export function TabBar() {
   const route = useRoute();
+  const session = useSession();
+  // Social only exists for a signed-in player: without an account there is nothing on it, and a
+  // player who just wants to solve on their own never gets nudged toward comparing times.
+  const tabs = session ? TABS : TABS.filter((t) => t.label !== 'Social');
   return (
     <nav className="tabbar" aria-label="Main">
-      {TABS.map((t) => (
+      {tabs.map((t) => (
         <a key={t.path} href={href(t.path)} onClick={onLinkClick} className={t.match(route.path) ? 'tab active' : 'tab'} aria-current={t.match(route.path) ? 'page' : undefined}>
           <Icon name={t.label} />
           <span>{t.label}</span>
