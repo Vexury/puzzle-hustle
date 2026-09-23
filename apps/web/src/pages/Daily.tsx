@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { DAILY_TYPES, PUZZLE_META, dailyRef, encodeRef, nextPeriodStart, periodRef, refId, type Period, type PuzzleRef } from '@puzzle-hustle/core';
+import { CLEAN_SWEEP_COINS, DAILY_TYPES, PUZZLE_META, dailyRef, encodeRef, nextPeriodStart, periodRef, refId, type Period, type PuzzleRef } from '@puzzle-hustle/core';
 import { PuzzleIcon } from '../components/PuzzleIcon.tsx';
 import { href, onLinkClick } from '../lib/router.ts';
 import { readProgress, useSolves } from '../lib/storage.ts';
@@ -127,7 +127,7 @@ function DailyProgress({ solved, total }: { solved: number; total: number }) {
       </div>
       <span className="small">
         {solved}/{total} solved ·{' '}
-        {full ? 'clean sweep' : safe ? 'streak safe' : missing === 1 ? 'one more for your streak' : `${missing} more for your streak`}
+        {full ? `clean sweep · +${CLEAN_SWEEP_COINS} coins` : safe ? 'streak safe' : missing === 1 ? 'one more for your streak' : `${missing} more for your streak`}
       </span>
     </div>
   );

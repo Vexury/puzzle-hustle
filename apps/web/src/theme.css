@@ -796,6 +796,10 @@ p { margin: 0; }
   to { clip-path: circle(var(--reveal-r) at var(--reveal-x) var(--reveal-y)); }
 }
 
+.coin-line { font-size: var(--fs-sm); font-weight: 700; color: var(--accent-text); animation: coin-pop 400ms ease-out; }
+@keyframes coin-pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .coin-line { animation: none; } }
+
 /* Touch devices keep the last hover state stuck on a button until the next tap. */
 @media (hover: hover) {
   .row-card:hover { border-color: var(--accent); box-shadow: var(--shadow-hover); }

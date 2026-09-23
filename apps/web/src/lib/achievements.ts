@@ -1,4 +1,4 @@
-import { ACHIEVEMENTS, unlockedAchievements, type SolveEntry } from '@puzzle-hustle/core';
+import { ACHIEVEMENT_COINS, ACHIEVEMENTS, unlockedAchievements, type SolveEntry } from '@puzzle-hustle/core';
 import { announceAchievement } from '../components/AchievementBanner.tsx';
 import { allSolves, readSetting, writeSetting } from './storage.ts';
 
@@ -85,7 +85,7 @@ export function syncAchievements(): void {
     const ordered = [...toAnnounce].sort((a, b) => (CATALOG_ORDER.get(a) ?? 0) - (CATALOG_ORDER.get(b) ?? 0));
     for (const id of ordered) {
       const achievement = ACHIEVEMENTS.find((a) => a.id === id);
-      if (achievement) announceAchievement(achievement.title);
+      if (achievement) announceAchievement(`${achievement.title} · +${ACHIEVEMENT_COINS} coins`);
     }
   } catch {
     /* a collectible is never worth interrupting anything */

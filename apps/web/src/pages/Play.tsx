@@ -4,6 +4,7 @@ import {
   DAILY_TYPES,
   decodeRef,
   encodeRef,
+  coinsForSolve,
   crownsAdapter,
   generateCrowns,
   generateKiller,
@@ -28,12 +29,12 @@ import {
   zipNumberCount,
   type PuzzleRef,
 } from '@puzzle-hustle/core';
-import { syncAchievements } from '../lib/achievements.ts';
+import { storedSolves, syncAchievements } from '../lib/achievements.ts';
 import { href, navigate, onLinkClick } from '../lib/router.ts';
 import { setBackGuard } from '../lib/back.ts';
 import { clearProgress, getSolve, keepFinalBoard, readProgress, readSetting, recordSolve, useSolves, writeProgress, writeSetting, type SolveRecord } from '../lib/storage.ts';
 import { capitalize, formatSeconds, share, shareText } from '../lib/share.ts';
-import { balance } from '../lib/coins.ts';
+import { balance, solveCoinLine } from '../lib/coins.ts';
 import { currentHintProvider, freeHints, type HintChoice } from '../lib/hints.ts';
 import { enqueue, flush } from '../lib/queue.ts';
 import { HOW_TO } from '../lib/howto.ts';
@@ -132,6 +133,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const counters = useRef({ moves: saved?.moves ?? 0, hints: saved?.hints ?? 0 });
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<SolveRecord | undefined>(replayable ? undefined : existing);
+  const [coinLine, setCoinLine] = useState<string | null>(null);
   // Gates Placement below: it must mount only once the solve just submitted has actually had
   // its round trip, not the instant it is enqueued. A puzzle that was already solved in an
   // earlier session has nothing racing it, so it starts settled.
@@ -299,7 +301,13 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
     const record: SolveRecord = { solvedAt: new Date().toISOString(), seconds: elapsed, hints: counters.current.hints, moves: counters.current.moves };
     setSeconds(elapsed);
     setResult(record);
+    const firstSolve = getSolve(id) === undefined;
     recordSolve(id, record);
+    try {
+      setCoinLine(solveCoinLine(coinsForSolve(id, storedSolves()), firstSolve));
+    } catch {
+      /* coins never cost a player the solved screen */
+    }
     // A shared /play link carries its seed and difficulty as plain query params, so both are
     // forgeable: `s` can be edited to swap in an easier puzzle while `p`/`k` still claim today's
     // real period id. Submitting is gated on the ref actually being the scheduled one for that
@@ -439,6 +447,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           <span className="muted small">
             {result.moves} moves · {result.hints === 0 ? 'no hints' : `${result.hints} hint${result.hints === 1 ? '' : 's'}`}
           </span>
+          {coinLine && <span className="coin-line">{coinLine}</span>}
           {replayable && bestBefore !== null && (
             <span className={result.seconds < bestBefore ? 'best-note better' : 'best-note'}>
               {result.seconds < bestBefore ? `New best, ${formatSeconds(bestBefore)} before` : `Your best stays ${formatSeconds(bestBefore)}`}

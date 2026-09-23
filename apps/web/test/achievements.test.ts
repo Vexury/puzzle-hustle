@@ -1,5 +1,5 @@
 import { beforeEach, expect, it, vi } from 'vitest';
-import { ACHIEVEMENTS, ACHIEVEMENTS_EPOCH } from '@puzzle-hustle/core';
+import { ACHIEVEMENT_COINS, ACHIEVEMENTS, ACHIEVEMENTS_EPOCH } from '@puzzle-hustle/core';
 
 vi.mock('../src/components/AchievementBanner.tsx', () => ({ announceAchievement: vi.fn() }));
 
@@ -84,7 +84,7 @@ it('announces once per achievement and not again on a second run', () => {
   rehydrate();
   syncAchievements();
   expect(announceAchievement).toHaveBeenCalledTimes(1);
-  expect(announceAchievement).toHaveBeenCalledWith('Weekly done');
+  expect(announceAchievement).toHaveBeenCalledWith(`Weekly done · +${ACHIEVEMENT_COINS} coins`);
   const stored = JSON.parse(localStorage.getItem('ph:achievements') ?? '[]') as string[];
   expect(stored).toContain('first-weekly');
   syncAchievements();
@@ -112,7 +112,7 @@ it('announces several simultaneous unlocks in catalog order', () => {
   const catalogOrder = ACHIEVEMENTS.map((a) => a.id).filter((id) => unlocked.has(id));
   syncAchievements();
   const announcedTitles = vi.mocked(announceAchievement).mock.calls.map(([title]) => title);
-  const expectedTitles = catalogOrder.map((id) => ACHIEVEMENTS.find((a) => a.id === id)!.title);
+  const expectedTitles = catalogOrder.map((id) => `${ACHIEVEMENTS.find((a) => a.id === id)!.title} · +${ACHIEVEMENT_COINS} coins`);
   expect(announcedTitles).toEqual(expectedTitles);
 });
 

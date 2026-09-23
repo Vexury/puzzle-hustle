@@ -1,6 +1,6 @@
 import { beforeEach, expect, it, vi } from 'vitest';
 import { recordSolve, rehydrate, resetProgress } from '../src/lib/storage.ts';
-import { balance, buyItem, canAffordHint, equip, owned, readEquipped, readSpent, spendHint } from '../src/lib/coins.ts';
+import { balance, buyItem, canAffordHint, equip, owned, readEquipped, readSpent, solveCoinLine, spendHint } from '../src/lib/coins.ts';
 
 beforeEach(() => {
   localStorage.clear();
@@ -87,4 +87,17 @@ it('forgets spending and equipped items on a progress reset', () => {
   expect(readSpent()).toEqual([]);
   expect(readEquipped()).toEqual({ badge: null, flair: null });
   expect(balance()).toBe(0);
+});
+
+it('writes the solve line from the awards', () => {
+  expect(solveCoinLine([{ reason: 'daily', coins: 10 }, { reason: 'no-hints', coins: 5 }], true)).toBe('+10 coins · +5 no hints');
+  expect(solveCoinLine([{ reason: 'level', coins: 3 }], true)).toBe('+3 coins');
+  expect(
+    solveCoinLine([{ reason: 'daily', coins: 10 }, { reason: 'clean-sweep', coins: 20 }], true),
+  ).toBe('+10 coins · +20 clean sweep');
+});
+
+it('writes no line for nothing earned or a replay', () => {
+  expect(solveCoinLine([], true)).toBeNull();
+  expect(solveCoinLine([{ reason: 'level', coins: 3 }], false)).toBeNull();
 });
