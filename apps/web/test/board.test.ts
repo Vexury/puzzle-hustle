@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { percentileText } from '../src/components/Board.tsx';
+import { percentileText, rowCosmetics } from '../src/components/Board.tsx';
 
 it('hides the line when there is no percentile at all', () => {
   expect(percentileText(null, 'daily')).toBeNull();
@@ -30,4 +30,11 @@ it('reads 100% for the fastest run once the field passes 20', () => {
 it('says "this week" for a weekly board and "this month" for a monthly one', () => {
   expect(percentileText({ total: 21, faster: 5 }, 'weekly')).toBe('Faster than 75% of all players this week');
   expect(percentileText({ total: 21, faster: 5 }, 'monthly')).toBe('Faster than 75% of all players this month');
+});
+
+it('resolves known cosmetics and hides unknown ones, missing fields and wrong kinds', () => {
+  expect(rowCosmetics({ badge: 'cat', flair: 'puzzler' })).toMatchObject({ badge: { id: 'cat' }, flair: { title: 'Puzzler' } });
+  expect(rowCosmetics({ badge: 'from-the-future', flair: null })).toEqual({ badge: undefined, flair: undefined });
+  expect(rowCosmetics({})).toEqual({ badge: undefined, flair: undefined });
+  expect(rowCosmetics({ badge: 'puzzler', flair: 'cat' })).toEqual({ badge: undefined, flair: undefined });
 });

@@ -382,7 +382,7 @@ p { margin: 0; }
 .leaderboard-row.gold .leaderboard-name,
 .leaderboard-row.gold .leaderboard-time { font-size: var(--fs-md); font-weight: 800; }
 .leaderboard-crown { position: absolute; top: -10px; left: 50%; width: 16px; height: 11px; transform: translateX(-50%); fill: var(--gold); }
-.leaderboard-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.leaderboard-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .leaderboard-time { flex: none; font-family: var(--font-num); font-weight: 700; }
 .leaderboard-report {
   flex: none;
@@ -815,3 +815,8 @@ p { margin: 0; }
   .icon-round:hover { background: var(--hover-bg); color: var(--hover-text); border-color: var(--hover-bg); }
   .leaderboard-report:hover { color: var(--danger); }
 }
+
+.leaderboard-who { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.leaderboard-who .leaderboard-name { flex: none; display: inline-flex; align-items: center; gap: 4px; }
+.badge-icon { width: 1em; height: 1em; flex: none; color: var(--accent-text); }
+.leaderboard-flair { font-size: var(--fs-xs, 0.72rem); color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

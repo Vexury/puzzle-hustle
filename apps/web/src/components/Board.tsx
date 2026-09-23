@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { parsePuzzleId, type Period } from '@puzzle-hustle/core';
+import { findCosmetic, parsePuzzleId, type Cosmetic, type Period } from '@puzzle-hustle/core';
 import { apiFetch } from '../lib/api.ts';
 import { formatSeconds } from '../lib/share.ts';
+import { BadgeIcon } from './BadgeIcon.tsx';
 import { toast } from './Toast.tsx';
 
 export interface BoardData {
-  entries: Array<{ playerId: string; name: string; seconds: number; hints: number }>;
+  entries: Array<{ playerId: string; name: string; seconds: number; hints: number; badge?: string | null; flair?: string | null }>;
   me: number | null;
   percentile: { total: number; faster: number } | null;
 }
@@ -60,6 +61,29 @@ function Crown() {
   );
 }
 
+// An id this client does not know comes from a newer one: hidden, never an error.
+export function rowCosmetics(entry: { badge?: string | null; flair?: string | null }): {
+  badge: Cosmetic | undefined;
+  flair: Cosmetic | undefined;
+} {
+  const badge = findCosmetic(entry.badge);
+  const flair = findCosmetic(entry.flair);
+  return { badge: badge?.kind === 'badge' ? badge : undefined, flair: flair?.kind === 'flair' ? flair : undefined };
+}
+
+export function NameCell({ entry }: { entry: { name: string; badge?: string | null; flair?: string | null } }) {
+  const { badge, flair } = rowCosmetics(entry);
+  return (
+    <span className="leaderboard-who">
+      <span className="leaderboard-name">
+        {entry.name}
+        {badge && <BadgeIcon id={badge.id} />}
+      </span>
+      {flair && <span className="leaderboard-flair">{flair.title}</span>}
+    </span>
+  );
+}
+
 export function Board({ groupId, puzzle, meId }: { groupId: string; puzzle: string; meId: string }) {
   const { board, loading } = useBoard(groupId, puzzle);
   if (loading && !board) return <p className="muted small">Loading…</p>;
@@ -79,7 +103,7 @@ export function Board({ groupId, puzzle, meId }: { groupId: string; puzzle: stri
               {index === 0 && <Crown />}
               {index + 1}
             </span>
-            <span className="leaderboard-name">{entry.name}</span>
+            <NameCell entry={entry} />
             {entry.hints > 0 && <span className="muted small">{entry.hints} hint{entry.hints === 1 ? '' : 's'}</span>}
             <span className="leaderboard-time">{formatSeconds(entry.seconds)}</span>
             {entry.playerId !== meId && (
