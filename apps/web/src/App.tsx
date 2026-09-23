@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { AchievementBannerHost } from './components/AchievementBanner.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import { Intro } from './components/Intro.tsx';
 import { TabBar } from './components/TabBar.tsx';
 import { ToastHost } from './components/Toast.tsx';
+import { UnlockModalHost } from './components/UnlockModal.tsx';
 import { useRoute } from './lib/router.ts';
 import { Achievements } from './pages/Achievements.tsx';
 import { Daily } from './pages/Daily.tsx';
@@ -70,7 +70,7 @@ export function App() {
       {chrome && <TabBar />}
       {chrome && <Intro />}
       <ToastHost />
-      <AchievementBannerHost />
+      <UnlockModalHost />
     </div>
   );
 }

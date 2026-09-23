@@ -707,86 +707,54 @@ p { margin: 0; }
   z-index: 60;
 }
 
-/* Sits a little above the toast (28px + 44px vs. the toast's 28px) so the two never overlap if
-   both fire at once: the toast is roughly 30-34px tall, this leaves a clear gap above it.
-   Collapsed, it is a 36px circle (min-width == height, fully rounded); [data-phase="open"]
-   widens the single grid column from 0fr to 1fr, which animates because .achievement-banner-text
-   is the sole track and has overflow: hidden; min-width: 0, so its max-content width becomes the
-   1fr target instead of an auto that could not be transitioned. */
-.achievement-banner {
-  position: fixed;
-  /* Both edges instead of left: 50%, because an absolutely positioned box with only `left` set
-     may shrink to at most the space right of that point: half the screen, which cut the text
-     off on a phone. With both edges set, `width: fit-content` and `margin-inline: auto` it can
-     grow to nearly the full width and still sit centred. */
-  left: 12px;
-  right: 12px;
-  margin-inline: auto;
-  width: fit-content;
-  bottom: calc(var(--tabbar-h) + 72px + env(safe-area-inset-bottom));
-  display: grid;
-  grid-template-columns: 0fr;
-  align-items: center;
-  height: 44px;
-  min-width: 44px;
-  border-radius: 999px;
-  overflow: hidden;
-  background: var(--accent);
-  color: var(--on-accent);
-  box-shadow: 0 6px 18px var(--accent-strong);
-  opacity: 0;
-  transform: scale(0.55);
-  z-index: 61;
-  transition:
-    opacity 0.18s ease-out,
-    transform 0.18s ease-out,
-    grid-template-columns 0.34s cubic-bezier(0.22, 1, 0.36, 1) 0.1s;
-}
-.achievement-banner[data-phase='open'] {
-  opacity: 1;
-  transform: scale(1);
-  grid-template-columns: 1fr;
-}
-.achievement-banner[data-phase='exit'] {
-  opacity: 0;
-  transform: scale(0.55);
-  grid-template-columns: 0fr;
-  transition:
-    grid-template-columns 0.24s cubic-bezier(0.4, 0, 1, 1),
-    opacity 0.2s ease-in 0.2s,
-    transform 0.2s ease-in 0.2s;
-}
-.achievement-banner-text {
-  overflow: hidden;
-  min-width: 0;
-  white-space: nowrap;
-  padding: 0 24px;
-  font-size: var(--fs-md);
-  font-weight: 800;
-  opacity: 0;
-  transition: opacity 0.16s ease-out;
-}
-.achievement-banner[data-phase='open'] .achievement-banner-text {
-  opacity: 1;
-  transition-delay: 0.3s;
-}
-
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  /* The blanket rule above already kills the width/scale transitions; this restores just a
-     plain fade, the way .level-grid and .solved-head drop their motion but stay visible. */
-  .achievement-banner {
-    grid-template-columns: 1fr !important;
-    transform: none !important;
-    transition: opacity 0.2s ease-out !important;
-  }
-  .achievement-banner-text {
-    transition: opacity 0.2s ease-out !important;
-  }
+/* The unlock modal: one card for every achievement/flair earned since it last closed, over a
+   dimmed backdrop like .ad-ask. A single unlock gets .unlock-single's bigger, centred treatment;
+   two or more stay in the compact list below. */
+.unlock-ask { z-index: 62; }
+.unlock-card {
+  max-width: 22rem;
+  max-height: calc(100dvh - 48px);
+  padding: 20px;
+  gap: 14px;
+  display: flex;
+  flex-direction: column;
+  animation: unlock-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
+@keyframes unlock-in {
+  from { opacity: 0; transform: scale(0.92) translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) { .unlock-card { animation: none; } }
+
+.unlock-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; min-height: 0; }
+.unlock-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+}
+button.unlock-row { cursor: pointer; }
+.unlock-mark { flex: none; font-size: var(--fs-lg); line-height: 1.25; color: var(--accent); }
+.unlock-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.unlock-eyebrow { font-size: var(--fs-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+.unlock-title { font-size: var(--fs-md); font-weight: 800; white-space: normal; overflow-wrap: break-word; }
+.unlock-desc { font-size: var(--fs-sm); white-space: normal; overflow-wrap: break-word; }
+.unlock-desc.unlock-equipped { color: var(--accent-text); font-weight: 700; }
+
+.unlock-single .unlock-list { gap: 0; }
+.unlock-single .unlock-row { flex-direction: column; align-items: center; text-align: center; gap: 8px; }
+.unlock-single .unlock-mark { font-size: 2.6rem; }
+.unlock-single .unlock-title { font-size: var(--fs-xl); }
 
 /* The theme swap grows out of the button that was pressed. Both snapshots hold still, the new
    one is clipped to a circle that opens; the --reveal-* values come from lib/theme.ts. */

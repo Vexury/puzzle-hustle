@@ -1,10 +1,10 @@
 import { beforeEach, expect, it, vi } from 'vitest';
-import { ACHIEVEMENT_COINS, ACHIEVEMENTS, ACHIEVEMENTS_EPOCH } from '@puzzle-hustle/core';
+import { ACHIEVEMENTS, ACHIEVEMENTS_EPOCH } from '@puzzle-hustle/core';
 
-vi.mock('../src/components/AchievementBanner.tsx', () => ({ announceAchievement: vi.fn() }));
+vi.mock('../src/components/UnlockModal.tsx', () => ({ announceUnlock: vi.fn() }));
 
 import { currentUnlocked, pendingAnnouncements, syncAchievements } from '../src/lib/achievements.ts';
-import { announceAchievement } from '../src/components/AchievementBanner.tsx';
+import { announceUnlock } from '../src/components/UnlockModal.tsx';
 import { recordSolve, rehydrate, resetProgress } from '../src/lib/storage.ts';
 
 // storedSolves() reads the storage.ts in-memory cache, not localStorage directly (recordSolve()
@@ -15,7 +15,7 @@ beforeEach(() => {
   localStorage.clear();
   rehydrate();
   vi.restoreAllMocks();
-  vi.mocked(announceAchievement).mockClear();
+  vi.mocked(announceUnlock).mockClear();
 });
 
 const after = ACHIEVEMENTS_EPOCH + 86400000;
@@ -83,12 +83,12 @@ it('announces once per achievement and not again on a second run', () => {
   );
   rehydrate();
   syncAchievements();
-  expect(announceAchievement).toHaveBeenCalledTimes(1);
-  expect(announceAchievement).toHaveBeenCalledWith(`Weekly done · +${ACHIEVEMENT_COINS} coins`);
+  expect(announceUnlock).toHaveBeenCalledTimes(1);
+  expect(announceUnlock).toHaveBeenCalledWith({ kind: 'achievement', id: 'first-weekly' });
   const stored = JSON.parse(localStorage.getItem('ph:achievements') ?? '[]') as string[];
   expect(stored).toContain('first-weekly');
   syncAchievements();
-  expect(announceAchievement).toHaveBeenCalledTimes(1);
+  expect(announceUnlock).toHaveBeenCalledTimes(1);
   expect(JSON.parse(localStorage.getItem('ph:achievements') ?? '[]')).toEqual(stored);
 });
 
@@ -111,9 +111,8 @@ it('announces several simultaneous unlocks in catalog order', () => {
   expect(unlocked.size).toBeGreaterThanOrEqual(3); // several at once, not just one
   const catalogOrder = ACHIEVEMENTS.map((a) => a.id).filter((id) => unlocked.has(id));
   syncAchievements();
-  const announcedTitles = vi.mocked(announceAchievement).mock.calls.map(([title]) => title);
-  const expectedTitles = catalogOrder.map((id) => `${ACHIEVEMENTS.find((a) => a.id === id)!.title} · +${ACHIEVEMENT_COINS} coins`);
-  expect(announcedTitles).toEqual(expectedTitles);
+  const announcedIds = vi.mocked(announceUnlock).mock.calls.map(([item]) => item.id);
+  expect(announcedIds).toEqual(catalogOrder);
 });
 
 it('does not write ph:achievements on a sync that changes nothing, notably a clean install', () => {

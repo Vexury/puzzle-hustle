@@ -20,6 +20,7 @@
     "@capgo/capacitor-social-login": "^8.5.10",
     "@capgo/native-purchases": "^8.7.0",
     "@puzzle-hustle/core": "workspace:*",
+    "canvas-confetti": "^1.9.4",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
@@ -27,6 +28,7 @@
     "@capacitor/android": "^8.5.2",
     "@capacitor/cli": "^8.5.2",
     "@capacitor/ios": "^8.5.2",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^26.6.1",
     "@types/react": "19.3.0",
     "@types/react-dom": "^19.3.0",

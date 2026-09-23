@@ -1,5 +1,5 @@
-import { ACHIEVEMENT_COINS, ACHIEVEMENTS, unlockedAchievements, type SolveEntry } from '@puzzle-hustle/core';
-import { announceAchievement } from '../components/AchievementBanner.tsx';
+import { ACHIEVEMENTS, unlockedAchievements, type SolveEntry } from '@puzzle-hustle/core';
+import { announceUnlock } from '../components/UnlockModal.tsx';
 import { pendingAnnouncements, syncAnnouncements } from './announce.ts';
 import { allSolves } from './storage.ts';
 
@@ -41,8 +41,5 @@ const CATALOG_ORDER = ACHIEVEMENTS.map((a) => a.id);
 // Called after a solve and on app start. Must never throw: a player does not lose their
 // finished-puzzle screen, or their session start, over a collectible.
 export function syncAchievements(): void {
-  syncAnnouncements(KEY, currentUnlocked, CATALOG_ORDER, (id) => {
-    const achievement = ACHIEVEMENTS.find((a) => a.id === id);
-    if (achievement) announceAchievement(`${achievement.title} · +${ACHIEVEMENT_COINS} coins`);
-  });
+  syncAnnouncements(KEY, currentUnlocked, CATALOG_ORDER, (id) => announceUnlock({ kind: 'achievement', id }));
 }

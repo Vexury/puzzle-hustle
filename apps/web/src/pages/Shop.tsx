@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
 import {
-  ACHIEVEMENTS,
   ACTIVITY_FLAIRS,
   COSMETICS,
   FLAIRS_BY_TYPE,
-  levelList,
   packProgress,
   PUZZLE_META,
   PUZZLE_TYPES,
@@ -18,6 +16,7 @@ import { toast } from '../components/Toast.tsx';
 import { useSession } from '../lib/auth.ts';
 import { storedSolves } from '../lib/achievements.ts';
 import { buyItem, equip, owned, useBalance, useEquipped, type Equipped } from '../lib/coins.ts';
+import { requirementText } from '../lib/flairs.ts';
 import { readSetting } from '../lib/storage.ts';
 
 const REVERT_MS = 4000;
@@ -29,13 +28,6 @@ export function itemState(id: string, ownedIds: Set<string>, equipped: Equipped,
   const item = COSMETICS.find((c) => c.id === id);
   if (!item || item.kind === 'flair') return 'locked';
   return balance >= item.price ? 'buyable' : 'locked';
-}
-
-function requirementText(item: FlairCosmetic): string {
-  const req = item.requires;
-  if ('achievement' in req) return ACHIEVEMENTS.find((a) => a.id === req.achievement)?.description ?? '';
-  const difficulty = req.difficulty.charAt(0).toUpperCase() + req.difficulty.slice(1);
-  return `Finish all ${levelList(req.pack, req.difficulty).length} ${PUZZLE_META[req.pack].name} levels on ${difficulty}.`;
 }
 
 export function Shop() {
