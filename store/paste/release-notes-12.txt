@@ -1,0 +1,22 @@
+<en-US>
+New buttons, Redo, and a phone that answers your taps.
+
+- Haptic feedback on moves and solves, switchable in Profile
+- Icon buttons under the board, with Redo next to Undo
+- Nonogram and Mosaic mark a clue red when it can no longer fit
+- Started puzzles say Continue, the level list jumps to your next level
+- A solved daily shows your finished board again
+- Times solved before signing in reach the leaderboard right away
+- The theme switch grows from its button again
+</en-US>
+<de-DE>
+Neue Buttons, Redo und ein Handy, das auf Züge antwortet.
+
+- Haptisches Feedback bei Zügen und beim Lösen, abschaltbar im Profil
+- Icon-Buttons unter dem Brett, Redo neben Undo
+- Nonogramm und Mosaik färben Hinweise rot, die nicht mehr aufgehen
+- Angefangene Rätsel zeigen Continue, die Levelliste springt zum nächsten Level
+- Ein gelöster Daily zeigt wieder dein fertiges Brett
+- Zeiten von vor der Anmeldung landen sofort in der Bestenliste
+- Der Theme-Wechsel wächst wieder aus seinem Button
+</de-DE>
