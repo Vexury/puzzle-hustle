@@ -138,6 +138,8 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const [showHelp, setShowHelp] = useState(() => readSetting(seenKey) !== '1');
   const helpSeen = useRef(readSetting(seenKey) === '1');
   const [askAd, setAskAd] = useState(false);
+  const [adWait, setAdWait] = useState(false);
+  const adWaitRef = useRef(false);
   const adAnswer = useRef<((ok: boolean) => void) | null>(null);
   const [askLeave, setAskLeave] = useState(false);
   const askLeaveRef = useRef(askLeave);
@@ -159,7 +161,16 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
 
   useEffect(() => () => adAnswer.current?.(false), []);
 
-  const hintProvider = currentHintProvider(hints, confirmAd);
+  // Between "Watch video" and the video itself the ad takes a moment to load. The puzzle must not
+  // take input or be left in that gap, and the clock stands, as it does during the video.
+  const waitForAd = (on: boolean) => {
+    adWaitRef.current = on;
+    setAdWait(on);
+    if (on) pauseClock();
+    else resumeClock();
+  };
+
+  const hintProvider = currentHintProvider(hints, confirmAd, waitForAd);
   const back = backTarget(puzzleRef);
 
   // The clock runs from the moment the puzzle is on screen. Starting it on the first move
@@ -191,7 +202,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   };
 
   const resumeClock = () => {
-    if (pausedSince.current === null || askLeaveRef.current) return;
+    if (pausedSince.current === null || askLeaveRef.current || adWaitRef.current) return;
     if (startedAt.current !== null) {
       startedAt.current += Date.now() - pausedSince.current;
       setRunning(true);
@@ -205,6 +216,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   useEffect(() => {
     if (result) return;
     setBackGuard(() => {
+      if (adWaitRef.current) return true;
       pauseClock();
       setAskLeave(true);
       return true;
@@ -470,6 +482,15 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
                 Watch video
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {adWait && (
+        <div className="ad-ask" role="status" aria-live="polite">
+          <div className="card-lg ad-wait">
+            <span className="spinner" aria-hidden="true" />
+            <b>Loading video…</b>
           </div>
         </div>
       )}

@@ -185,6 +185,13 @@ board as soon as a finger lands, before they know whether the touch changes anyt
 the clues or the start of a pinch left a step behind that undid nothing. Undo now skips steps
 that are still the current board.
 
+**The puzzle holds still while a hint video loads.** Between "Watch video" and the video itself
+the ad takes about two seconds to load, and in that gap the board took moves and the puzzle
+could be left, with the hint then landing on a board that had moved on. A "Loading video"
+overlay now covers the screen for that stretch, the back gesture waits, and the clock stands as
+it does during the video. A load that hangs past eight seconds counts as no ad and the hint is
+free, so the overlay can never trap the player.
+
 **A rewarded video that pays nothing says so.** If the ad SDK ends a video without granting the
 reward, the Hint button used to do nothing visible; a toast now says that no hint came of it. A
 player cannot cause this by closing the video, the SDK holds back X and the back key until the

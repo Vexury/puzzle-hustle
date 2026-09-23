@@ -5,8 +5,10 @@ const REWARD_UNIT = 'ca-app-pub-3552688457242630/8666936384';
 
 // Devices that always get test ads. Drop one from this list and a tap on a real ad from
 // that phone counts as invalid traffic, which can cost the AdMob account. The id is
-// printed to logcat on the first ad request.
-const TEST_DEVICES = ['8CC764321F12FA067B339B812405EE50'];
+// printed to logcat on the first ad request. It follows the app's signing key (Android 8+ scopes
+// ANDROID_ID to it), so one phone has one id per build: 8CC7 is the S23 on the Play build, 95C0
+// the same S23 on a local debug build.
+const TEST_DEVICES = ['8CC764321F12FA067B339B812405EE50', '95C0AC4384CCB1548DE9108E4DD449F0'];
 
 const native = Capacitor.isNativePlatform();
 
@@ -69,6 +71,8 @@ export async function showPrivacyOptions(): Promise<void> {
   await AdMob.showPrivacyOptionsForm();
 }
 
+const LOAD_TIMEOUT_MS = 8000;
+
 // Returns true when no ad could be delivered: the hint is granted anyway. That is
 // deliberate, not a missing error path.
 export async function showRewardedAd(): Promise<boolean> {
@@ -81,7 +85,13 @@ export async function showRewardedAd(): Promise<boolean> {
   }).catch(() => null);
 
   try {
-    await AdMob.prepareRewardVideoAd({ adId: REWARD_UNIT });
+    // The player waits behind a blocking overlay while the video loads, so a load that hangs
+    // must not hold the puzzle hostage: past the limit it counts as no ad, and the hint is free.
+    let timer = 0;
+    await Promise.race([
+      AdMob.prepareRewardVideoAd({ adId: REWARD_UNIT }),
+      new Promise((_, reject) => (timer = window.setTimeout(() => reject(new Error('ad load timeout')), LOAD_TIMEOUT_MS))),
+    ]).finally(() => clearTimeout(timer));
     const reward = await AdMob.showRewardVideoAd();
     if (reward && reward.amount > 0) rewarded = true;
   } catch {
