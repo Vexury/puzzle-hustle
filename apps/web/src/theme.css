@@ -693,19 +693,30 @@ p { margin: 0; }
 .hint-flash { fill: none; stroke: var(--success); stroke-width: 0.13; animation: flash 0.75s ease-out 4; pointer-events: none; }
 @keyframes flash { 0%, 45% { opacity: 1; } 100% { opacity: 0.15; } }
 
+/* Both sides pinned plus auto margins: with only left: 50% a fixed element can grow to at most
+   half the viewport, and longer messages broke into a narrow column. */
 .toast {
   position: fixed;
-  left: 50%;
+  left: 16px;
+  right: 16px;
   bottom: calc(var(--tabbar-h) + 28px + env(safe-area-inset-bottom));
-  transform: translateX(-50%);
-  background: var(--hover-bg);
-  color: var(--hover-text);
-  padding: 8px 14px;
-  border-radius: 999px;
+  margin: 0 auto;
+  width: fit-content;
+  max-width: 22rem;
+  background: var(--card-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  padding: 10px 16px;
+  border-radius: 14px;
   font-size: var(--fs-sm);
+  font-weight: 600;
+  text-align: center;
   box-shadow: var(--shadow-hover);
   z-index: 60;
+  animation: toast-in 150ms ease-out;
 }
+@keyframes toast-in { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
