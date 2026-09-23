@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../src/rng.ts';
 import { DIFFICULTIES } from '../src/types.ts';
-import { TRACKS_PRESETS, generateTracks, tracksGivenCount } from '../src/tracks/puzzle.ts';
+import { TRACKS_PRESETS, generateTracks } from '../src/tracks/puzzle.ts';
 import {
   TRACK_E,
   TRACK_N,
@@ -11,6 +11,7 @@ import {
   solveTracks,
   tracksCanonicalKey,
   tracksDifficultyReport,
+  tracksGivenCount,
   type TracksPuzzle,
 } from '../src/tracks/solver.ts';
 

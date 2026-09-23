@@ -1,6 +1,6 @@
 import { Rng } from '../rng.ts';
 import type { Difficulty } from '../types.ts';
-import { TRACK_E, TRACK_N, TRACK_S, TRACK_W, solveTracks, type TracksPuzzle } from './solver.ts';
+import { TRACK_E, TRACK_N, TRACK_S, TRACK_W, solveTracks, tracksGivenCount, type TracksPuzzle } from './solver.ts';
 
 export const TRACKS_VERSION = 1;
 
@@ -126,12 +126,6 @@ function solutionMasks(cols: number, rows: number, entryRow: number, exitCol: nu
     }
   }
   return masks;
-}
-
-export function tracksGivenCount(spec: TracksPuzzle): number {
-  let n = 0;
-  for (const m of spec.given) if (m) n++;
-  return n;
 }
 
 // Adds given pieces where the solver is still unsure until it finishes, then drops every given

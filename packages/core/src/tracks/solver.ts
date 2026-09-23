@@ -375,6 +375,12 @@ export function countTracksSolutions(p: TracksPuzzle, limit = 2, maxNodes = 200_
   return { count, complete: nodes < maxNodes };
 }
 
+export function tracksGivenCount(spec: TracksPuzzle): number {
+  let n = 0;
+  for (const m of spec.given) if (m) n++;
+  return n;
+}
+
 export interface TracksDifficultyReport {
   score: number;
   steps: [number, number, number];
@@ -394,8 +400,7 @@ export function tracksDifficultyReport(spec: TracksSpec): TracksDifficultyReport
   const res = solveTracks(spec, 3);
   const [t1, t2, t3] = res.steps;
   const cells = spec.config.cols * spec.config.rows;
-  let givens = 0;
-  for (const m of spec.given) if (m) givens++;
+  const givens = tracksGivenCount(spec);
   const turns = pathTurns(spec.path);
   const score = t1 * 0.2 + t2 * 1.5 + t3 * 6 + Math.log2(cells) * 2 + spec.path.length * 0.3 + turns * 0.2 - givens * 2;
   return { score: Math.round(score * 10) / 10, steps: res.steps, cells, givens, length: spec.path.length, turns };
