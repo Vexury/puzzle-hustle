@@ -1,4 +1,5 @@
 import { ACHIEVEMENTS_EPOCH, unlockedAchievements, type SolveEntry } from './achievements.ts';
+import { findCosmetic } from './cosmetics.ts';
 import { DAILY_TYPES, periodKey } from './schedule.ts';
 import { parseSolveId } from './solveId.ts';
 import type { Difficulty, Period, PuzzleTypeId } from './types.ts';
@@ -85,14 +86,20 @@ export function coinsEarned(solves: readonly SolveEntry[], epoch: number = ACHIE
   return sum + unlockedAchievements(solves, epoch).size * ACHIEVEMENT_COINS;
 }
 
+// A flair is never bought (it is earned), so a flair spend entry left over from before that
+// change is refunded: it never counts against the balance and never grants ownership below.
+function isFlairSpend(entry: SpendEntry): boolean {
+  return entry.kind === 'item' && findCosmetic(entry.item)?.kind === 'flair';
+}
+
 export function coinBalance(earned: number, spent: readonly SpendEntry[], epoch: number = ACHIEVEMENTS_EPOCH): number {
   let out = earned;
-  for (const entry of spent) if (entry.at >= epoch) out -= entry.coins;
+  for (const entry of spent) if (entry.at >= epoch && !isFlairSpend(entry)) out -= entry.coins;
   return Math.max(0, out);
 }
 
 export function ownedItems(spent: readonly SpendEntry[], epoch: number = ACHIEVEMENTS_EPOCH): Set<string> {
   const owned = new Set<string>();
-  for (const entry of spent) if (entry.kind === 'item' && entry.at >= epoch) owned.add(entry.item);
+  for (const entry of spent) if (entry.kind === 'item' && entry.at >= epoch && !isFlairSpend(entry)) owned.add(entry.item);
   return owned;
 }

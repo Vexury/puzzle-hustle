@@ -7,6 +7,7 @@ export * from './solveId.ts';
 export * from './streaks.ts';
 export * from './achievements.ts';
 export * from './cosmetics.ts';
+export * from './flairs.ts';
 export * from './coins.ts';
 export * from './plausibility.ts';
 export * from './shapes/shapes.ts';

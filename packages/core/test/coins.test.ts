@@ -107,3 +107,13 @@ it('owns the items bought after the epoch, whatever the balance says', () => {
   );
   expect([...owned]).toEqual(['bolt']);
 });
+
+it('refunds a flair spend entry: it never counts against the balance and never grants ownership', () => {
+  const after = Date.parse('2026-06-01T12:00:00+02:00');
+  const spent: SpendEntry[] = [
+    { kind: 'item', item: 'hustler', coins: 500, at: after },
+    { kind: 'item', item: 'bolt', coins: 100, at: after },
+  ];
+  expect(coinBalance(600, spent, EPOCH)).toBe(500);
+  expect([...ownedItems(spent, EPOCH)]).toEqual(['bolt']);
+});
