@@ -4,12 +4,10 @@ Quelle ist die WhatsApp-Gruppe "Puzzle Hustle" (seit 18.09.2026) und die Einzelc
 Neue Punkte kommen unter "Offen", erledigte wandern mit Datum nach "Erledigt". Ein Punkt gehoert
 in denselben Commit wie sein Fix.
 
-Stand: 2026-09-22
+Stand: 2026-09-23
 
 ## Offen
 
-- [ ] **Jonas** Mosaik-Frage vom 20.09. noch unbeantwortet: warum eine 8 ohne X nicht satisfied
-  ist, mit X aber schon. Entweder Regelmissverstaendnis oder ein Fehler im Zaehler.
 - [ ] **Jonas** Zwei Sprachnachrichten vom 22.09. (11:53 und 15:15) sind noch nicht ausgewertet.
 - [ ] **Robert** Streak auf ein Raetsel pro Tag statt drei. Offen bis es Nutzungsdaten gibt, wie
   lange Spieler fuer die Dailys brauchen (Robert: 3 bis 5 min fuer alle drei).
@@ -21,8 +19,6 @@ Stand: 2026-09-22
   Fragezeichen reichen ihm nicht.
 - [ ] **Michi** Teilen als Grafik statt Textlink (Anzeigename, Zeit, kleines Brett).
 - [ ] **Michi** Anreiz, jeden Typ ein paar Mal zu spielen, bevor die App auf die Dailys schiebt.
-- [ ] **Michi** Ist die App vollstaendig offline nutzbar? Frage vom 21.09., noch nicht beantwortet
-  (er fliegt naechste Woche und will offline spielen).
 - [ ] **Dani** Das Achievement-Unlock-Banner passt optisch nicht zum Rest der App.
 - [ ] **Dani** Fehlendes Wort in einem Satz (Screenshot vom 21.09., 15:59). Stelle nicht gefunden,
   an den Hint- und Kauftexten hat sich seit dem 20.09. nichts geaendert. Screenshot neu anfragen.
@@ -31,6 +27,13 @@ Stand: 2026-09-22
 
 ## Erledigt
 
+- [x] 2026-09-23 **Jonas** Mosaik-Frage vom 20.09.: kein Fehler im Zaehler. Eine Zahl gilt erst als
+  erfuellt, wenn jedes Feld ihres Blocks entschieden ist, also gefuellt oder mit X; bei der 8 fehlte das
+  X auf dem neunten Feld. Dazu neu seit versionCode 12: eine Zahl, die nicht mehr aufgehen kann, wird
+  rot, im Nonogramm ebenso die Hinweise einer Zeile. Antwort in der Gruppe mit der Release-Nachricht.
+- [x] 2026-09-23 **Michi** Offline-Frage vom 21.09.: ja. Raetsel entstehen lokal, nur die
+  Bestenliste braucht Netz, Zeiten warten in einer Warteschlange und gehen nach. Antwort in der Gruppe
+  mit der Release-Nachricht.
 - [x] 2026-09-22 Killer Easy ist deutlich leichter geworden, weil der Killer jetzt den Daily
   traegt und der in der Rueckmeldung als zu schwer ankam. 24 Givens statt 10: der Score faellt
   von 134 bis 224 auf 65 bis 120, die naechsten vierzehn Dailys von im Mittel 178 auf 97. Genius
