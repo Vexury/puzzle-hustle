@@ -1,13 +1,8 @@
 import { useEffect, useState } from 'react';
 import { setBackGuard } from '../lib/back.ts';
 import { href, navigate } from '../lib/router.ts';
-import { readSetting, writeSetting } from '../lib/storage.ts';
+import { INTRO_SEEN_KEY as SEEN_KEY, readSetting, writeSetting } from '../lib/storage.ts';
 import { introDismissed } from './UnlockModal.tsx';
-
-// Kept in sync with UnlockModal.tsx's own INTRO_SEEN_KEY by hand: importing one from the other
-// would create a circular top-level read (UnlockModal.tsx needs this value the instant it is
-// imported, to compute introBlocked before Intro has even started evaluating).
-const SEEN_KEY = 'ph:intro';
 
 const CARDS = [
   {

@@ -748,8 +748,13 @@ button.unlock-row { cursor: pointer; }
 .unlock-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .unlock-eyebrow { font-size: var(--fs-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
 .unlock-title { font-size: var(--fs-md); font-weight: 800; white-space: normal; overflow-wrap: break-word; }
+/* Still a flair, not an achievement: italic and accent-tinted rather than the plain bold title,
+   but never smaller than a normal title (a tiny, truncated flair name was the bug). */
+.unlock-title.unlock-flair-title { font-style: italic; color: var(--accent-text); }
 .unlock-desc { font-size: var(--fs-sm); white-space: normal; overflow-wrap: break-word; }
-.unlock-desc.unlock-equipped { color: var(--accent-text); font-weight: 700; }
+/* The clear "tapping this equips it" affordance a flair row needs: same treatment before and
+   after tapping, just the text changes, so it reads as one continuous action/status line. */
+.unlock-flair-action { font-size: var(--fs-sm); font-weight: 700; color: var(--accent-text); }
 
 .unlock-single .unlock-list { gap: 0; }
 .unlock-single .unlock-row { flex-direction: column; align-items: center; text-align: center; gap: 8px; }

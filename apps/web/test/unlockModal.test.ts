@@ -65,6 +65,41 @@ it('keeps arrival order and skips an id it does not recognise', () => {
   expect(rows[0]!.title).toBe(genius.title);
 });
 
+// -- accentTints: the confetti colour helper ---------------------------------------------------
+// canvas-confetti's own colour parsing only understands hex (its hexToRgb strips non-hex
+// characters first), so an rgb(...) string silently comes out as the wrong colour instead of
+// throwing — this has to be asserted on the actual format, not just "does not throw".
+
+import { accentTints } from '../src/components/UnlockModal.tsx';
+
+const HEX = /^#[0-9a-f]{6}$/i;
+
+function channelSum(hex: string): number {
+  return parseInt(hex.slice(1, 3), 16) + parseInt(hex.slice(3, 5), 16) + parseInt(hex.slice(5, 7), 16);
+}
+
+it('returns three hex colours, the base accent plus two lighter tints', () => {
+  const [base, tint1, tint2] = accentTints('#ffa833');
+  for (const c of [base, tint1, tint2]) expect(c).toMatch(HEX);
+  expect(base).toBe('#ffa833');
+  expect(channelSum(tint1!)).toBeGreaterThan(channelSum(base!));
+  expect(channelSum(tint2!)).toBeGreaterThan(channelSum(tint1!));
+});
+
+it('falls back to a default accent for an unparseable value instead of passing it through broken', () => {
+  const [base, tint1, tint2] = accentTints('not-a-colour');
+  for (const c of [base, tint1, tint2]) expect(c).toMatch(HEX);
+});
+
+it('handles every configured accent colour, with or without surrounding whitespace', () => {
+  const accents = ['#FFA833', ' #23cbb6 ', '#4faef7', '#9b7bff', '#ff7ba6', '#8aa0bc'];
+  for (const raw of accents) {
+    const tints = accentTints(raw);
+    expect(tints).toHaveLength(3);
+    for (const c of tints) expect(c).toMatch(HEX);
+  }
+});
+
 // -- announceUnlock / dismissUnlocks / introDismissed: queue and timing -----------------------
 // Fresh module instance per test (vi.resetModules + dynamic import) since the queue's timing
 // and intro-blocking state live at module scope.
@@ -91,7 +126,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-it('opens right away the first time this session, once any pending timer elapses', async () => {
+it('opens a catch-up unlock (announced before markUnlocksLive) immediately, once any pending timer elapses', async () => {
   localStorage.setItem('ph:intro', '1'); // already seen, so nothing blocks the open
   const { announceUnlock, unlockSnapshot } = await freshUnlockModal();
   act(() => announceUnlock({ kind: 'achievement', id: 'first-weekly' }));
@@ -101,19 +136,55 @@ it('opens right away the first time this session, once any pending timer elapses
   expect(unlockSnapshot().items).toEqual([{ kind: 'achievement', id: 'first-weekly' }]);
 });
 
-it('delays the second opening this session by about 800ms, so the solved screen is seen first', async () => {
+it('delays an unlock announced after markUnlocksLive (a solve) by about 800ms, so the solved screen is seen first', async () => {
   localStorage.setItem('ph:intro', '1');
-  const { announceUnlock, dismissUnlocks, unlockSnapshot } = await freshUnlockModal();
+  const { announceUnlock, markUnlocksLive, unlockSnapshot } = await freshUnlockModal();
+  act(() => markUnlocksLive()); // main.tsx calls this right after app-start catch-up is synced
   act(() => announceUnlock({ kind: 'achievement', id: 'first-weekly' }));
-  act(() => vi.advanceTimersByTime(0));
-  expect(unlockSnapshot().open).toBe(true);
-  act(() => dismissUnlocks());
-  expect(unlockSnapshot()).toEqual({ items: [], open: false });
-
-  act(() => announceUnlock({ kind: 'achievement', id: 'first-genius' }));
   act(() => vi.advanceTimersByTime(799));
   expect(unlockSnapshot().open).toBe(false);
   act(() => vi.advanceTimersByTime(1));
+  expect(unlockSnapshot().open).toBe(true);
+});
+
+it('still delays a solve-triggered unlock even when it is the very first opening this session', async () => {
+  // The old rule decided the delay by "has anything opened yet this session"; the correct rule
+  // decides by origin (catch-up vs. a solve), so a solve that happens to be the first opening
+  // ever this session (no catch-up unlocks existed) must still wait, not open at 0ms.
+  localStorage.setItem('ph:intro', '1');
+  const { announceUnlock, markUnlocksLive, unlockSnapshot } = await freshUnlockModal();
+  act(() => markUnlocksLive());
+  act(() => announceUnlock({ kind: 'achievement', id: 'first-genius' }));
+  act(() => vi.advanceTimersByTime(0));
+  expect(unlockSnapshot().open).toBe(false);
+  act(() => vi.advanceTimersByTime(800));
+  expect(unlockSnapshot().open).toBe(true);
+});
+
+it('still delays a second, later solve after an earlier catch-up batch opened immediately', async () => {
+  localStorage.setItem('ph:intro', '1');
+  const { announceUnlock, dismissUnlocks, markUnlocksLive, unlockSnapshot } = await freshUnlockModal();
+  act(() => announceUnlock({ kind: 'achievement', id: 'first-weekly' })); // catch-up
+  act(() => vi.advanceTimersByTime(0));
+  expect(unlockSnapshot().open).toBe(true);
+  act(() => dismissUnlocks());
+  act(() => markUnlocksLive());
+
+  act(() => announceUnlock({ kind: 'achievement', id: 'first-genius' })); // a later solve
+  act(() => vi.advanceTimersByTime(799));
+  expect(unlockSnapshot().open).toBe(false);
+  act(() => vi.advanceTimersByTime(1));
+  expect(unlockSnapshot().open).toBe(true);
+});
+
+it('does not stay blocked forever when ph:intro is restored just after import but before the first announce', async () => {
+  // Mirrors main.tsx: restoreBackup() can write a native backup's ph:intro to localStorage
+  // after this module has already been imported (and would, with an eager import-time read,
+  // have cached introBlocked=true), but before syncAchievements()/syncFlairs() ever run.
+  const { announceUnlock, unlockSnapshot } = await freshUnlockModal(); // ph:intro unset at import time
+  localStorage.setItem('ph:intro', '1'); // "restoreBackup()" resolves after import, before announce
+  act(() => announceUnlock({ kind: 'achievement', id: 'first-weekly' }));
+  act(() => vi.advanceTimersByTime(0));
   expect(unlockSnapshot().open).toBe(true);
 });
 
@@ -145,10 +216,17 @@ it('coalesces several unlocks announced synchronously into one opening', async (
   expect(unlockSnapshot().items).toHaveLength(3);
 });
 
-it('never throws even if an unlock is announced with a malformed item', async () => {
-  const { announceUnlock } = await freshUnlockModal();
+it('drops a malformed announced item instead of queueing it', async () => {
+  localStorage.setItem('ph:intro', '1');
+  const { announceUnlock, unlockSnapshot } = await freshUnlockModal();
   // @ts-expect-error deliberately malformed for the throw check
   expect(() => announceUnlock(null)).not.toThrow();
+  // @ts-expect-error wrong kind
+  expect(() => announceUnlock({ kind: 'bogus', id: 'x' })).not.toThrow();
+  // @ts-expect-error non-string id
+  expect(() => announceUnlock({ kind: 'achievement', id: 42 })).not.toThrow();
+  act(() => vi.advanceTimersByTime(0));
+  expect(unlockSnapshot()).toEqual({ items: [], open: false }); // nothing made it into the queue
 });
 
 it('holds a catch-up unlock announced before the intro has been dismissed, then opens once dismissed', async () => {
@@ -159,9 +237,20 @@ it('holds a catch-up unlock announced before the intro has been dismissed, then 
   expect(unlockSnapshot().open).toBe(false); // still blocked by the intro
   expect(unlockSnapshot().items).toEqual([{ kind: 'achievement', id: 'first-weekly' }]);
 
+  // Intro.tsx's real dismiss() writes ph:intro='1' before calling introDismissed(); introDismissed()
+  // itself only retries opening against whatever ph:intro currently says, it does not override it.
+  localStorage.setItem('ph:intro', '1');
   act(() => introDismissed());
   act(() => vi.advanceTimersByTime(0));
   expect(unlockSnapshot().open).toBe(true); // opens immediately, no further delay
+});
+
+it('introDismissed() alone does not open the card while ph:intro is still unset', async () => {
+  const { announceUnlock, introDismissed, unlockSnapshot } = await freshUnlockModal();
+  act(() => announceUnlock({ kind: 'achievement', id: 'first-weekly' }));
+  act(() => introDismissed()); // called without ph:intro ever having been set to '1'
+  act(() => vi.advanceTimersByTime(5000));
+  expect(unlockSnapshot().open).toBe(false);
 });
 
 // -- UnlockModalHost: rendering and interaction -------------------------------------------------
@@ -191,6 +280,27 @@ it('renders nothing until something unlocks', async () => {
   localStorage.setItem('ph:intro', '1');
   await mountHost();
   expect(container.textContent).toBe('');
+});
+
+it('ignores a malformed announced item instead of crashing the mounted host', async () => {
+  localStorage.setItem('ph:intro', '1');
+  const { announceUnlock } = await mountHost();
+  // @ts-expect-error deliberately malformed
+  expect(() => act(() => announceUnlock(null))).not.toThrow();
+  act(() => vi.advanceTimersByTime(0));
+  expect(container.textContent).toBe('');
+});
+
+it('auto-dismisses (and releases the back guard) if every queued id turns out unrecognised', async () => {
+  localStorage.setItem('ph:intro', '1');
+  const { announceUnlock, back, unlockSnapshot } = await mountHost();
+  // Both ids are well-formed but not in the catalogue, e.g. from a newer client build.
+  act(() => announceUnlock({ kind: 'achievement', id: 'not-a-real-achievement' }));
+  act(() => vi.advanceTimersByTime(0));
+  expect(container.textContent).toBe('');
+  expect(unlockSnapshot()).toEqual({ items: [], open: false });
+  // The back guard must not have been left pushed on top of whatever was there before.
+  expect(back.handleBackPress(true)).toBe('back');
 });
 
 it('shows the achievement title, description and coin award once open', async () => {

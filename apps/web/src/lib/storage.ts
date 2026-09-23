@@ -1,6 +1,10 @@
 import { useSyncExternalStore } from 'react';
 import { isBackedUp, scheduleBackup } from './backup.ts';
 
+// Shared by Intro.tsx and UnlockModal.tsx: a leaf module so either can read it without the two
+// creating a circular import between themselves.
+export const INTRO_SEEN_KEY = 'ph:intro';
+
 export interface SolveRecord {
   solvedAt: string;
   seconds: number;

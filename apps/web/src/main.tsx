@@ -10,6 +10,7 @@ import { syncFlairs } from './lib/flairs.ts';
 import { initQueue } from './lib/queue.ts';
 import { rehydrate } from './lib/storage.ts';
 import { initTheme } from './lib/theme.ts';
+import { markUnlocksLive } from './components/UnlockModal.tsx';
 import './theme.css';
 
 await restoreBackup();
@@ -21,6 +22,10 @@ initBackButton();
 initQueue();
 syncAchievements();
 syncFlairs();
+// Anything syncAchievements()/syncFlairs() just announced is app-start catch-up and opens right
+// away; everything announced after this point (in practice, only ever a solve) is "live" and
+// gets the modal's usual delay.
+markUnlocksLive();
 void refreshEntitlement();
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
