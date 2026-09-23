@@ -1,0 +1,20 @@
+<en-US>
+Coins, a shop and unlocks worth celebrating.
+
+- Earn coins by solving, dailies pay the most
+- Spend coins on a hint instead of watching a video
+- Buy badges that show next to your name in group standings
+- Earn flairs by clearing puzzle packs and keeping streaks
+- Achievements and flairs now open a card with confetti
+- Clearer messages, centred and easier to read
+</en-US>
+<de-DE>
+Coins, ein Shop und Freischaltungen, die sich feiern lassen.
+
+- Coins fürs Lösen, Dailys bringen am meisten
+- Coins statt Video für einen Hint
+- Badges kaufen, sie stehen neben deinem Namen in Gruppen
+- Flairs verdienen durch komplette Level-Packs und Serien
+- Achievements und Flairs öffnen eine Karte mit Konfetti
+- Hinweise zentriert und besser lesbar
+</de-DE>
