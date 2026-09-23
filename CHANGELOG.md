@@ -83,6 +83,11 @@ based id, so progress on one is saved but can never be reached again.
 
 ### Board and layout
 
+**Moves can be felt.** The app gives haptic feedback now: a light tap for every move,
+including each cell a drag paints, a firmer one when a long press sets an X, and a success
+pattern on the solve. A switch in the Profile turns it off; it only appears in the apps, the
+browser has nothing to vibrate with.
+
 **Boards are sized from the space they actually have.** The fit was estimated with a formula
 that did not match the one the stylesheet uses, landing 8 to 13 pixels short, which was
 enough to push both 10x10 nonograms into a scroll they did not need. Measured on a 360 pixel

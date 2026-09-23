@@ -13,6 +13,7 @@ import { useZoomViewport } from '../lib/useZoomViewport.ts';
 import './nonogram.css';
 import { gridLineClasses } from '../lib/gridLines.ts';
 import { useHistory } from '../lib/useHistory.ts';
+import { press } from '../lib/haptics.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
 
@@ -126,6 +127,7 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
         d.value = nextValue(current, color, true);
         d.applied = true;
         setCells([idx], d.value);
+        press();
       }, LONG_PRESS_MS);
     }
     drag.current = d;

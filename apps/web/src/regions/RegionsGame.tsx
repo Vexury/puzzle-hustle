@@ -14,6 +14,7 @@ import {
 } from '@puzzle-hustle/core';
 import './regions.css';
 import { useHistory } from '../lib/useHistory.ts';
+import { press } from '../lib/haptics.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
 
@@ -127,6 +128,7 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
         // Carry the written value into the drag so a long press can keep going.
         d.paint = toggleX(current);
         setCell(idx, d.paint);
+        press();
       }, LONG_PRESS_MS);
     }
     drag.current = d;

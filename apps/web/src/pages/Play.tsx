@@ -45,6 +45,7 @@ import { SudokuGame } from '../sudoku/SudokuGame.tsx';
 import { RegionsGame } from '../regions/RegionsGame.tsx';
 import { Chevron } from '../components/Chevron.tsx';
 import { toast } from '../components/Toast.tsx';
+import * as haptics from '../lib/haptics.ts';
 import { useBoard } from '../components/Board.tsx';
 import { useGroups } from './Friends.tsx';
 
@@ -226,6 +227,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   };
 
   const onMove = () => {
+    haptics.tap();
     counters.current.moves++;
     setMoves(counters.current.moves);
     if (helpSeen.current) return;
@@ -278,6 +280,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const onSolved = () => {
     if (result) return;
     setRunning(false);
+    haptics.solved();
     const elapsed = elapsedNow();
     const record: SolveRecord = { solvedAt: new Date().toISOString(), seconds: elapsed, hints: counters.current.hints, moves: counters.current.moves };
     setSeconds(elapsed);

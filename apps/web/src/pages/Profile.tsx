@@ -7,6 +7,7 @@ import { setName as setAccountName, useSession } from '../lib/auth.ts';
 import { ApiError, readSession } from '../lib/api.ts';
 import { currentUnlocked } from '../lib/achievements.ts';
 import { buyUnlimitedHints, hasUnlimitedHints, onEntitlement } from '../lib/entitlement.ts';
+import { HAPTICS_KEY, hapticsAvailable, tap } from '../lib/haptics.ts';
 import { href, onLinkClick } from '../lib/router.ts';
 import { readSetting, resetProgress, useSolves, writeSetting } from '../lib/storage.ts';
 import { formatSeconds } from '../lib/share.ts';
@@ -33,6 +34,7 @@ export function Profile() {
   const [name, setName] = useState(readSetting('ph:name') ?? '');
   const [editing, setEditing] = useState(false);
   const [numberHighlight, setNumberHighlight] = useState(readSetting('ph:sudokuHighlight') !== '0');
+  const [hapticsOn, setHapticsOn] = useState(readSetting(HAPTICS_KEY) !== '0');
   const [confirmReset, setConfirmReset] = useState(false);
   const [unlimited, setUnlimited] = useState(hasUnlimitedHints);
   const [buying, setBuying] = useState(false);
@@ -182,6 +184,31 @@ export function Profile() {
             ))}
           </div>
         </div>
+
+        {hapticsAvailable && (
+          <div className="card-lg">
+            <b>Haptic feedback</b>
+            <span className="muted small">A light tap with every move and a buzz when a puzzle is solved.</span>
+            <div className="segmented two" role="radiogroup" aria-label="Haptic feedback">
+              {[true, false].map((on) => (
+                <button
+                  key={String(on)}
+                  type="button"
+                  role="radio"
+                  aria-checked={hapticsOn === on}
+                  className={hapticsOn === on ? 'seg active' : 'seg'}
+                  onClick={() => {
+                    setHapticsOn(on);
+                    writeSetting(HAPTICS_KEY, on ? '1' : '0');
+                    tap();
+                  }}
+                >
+                  {on ? 'On' : 'Off'}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="card-lg">
           <h2>By puzzle</h2>
