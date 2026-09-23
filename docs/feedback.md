@@ -19,7 +19,6 @@ Stand: 2026-09-23
   Fragezeichen reichen ihm nicht.
 - [ ] **Michi** Teilen als Grafik statt Textlink (Anzeigename, Zeit, kleines Brett).
 - [ ] **Michi** Anreiz, jeden Typ ein paar Mal zu spielen, bevor die App auf die Dailys schiebt.
-- [ ] **Dani** Das Achievement-Unlock-Banner passt optisch nicht zum Rest der App.
 - [ ] **Dani** Fehlendes Wort in einem Satz (Screenshot vom 21.09., 15:59). Stelle nicht gefunden,
   an den Hint- und Kauftexten hat sich seit dem 20.09. nichts geaendert. Screenshot neu anfragen.
 - [ ] **Frieder** Rueckmeldung zur Shapes-Startanordnung auf Genius steht noch aus. Easy bis Hard
@@ -34,6 +33,10 @@ Stand: 2026-09-23
 - [x] 2026-09-23 **Michi** Offline-Frage vom 21.09.: ja. Raetsel entstehen lokal, nur die
   Bestenliste braucht Netz, Zeiten warten in einer Warteschlange und gehen nach. Antwort in der Gruppe
   mit der Release-Nachricht.
+- [x] 2026-09-22 **Dani** Das Achievement-Unlock-Banner passte optisch nicht. Es waechst jetzt
+  wirklich vom Kreis zur Pille statt aufzuspringen, nimmt die Breite, die der Titel braucht, und
+  traegt nur noch den Titel, groesser, ohne "Achievement unlocked" davor. Bleibt der Stil selbst
+  ein Thema, kommt es als neuer Punkt zurueck.
 - [x] 2026-09-22 Killer Easy ist deutlich leichter geworden, weil der Killer jetzt den Daily
   traegt und der in der Rueckmeldung als zu schwer ankam. 24 Givens statt 10: der Score faellt
   von 134 bis 224 auf 65 bis 120, die naechsten vierzehn Dailys von im Mittel 178 auf 97. Genius
