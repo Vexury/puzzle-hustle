@@ -43,6 +43,12 @@ export const HOW_TO: Record<PuzzleTypeId, string[]> = {
     'The path must visit every cell exactly once. Drag to draw, drag back to erase.',
     'Thick lines are walls: the path cannot cross them.',
   ],
+  tracks: [
+    'Lay one track from A on the left edge to B on the bottom edge.',
+    'The numbers count the track cells in each row and column. A number turns green when its line is right.',
+    'Pieces are straight or curved. The track never branches, never crosses itself and forms no separate loops. Given pieces stay put.',
+    'Drag across cells to lay track, drag along it again to lift it. Tap an empty cell to mark it with an X.',
+  ],
   killer: [
     'Normal Sudoku rules apply: 1 to 9 once per row, column and 3x3 box.',
     'The dashed outlines are cages. The digits inside a cage add up to the small number in its corner. Their colours only tell neighbouring cages apart and mean nothing for the solution.',

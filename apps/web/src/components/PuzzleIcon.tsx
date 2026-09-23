@@ -50,6 +50,18 @@ export function PuzzleIcon({ type, size = 56 }: { type: PuzzleTypeId; size?: num
           <polygon points="15,7 17.6,13 24,13.6 19.2,17.8 20.7,24 15,20.7 9.3,24 10.8,17.8 6,13.6 12.4,13" className="ic-a" />
           <polygon points="28,21 29.8,25.2 34.3,25.6 30.9,28.6 32,33 28,30.7 24,33 25.1,28.6 21.7,25.6 26.2,25.2" className="ic-a" />
         </svg>
+      ) : type === 'tracks' ? (
+        <svg viewBox="0 0 40 40">
+          <g className="ic-grid">
+            {[1, 2].map((i) => (
+              <line key={`h${i}`} x1="6" y1={6 + i * 9.33} x2="34" y2={6 + i * 9.33} />
+            ))}
+            {[1, 2].map((i) => (
+              <line key={`v${i}`} x1={6 + i * 9.33} y1="6" x2={6 + i * 9.33} y2="34" />
+            ))}
+          </g>
+          <path d="M2 10.7H20Q24.7 10.7 24.7 15.3V24.7Q24.7 29.3 29.3 29.3H34" className="ic-path" />
+        </svg>
       ) : type === 'zip' ? (
         <svg viewBox="0 0 40 40">
           <g className="ic-grid">

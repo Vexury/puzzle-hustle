@@ -13,6 +13,7 @@ import {
   generateShapes,
   generateStars,
   generateSudoku,
+  generateTracks,
   generateZip,
   HINT_PRICE,
   levelRef,
@@ -44,6 +45,7 @@ import { useSession } from '../lib/auth.ts';
 import { ShapesGame } from '../shapes/ShapesGame.tsx';
 import { NonogramGame } from '../nonogram/NonogramGame.tsx';
 import { ZipGame } from '../zip/ZipGame.tsx';
+import { TracksGame } from '../tracks/TracksGame.tsx';
 import { MosaicGame } from '../mosaic/MosaicGame.tsx';
 import { SudokuGame } from '../sudoku/SudokuGame.tsx';
 import { RegionsGame } from '../regions/RegionsGame.tsx';
@@ -91,7 +93,9 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const bestBefore = useRef(existing?.seconds ?? null).current;
   const spec = useMemo(
     () =>
-      puzzleRef.type === 'zip'
+      puzzleRef.type === 'tracks'
+        ? generateTracks(puzzleRef.seed, puzzleRef.difficulty)
+        : puzzleRef.type === 'zip'
         ? generateZip(puzzleRef.seed, puzzleRef.difficulty, zipAdapter.options(puzzleRef.period))
         : puzzleRef.type === 'crowns'
         ? generateCrowns(puzzleRef.seed, puzzleRef.difficulty, crownsAdapter.options(puzzleRef.period))
@@ -109,7 +113,9 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
     [puzzleRef],
   );
   const sizeLabel =
-    'pieces' in spec
+    'entryRow' in spec
+      ? `${spec.config.cols}×${spec.config.rows}`
+      : 'pieces' in spec
       ? `${spec.config.inner}×${spec.config.inner}, ${spec.pieces.length} shapes`
       : 'walls' in spec
         ? `${spec.config.size}×${spec.config.size}, ${zipNumberCount(spec)} numbers`
@@ -366,7 +372,19 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
         {result ? <span className="diff-pill solved">Solved</span> : <span className={`diff-pill ${puzzleRef.difficulty}`}>{puzzleRef.difficulty}</span>}
       </div>
 
-      {!showBoard ? null : 'pieces' in spec ? (
+      {!showBoard ? null : 'entryRow' in spec ? (
+        <TracksGame
+          spec={spec}
+          onMove={onMove}
+          onSolved={onSolved}
+          onHintUsed={onHintUsed}
+          requestHint={() => hintProvider.request()}
+          hintAd={hintProvider !== freeHints}
+          locked={false}
+          initialState={saved?.state}
+          onStateChange={onStateChange}
+        />
+      ) : 'pieces' in spec ? (
         <ShapesGame
           spec={spec}
           onMove={onMove}
