@@ -104,6 +104,12 @@ crossed out to still reach it, turns red as well (on a filled cell as a red ring
 judged by the rules alone, never against the solution, so a wrong guess that still fits is not
 given away. Sudoku, Crowns and Stars already showed their conflicts.
 
+**A Mosaic number greys out once it has its count.** It used to wait until every cell around
+it was decided, so an 8 with eight cells filled stayed lit until the ninth carried an X, and a
+tester took that for a counting error. The cells still open around a met number can only be
+empty, so it greys as soon as the filled ones reach it. A 0 has nothing to reach and would
+grey on an untouched board, so it still waits for every cell to be crossed out.
+
 **Moves can be felt.** The app gives haptic feedback now: a light tap for every move,
 including each cell a drag paints, a firmer one when a long press sets an X, and a success
 pattern on the solve. A switch in the Profile turns it off; it only appears in the apps, the
