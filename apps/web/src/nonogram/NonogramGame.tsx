@@ -3,6 +3,7 @@ import {
   MARKED_EMPTY,
   emptyState,
   isNonogramSolved,
+  lineBroken,
   lineSatisfied,
   nonogramHint,
   type Clue,
@@ -52,10 +53,10 @@ function nextValue(current: number, color: number, mark: boolean): number {
   return current === color ? MARKED_EMPTY : color;
 }
 
-function ClueList({ clues, done, axis, index }: { clues: Clue[]; done: boolean; axis: 'row' | 'col'; index: number }) {
+function ClueList({ clues, done, broken, axis, index }: { clues: Clue[]; done: boolean; broken: boolean; axis: 'row' | 'col'; index: number }) {
   const style = axis === 'row' ? { gridRow: index + 2, gridColumn: 1 } : { gridRow: 1, gridColumn: index + 2 };
   return (
-    <div className={['nono-clues', axis, done ? 'done' : ''].join(' ')} style={style}>
+    <div className={['nono-clues', axis, done ? 'done' : '', broken ? 'broken' : ''].join(' ')} style={style}>
       {clues.length === 0 && <span className="clue zero">0</span>}
       {clues.map((k, i) => (
         <span key={i} className={`clue c${k.color}`}>
@@ -234,10 +235,10 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
         <div className="nono-board" style={{ '--rows': rows, '--cols': cols, '--cell': `${cellPx}px` } as React.CSSProperties}>
         <div className="nono-corner" />
         {spec.colClues.map((clues, c) => (
-          <ClueList key={`c${c}`} clues={clues} axis="col" index={c} done={lineSatisfied(spec, state, 'col', c)} />
+          <ClueList key={`c${c}`} clues={clues} axis="col" index={c} done={lineSatisfied(spec, state, 'col', c)} broken={lineBroken(spec, state, 'col', c)} />
         ))}
         {spec.rowClues.map((clues, r) => (
-          <ClueList key={`r${r}`} clues={clues} axis="row" index={r} done={lineSatisfied(spec, state, 'row', r)} />
+          <ClueList key={`r${r}`} clues={clues} axis="row" index={r} done={lineSatisfied(spec, state, 'row', r)} broken={lineBroken(spec, state, 'row', r)} />
         ))}
         {Array.from({ length: rows * cols }, (_, i) => {
           const r = Math.floor(i / cols);

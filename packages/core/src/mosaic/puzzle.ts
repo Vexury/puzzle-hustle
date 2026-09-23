@@ -165,6 +165,20 @@ export function mosaicClueSatisfied(spec: MosaicSpec, state: MosaicState, r: num
   return filled === clue;
 }
 
+// More cells filled than the clue allows, or so many crossed out that it can no longer be met.
+export function mosaicClueBroken(spec: MosaicSpec, state: MosaicState, r: number, c: number): boolean {
+  const { rows, cols } = spec.config;
+  const clue = spec.clues[r * cols + c]!;
+  if (clue < 0) return false;
+  let filled = 0;
+  let open = 0;
+  for (const i of mosaicBlockCells(rows, cols, r, c)) {
+    if (state[i] === 0) open++;
+    else filled += filledBit(state[i]!);
+  }
+  return filled > clue || filled + open < clue;
+}
+
 export interface MosaicHint {
   r: number;
   c: number;

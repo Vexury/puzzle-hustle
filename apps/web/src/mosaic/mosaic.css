@@ -84,5 +84,8 @@
 }
 .mosaic-cell.filled .mosaic-clue { color: var(--mosaic-clue-on-fill); }
 .mosaic-cell.done .mosaic-clue { opacity: 0.4; }
+.mosaic-cell.broken .mosaic-clue { color: var(--danger); }
+.mosaic-cell.filled.broken { box-shadow: inset 0 0 0 3px var(--danger); }
+.mosaic-cell.filled.broken .mosaic-clue { color: var(--mosaic-clue-on-fill); }
 .mosaic-viewport.solved .mosaic-cell.done .mosaic-clue { opacity: 0.25; }
 .mosaic-viewport.solved .mosaic-cell.filled { animation: solve-wave 0.7s ease-out both; animation-delay: calc(var(--r, 0) * 40ms); }

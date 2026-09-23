@@ -80,6 +80,23 @@ export function readProgress(id: string): Progress | null {
   }
 }
 
+// Puzzles with a board on disk and no solve yet. A solved period keeps its finished board
+// there too (keepFinalBoard), which is why the solve has to rule it out.
+export function startedIds(): Set<string> {
+  const ids = new Set<string>();
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!k?.startsWith(PROGRESS_PREFIX)) continue;
+      const id = k.slice(PROGRESS_PREFIX.length);
+      if (!cache[id]) ids.add(id);
+    }
+  } catch {
+    /* storage unavailable */
+  }
+  return ids;
+}
+
 export function writeProgress(id: string, progress: Progress) {
   try {
     localStorage.setItem(PROGRESS_PREFIX + id, JSON.stringify(progress));

@@ -1,7 +1,7 @@
 import { Rng } from '../rng.ts';
 import type { Difficulty } from '../types.ts';
 import { MARKED_EMPTY, cluesEqual, filledColor, gridClues, lineClues, readLine, type Clue, type LineAxis } from './clues.ts';
-import { nonogramDepth, propagateLines, solveByLines } from './solver.ts';
+import { nonogramDepth, propagateLines, solveByLines, solveLine } from './solver.ts';
 
 export { MARKED_EMPTY, type Clue } from './clues.ts';
 
@@ -149,6 +149,14 @@ export function lineSatisfied(spec: NonogramSpec, state: NonogramState, axis: Li
   const { rows, cols } = spec.config;
   const clues = axis === 'row' ? spec.rowClues[index]! : spec.colClues[index]!;
   return cluesEqual(lineClues(readLine(state, rows, cols, axis, index)), clues);
+}
+
+// The line alone, fills and X marks as placed, admits no arrangement of its clues. Judged
+// against the rules, never the solution, so it does not give away a wrong guess that fits.
+export function lineBroken(spec: NonogramSpec, state: NonogramState, axis: LineAxis, index: number): boolean {
+  const { rows, cols, colors } = spec.config;
+  const clues = axis === 'row' ? spec.rowClues[index]! : spec.colClues[index]!;
+  return solveLine(readLine(state, rows, cols, axis, index), clues, colors) < 0;
 }
 
 export interface NonogramHint {

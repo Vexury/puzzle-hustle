@@ -3,6 +3,7 @@ import {
   MOSAIC_MARKED_EMPTY,
   emptyMosaicState,
   isMosaicSolved,
+  mosaicClueBroken,
   mosaicClueSatisfied,
   mosaicHint,
   type MosaicSpec,
@@ -193,6 +194,7 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, lo
     if (v === MOSAIC_MARKED_EMPTY && !solved) cls.push('x');
     else if (v === 1) cls.push('filled');
     if (clue >= 0 && mosaicClueSatisfied(spec, state, r, c)) cls.push('done');
+    else if (clue >= 0 && !solved && mosaicClueBroken(spec, state, r, c)) cls.push('broken');
     cls.push(...gridLineClasses(r, c, rows, cols, false));
     if (flash === r * cols + c) cls.push('flash');
     return cls.join(' ');

@@ -61,6 +61,8 @@
 .nono-clues .clue.c1 { color: var(--nono-c1); }
 .nono-clues.done .clue { color: inherit; }
 .nono-clues .clue.zero { color: var(--text-muted); }
+.nono-clues.broken { background: color-mix(in srgb, var(--danger) 14%, transparent); border-radius: 6px; }
+.nono-clues.broken .clue { color: var(--danger); }
 
 .nono-cell {
   position: relative;

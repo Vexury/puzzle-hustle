@@ -6,6 +6,7 @@ import {
   emptyState,
   generateNonogram,
   isNonogramSolved,
+  lineBroken,
   lineSatisfied,
   nonogramHint,
   nonogramProgress,
@@ -172,6 +173,13 @@ describe('state', () => {
     expect(lineSatisfied(spec, state, 'row', 0)).toBe(false);
     expect(lineSatisfied(spec, state, 'col', 0)).toBe(true);
     expect(lineSatisfied(spec, Uint8Array.from([1, 1, MARKED_EMPTY, 0]), 'row', 0)).toBe(true);
+  });
+  it('flags a line that no arrangement of its clues can fit', () => {
+    const spec = specFromGrid(2, 2, 1, [1, 1, 0, 1]);
+    expect(lineBroken(spec, Uint8Array.from([1, 0, 0, 0]), 'row', 0)).toBe(false);
+    expect(lineBroken(spec, Uint8Array.from([1, MARKED_EMPTY, 0, 0]), 'row', 0)).toBe(true);
+    expect(lineBroken(spec, Uint8Array.from([0, 0, 1, 1]), 'row', 1)).toBe(true);
+    expect(lineBroken(spec, Uint8Array.from([0, 0, 1, 0]), 'row', 1)).toBe(false);
   });
 });
 

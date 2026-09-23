@@ -83,6 +83,18 @@ based id, so progress on one is saved but can never be reached again.
 
 ### Board and layout
 
+**Started puzzles say so.** A daily, weekly or monthly with a board in progress shows
+"Continue" instead of "Play", as does a type in the Puzzles list with a level in progress, and
+the level tile itself reads "continue". Once the next open level has scrolled out of the first
+row, a button above the grid jumps straight to it. A locked tile, tapped, says which level
+opens it instead of doing nothing.
+
+**Nonogram and Mosaic show a broken clue.** A row or column whose fills and X marks no longer
+fit its clues turns its clues red, and a Mosaic number with too many cells filled, or too many
+crossed out to still reach it, turns red as well (on a filled cell as a red ring). Both are
+judged by the rules alone, never against the solution, so a wrong guess that still fits is not
+given away. Sudoku, Crowns and Stars already showed their conflicts.
+
 **Moves can be felt.** The app gives haptic feedback now: a light tap for every move,
 including each cell a drag paints, a firmer one when a long press sets an X, and a success
 pattern on the solve. A switch in the Profile turns it off; it only appears in the apps, the

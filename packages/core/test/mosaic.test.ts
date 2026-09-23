@@ -6,6 +6,7 @@ import {
   emptyMosaicState,
   generateMosaic,
   isMosaicSolved,
+  mosaicClueBroken,
   mosaicClueSatisfied,
   mosaicClues,
   mosaicHint,
@@ -148,6 +149,13 @@ describe('state', () => {
     expect(mosaicClueSatisfied(spec, Uint8Array.from([1, 1, MOSAIC_MARKED_EMPTY, 1]), 0, 0)).toBe(true);
     spec.clues[3] = -1;
     expect(mosaicClueSatisfied(spec, spec.solution, 1, 1)).toBe(false);
+  });
+  it('flags a clue that is overfilled or crossed out past reach', () => {
+    const spec = specFromGrid(2, 2, [1, 1, 0, 1]);
+    expect(mosaicClueBroken(spec, Uint8Array.from([1, 0, 0, 0]), 0, 0)).toBe(false);
+    expect(mosaicClueBroken(spec, Uint8Array.from([1, 1, 1, 1]), 0, 0)).toBe(true);
+    expect(mosaicClueBroken(spec, Uint8Array.from([MOSAIC_MARKED_EMPTY, MOSAIC_MARKED_EMPTY, 0, 0]), 0, 0)).toBe(true);
+    expect(mosaicClueBroken(spec, Uint8Array.from([1, 1, MOSAIC_MARKED_EMPTY, 1]), 0, 0)).toBe(false);
   });
 });
 

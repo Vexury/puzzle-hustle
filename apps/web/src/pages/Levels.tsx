@@ -15,7 +15,8 @@ import {
 } from '@puzzle-hustle/core';
 import { PuzzleIcon } from '../components/PuzzleIcon.tsx';
 import { href, navigate, onLinkClick } from '../lib/router.ts';
-import { readSetting, useSolves, writeSetting, type SolveRecord } from '../lib/storage.ts';
+import { readSetting, startedIds, useSolves, writeSetting, type SolveRecord } from '../lib/storage.ts';
+import { toast } from '../components/Toast.tsx';
 import { capitalize, formatSeconds } from '../lib/share.ts';
 import { typeStats } from '../lib/stats.ts';
 import { Chevron } from '../components/Chevron.tsx';
@@ -33,6 +34,7 @@ export function unlockedLevel(type: PuzzleTypeId, difficulty: Difficulty, solves
 export function LevelsIndex() {
   const solves = useSolves();
   const stats = typeStats(solves);
+  const started = [...startedIds()].filter((id) => !/:(daily|weekly|monthly):/.test(id));
   return (
     <>
       <header className="page-head">
@@ -43,6 +45,7 @@ export function LevelsIndex() {
       <div className="stack">
         {PUZZLE_TYPES.map((type) => {
           const s = stats.find((x) => x.type === type)!;
+          const inProgress = started.some((id) => id.startsWith(`${type}:`));
           return (
             <a key={type} href={href(`/levels/${type}`)} onClick={onLinkClick} className="row-card">
               <span className="row-icon">
@@ -54,7 +57,7 @@ export function LevelsIndex() {
                   {s.levelsSolved}/{s.levelsTotal} solved
                 </span>
               </span>
-              <span className="pill">Play</span>
+              <span className="pill">{inProgress ? 'Continue' : 'Play'}</span>
             </a>
           );
         })}
@@ -79,6 +82,10 @@ function LevelGrid({ type }: { type: PuzzleTypeId }) {
   const list = levelList(type, difficulty);
   const open = unlockedLevel(type, difficulty, solves);
   const stat = typeStats(solves).find((s) => s.type === type)!;
+  const started = startedIds();
+  // Only worth a button once the open level has scrolled out of the first row.
+  const openRef = open > 4 && open <= list.length ? levelRef(type, difficulty, open) : null;
+  const openStarted = openRef !== null && started.has(refId(openRef));
 
   const pick = (d: Difficulty) => {
     if (d === difficulty) return;
@@ -116,6 +123,14 @@ function LevelGrid({ type }: { type: PuzzleTypeId }) {
         })}
       </div>
 
+      {openRef && (
+        <div className="actions level-jump">
+          <a href={href(`/play?${encodeRef(openRef)}`)} onClick={onLinkClick} className="pill">
+            {openStarted ? 'Continue' : 'Play'} #{open}
+          </a>
+        </div>
+      )}
+
       <div key={difficulty} className={`level-grid${slide}`}>
         {list.map((_, i) => {
           const n = i + 1;
@@ -123,16 +138,16 @@ function LevelGrid({ type }: { type: PuzzleTypeId }) {
           const solve = solves[refId(ref)];
           if (n > open) {
             return (
-              <span key={n} className="tile locked" aria-label={`Level ${n}, locked`}>
+              <button key={n} type="button" className="tile locked" aria-label={`Level ${n}, locked`} onClick={() => toast(`Solve #${open} first`)}>
                 <b>#{n}</b>
                 <small>locked</small>
-              </span>
+              </button>
             );
           }
           return (
             <a key={n} href={href(`/play?${encodeRef(ref)}`)} onClick={onLinkClick} className={solve ? 'tile solved' : 'tile open'}>
               <b>#{n}</b>
-              <small>{solve ? `✓ ${formatSeconds(solve.seconds)}` : 'play'}</small>
+              <small>{solve ? `✓ ${formatSeconds(solve.seconds)}` : started.has(refId(ref)) ? 'continue' : 'play'}</small>
             </a>
           );
         })}
