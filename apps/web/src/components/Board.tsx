@@ -76,7 +76,7 @@ export function NameCell({ entry }: { entry: { name: string; badge?: string | nu
   return (
     <span className="leaderboard-who">
       <span className="leaderboard-name">
-        {entry.name}
+        <span className="leaderboard-name-text">{entry.name}</span>
         {badge && <BadgeIcon id={badge.id} />}
       </span>
       {flair && <span className="leaderboard-flair">{flair.title}</span>}
