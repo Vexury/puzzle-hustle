@@ -6,7 +6,7 @@ import { adsAvailable, onAdsConsent, privacyOptionsAvailable, showPrivacyOptions
 import { setName as setAccountName, useSession } from '../lib/auth.ts';
 import { ApiError, readSession } from '../lib/api.ts';
 import { currentUnlocked } from '../lib/achievements.ts';
-import { useBalance } from '../lib/coins.ts';
+import { pushCosmetics, useBalance } from '../lib/coins.ts';
 import { buyUnlimitedHints, hasUnlimitedHints, onEntitlement } from '../lib/entitlement.ts';
 import { HAPTICS_KEY, hapticsAvailable, tap } from '../lib/haptics.ts';
 import { href, onLinkClick } from '../lib/router.ts';
@@ -273,6 +273,7 @@ export function Profile() {
                 className="pill danger"
                 onClick={() => {
                   resetProgress();
+                  void pushCosmetics();
                   setConfirmReset(false);
                 }}
               >

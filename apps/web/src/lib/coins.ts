@@ -98,9 +98,10 @@ export function readEquipped(): Equipped {
     const raw = readSetting(EQUIPPED_KEY);
     const parsed = raw ? (JSON.parse(raw) as unknown) : null;
     const v = parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
+    const ownedIds = owned();
     return {
-      badge: findCosmetic(v.badge)?.kind === 'badge' ? (v.badge as string) : null,
-      flair: findCosmetic(v.flair)?.kind === 'flair' ? (v.flair as string) : null,
+      badge: findCosmetic(v.badge)?.kind === 'badge' && ownedIds.has(v.badge as string) ? (v.badge as string) : null,
+      flair: findCosmetic(v.flair)?.kind === 'flair' && ownedIds.has(v.flair as string) ? (v.flair as string) : null,
     };
   } catch {
     return { badge: null, flair: null };

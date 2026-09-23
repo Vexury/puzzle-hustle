@@ -1,4 +1,5 @@
 import { beforeEach, expect, it, vi } from 'vitest';
+import { ACHIEVEMENTS_EPOCH } from '@puzzle-hustle/core';
 import { recordSolve, rehydrate, resetProgress } from '../src/lib/storage.ts';
 import { balance, buyItem, canAffordHint, equip, owned, readEquipped, readSpent, solveCoinLine, spendHint } from '../src/lib/coins.ts';
 
@@ -26,8 +27,19 @@ it('reads a missing or malformed spend log as empty', () => {
 it('reads malformed equipped cosmetics as nothing equipped', () => {
   localStorage.setItem('ph:cosmetics', '"bolt"');
   expect(readEquipped()).toEqual({ badge: null, flair: null });
+  localStorage.setItem('ph:coins:spent', JSON.stringify([{ kind: 'item', item: 'hustler', coins: 500, at: Date.now() }]));
   localStorage.setItem('ph:cosmetics', JSON.stringify({ badge: 'crown', flair: 'hustler' }));
   expect(readEquipped()).toEqual({ badge: null, flair: 'hustler' });
+});
+
+it('unequips a cosmetic once it falls out of ownership because the epoch moved past its purchase', () => {
+  earnSome(50);
+  buyItem('bolt');
+  equip('badge', 'bolt');
+  expect(readEquipped()).toEqual({ badge: 'bolt', flair: null });
+  const rewritten = readSpent().map((e) => (e.kind === 'item' && e.item === 'bolt' ? { ...e, at: ACHIEVEMENTS_EPOCH - 1 } : e));
+  localStorage.setItem('ph:coins:spent', JSON.stringify(rewritten));
+  expect(readEquipped()).toEqual({ badge: null, flair: null });
 });
 
 it('spends 20 on a hint only when the balance covers it', () => {

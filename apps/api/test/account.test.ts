@@ -90,6 +90,21 @@ it('deletes the player, their scores and their memberships', async () => {
   expect((await call('/groups', me.token)).status).toBe(401);
 });
 
+it('deletes the badge and flair along with the player on account deletion', async () => {
+  const me = await signIn('s1', 'Moritz');
+  await call('/cosmetics', me.token, { method: 'POST', body: JSON.stringify({ badge: 'bolt', flair: 'hustler' }) });
+  const before = await env.DB.prepare('SELECT badge, flair FROM players WHERE id = ?').bind(me.player.id).first<{
+    badge: string | null;
+    flair: string | null;
+  }>();
+  expect(before).toEqual({ badge: 'bolt', flair: 'hustler' });
+
+  expect((await call('/account', me.token, { method: 'DELETE' })).status).toBe(200);
+
+  const after = await env.DB.prepare('SELECT badge, flair FROM players WHERE id = ?').bind(me.player.id).first();
+  expect(after).toBeNull();
+});
+
 it('hands a deleted owner\'s group on to the longest-standing remaining member and leaves the others intact', async () => {
   const owner = await signIn('s1', 'Moritz');
   const group = (await (await call('/groups', owner.token, { method: 'POST', body: JSON.stringify({ name: 'Family' }) })).json()) as {

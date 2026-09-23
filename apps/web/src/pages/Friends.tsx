@@ -101,6 +101,7 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
       <>
         <section className="page-head">
           <h1>Social</h1>
+          <CoinPill />
         </section>
         <p className="muted small">Loading…</p>
       </>
