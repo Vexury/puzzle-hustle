@@ -153,16 +153,19 @@ export function mosaicProgress(spec: MosaicSpec, state: MosaicState): { matching
   return { matching, total };
 }
 
+// Done once the filled cells reach the count, crossed out or not: the cells still open around
+// it can only be empty. A zero has nothing to reach, so it waits until every cell is crossed out.
 export function mosaicClueSatisfied(spec: MosaicSpec, state: MosaicState, r: number, c: number): boolean {
   const { rows, cols } = spec.config;
   const clue = spec.clues[r * cols + c]!;
   if (clue < 0) return false;
   let filled = 0;
+  let open = 0;
   for (const i of mosaicBlockCells(rows, cols, r, c)) {
-    if (state[i] === 0) return false;
-    filled += filledBit(state[i]!);
+    if (state[i] === 0) open++;
+    else filled += filledBit(state[i]!);
   }
-  return filled === clue;
+  return filled === clue && (clue > 0 || open === 0);
 }
 
 // More cells filled than the clue allows, or so many crossed out that it can no longer be met.

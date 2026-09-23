@@ -147,6 +147,11 @@ describe('state', () => {
     expect(mosaicProgress(spec, state)).toEqual({ matching: 1, total: 3 });
     expect(mosaicClueSatisfied(spec, state, 0, 0)).toBe(false);
     expect(mosaicClueSatisfied(spec, Uint8Array.from([1, 1, MOSAIC_MARKED_EMPTY, 1]), 0, 0)).toBe(true);
+    expect(mosaicClueSatisfied(spec, Uint8Array.from([1, 1, 0, 1]), 0, 0)).toBe(true);
+    const zero = specFromGrid(2, 2, [0, 0, 0, 0]);
+    expect(mosaicClueSatisfied(zero, Uint8Array.from([0, 0, 0, 0]), 0, 0)).toBe(false);
+    expect(mosaicClueSatisfied(zero, Uint8Array.from([MOSAIC_MARKED_EMPTY, MOSAIC_MARKED_EMPTY, MOSAIC_MARKED_EMPTY, 0]), 0, 0)).toBe(false);
+    expect(mosaicClueSatisfied(zero, new Uint8Array(4).fill(MOSAIC_MARKED_EMPTY), 0, 0)).toBe(true);
     spec.clues[3] = -1;
     expect(mosaicClueSatisfied(spec, spec.solution, 1, 1)).toBe(false);
   });
