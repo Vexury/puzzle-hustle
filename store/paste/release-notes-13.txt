@@ -1,14 +1,24 @@
 <en-US>
-Smaller fixes from your feedback.
+New buttons, Redo, and a phone that answers your taps.
 
-- The puzzle holds still while a hint video loads, no stray moves in the gap
-- A Mosaic number greys out as soon as enough cells are filled
-- Clearer message when a video ends without a hint
+- Haptic feedback, switchable in Profile
+- Icon buttons under the board, Redo next to Undo
+- Nonogram and Mosaic mark clues red that can no longer fit
+- Mosaic numbers grey out once enough cells are filled
+- Started puzzles say Continue, levels jump to your next one
+- Solved dailies show your finished board
+- Times from before signing in reach the leaderboard
+- The puzzle holds still while a hint video loads
 </en-US>
 <de-DE>
-Kleinere Verbesserungen aus eurem Feedback.
+Neue Buttons, Redo und ein Handy, das auf Züge antwortet.
 
-- Das Rätsel bleibt ruhig, während ein Hint-Video lädt, keine Züge mehr in der Pause
-- Eine Mosaik-Zahl wird grau, sobald genug Felder gefüllt sind
-- Klarere Meldung, wenn ein Video ohne Hint endet
+- Haptisches Feedback, abschaltbar im Profil
+- Icon-Buttons unter dem Brett, Redo neben Undo
+- Nonogramm und Mosaik färben Hinweise rot, die nicht aufgehen
+- Mosaik-Zahlen werden grau, sobald genug Felder gefüllt sind
+- Angefangene Rätsel zeigen Continue, Level springen zum nächsten
+- Gelöste Dailys zeigen dein fertiges Brett
+- Zeiten vor der Anmeldung zählen in der Bestenliste
+- Das Rätsel bleibt ruhig, während ein Hint-Video lädt
 </de-DE>
