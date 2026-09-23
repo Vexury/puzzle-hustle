@@ -170,6 +170,7 @@ p { margin: 0; }
 
 .page-head { position: relative; margin: 8px 0 14px; display: flex; flex-direction: column; gap: 6px; }
 .theme-toggle { position: absolute; top: 0; right: 0; }
+.page-head .coin-pill { position: absolute; top: 50%; right: 0; transform: translateY(-50%); }
 .theme-icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .page-head.compact { margin-top: 4px; }
 .section-h { margin: 36px 0 2px; font-size: var(--fs-lg); font-weight: 700; }

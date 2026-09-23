@@ -58,45 +58,47 @@ export function Shop() {
         <CoinPill />
       </section>
 
-      <section className="card-lg shop-preview">
-        <NameCell entry={{ name, ...equipped }} />
-        {!session && <span className="muted small">Badges and flairs show in your groups once you sign in.</span>}
-      </section>
+      <div className="stack">
+        <section className="card-lg shop-preview">
+          <NameCell entry={{ name, ...equipped }} />
+          {!session && <span className="muted small">Badges and flairs show in your groups once you sign in.</span>}
+        </section>
 
-      <section className="card-lg">
-        <h2>Badges</h2>
-        <div className="shop-grid">
-          {COSMETICS.filter((c) => c.kind === 'badge').map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className={`shop-tile ${itemState(item.id, ownedIds, equipped, balance)}${armed === item.id ? ' armed' : ''}`}
-              onClick={() => tap(item)}
-              aria-label={`${item.title}, ${label(item)}`}
-            >
-              <BadgeIcon id={item.id} className="shop-badge" />
-              <span className="small">{label(item)}</span>
-            </button>
-          ))}
-        </div>
-      </section>
+        <section className="card-lg">
+          <h2>Badges</h2>
+          <div className="shop-grid">
+            {COSMETICS.filter((c) => c.kind === 'badge').map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={`shop-tile ${itemState(item.id, ownedIds, equipped, balance)}${armed === item.id ? ' armed' : ''}`}
+                onClick={() => tap(item)}
+                aria-label={`${item.title}, ${label(item)}`}
+              >
+                <BadgeIcon id={item.id} className="shop-badge" />
+                <span className="small">{label(item)}</span>
+              </button>
+            ))}
+          </div>
+        </section>
 
-      <section className="card-lg">
-        <h2>Flairs</h2>
-        <div className="shop-list">
-          {COSMETICS.filter((c) => c.kind === 'flair').map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className={`row-card shop-row ${itemState(item.id, ownedIds, equipped, balance)}${armed === item.id ? ' armed' : ''}`}
-              onClick={() => tap(item)}
-            >
-              <span className="row-title">{item.title}</span>
-              <span className="small">{label(item)}</span>
-            </button>
-          ))}
-        </div>
-      </section>
+        <section className="card-lg">
+          <h2>Flairs</h2>
+          <div className="shop-list">
+            {COSMETICS.filter((c) => c.kind === 'flair').map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={`row-card shop-row ${itemState(item.id, ownedIds, equipped, balance)}${armed === item.id ? ' armed' : ''}`}
+                onClick={() => tap(item)}
+              >
+                <span className="row-title">{item.title}</span>
+                <span className="small">{label(item)}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      </div>
     </>
   );
 }
