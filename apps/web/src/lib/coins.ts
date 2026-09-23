@@ -62,7 +62,11 @@ export function balance(): number {
   }
 }
 
+// Both hooks read storage directly and use the subscriptions only to re-render. The React
+// Compiler sees no inputs to balance()/readEquipped() and would cache the first result forever,
+// so a purchase never showed until a reload.
 export function useBalance(): number {
+  'use no memo';
   useSolves();
   useSyncExternalStore(subscribe, () => version);
   return balance();
@@ -112,6 +116,7 @@ export function readEquipped(): Equipped {
 }
 
 export function useEquipped(): Equipped {
+  'use no memo';
   useSolves();
   useSyncExternalStore(subscribe, () => version);
   return readEquipped();
