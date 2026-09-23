@@ -83,3 +83,18 @@ it('counts the percentile over everybody and hides it without an own score', asy
   const withScore = (await readBoard(env.DB, 'a', 'g1', PUZZLE))!;
   expect(withScore.percentile).toEqual({ total: 31, faster: 5 });
 });
+
+it('carries each player badge and flair, null when unset', async () => {
+  await player('a', 'Anna');
+  await player('b', 'Ben');
+  await env.DB.prepare("UPDATE players SET badge = 'cat', flair = 'puzzler' WHERE id = 'a'").run();
+  await group('g1', ['a', 'b']);
+  await score('a', 200);
+  await score('b', 300);
+
+  const board = (await readBoard(env.DB, 'a', 'g1', PUZZLE))!;
+  expect(board.entries.map((e) => [e.name, e.badge, e.flair])).toEqual([
+    ['Anna', 'cat', 'puzzler'],
+    ['Ben', null, null],
+  ]);
+});

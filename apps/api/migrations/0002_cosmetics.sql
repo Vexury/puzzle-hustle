@@ -1,0 +1,2 @@
+ALTER TABLE players ADD COLUMN badge TEXT;
+ALTER TABLE players ADD COLUMN flair TEXT;

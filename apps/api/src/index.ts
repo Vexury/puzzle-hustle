@@ -1,3 +1,4 @@
+import { isCosmeticOf } from '@puzzle-hustle/core';
 import { readBoard } from './board.ts';
 import { verifyGoogleIdToken } from './google.ts';
 import { createGroup, joinGroup, leaveGroup, listGroups, removeMember } from './groups.ts';
@@ -45,6 +46,18 @@ async function postName(request: Request, env: Env, playerId: string): Promise<R
   return json({ name: result.name });
 }
 
+// Ownership lives in a local log the server cannot see, and a forged badge buys no rank, so
+// only the ids are checked against the catalogue.
+async function postCosmetics(request: Request, env: Env, playerId: string): Promise<Response> {
+  const input = await body(request);
+  const badge = input.badge ?? null;
+  const flair = input.flair ?? null;
+  if (badge !== null && !isCosmeticOf(badge, 'badge')) return error(400, 'unknown_badge');
+  if (flair !== null && !isCosmeticOf(flair, 'flair')) return error(400, 'unknown_flair');
+  await env.DB.prepare('UPDATE players SET badge = ?, flair = ? WHERE id = ?').bind(badge, flair, playerId).run();
+  return json({ badge, flair });
+}
+
 async function route(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   const path = url.pathname;
@@ -57,6 +70,7 @@ async function route(request: Request, env: Env): Promise<Response> {
   if (!playerId) return error(401, 'unauthorized');
 
   if (method === 'POST' && path === '/name') return postName(request, env, playerId);
+  if (method === 'POST' && path === '/cosmetics') return postCosmetics(request, env, playerId);
 
   if (method === 'GET' && path === '/groups') return json({ groups: await listGroups(env.DB, playerId) });
 
