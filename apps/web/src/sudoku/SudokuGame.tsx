@@ -158,6 +158,12 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     if (prev) commit(prev, false);
   }
 
+  function redo() {
+    if (frozen) return;
+    const next = history.redo(stateRef.current);
+    if (next) commit(next, false);
+  }
+
   const remaining = DIGITS.map((d) => 9 - values.reduce((n, v) => n + (v === d ? 1 : 0), 0));
   const selectedValue = selected === null ? 0 : values[selected]!;
   // The digit the board lights up: the one in the selected cell, otherwise the one tapped in
@@ -249,6 +255,7 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
             <ToolButton icon="erase" label="Erase" onClick={erase} disabled={locked} />
             <ResetButton onReset={reset} disabled={locked} />
             <ToolButton icon="undo" label="Undo" onClick={undo} disabled={locked || !history.canUndo} />
+            <ToolButton icon="redo" label="Redo" onClick={redo} disabled={locked || !history.canRedo(state)} />
             <ToolButton icon="hint" label="Hint" onClick={useHint} disabled={locked || hintBusy} badge={hintAd ? <AdBadge /> : null} />
           </div>
         </>

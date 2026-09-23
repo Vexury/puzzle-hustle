@@ -191,6 +191,12 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     if (prev) commit(prev);
   }
 
+  function redo() {
+    if (locked || solved) return;
+    const next = history.redo(stateRef.current);
+    if (next) commit(next);
+  }
+
   const cellClass = (r: number, c: number, v: number, clue: number) => {
     const cls = ['mosaic-cell'];
     if (v === MOSAIC_MARKED_EMPTY && !solved) cls.push('x');
@@ -233,6 +239,7 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
         <div className="tools">
           <ResetButton onReset={reset} disabled={locked} />
           <ToolButton icon="undo" label="Undo" onClick={undo} disabled={locked || !history.canUndo} />
+          <ToolButton icon="redo" label="Redo" onClick={redo} disabled={locked || !history.canRedo(state)} />
           <ToolButton icon="hint" label="Hint" onClick={useHint} disabled={locked || hintBusy} badge={hintAd ? <AdBadge /> : null} />
         </div>
       )}

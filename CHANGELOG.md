@@ -88,6 +88,10 @@ Notes and Erase, show an icon over a short word instead of a word alone, so a fo
 button still fits a phone. The word stays because a circular arrow alone reads as undo as
 easily as reset. When the next hint costs a video, the bulb carries a small play mark.
 
+**Redo.** Every puzzle has a Redo next to Undo. It walks forward again through the moves just
+undone for as long as the board stays as undo left it; a tap on a clue or a pinch does not end
+it, a real move does.
+
 **Started puzzles say so.** A daily, weekly or monthly with a board in progress shows
 "Continue" instead of "Play", as does a type in the Puzzles list with a level in progress, and
 the level tile itself reads "continue". Once the next open level has scrolled out of the first

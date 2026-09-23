@@ -253,6 +253,12 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintA
     if (prev) commit(prev);
   }
 
+  function redo() {
+    if (locked || solved) return;
+    const next = history.redo(pathRef.current);
+    if (next) commit(next);
+  }
+
   const inPath = new Uint8Array(n * n);
   for (const cell of path) inPath[cell] = 1;
   const points = path.map((cell) => `${(cell % n) + 0.5},${Math.floor(cell / n) + 0.5}`).join(' ');
@@ -313,6 +319,7 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintA
         <div className="tools">
           <ResetButton onReset={reset} disabled={locked} />
           <ToolButton icon="undo" label="Undo" onClick={undo} disabled={locked || !history.canUndo} />
+          <ToolButton icon="redo" label="Redo" onClick={redo} disabled={locked || !history.canRedo(path)} />
           <ToolButton icon="hint" label="Hint" onClick={useHint} disabled={locked || hintBusy} badge={hintAd ? <AdBadge /> : null} />
         </div>
       )}

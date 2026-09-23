@@ -180,6 +180,16 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     onStateChange?.(prev.flatMap((p) => [p.r, p.c]));
   }
 
+  function redo() {
+    if (locked || solved) return;
+    const next = history.redo(state);
+    if (!next) return;
+    setState(next);
+    setSelected(null);
+    onMove();
+    onStateChange?.(next.flatMap((p) => [p.r, p.c]));
+  }
+
   const preview = drag ? dropTarget(drag) : null;
 
   return (
@@ -247,6 +257,7 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
             <div className="tools">
               <ResetButton onReset={reset} disabled={locked} />
               <ToolButton icon="undo" label="Undo" onClick={undo} disabled={locked || !history.canUndo} />
+              <ToolButton icon="redo" label="Redo" onClick={redo} disabled={locked || !history.canRedo(state)} />
               <ToolButton icon="hint" label="Hint" onClick={useHint} disabled={locked || hintBusy} badge={hintAd ? <AdBadge /> : null} />
             </div>
           )}

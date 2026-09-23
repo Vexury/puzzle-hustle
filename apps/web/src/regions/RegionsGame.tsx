@@ -194,6 +194,12 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
     if (prev) commit(prev);
   }
 
+  function redo() {
+    if (locked || solved) return;
+    const next = history.redo(stateRef.current);
+    if (next) commit(next);
+  }
+
   const cellClass = (i: number, v: number) => {
     const cls = ['regions-cell'];
     const b = borders[i]!;
@@ -237,6 +243,7 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
         <div className="tools">
           <ResetButton onReset={reset} disabled={locked} />
           <ToolButton icon="undo" label="Undo" onClick={undo} disabled={locked || !history.canUndo} />
+          <ToolButton icon="redo" label="Redo" onClick={redo} disabled={locked || !history.canRedo(state)} />
           <ToolButton icon="hint" label="Hint" onClick={useHint} disabled={locked || hintBusy} badge={hintAd ? <AdBadge /> : null} />
         </div>
       )}
