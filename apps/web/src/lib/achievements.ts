@@ -1,6 +1,9 @@
 import { ACHIEVEMENT_COINS, ACHIEVEMENTS, unlockedAchievements, type SolveEntry } from '@puzzle-hustle/core';
 import { announceAchievement } from '../components/AchievementBanner.tsx';
-import { allSolves, readSetting, writeSetting } from './storage.ts';
+import { pendingAnnouncements, syncAnnouncements } from './announce.ts';
+import { allSolves } from './storage.ts';
+
+export { pendingAnnouncements };
 
 const KEY = 'ph:achievements';
 
@@ -29,65 +32,17 @@ export function storedSolves(): SolveEntry[] {
   return out;
 }
 
-function announced(): string[] {
-  try {
-    const raw = readSetting(KEY);
-    const parsed = raw ? (JSON.parse(raw) as unknown) : [];
-    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : [];
-  } catch {
-    return [];
-  }
-}
-
 export function currentUnlocked(): Set<string> {
   return unlockedAchievements(storedSolves());
 }
 
-// Pure, so the one piece of real reasoning here can be tested on its own. An id in the announced
-// list that is no longer unlocked is dropped rather than kept: the epoch moves forward once, at
-// the production release, and an achievement that re-locks has to be earnable, and celebrated, a
-// second time.
-export function pendingAnnouncements(
-  unlocked: Set<string>,
-  announcedIds: readonly string[],
-): { toAnnounce: string[]; nextAnnounced: string[] } {
-  const known = new Set(announcedIds.filter((id) => unlocked.has(id)));
-  const toAnnounce = [...unlocked].filter((id) => !known.has(id));
-  return { toAnnounce, nextAnnounced: [...known, ...toAnnounce] };
-}
-
-const CATALOG_ORDER = new Map(ACHIEVEMENTS.map((a, i) => [a.id, i]));
+const CATALOG_ORDER = ACHIEVEMENTS.map((a) => a.id);
 
 // Called after a solve and on app start. Must never throw: a player does not lose their
 // finished-puzzle screen, or their session start, over a collectible.
 export function syncAchievements(): void {
-  try {
-    const unlocked = currentUnlocked();
-    const previouslyAnnounced = announced();
-    const { toAnnounce, nextAnnounced } = pendingAnnouncements(unlocked, previouslyAnnounced);
-    // Written only when the list actually changes. When the epoch moves forward an achievement
-    // re-locks and its id has to leave the stored list right then (that IS a difference, so it
-    // still writes), or it is still there when the player earns it again and the second unlock
-    // passes silently. But a sync that changes nothing — notably the very first launch, before
-    // anything is unlocked — must not write at all: writing an empty ph:achievements key on a
-    // clean install makes isBackedUp() see it as already present, and restoreBackup() then
-    // refuses to ever restore a native backup because "some backed-up key already exists".
-    // Order is deterministic (nextAnnounced is [...kept, ...new] in the same relative order as
-    // previouslyAnnounced), so a positional compare is enough to detect no-op syncs.
-    const unchanged =
-      nextAnnounced.length === previouslyAnnounced.length &&
-      nextAnnounced.every((id, i) => id === previouslyAnnounced[i]);
-    if (!unchanged) writeSetting(KEY, JSON.stringify(nextAnnounced));
-    // Sorted explicitly by catalog position rather than trusting the order toAnnounce already
-    // happens to arrive in: pendingAnnouncements is deliberately generic and does not know about
-    // ACHIEVEMENTS, so nothing upstream guarantees an order a future core refactor couldn't
-    // silently disturb.
-    const ordered = [...toAnnounce].sort((a, b) => (CATALOG_ORDER.get(a) ?? 0) - (CATALOG_ORDER.get(b) ?? 0));
-    for (const id of ordered) {
-      const achievement = ACHIEVEMENTS.find((a) => a.id === id);
-      if (achievement) announceAchievement(`${achievement.title} · +${ACHIEVEMENT_COINS} coins`);
-    }
-  } catch {
-    /* a collectible is never worth interrupting anything */
-  }
+  syncAnnouncements(KEY, currentUnlocked, CATALOG_ORDER, (id) => {
+    const achievement = ACHIEVEMENTS.find((a) => a.id === id);
+    if (achievement) announceAchievement(`${achievement.title} · +${ACHIEVEMENT_COINS} coins`);
+  });
 }

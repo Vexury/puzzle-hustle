@@ -94,11 +94,12 @@ export function Shop() {
   };
 
   // A locked pack flair shows its "solved/total" progress instead of just "Locked"; a locked
-  // activity flair has no numeric progress to show.
-  const flairSub = (item: FlairCosmetic) => {
-    if (itemState(item.id, ownedIds, equipped, balance) !== 'locked') return flairLabel(item);
+  // activity flair has no numeric progress to show. Kept separate from flairLabel so the caller
+  // can put only this number, not the text labels, in the number font.
+  const flairProgress = (item: FlairCosmetic): string | null => {
+    if (itemState(item.id, ownedIds, equipped, balance) !== 'locked') return null;
     const req = item.requires;
-    if ('achievement' in req) return flairLabel(item);
+    if ('achievement' in req) return null;
     const { solved, total } = packProgress(solves, req.pack, req.difficulty);
     return `${solved}/${total}`;
   };
@@ -141,18 +142,21 @@ export function Shop() {
               <div key={type} className="shop-flair-group">
                 <h3 className="shop-flair-heading">{PUZZLE_META[type].name}</h3>
                 <div className="shop-flair-tiers">
-                  {FLAIRS_BY_TYPE[type].map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      className={`shop-tile shop-flair-tile ${itemState(item.id, ownedIds, equipped, balance)}`}
-                      onClick={() => tapFlair(item)}
-                      aria-label={`${item.title}, ${flairLabel(item)}`}
-                    >
-                      <span className="row-title">{item.title}</span>
-                      <span className="row-sub">{flairSub(item)}</span>
-                    </button>
-                  ))}
+                  {FLAIRS_BY_TYPE[type].map((item) => {
+                    const progress = flairProgress(item);
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className={`shop-tile shop-flair-tile ${itemState(item.id, ownedIds, equipped, balance)}`}
+                        onClick={() => tapFlair(item)}
+                        aria-label={`${item.title}, ${flairLabel(item)}`}
+                      >
+                        <span className="row-title">{item.title}</span>
+                        <span className="row-sub">{progress ? <span className="shop-flair-progress">{progress}</span> : flairLabel(item)}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             ))}
