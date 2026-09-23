@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { setBackGuard } from '../lib/back.ts';
+import { useEffect, useRef, useState } from 'react';
+import { pushBackGuard } from '../lib/back.ts';
 import { href, navigate } from '../lib/router.ts';
 import { INTRO_SEEN_KEY as SEEN_KEY, readSetting, writeSetting } from '../lib/storage.ts';
 import { introDismissed } from './UnlockModal.tsx';
@@ -23,16 +23,19 @@ export function Intro() {
   const [card, setCard] = useState(0);
   const [done, setDone] = useState(() => readSetting(SEEN_KEY) === '1');
 
-  // No dependency list: the guard has to see the current card, not the first one.
+  // Pushed once while the intro is up (not re-pushed per card): the closure reads the latest
+  // handler from this ref, reassigned every render, so the guard's stack position never moves
+  // just because the card changed. See the matching comment on Play.tsx's own back guard.
+  const backGuard = useRef<() => boolean>(() => false);
+  backGuard.current = () => {
+    if (card === 0) return false;
+    setCard(card - 1);
+    return true;
+  };
   useEffect(() => {
     if (done) return;
-    setBackGuard(() => {
-      if (card === 0) return false;
-      setCard(card - 1);
-      return true;
-    });
-    return () => setBackGuard(null);
-  });
+    return pushBackGuard(() => backGuard.current());
+  }, [done]);
 
   if (done) return null;
 

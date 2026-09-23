@@ -11,36 +11,19 @@ type Guard = () => boolean;
 // closes, just by removing itself from the stack.
 const stack: Guard[] = [];
 
+// Callers push exactly once, typically from a mount-only effect ([] or a rarely-changing
+// dependency array), and keep whatever the guard should currently do in a ref they reassign
+// every render (Play.tsx, Intro.tsx both do this): the closure passed here just reads that ref.
+// pushBackGuard() itself must never be called again on every render for the same logical
+// guard — doing so (as an earlier version of this file did, via a since-removed setBackGuard
+// single-slot shim) would move it to the top of the stack each time, letting it jump back above
+// a guard something else (the unlock modal) had since pushed on top of it.
 export function pushBackGuard(fn: Guard): () => void {
   stack.push(fn);
   return () => {
     const i = stack.indexOf(fn);
     if (i !== -1) stack.splice(i, 1);
   };
-}
-
-// Legacy single-slot API, kept for callers that only ever hold one guard of their own at a
-// time (Play.tsx, Intro.tsx): setBackGuard(fn) replaces whatever this caller previously held,
-// setBackGuard(null) releases it. Play.tsx's guard effect has no dependency array and so calls
-// setBackGuard(fn) again on every render while the puzzle is unsolved; a naive pop-then-push
-// implementation would move it to the top of the stack each time, letting it jump back above a
-// guard something else (the unlock modal) had since pushed on top of it. Instead this dispatches
-// through one stable wrapper that stays at whatever stack position it was first pushed at, and
-// setBackGuard only ever swaps which function that wrapper delegates to.
-let legacyGuard: Guard | null = null;
-let releaseLegacy: (() => void) | null = null;
-
-function dispatchLegacy(): boolean {
-  return legacyGuard?.() ?? false;
-}
-
-export function setBackGuard(fn: Guard | null): void {
-  legacyGuard = fn;
-  if (fn && !releaseLegacy) releaseLegacy = pushBackGuard(dispatchLegacy);
-  else if (!fn && releaseLegacy) {
-    releaseLegacy();
-    releaseLegacy = null;
-  }
 }
 
 // The decision a back press resolves to, exercised directly in back.test.ts without the

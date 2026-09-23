@@ -31,7 +31,7 @@ import {
 } from '@puzzle-hustle/core';
 import { storedSolves, syncAchievements } from '../lib/achievements.ts';
 import { href, navigate, onLinkClick } from '../lib/router.ts';
-import { setBackGuard } from '../lib/back.ts';
+import { pushBackGuard } from '../lib/back.ts';
 import { clearProgress, getSolve, keepFinalBoard, readProgress, readSetting, recordSolve, useSolves, writeProgress, writeSetting, type SolveRecord } from '../lib/storage.ts';
 import { capitalize, formatSeconds, share, shareText } from '../lib/share.ts';
 import { balance, solveCoinLine } from '../lib/coins.ts';
@@ -217,17 +217,19 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   };
 
   // A back gesture next to the board is usually a slip of the thumb, so hold the puzzle and
-  // ask. The clock stops meanwhile, the question itself must not cost time.
-  useEffect(() => {
-    if (result) return;
-    setBackGuard(() => {
-      if (adWaitRef.current) return true;
-      pauseClock();
-      setAskLeave(true);
-      return true;
-    });
-    return () => setBackGuard(null);
-  });
+  // ask. The clock stops meanwhile, the question itself must not cost time. Pushed once, on
+  // mount: the pushed closure reads the latest handler from this ref (reassigned every render)
+  // instead of the guard itself being popped and re-pushed on every render, which would let it
+  // jump back above a guard something else (the unlock modal) had since pushed on top of it.
+  const backGuard = useRef<() => boolean>(() => false);
+  backGuard.current = () => {
+    if (result) return false;
+    if (adWaitRef.current) return true;
+    pauseClock();
+    setAskLeave(true);
+    return true;
+  };
+  useEffect(() => pushBackGuard(() => backGuard.current()), []);
 
   const stay = () => {
     setAskLeave(false);
