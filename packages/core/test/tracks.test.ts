@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../src/rng.ts';
+import { DIFFICULTIES } from '../src/types.ts';
+import { TRACKS_PRESETS, generateTracks, tracksGivenCount } from '../src/tracks/puzzle.ts';
 import {
   TRACK_E,
   TRACK_N,
@@ -7,6 +9,8 @@ import {
   TRACK_W,
   countTracksSolutions,
   solveTracks,
+  tracksCanonicalKey,
+  tracksDifficultyReport,
   type TracksPuzzle,
 } from '../src/tracks/solver.ts';
 
@@ -199,4 +203,56 @@ describe('tracks solver', () => {
     expect(sawTier2Needed).toBe(true);
     expect(sawTier3Needed).toBe(true);
   });
+});
+
+describe('tracks generator', () => {
+  it('keeps every board at most ten columns wide', () => {
+    for (const d of DIFFICULTIES) expect(TRACKS_PRESETS[d].cols).toBeLessThanOrEqual(10);
+  });
+
+  for (const difficulty of ['easy', 'medium'] as const) {
+    it(`builds valid, unique ${difficulty} puzzles`, () => {
+      const cfg = TRACKS_PRESETS[difficulty];
+      for (let seed = 1; seed <= 6; seed++) {
+        const spec = generateTracks(seed, difficulty);
+        const { cols, rows } = spec.config;
+        expect(spec.path[0]).toBe(spec.entryRow * cols);
+        expect(spec.path.at(-1)).toBe((rows - 1) * cols + spec.exitCol);
+        expect(new Set(spec.path).size).toBe(spec.path.length);
+        expect(spec.path.length).toBeGreaterThanOrEqual(cfg.minPath);
+        expect(spec.path.length).toBeLessThanOrEqual(cfg.maxPath);
+        for (let i = 1; i < spec.path.length; i++) {
+          const a = spec.path[i - 1]!;
+          const b = spec.path[i]!;
+          const adjacent = (Math.abs(a - b) === 1 && Math.floor(a / cols) === Math.floor(b / cols)) || Math.abs(a - b) === cols;
+          expect(adjacent).toBe(true);
+        }
+        let sum = 0;
+        for (const n of spec.rowCounts) sum += n;
+        expect(sum).toBe(spec.path.length);
+        expect(tracksGivenCount(spec)).toBeLessThanOrEqual(cfg.maxGivens);
+        const res = solveTracks(spec, cfg.maxTier);
+        expect(res.solved).toBe(true);
+        expect([...res.masks]).toEqual([...spec.solution]);
+        expect(countTracksSolutions(spec, 2).count).toBe(1);
+      }
+    });
+  }
+
+  it('needs the top tier on medium, not just the basic rules', () => {
+    const spec = generateTracks(4, 'medium');
+    expect(solveTracks(spec, 1).solved).toBe(false);
+    expect(tracksDifficultyReport(spec).steps[1]).toBeGreaterThan(0);
+  });
+
+  it('is deterministic per seed and differs across seeds', () => {
+    expect(tracksCanonicalKey(generateTracks(9, 'medium'))).toBe(tracksCanonicalKey(generateTracks(9, 'medium')));
+    expect(tracksCanonicalKey(generateTracks(9, 'medium'))).not.toBe(tracksCanonicalKey(generateTracks(10, 'medium')));
+  });
+
+  it('builds a genius board of 10 by 15', () => {
+    const spec = generateTracks(1, 'genius');
+    expect([spec.config.cols, spec.config.rows]).toEqual([10, 15]);
+    expect(solveTracks(spec, 3).solved).toBe(true);
+  }, 60_000);
 });

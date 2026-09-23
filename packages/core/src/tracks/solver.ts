@@ -1,3 +1,5 @@
+import type { TracksSpec } from './puzzle.ts';
+
 export const TRACK_N = 1;
 export const TRACK_E = 2;
 export const TRACK_S = 4;
@@ -371,4 +373,43 @@ export function countTracksSolutions(p: TracksPuzzle, limit = 2, maxNodes = 200_
   };
   walk(prop);
   return { count, complete: nodes < maxNodes };
+}
+
+export interface TracksDifficultyReport {
+  score: number;
+  steps: [number, number, number];
+  cells: number;
+  givens: number;
+  length: number;
+  turns: number;
+}
+
+function pathTurns(path: ArrayLike<number>): number {
+  let turns = 0;
+  for (let i = 2; i < path.length; i++) if (path[i]! - path[i - 1]! !== path[i - 1]! - path[i - 2]!) turns++;
+  return turns;
+}
+
+export function tracksDifficultyReport(spec: TracksSpec): TracksDifficultyReport {
+  const res = solveTracks(spec, 3);
+  const [t1, t2, t3] = res.steps;
+  const cells = spec.config.cols * spec.config.rows;
+  let givens = 0;
+  for (const m of spec.given) if (m) givens++;
+  const turns = pathTurns(spec.path);
+  const score = t1 * 0.2 + t2 * 1.5 + t3 * 6 + Math.log2(cells) * 2 + spec.path.length * 0.3 + turns * 0.2 - givens * 2;
+  return { score: Math.round(score * 10) / 10, steps: res.steps, cells, givens, length: spec.path.length, turns };
+}
+
+// A and B pin the orientation, so no board has a mirror twin to fold onto.
+export function tracksCanonicalKey(spec: TracksPuzzle): string {
+  const { cols, rows } = spec.config;
+  const given = [...spec.given].map((m) => m.toString(16)).join('');
+  return `tracks${cols}x${rows}|${spec.entryRow}|${spec.exitCol}|${[...spec.rowCounts].join('.')}|${[...spec.colCounts].join('.')}|${given}`;
+}
+
+// Vocabulary: how winding the track is, how long it runs, how many pieces are handed over.
+export function tracksFamilyKey(spec: TracksSpec): string {
+  const r = tracksDifficultyReport(spec);
+  return `t${Math.round(r.turns / 3)}/l${Math.round(r.length / 4)}/g${r.givens}`;
 }
