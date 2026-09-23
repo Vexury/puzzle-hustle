@@ -31,7 +31,7 @@ export function currentHintProvider(used: number, confirm: () => Promise<boolean
       } finally {
         waiting?.(false);
       }
-      if (!rewarded) toast('Closed early, no hint this time');
+      if (!rewarded) toast('The video gave no reward, no hint this time');
       return rewarded;
     },
   };
