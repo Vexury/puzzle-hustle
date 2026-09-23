@@ -2,7 +2,7 @@ import { Rng } from '../rng.ts';
 import type { Difficulty } from '../types.ts';
 import { TRACK_E, TRACK_N, TRACK_S, TRACK_W, solveTracks, tracksGivenCount, tracksOutside, type TracksPuzzle } from './solver.ts';
 
-export const TRACKS_VERSION = 1;
+export const TRACKS_VERSION = 2;
 
 export interface TracksConfig {
   cols: number;
@@ -62,9 +62,15 @@ function distances(cols: number, rows: number, used: Uint8Array, goal: number): 
   return dist;
 }
 
-// A random self-avoiding walk from A to B whose length lands in [minPath, target]. The goal
-// cell is reserved until the walk may end there, and a branch is cut as soon as B can no
-// longer be reached within the target length through the cells still free.
+// A random self-avoiding walk from A to B whose length lands in [minPath, target] and that
+// (R7) touches every row and every column at least once, so a tall or wide board never leaves
+// a whole line without track. The goal cell is reserved until the walk may end there, and a
+// branch is cut as soon as B can no longer be reached within the target length through the
+// cells still free, or as soon as too few steps remain to still reach every uncovered row and
+// column (each new cell can close out at most one missing row and one missing column, so that
+// is the exact, cheap lower bound). Candidates are tried in an order biased toward opening a
+// new row or column first: the walk still backtracks like a plain random walk, it is just far
+// more likely to find a covering path on the first few branches it tries.
 function randomPath(rng: Rng, cfg: TracksConfig, entryRow: number, exitCol: number): number[] | null {
   const { cols, rows } = cfg;
   const startCell = entryRow * cols;
@@ -73,15 +79,22 @@ function randomPath(rng: Rng, cfg: TracksConfig, entryRow: number, exitCol: numb
   const used = new Uint8Array(cols * rows);
   used[startCell] = 1;
   const path = [startCell];
+  const rowSeen = new Uint8Array(rows);
+  const colSeen = new Uint8Array(cols);
+  rowSeen[entryRow] = 1;
+  colSeen[0] = 1;
+  let rowsLeft = rows - 1;
+  let colsLeft = cols - 1;
   let nodes = 0;
   const walk = (): boolean => {
-    if (++nodes > 20_000) return false;
+    if (++nodes > 60_000) return false;
     const cur = path[path.length - 1]!;
-    if (cur === goal) return path.length >= cfg.minPath;
+    if (cur === goal) return path.length >= cfg.minPath && rowsLeft === 0 && colsLeft === 0;
+    if (Math.max(rowsLeft, colsLeft) > target - path.length) return false;
     const dist = distances(cols, rows, used, goal);
     const r = Math.floor(cur / cols);
     const c = cur % cols;
-    const options: number[] = [];
+    const options: { next: number; novel: number }[] = [];
     for (const [dr, dc] of STEPS) {
       const rr = r + dr;
       const cc = c + dc;
@@ -90,14 +103,36 @@ function randomPath(rng: Rng, cfg: TracksConfig, entryRow: number, exitCol: numb
       if (used[next]) continue;
       if (next === goal && path.length + 1 < cfg.minPath) continue;
       if (dist[next]! < 0 || path.length + 1 + dist[next]! > target) continue;
-      options.push(next);
+      options.push({ next, novel: (rowSeen[rr] ? 0 : 1) + (colSeen[cc] ? 0 : 1) });
     }
-    for (const next of rng.shuffle(options)) {
+    const order = rng.shuffle(options);
+    order.sort((a, b) => b.novel - a.novel);
+    for (const { next } of order) {
+      const rr = Math.floor(next / cols);
+      const cc = next % cols;
+      const newRow = !rowSeen[rr];
+      const newCol = !colSeen[cc];
       used[next] = 1;
       path.push(next);
+      if (newRow) {
+        rowSeen[rr] = 1;
+        rowsLeft--;
+      }
+      if (newCol) {
+        colSeen[cc] = 1;
+        colsLeft--;
+      }
       if (walk()) return true;
       path.pop();
       used[next] = 0;
+      if (newRow) {
+        rowSeen[rr] = 0;
+        rowsLeft++;
+      }
+      if (newCol) {
+        colSeen[cc] = 0;
+        colsLeft++;
+      }
     }
     return false;
   };
@@ -154,7 +189,7 @@ export function generateTracks(seed: number, difficulty: Difficulty): TracksSpec
   const cfg = TRACKS_PRESETS[difficulty];
   const { cols, rows } = cfg;
   const rng = new Rng(seed);
-  for (let attempt = 0; attempt < 40; attempt++) {
+  for (let attempt = 0; attempt < 60; attempt++) {
     const entryRow = rng.int(rows - 1);
     const exitCol = 1 + rng.int(cols - 1);
     const path = randomPath(rng, cfg, entryRow, exitCol);

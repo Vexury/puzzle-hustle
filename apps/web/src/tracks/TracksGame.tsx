@@ -4,6 +4,8 @@ import {
   TRACK_N,
   TRACK_S,
   TRACK_W,
+  TRACKS_STATE_E,
+  TRACKS_STATE_S,
   TRACKS_STATE_X,
   applyTracksHint,
   emptyTracksState,
@@ -194,6 +196,16 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     if (next) commit(next);
   }
 
+  // A cell is drawn in the given style when every direction of its track comes from a given
+  // piece or the A/B stub; touched by any player-laid edge (its own E/S bit, or the neighbour's
+  // matching S/E bit), it draws as a normal, player-laid piece instead.
+  function hasPlayerEdge(i: number, c: number, r: number): boolean {
+    if (state[i]! & (TRACKS_STATE_E | TRACKS_STATE_S)) return true;
+    if (c > 0 && state[i - 1]! & TRACKS_STATE_E) return true;
+    if (r > 0 && state[i - cols]! & TRACKS_STATE_S) return true;
+    return false;
+  }
+
   const counts = tracksLineCounts(spec, state);
   const cells: React.ReactNode[] = [];
   const pieces: React.ReactNode[] = [];
@@ -203,7 +215,7 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     const c = i % cols;
     cells.push(<rect key={i} className={flash === i ? 'tracks-cell flash' : 'tracks-cell'} x={c} y={r} width={1} height={1} />);
     const m = tracksMask(spec, state, i);
-    if (m) pieces.push(<path key={`p${i}`} className={spec.given[i] ? 'tracks-piece given' : 'tracks-piece'} d={piecePath(c, r, m)} />);
+    if (m) pieces.push(<path key={`p${i}`} className={hasPlayerEdge(i, c, r) ? 'tracks-piece' : 'tracks-piece given'} d={piecePath(c, r, m)} />);
     if (state[i]! & TRACKS_STATE_X) {
       crosses.push(
         <g key={`x${i}`} className="tracks-cross">

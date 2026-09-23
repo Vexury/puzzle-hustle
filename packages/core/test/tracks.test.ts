@@ -270,6 +270,20 @@ describe('tracks generator', () => {
     expect([spec.config.cols, spec.config.rows]).toEqual([10, 15]);
     expect(solveTracks(spec, 3).solved).toBe(true);
   }, 60_000);
+
+  // R7: a tall or wide board must never leave a whole row or column without track.
+  it('touches every row and every column', () => {
+    for (const difficulty of ['easy', 'medium'] as const) {
+      for (let seed = 1; seed <= 10; seed++) {
+        const spec = generateTracks(seed, difficulty);
+        expect([...spec.rowCounts].every((n) => n > 0)).toBe(true);
+        expect([...spec.colCounts].every((n) => n > 0)).toBe(true);
+      }
+    }
+    const genius = generateTracks(5, 'genius');
+    expect([...genius.rowCounts].every((n) => n > 0)).toBe(true);
+    expect([...genius.colCounts].every((n) => n > 0)).toBe(true);
+  }, 30_000);
 });
 
 describe('tracks state', () => {
