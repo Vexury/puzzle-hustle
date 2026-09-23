@@ -1,0 +1,90 @@
+import { beforeEach, expect, it, vi } from 'vitest';
+import { recordSolve, rehydrate, resetProgress } from '../src/lib/storage.ts';
+import { balance, buyItem, canAffordHint, equip, owned, readEquipped, readSpent, spendHint } from '../src/lib/coins.ts';
+
+beforeEach(() => {
+  localStorage.clear();
+  rehydrate();
+  vi.useRealTimers();
+});
+
+// Hint-free Genius level after the epoch: 8 coins, plus 25 each for the achievements it unlocks.
+function earnSome(n: number) {
+  for (let i = 1; i <= n; i++) {
+    recordSolve(`zip:level:genius:${i}`, { solvedAt: '2026-09-23T10:00:00.000Z', seconds: 60, hints: 0, moves: 10 });
+  }
+}
+
+it('reads a missing or malformed spend log as empty', () => {
+  expect(readSpent()).toEqual([]);
+  localStorage.setItem('ph:coins:spent', '{not json');
+  expect(readSpent()).toEqual([]);
+  localStorage.setItem('ph:coins:spent', JSON.stringify([{ kind: 'hint' }, 7, { kind: 'item', item: 'bolt', coins: 100, at: 1e13 }]));
+  expect(readSpent()).toEqual([{ kind: 'item', item: 'bolt', coins: 100, at: 1e13 }]);
+});
+
+it('reads malformed equipped cosmetics as nothing equipped', () => {
+  localStorage.setItem('ph:cosmetics', '"bolt"');
+  expect(readEquipped()).toEqual({ badge: null, flair: null });
+  localStorage.setItem('ph:cosmetics', JSON.stringify({ badge: 'crown', flair: 'hustler' }));
+  expect(readEquipped()).toEqual({ badge: null, flair: 'hustler' });
+});
+
+it('spends 20 on a hint only when the balance covers it', () => {
+  expect(canAffordHint()).toBe(false);
+  expect(spendHint('zip:daily:2026-09-23')).toBe(false);
+  earnSome(3);
+  const before = balance();
+  expect(canAffordHint()).toBe(true);
+  expect(spendHint('zip:daily:2026-09-23')).toBe(true);
+  expect(balance()).toBe(before - 20);
+});
+
+it('buys an item once with an exactly sufficient balance and then refuses', () => {
+  earnSome(50);
+  const have = balance();
+  localStorage.setItem('ph:coins:spent', JSON.stringify([{ kind: 'hint', puzzle: 'x', coins: have - 100, at: Date.now() }]));
+  expect(balance()).toBe(100);
+  expect(buyItem('bolt')).toBe(true);
+  expect(balance()).toBe(0);
+  expect(owned().has('bolt')).toBe(true);
+  expect(buyItem('bolt')).toBe(false);
+  expect(buyItem('leaf')).toBe(false);
+});
+
+it('refuses to buy an unknown id', () => {
+  earnSome(50);
+  expect(buyItem('crown')).toBe(false);
+});
+
+it('equips only owned items of the right kind and unequips with null', () => {
+  earnSome(50);
+  expect(equip('badge', 'bolt')).toBe(false);
+  buyItem('bolt');
+  expect(equip('flair', 'bolt')).toBe(false);
+  expect(equip('badge', 'bolt')).toBe(true);
+  expect(readEquipped()).toEqual({ badge: 'bolt', flair: null });
+  expect(equip('badge', null)).toBe(true);
+  expect(readEquipped()).toEqual({ badge: null, flair: null });
+});
+
+it('drops a spend entry with a negative coin amount', () => {
+  localStorage.setItem(
+    'ph:coins:spent',
+    JSON.stringify([
+      { kind: 'item', item: 'bolt', coins: -5, at: 1e13 },
+      { kind: 'item', item: 'leaf', coins: 100, at: 1e13 },
+    ]),
+  );
+  expect(readSpent()).toEqual([{ kind: 'item', item: 'leaf', coins: 100, at: 1e13 }]);
+});
+
+it('forgets spending and equipped items on a progress reset', () => {
+  earnSome(50);
+  buyItem('bolt');
+  equip('badge', 'bolt');
+  resetProgress();
+  expect(readSpent()).toEqual([]);
+  expect(readEquipped()).toEqual({ badge: null, flair: null });
+  expect(balance()).toBe(0);
+});

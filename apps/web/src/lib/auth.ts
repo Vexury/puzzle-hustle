@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { SocialLogin } from '@capgo/capacitor-social-login';
 import { apiFetch, readSession, subscribeSession, writeSession, type Session } from './api.ts';
+import { pushCosmetics } from './coins.ts';
 import { flush, resetBackoff } from './queue.ts';
 import { readSetting, writeSetting } from './storage.ts';
 import { toast } from '../components/Toast.tsx';
@@ -29,6 +30,7 @@ async function startSession(idToken: string): Promise<Session> {
   // closes, it covers the app without hiding it, so send them now instead of on the next resume.
   resetBackoff();
   void flush();
+  void pushCosmetics();
   // Sign-in rejects an invalid offered name server-side and replaces it with a generated one
   // without saying so. Keep the local name in step with whatever the server settled on, so
   // Profile's field and the Friends card never disagree. Only toast about it when a local name

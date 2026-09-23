@@ -9,7 +9,7 @@ const KEY = 'ph:achievements';
 // a solve, so a localStorage read here could miss the very solve that triggered it. The cache is
 // typed as SolveRecord, but it started as a JSON.parse with no validation, so each entry is still
 // checked as if it were unknown.
-function storedSolves(): SolveEntry[] {
+export function storedSolves(): SolveEntry[] {
   const out: SolveEntry[] = [];
   for (const [id, value] of Object.entries(allSolves())) {
     const record = value as unknown;
