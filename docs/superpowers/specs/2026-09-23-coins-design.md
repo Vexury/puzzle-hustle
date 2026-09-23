@@ -17,7 +17,7 @@ Give solving, and dailies above all, a reward that accumulates, and give the Soc
 ## Decisions
 
 - **Earnings are derived, not stored.** Like achievements, coins earned are a pure function of `ph:solves`, the unlocked achievements and the epoch, computed in `packages/core/src/coins.ts`. If solve sync lands later, earned coins come back with it for free.
-- **Only spending is written down.** `ph:coins:spent` is an append-only log of `{ kind: 'hint', puzzle, at }` and `{ kind: 'item', item, at }`. Balance is earned minus spent; ownership is the set of items in the log.
+- **Only spending is written down.** `ph:coins:spent` is an append-only log of `{ kind: 'hint', puzzle, coins, at }` and `{ kind: 'item', item, coins, at }`. Each entry carries the price paid, so a later price change never rewrites an old balance. Balance is earned minus spent; ownership is the set of items in the log.
 - **Same epoch as achievements.** `ACHIEVEMENTS_EPOCH` gates coins too: a solve before it earns nothing, and a spend entry before it is ignored. When the epoch moves to the production release, testers start at zero on both at once.
 - **Balance never shows below zero.** Rules only ever get added between epochs, but a changed `DAILY_TYPES` can retroactively remove a clean-sweep bonus. Display and spending use `max(0, earned - spent)`; owned items stay owned.
 - **Ownership is not verified by the server.** It cannot be proved from a local log, and a forged badge buys no rank. The worker checks only that an id exists in the catalogue.
@@ -47,7 +47,7 @@ API in core, DOM-free:
 
 ```ts
 coinsEarned(solves: SolveEntry[], epoch: number): number
-coinsForSolve(entry: SolveEntry, solves: SolveEntry[], epoch: number): CoinAward[]  // for the "+15 coins" line
+coinsForSolve(id: string, solves: SolveEntry[], epoch: number): CoinAward[]  // for the "+15 coins" line
 coinBalance(earned: number, spent: SpendEntry[], epoch: number): number
 ownedItems(spent: SpendEntry[], epoch: number): Set<string>
 ```
@@ -84,7 +84,7 @@ Equipped choice lives in `ph:cosmetics` as `{ badge: string | null, flair: strin
 
 - `apps/web/src/lib/coins.ts` wraps the core functions over storage: balance, owned, `spend()`, and `equip()`, which writes `ph:cosmetics` and calls `/cosmetics` when signed in. After each successful login the current choice is posted again; an offline failure is left for the next login, no queue.
 - **Hint provider:** `currentHintProvider` gains the coin path. With enough coins the existing opt-in card offers "Use 20 coins" (filled) and "Watch video"; with too few it offers the video and a quiet line "20 coins needed, you have 12". The coin path needs neither network nor ad SDK. The existing fallback (hint without an ad when none can be served) stays.
-- **After solving:** under the big time, a line such as "+15 coins" or "+10 coins · +5 no hints", counting up once, shown still under `prefers-reduced-motion`. No line when the solve earned nothing. Clean-sweep coins show on the daily bar, achievement coins in the unlock banner.
+- **After solving:** under the big time, a line such as "+15 coins" or "+10 coins · +5 no hints", counting up once, shown still under `prefers-reduced-motion`. No line when the solve earned nothing, including every replay of an already solved puzzle. The daily that completes a clean sweep carries "+20 clean sweep" in its line, and the daily bar says so too; achievement coins show in the unlock banner.
 - **Balance:** a coin pill (icon plus number in Inconsolata) at the top right of Social and the shop. A fifth tile "Coins" under the profile's 2x2 grid.
 - **Shop at `/shop`:** reached via a "Customize" button in the Account card on Social. Top: a preview of the player's own standings row with current badge and flair. Below: badges as a tile grid, flairs as a list, each showing price, "Owned" or "Equipped". Tapping an unowned item buys it with the inline confirm in the button (the reset button's pattern, no dialog); tapping an owned one equips it, tapping the equipped one unequips it. Signed out, one line says cosmetics show in groups once signed in.
 - **Standings row:** badge icon after the name, flair as a small second line in muted colour. Medal and accent frame unchanged.
