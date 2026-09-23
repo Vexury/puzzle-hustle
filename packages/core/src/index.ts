@@ -6,6 +6,7 @@ export * from './puzzleId.ts';
 export * from './solveId.ts';
 export * from './streaks.ts';
 export * from './achievements.ts';
+export * from './cosmetics.ts';
 export * from './plausibility.ts';
 export * from './shapes/shapes.ts';
 export * from './shapes/puzzle.ts';
