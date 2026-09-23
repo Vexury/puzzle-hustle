@@ -92,13 +92,16 @@ function popcount(m: number): number {
 class Propagator {
   assigned = 0;
   private readonly total: number;
+  readonly g: Grid;
+  readonly p: TracksPuzzle;
+  readonly edges: Uint8Array;
+  readonly cells: Uint8Array;
 
-  constructor(
-    readonly g: Grid,
-    readonly p: TracksPuzzle,
-    readonly edges: Uint8Array,
-    readonly cells: Uint8Array,
-  ) {
+  constructor(g: Grid, p: TracksPuzzle, edges: Uint8Array, cells: Uint8Array) {
+    this.g = g;
+    this.p = p;
+    this.edges = edges;
+    this.cells = cells;
     let t = 0;
     for (const n of p.rowCounts) t += n;
     this.total = t;
@@ -416,5 +419,5 @@ export function tracksCanonicalKey(spec: TracksPuzzle): string {
 // Vocabulary: how winding the track is, how long it runs, how many pieces are handed over.
 export function tracksFamilyKey(spec: TracksSpec): string {
   const r = tracksDifficultyReport(spec);
-  return `t${Math.round(r.turns / 3)}/l${Math.round(r.length / 4)}/g${r.givens}`;
+  return `t${r.turns}/l${Math.round(r.length / 3)}/g${r.givens}`;
 }
