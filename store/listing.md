@@ -89,6 +89,8 @@ stored on the device only (WebView local storage plus Android SharedPreferences 
 There is no backend and no analytics. Sharing a result opens the Android share sheet, so the
 player decides what leaves the device and where it goes.
 
+When leaderboard and cosmetics data-safety updates are entered: "Profile customisation (badge and flair ids, chosen from a fixed list) is stored with the player name when signed in. Collected, not shared."
+
 **Content rating (IARC):** No violence, no sexuality, no profanity, no gambling, no drugs, no
 user-to-user communication, no location sharing, no digital purchases. Expected outcome: PEGI 3 /
 ESRB Everyone.
