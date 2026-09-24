@@ -1,0 +1,18 @@
+<en-US>
+Slabs and Tracks, polished after your first games.
+
+- Slabs: tap a slab to turn it, blocked cells are hatched and only playable cells show
+- Slabs: rule badges sit on the cell edge and never cover the pips
+- Tracks: rails with sleepers, tap drawn track to lift it and mark the cell
+- Tracks: line totals count only visible track
+- New icons for Slabs, Tracks and Sumdoku
+</en-US>
+<de-DE>
+Slabs und Tracks, nach euren ersten Runden nachgeschliffen.
+
+- Slabs: Tippen dreht einen Stein, gesperrte Felder sind schraffiert, nur spielbare Felder sind zu sehen
+- Slabs: Regelabzeichen sitzen auf der Zellkante und verdecken keine Augen mehr
+- Tracks: Schienen mit Schwellen, Tippen auf verlegtes Gleis hebt es auf und markiert das Feld
+- Tracks: Die Zahlen am Rand zählen nur sichtbares Gleis
+- Neue Symbole für Slabs, Tracks und Sumdoku
+</de-DE>
