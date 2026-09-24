@@ -189,11 +189,15 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
       drag.current = null;
       return;
     }
+    const empty = emptyTracksState(spec);
     while (d.last !== cell) {
       const step = tracksStepToward(cols, d.last, cell);
       const cur = stateRef.current;
-      d.mode ??= tracksHasEdge(spec, cur, d.last, step) ? 'lift' : 'lay';
-      const next = tracksSetEdge(spec, cur, d.last, step, d.mode === 'lay');
+      // A given edge is ridden over, so a drag can start on a given piece; the first free edge
+      // decides whether this drag lays or lifts.
+      const given = tracksHasEdge(spec, empty, d.last, step);
+      if (!given) d.mode ??= tracksHasEdge(spec, cur, d.last, step) ? 'lift' : 'lay';
+      const next = given ? null : tracksSetEdge(spec, cur, d.last, step, d.mode === 'lay');
       if (next) {
         rememberOnce(d);
         commit(next);
