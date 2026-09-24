@@ -49,6 +49,12 @@ export const HOW_TO: Record<PuzzleTypeId, string[]> = {
     'Pieces are straight or curved. The track never branches, never crosses itself and forms no separate loops. Given pieces stay put.',
     'Drag across cells to lay track, drag along it again to lift it. Tap an empty cell to cycle an X, a track mark (track goes here, direction open), and empty.',
   ],
+  slabs: [
+    'Place every slab from the tray on the board. Together they cover every open cell.',
+    'Each coloured region has a rule: a number is the sum of its pips, <N and >N bound the sum, = means all pips equal, ≠ means all different. Cells without colour have no rule.',
+    'Drag a slab to move it. Tap it to turn it around the half you touched, or flick from one half toward where the other half should go.',
+    'A badge turns green when its region is right and red when it can no longer work. Every puzzle has exactly one solution.',
+  ],
   killer: [
     'Normal Sudoku rules apply: 1 to 9 once per row, column and 3x3 box.',
     'The dashed outlines are cages. The digits inside a cage add up to the small number in its corner. Their colours only tell neighbouring cages apart and mean nothing for the solution.',

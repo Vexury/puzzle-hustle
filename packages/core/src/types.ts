@@ -4,7 +4,7 @@ export type Difficulty = (typeof DIFFICULTIES)[number];
 export const PERIODS = ['daily', 'weekly', 'monthly'] as const;
 export type Period = (typeof PERIODS)[number];
 
-export const PUZZLE_TYPES = ['zip', 'shapes', 'nonogram', 'mosaic', 'crowns', 'stars', 'sudoku', 'killer', 'tracks'] as const;
+export const PUZZLE_TYPES = ['zip', 'shapes', 'nonogram', 'mosaic', 'crowns', 'stars', 'sudoku', 'killer', 'tracks', 'slabs'] as const;
 export type PuzzleTypeId = (typeof PUZZLE_TYPES)[number];
 
 export interface PuzzleMeta {
@@ -58,6 +58,11 @@ export const PUZZLE_META: Record<PuzzleTypeId, PuzzleMeta> = {
     id: 'tracks',
     name: 'Tracks',
     tagline: 'Lay one track from A to B. The numbers count the track cells in each row and column.',
+  },
+  slabs: {
+    id: 'slabs',
+    name: 'Slabs',
+    tagline: 'Place every slab. Each coloured region follows its rule.',
   },
 };
 

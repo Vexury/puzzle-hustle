@@ -1,0 +1,95 @@
+/* The board is cols x rows cells; at most eight columns, so the width decides the cell size and
+   the tray below gets the rest of the screen. */
+.slabs-wrap {
+  --cell: min(58px, calc((100cqw - 4px) / var(--cols)));
+  --tray-cell: min(26px, calc(var(--cell) * 0.62));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+  container-type: inline-size;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.slabs-board { max-width: 100%; touch-action: none; line-height: 0; }
+.slabs-wrap .tools { width: calc(var(--cols) * var(--cell) + 4px); max-width: 100%; }
+.slabs-svg {
+  width: calc(var(--cols) * var(--cell));
+  height: calc(var(--rows) * var(--cell));
+  display: block;
+  overflow: visible;
+  touch-action: none;
+}
+.slabs-cell { fill: var(--board-cell); }
+.slabs-cell.flash { animation: slabs-flash 0.75s ease-out 4; }
+@keyframes slabs-flash {
+  0%, 45% { stroke: var(--success); stroke-width: 0.12; }
+  100% { stroke: transparent; stroke-width: 0; }
+}
+.slabs-grid { stroke: var(--board-line); stroke-width: 0.02; }
+.slabs-boundary { stroke: var(--text-muted); stroke-width: 0.045; stroke-dasharray: 0.12 0.09; stroke-linecap: round; }
+.slabs-rim { stroke: var(--border-mid); stroke-width: 0.06; stroke-linecap: round; }
+
+/* Slabs let the region colour show through, so a placed slab still says which region it sits in. */
+.slab-body {
+  fill: color-mix(in srgb, var(--card-bg) 82%, transparent);
+  stroke: var(--piece-line);
+  stroke-width: 0.05;
+}
+.slab-divider { stroke: var(--piece-line); stroke-width: 0.035; stroke-linecap: round; }
+.slab-pip { fill: var(--text); }
+.slab.shake { animation: slabs-shake 0.3s ease-in-out; transform-box: fill-box; transform-origin: center; }
+@keyframes slabs-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6%); }
+  75% { transform: translateX(6%); }
+}
+.board-frame.solved .slab-body { stroke: var(--success); }
+
+.slabs-badge rect { fill: var(--text); opacity: 0.82; }
+.slabs-badge text {
+  font-family: var(--font-num);
+  font-size: 0.24px;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+  fill: var(--bg);
+}
+.slabs-badge.done rect { fill: var(--success); opacity: 1; }
+.slabs-badge.broken rect { fill: var(--danger); opacity: 1; }
+
+.slabs-preview { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 0.06; }
+
+.slabs-tray {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  width: calc(var(--cols) * var(--cell));
+  max-width: 100%;
+  touch-action: none;
+}
+.slabs-slot {
+  width: calc(2 * var(--tray-cell));
+  height: calc(2 * var(--tray-cell));
+  border-radius: var(--radius-sm);
+  background: var(--board-cell);
+  touch-action: none;
+  cursor: grab;
+}
+.slabs-slot svg { width: 100%; height: 100%; display: block; }
+.slabs-slot.empty { cursor: default; }
+.slabs-slot.empty svg { opacity: 0.15; }
+.slabs-slot.shake svg { animation: slabs-shake 0.3s ease-in-out; }
+
+.slabs-ghost {
+  position: fixed;
+  pointer-events: none;
+  z-index: 50;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.18));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slab.shake, .slabs-slot.shake svg, .slabs-cell.flash { animation: none; }
+}

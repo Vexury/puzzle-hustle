@@ -46,11 +46,11 @@ At most 8 columns, so no zoom is needed on a phone.
 
 - Model: `SlabsPuzzle { config: { cols, rows }; blocked: Uint8Array; slabs: [number, number][]; regionOf: Int16Array (-1 = none); rules: SlabsRule[] }`, with `SlabsRule = { kind: 'sum' | 'lt' | 'gt' | 'eq' | 'neq'; target?: number }`.
 - Propagator state: candidate placements per slab (anchor cell plus one of four orientations) and candidate values per cell.
-- Tiers:
-  1. Forced placements (a cell with one possible slab half, a slab with one possible placement), single-cell and fully determined sum regions.
-  2. `=` and `≠` regions combined with the remaining slab multiset; sum bounds from the remaining values.
-  3. `<`/`>` bounds and pair elimination across regions.
-- Exports: `solveSlabs(p, maxTier)` returning `{ solved, contradiction, steps, placement }`, `countSlabsSolutions(p, limit?, maxNodes?)`, `slabsDifficultyReport`, `slabsCanonicalKey` (8 symmetries), `slabsFamilyKey` (slab multiset plus rule mix).
+- Tiers (the same for every rule kind, so difficulty comes from reasoning depth, not from which symbols appear):
+  1. Placement logic (a slab with one placement is fixed, a cell only one slab can cover pulls that slab, a cell with one possible partner pins the pair) plus bounds per rule: min/max for `=N`, `<N`, `>N`, intersection for `=`, fixed values removed for `≠`.
+  2. Full region consistency: every value combination of a region's cells is enumerated against its rule, values without support are dropped.
+  3. One-step lookahead: a placement whose tier-2 propagation ends in a contradiction is removed.
+- Exports: `solveSlabs(p, maxTier)` returning `{ solved, contradiction, steps, placement }`, `countSlabsSolutions(p, limit?, maxNodes?)`, `slabsDifficultyReport`, `slabsCanonicalKey` (every symmetry that keeps the rectangle, 8 on square boards, 4 otherwise), `slabsFamilyKey` (slab multiset plus rule mix).
 
 ### `puzzle.ts`
 

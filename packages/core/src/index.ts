@@ -27,3 +27,5 @@ export * from './zip/puzzle.ts';
 export * from './zip/solver.ts';
 export * from './tracks/puzzle.ts';
 export * from './tracks/solver.ts';
+export * from './slabs/puzzle.ts';
+export * from './slabs/solver.ts';
