@@ -142,10 +142,10 @@ describe('generateNonogram', () => {
     }
   });
 
-  it('honours size and color bumps', () => {
-    const spec = generateNonogram(7, 'medium', { sizeDelta: 2, colorDelta: 1 });
+  it('honours row and color bumps', () => {
+    const spec = generateNonogram(7, 'medium', { rowDelta: 2, colorDelta: 1 });
     expect(spec.config.rows).toBe(12);
-    expect(spec.config.cols).toBe(12);
+    expect(spec.config.cols).toBe(10);
     expect(spec.config.colors).toBe(2);
     expect(isLineSolvable(spec)).toBe(true);
   });

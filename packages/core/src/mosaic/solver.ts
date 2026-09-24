@@ -163,13 +163,17 @@ export interface MosaicDifficultyReport {
   cells: number;
 }
 
+// The size-independent part of the score; the generator's difficulty windows apply to it.
+export function mosaicDepth(r: MosaicSolveResult, cells: number): number {
+  return r.rounds * 3 + (1 - (r.deducedPerRound[0] ?? 0) / cells) * 20 + (r.pairwiseUses / cells) * 60;
+}
+
 export function mosaicDifficultyReport(spec: MosaicSpec): MosaicDifficultyReport {
   const { rows, cols } = spec.config;
   const cells = rows * cols;
   const r = mosaicSolveByLogic(spec);
   const firstRoundRatio = (r.deducedPerRound[0] ?? 0) / cells;
-  const pairwiseRatio = r.pairwiseUses / cells;
-  const score = r.rounds * 3 + (1 - firstRoundRatio) * 20 + pairwiseRatio * 60 + Math.log2(cells) * 3;
+  const score = mosaicDepth(r, cells) + Math.log2(cells) * 3;
   return {
     score: Math.round(score * 10) / 10,
     rounds: r.rounds,

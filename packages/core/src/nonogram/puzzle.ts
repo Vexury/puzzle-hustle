@@ -5,7 +5,7 @@ import { nonogramDepth, propagateLines, solveByLines, solveLine } from './solver
 
 export { MARKED_EMPTY, type Clue } from './clues.ts';
 
-export const NONOGRAM_VERSION = 2;
+export const NONOGRAM_VERSION = 3;
 export const NONOGRAM_MAX_COLORS = 3;
 
 export interface NonogramConfig {
@@ -30,12 +30,12 @@ export type NonogramState = Uint8Array;
 export const NONOGRAM_PRESETS: Record<Difficulty, NonogramConfig> = {
   easy: { rows: 5, cols: 5, colors: 1, density: 0.55 },
   medium: { rows: 10, cols: 10, colors: 1, density: 0.55 },
-  hard: { rows: 10, cols: 10, colors: 2, density: 0.6 },
-  genius: { rows: 10, cols: 10, colors: 3, density: 0.6 },
+  hard: { rows: 14, cols: 10, colors: 2, density: 0.6 },
+  genius: { rows: 15, cols: 10, colors: 3, density: 0.6 },
 };
 
 export interface NonogramOptions {
-  sizeDelta?: number;
+  rowDelta?: number;
   colorDelta?: number;
 }
 
@@ -49,9 +49,8 @@ const DEPTH_GATES: Partial<Record<Difficulty, { min?: number; max?: number }>> =
 
 export function nonogramConfig(difficulty: Difficulty, options: NonogramOptions = {}): NonogramConfig {
   const base = NONOGRAM_PRESETS[difficulty];
-  const delta = options.sizeDelta ?? 0;
   const colors = Math.min(NONOGRAM_MAX_COLORS, Math.max(1, base.colors + (options.colorDelta ?? 0)));
-  return { ...base, rows: base.rows + delta, cols: base.cols + delta, colors };
+  return { ...base, rows: base.rows + (options.rowDelta ?? 0), colors };
 }
 
 const DIRS: readonly (readonly [number, number])[] = [
