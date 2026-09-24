@@ -56,7 +56,7 @@ export const PUZZLE_META: Record<PuzzleTypeId, PuzzleMeta> = {
   },
   tracks: {
     id: 'tracks',
-    name: 'Train Tracks',
+    name: 'Tracks',
     tagline: 'Lay one track from A to B. The numbers count the track cells in each row and column.',
   },
 };

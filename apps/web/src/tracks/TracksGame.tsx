@@ -263,7 +263,7 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
           className="tracks-svg"
           viewBox={`${-PAD_L} ${-PAD_T} ${cols + PAD_L + PAD_R} ${rows + PAD_T + PAD_B}`}
           role="application"
-          aria-label="Train Tracks board"
+          aria-label="Tracks board"
           tabIndex={locked ? -1 : 0}
           onPointerDown={startDrag}
           onPointerMove={moveDrag}
