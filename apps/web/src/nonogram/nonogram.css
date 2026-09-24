@@ -10,6 +10,18 @@
   --nono-c3: #d06aa4;
 }
 
+/* Colour 1 is the accent, so colours 2 and 3 are picked per accent to stay well apart from it. */
+[data-accent="lagoon"] { --nono-c2: #d9822b; --nono-c3: #9a5cc9; }
+[data-accent="cobalt"] { --nono-c2: #d9822b; --nono-c3: #b8508a; }
+[data-accent="iris"]   { --nono-c2: #d9822b; --nono-c3: #2f9e8f; }
+[data-accent="rose"]   { --nono-c2: #3f7fc4; --nono-c3: #3f9a4f; }
+[data-accent="slate"]  { --nono-c2: #d9822b; --nono-c3: #b8508a; }
+[data-theme="dark"][data-accent="lagoon"] { --nono-c2: #f0a050; --nono-c3: #b88ae0; }
+[data-theme="dark"][data-accent="cobalt"] { --nono-c2: #f0a050; --nono-c3: #d06aa4; }
+[data-theme="dark"][data-accent="iris"]   { --nono-c2: #f0a050; --nono-c3: #45c2b0; }
+[data-theme="dark"][data-accent="rose"]   { --nono-c2: #5d9be0; --nono-c3: #5cc06d; }
+[data-theme="dark"][data-accent="slate"]  { --nono-c2: #f0a050; --nono-c3: #d06aa4; }
+
 .nono-wrap {
   display: flex;
   flex-direction: column;
