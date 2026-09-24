@@ -16,6 +16,7 @@ import {
   slabsPlace,
   slabsRegionStatus,
   slabsRegions,
+  slabsReleaseSpeed,
   slabsRotate,
   slabsToTray,
   validSlabsState,
@@ -306,7 +307,9 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     const cur = stateRef.current;
     if (d.turned) setTurn(null);
     // After a turn in hand the release is always a drop, even if the finger ended where it began.
-    const gesture = d.turned ? { kind: 'drag' as const } : classifySlabsGesture(e.clientX - d.x0, e.clientY - d.y0, performance.now() - d.t0, d.cell);
+    const now = performance.now();
+    const release = slabsReleaseSpeed(d.samples, { x: e.clientX, y: e.clientY, t: now });
+    const gesture = d.turned ? { kind: 'drag' as const } : classifySlabsGesture(e.clientX - d.x0, e.clientY - d.y0, now - d.t0, d.cell, release);
     if (gesture.kind === 'tap' || gesture.kind === 'flick') {
       if (gesture.kind === 'flick' && otherDir(cur[d.slab * 2 + 1]!, d.pivot) === gesture.dir) return;
       const next = gesture.kind === 'tap' ? slabsRotate(spec, cur, d.slab, d.pivot) : slabsOrient(spec, cur, d.slab, d.pivot, gesture.dir);

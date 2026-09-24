@@ -487,12 +487,14 @@ export function applySlabsHint(spec: SlabsSpec, state: SlabsState, hint: SlabsHi
 
 export type SlabsGesture = { kind: 'tap' } | { kind: 'flick'; dir: number } | { kind: 'drag' };
 
-// Tap: barely moved. Flick: quick and short. Everything else moves the slab. Distances in pixels,
-// `cell` is the board's cell size in pixels.
-export function classifySlabsGesture(dx: number, dy: number, ms: number, cell: number): SlabsGesture {
+// Tap: barely moved. Flick: quick, short and let go while still moving; a quick push to a nearby
+// cell slows down before the finger lifts and moves the slab. Everything else moves the slab too.
+// Distances in pixels, `cell` is the board's cell size in pixels, `release` the speed at lift-off
+// in pixels per ms (see slabsReleaseSpeed).
+export function classifySlabsGesture(dx: number, dy: number, ms: number, cell: number, release: number): SlabsGesture {
   const dist = Math.hypot(dx, dy) / cell;
   if (dist < 0.2) return { kind: 'tap' };
-  if (ms <= 250 && dist >= 0.35 && dist < 1.5) {
+  if (ms <= 250 && dist >= 0.35 && dist < 1.5 && release / cell >= 0.003) {
     const dir = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 0 : 2) : dy > 0 ? 1 : 3;
     return { kind: 'flick', dir };
   }
@@ -503,6 +505,15 @@ export interface SlabsSample {
   x: number;
   y: number;
   t: number;
+}
+
+// Speed at lift-off in pixels per ms, over the last 40 ms up to `up`. A finger that stopped sends
+// no events, so the reference is then the last sample before it stopped and the speed comes out low.
+export function slabsReleaseSpeed(samples: readonly SlabsSample[], up: SlabsSample): number {
+  let ref = samples[0];
+  for (const s of samples) if (s.t <= up.t - 40) ref = s;
+  if (!ref || up.t <= ref.t) return 0;
+  return Math.hypot(up.x - ref.x, up.y - ref.y) / (up.t - ref.t);
 }
 
 // A jerk while a slab is held: out at least half a cell and most of the way back, all within
