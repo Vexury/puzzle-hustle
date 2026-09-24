@@ -1,5 +1,6 @@
 import { ACHIEVEMENTS, type AchievementGroup } from '@puzzle-hustle/core';
 import { currentUnlocked } from '../lib/achievements.ts';
+import { CoinPill } from '../components/CoinPill.tsx';
 
 const GROUPS: { id: AchievementGroup; title: string }[] = [
   { id: 'arrival', title: 'Getting started' },
@@ -18,6 +19,7 @@ export function Achievements() {
         <p className="muted small">
           {unlocked.size} of {ACHIEVEMENTS.length} earned
         </p>
+        <CoinPill />
       </section>
 
       {GROUPS.map((group) => (

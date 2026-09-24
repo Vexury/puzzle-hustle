@@ -5,6 +5,7 @@ import { href, onLinkClick } from '../lib/router.ts';
 import { readProgress, useSolves } from '../lib/storage.ts';
 import { capitalize, formatSeconds } from '../lib/share.ts';
 import { ThemeToggle } from '../components/ThemeToggle.tsx';
+import { CoinPill } from '../components/CoinPill.tsx';
 import { STREAK_MIN, dailyNumber, dailyStreaks, formatDateLong, monthlyNumber, weeklyNumber } from '../lib/stats.ts';
 
 export function useCountdown(period: Period): string {
@@ -77,7 +78,10 @@ export function Daily() {
         <p className="muted">
           {formatDateLong()} · {dayLeft}
         </p>
-        <ThemeToggle />
+        <div className="head-actions">
+          <CoinPill />
+          <ThemeToggle />
+        </div>
       </header>
 
       <DailyProgress solved={streaks.today} total={dailies.length} />

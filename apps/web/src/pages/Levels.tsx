@@ -21,6 +21,7 @@ import { capitalize, formatSeconds } from '../lib/share.ts';
 import { typeStats } from '../lib/stats.ts';
 import { Chevron } from '../components/Chevron.tsx';
 import { ThemeToggle } from '../components/ThemeToggle.tsx';
+import { CoinPill } from '../components/CoinPill.tsx';
 
 export function unlockedLevel(type: PuzzleTypeId, difficulty: Difficulty, solves: Record<string, SolveRecord>): number {
   const list = levelList(type, difficulty);
@@ -40,7 +41,10 @@ export function LevelsIndex() {
       <header className="page-head">
         <h1>Puzzles</h1>
         <p className="muted">Four difficulties, playable offline.</p>
-        <ThemeToggle />
+        <div className="head-actions">
+          <CoinPill />
+          <ThemeToggle />
+        </div>
       </header>
       <div className="stack">
         {PUZZLE_TYPES.map((type) => {
@@ -106,7 +110,10 @@ function LevelGrid({ type }: { type: PuzzleTypeId }) {
         <p className="muted">
           {stat.levelsSolved}/{stat.levelsTotal} solved
         </p>
-        <ThemeToggle />
+        <div className="head-actions">
+          <CoinPill />
+          <ThemeToggle />
+        </div>
       </header>
 
       <div className="segmented" role="tablist" aria-label="Difficulty">
