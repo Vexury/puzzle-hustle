@@ -13,6 +13,8 @@ import { REGIONS_VERSION, generateCrowns, generateStars } from '../src/regions/p
 import { isRegionsUnique, regionsCanonicalKey } from '../src/regions/solver.ts';
 import { ZIP_VERSION, generateZip } from '../src/zip/puzzle.ts';
 import { isZipUnique, zipCanonicalKey } from '../src/zip/solver.ts';
+import { TRACKS_PRESETS, TRACKS_VERSION, generateTracks } from '../src/tracks/puzzle.ts';
+import { solveTracks, tracksCanonicalKey } from '../src/tracks/solver.ts';
 import { decodeRef, encodeRef, levelRef, refId } from '../src/ref.ts';
 
 describe('level pack', () => {
@@ -25,6 +27,7 @@ describe('level pack', () => {
     expect(LEVEL_PACK.versions.crowns).toBe(REGIONS_VERSION);
     expect(LEVEL_PACK.versions.stars).toBe(REGIONS_VERSION);
     expect(LEVEL_PACK.versions.zip).toBe(ZIP_VERSION);
+    expect(LEVEL_PACK.versions.tracks).toBe(TRACKS_VERSION);
   });
 
   // Every type and difficulty, without generating anything: a short or unsorted pack is
@@ -59,6 +62,20 @@ describe('level pack', () => {
     }
   }, 180_000);
 
+  // Hard and genius probe with lookahead and are too slow to re-verify in CI, like zip.
+  it('has 50 distinct tracks levels for easy and medium that the solver finishes', () => {
+    for (const difficulty of ['easy', 'medium'] as const) {
+      const list = levelList('tracks', difficulty);
+      expect(list.length).toBe(50);
+      const keys = new Set<string>();
+      for (const entry of list) {
+        const spec = generateTracks(entry.seed, difficulty);
+        expect(solveTracks(spec, TRACKS_PRESETS[difficulty].maxTier).solved).toBe(true);
+        keys.add(tracksCanonicalKey(spec));
+      }
+      expect(keys.size).toBe(list.length);
+    }
+  }, 120_000);
 
   it('has 50 distinct, line-solvable, ascending nonogram levels per difficulty', () => {
     for (const difficulty of DIFFICULTIES) {

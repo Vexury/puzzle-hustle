@@ -22,6 +22,8 @@ import { generateSudoku, generateKiller } from '../src/sudoku/puzzle.ts';
 import { sudokuCanonicalKey, sudokuDifficultyReport, SUDOKU_TECHNIQUES } from '../src/sudoku/solver.ts';
 import { generateZip } from '../src/zip/puzzle.ts';
 import { zipCanonicalKey, zipDifficultyReport } from '../src/zip/solver.ts';
+import { generateTracks } from '../src/tracks/puzzle.ts';
+import { tracksCanonicalKey, tracksFamilyKey } from '../src/tracks/solver.ts';
 
 const MS_PER_CELL = Number(process.argv[2] ?? 20_000);
 const MAX_SEEDS = Number(process.argv[3] ?? 20_000);
@@ -128,6 +130,12 @@ const probes: Record<PuzzleTypeId, Probe> = {
       const report = zipDifficultyReport(spec);
       return `t${report.turns}/${gaps.sort((a, b) => a - b).join('.')}`;
     },
+  },
+  // Vocabulary = turns, length and handed-over pieces, same as the level generator's family.
+  tracks: {
+    build: (seed, difficulty) => generateTracks(seed, difficulty),
+    key: (spec: ReturnType<typeof generateTracks>) => tracksCanonicalKey(spec),
+    family: (spec: ReturnType<typeof generateTracks>) => tracksFamilyKey(spec),
   },
 };
 

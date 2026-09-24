@@ -1,6 +1,6 @@
 Seven fresh logic puzzles are waiting for you today, and not one of them needs a lucky guess. Grab a coffee and start solving!
 
-Puzzle Hustle brings Sudoku, Killer Sudoku, Nonograms, Mosaic, Crowns, Stars, Zip and Shapes together in one friendly little app. Wake your brain up on the morning commute, or wind down with a quiet grid before bed. There is always something new waiting.
+Puzzle Hustle brings Sudoku, Sumdoku, Nonograms, Mosaic, Crowns, Stars, Zip and Shapes together in one friendly little app. Wake your brain up on the morning commute, or wind down with a quiet grid before bed. There is always something new waiting.
 
 🧩 A FRESH SET EVERY DAY
 Every day brings seven fresh puzzles, and every player in the world gets exactly the same ones. Solve three and your streak keeps growing. Want something meatier? A tougher Weekly and a properly big Monthly are there for the days you fancy settling in.
@@ -10,7 +10,7 @@ Every puzzle goes through our solver before it reaches you. One solution, and yo
 
 🎯 EIGHT PUZZLES TO FALL FOR
 • Sudoku: the classic you already know
-• Killer Sudoku: Sudoku, plus cages that have to add up
+• Sumdoku: Sudoku, plus cages that have to add up
 • Nonogram: paint the hidden picture from the numbers, black and white or in colour
 • Mosaic: every number tells you how many cells around it are filled
 • Crowns: one crown per row, column and region, and they refuse to be neighbours

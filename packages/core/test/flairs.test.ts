@@ -1,5 +1,6 @@
 import { expect, it } from 'vitest';
 import type { SolveEntry } from '../src/achievements.ts';
+import { DAILY_TYPES } from '../src/schedule.ts';
 import { levelList } from '../src/levels.ts';
 import { earnedFlairs, packProgress } from '../src/flairs.ts';
 
@@ -33,7 +34,7 @@ it('a pack complete on one difficulty does not earn the other tiers of the same 
 
 it('earns an activity flair once its achievement unlocks', () => {
   // every-type: DAILY_TYPES all solved once, unlocks the 'every-type' achievement behind 'puzzler'.
-  const solves = ['zip', 'shapes', 'nonogram', 'mosaic', 'crowns', 'stars', 'killer'].map((t) => solve(`${t}:daily:2026-06-01`));
+  const solves = DAILY_TYPES.map((t) => solve(`${t}:daily:2026-06-01`));
   expect(earnedFlairs(solves, EPOCH).has('puzzler')).toBe(true);
 });
 

@@ -4,7 +4,7 @@ export type Difficulty = (typeof DIFFICULTIES)[number];
 export const PERIODS = ['daily', 'weekly', 'monthly'] as const;
 export type Period = (typeof PERIODS)[number];
 
-export const PUZZLE_TYPES = ['zip', 'shapes', 'nonogram', 'mosaic', 'crowns', 'stars', 'sudoku', 'killer'] as const;
+export const PUZZLE_TYPES = ['zip', 'shapes', 'nonogram', 'mosaic', 'crowns', 'stars', 'sudoku', 'killer', 'tracks'] as const;
 export type PuzzleTypeId = (typeof PUZZLE_TYPES)[number];
 
 export interface PuzzleMeta {
@@ -46,13 +46,18 @@ export const PUZZLE_META: Record<PuzzleTypeId, PuzzleMeta> = {
   },
   killer: {
     id: 'killer',
-    name: 'Killer Sudoku',
+    name: 'Sumdoku',
     tagline: 'No givens, just cages. Each dashed cage adds up to its number.',
   },
   zip: {
     id: 'zip',
     name: 'Zip',
     tagline: 'One path from 1 to the last number through every cell. Walls block the way.',
+  },
+  tracks: {
+    id: 'tracks',
+    name: 'Tracks',
+    tagline: 'Lay one track from A to B. The numbers count the track cells in each row and column.',
   },
 };
 

@@ -9,9 +9,9 @@ const badges = COSMETICS.filter(isBadge);
 const flairs = COSMETICS.filter(isFlair);
 const achievementIds = new Set(ACHIEVEMENTS.map((a) => a.id));
 
-it('has eight badges, unchanged, and thirty-seven flairs, all with unique ids', () => {
+it('has eight badges, unchanged, and forty-one flairs, all with unique ids', () => {
   expect(badges).toHaveLength(8);
-  expect(flairs).toHaveLength(37);
+  expect(flairs).toHaveLength(41);
   expect(new Set(COSMETICS.map((c) => c.id)).size).toBe(COSMETICS.length);
 });
 

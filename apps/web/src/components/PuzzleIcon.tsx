@@ -49,6 +49,18 @@ export function PuzzleIcon({ type, size = 56 }: { type: PuzzleTypeId; size?: num
           <path d="M12 21C6 16.5 2 13 2 8.5 2 5.5 4.3 3.5 7 3.5c2 0 3.8 1.1 5 3 1.2-1.9 3-3 5-3 2.7 0 5 2 5 5 0 4.5-4 8-10 12.5Z" transform="translate(5.5 5.5) scale(0.75)" className="ic-a" />
           <path d="M12 21C6 16.5 2 13 2 8.5 2 5.5 4.3 3.5 7 3.5c2 0 3.8 1.1 5 3 1.2-1.9 3-3 5-3 2.7 0 5 2 5 5 0 4.5-4 8-10 12.5Z" transform="translate(21.4 20.6) scale(0.55)" className="ic-a" />
         </svg>
+      ) : type === 'tracks' ? (
+        <svg viewBox="0 0 40 40">
+          <g className="ic-grid">
+            {[1, 2].map((i) => (
+              <line key={`h${i}`} x1="6" y1={6 + i * 9.33} x2="34" y2={6 + i * 9.33} />
+            ))}
+            {[1, 2].map((i) => (
+              <line key={`v${i}`} x1={6 + i * 9.33} y1="6" x2={6 + i * 9.33} y2="34" />
+            ))}
+          </g>
+          <path d="M2 10.7H20Q24.7 10.7 24.7 15.3V24.7Q24.7 29.3 29.3 29.3H34" className="ic-path" />
+        </svg>
       ) : type === 'zip' ? (
         <svg viewBox="0 0 40 40">
           <g className="ic-grid">

@@ -75,6 +75,12 @@ const PACK_FLAIRS: Record<PuzzleTypeId, Record<Difficulty, { id: string; title: 
     hard: { id: 'cage-breaker', title: 'Cage Breaker' },
     genius: { id: 'killer-instinct', title: 'Killer Instinct' },
   },
+  tracks: {
+    easy: { id: 'track-layer', title: 'Track Layer' },
+    medium: { id: 'signal-keeper', title: 'Signal Keeper' },
+    hard: { id: 'switchman', title: 'Switchman' },
+    genius: { id: 'railway-baron', title: 'Railway Baron' },
+  },
 };
 
 function packFlair(type: PuzzleTypeId, difficulty: Difficulty): FlairCosmetic {
