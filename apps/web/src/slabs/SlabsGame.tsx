@@ -434,11 +434,13 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     const r = Math.floor(first / cols);
     const c = first % cols;
     const label = ruleLabel(spec.rules[reg]!);
-    const w = 0.2 + label.length * 0.17;
+    const w = 0.18 + label.length * 0.155;
+    // The badge rides on the cell's top edge and reaches only 0.15 into any cell; pips keep 0.2
+    // clear of every edge, so no badge ever covers a pip.
     return (
       <g key={reg} className={`slabs-badge ${status[reg]}`}>
-        <rect x={c + 0.04} y={r + 0.04} width={w} height={0.34} rx={0.12} />
-        <text x={c + 0.04 + w / 2} y={r + 0.215} dy="0.33em">
+        <rect x={c + 0.06} y={r - 0.15} width={w} height={0.3} rx={0.1} />
+        <text x={c + 0.06 + w / 2} y={r} dy="0.33em">
           {label}
         </text>
       </g>

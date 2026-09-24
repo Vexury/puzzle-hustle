@@ -12,7 +12,7 @@
   user-select: none;
   -webkit-user-select: none;
 }
-.slabs-board { max-width: 100%; touch-action: none; line-height: 0; }
+.slabs-board { max-width: 100%; touch-action: none; line-height: 0; padding-top: calc(var(--cell) * 0.15); }
 .slabs-wrap .tools { width: calc(var(--cols) * var(--cell)); max-width: 100%; }
 .slabs-svg {
   width: calc(var(--cols) * var(--cell));
@@ -49,10 +49,10 @@
 }
 .slabs-board.solved .slab-body, .slabs-board.solved .slabs-rim { stroke: var(--success); }
 
-.slabs-badge rect { fill: var(--text); opacity: 0.82; }
+.slabs-badge rect { fill: var(--text); }
 .slabs-badge text {
   font-family: var(--font-num);
-  font-size: 0.24px;
+  font-size: 0.22px;
   font-weight: 700;
   text-anchor: middle;
   fill: var(--bg);
