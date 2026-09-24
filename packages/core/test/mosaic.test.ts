@@ -124,10 +124,10 @@ describe('generateMosaic', () => {
     }
   });
 
-  it('honours size bumps', () => {
-    const spec = generateMosaic(7, 'medium', { sizeDelta: 2 });
+  it('honours row bumps', () => {
+    const spec = generateMosaic(7, 'medium', { rowDelta: 2 });
     expect(spec.config.rows).toBe(10);
-    expect(spec.config.cols).toBe(10);
+    expect(spec.config.cols).toBe(8);
     expect(isMosaicLogicSolvable(spec)).toBe(true);
   });
 });

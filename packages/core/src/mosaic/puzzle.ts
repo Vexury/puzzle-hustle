@@ -1,10 +1,10 @@
 import { Rng } from '../rng.ts';
 import type { Difficulty } from '../types.ts';
-import { MOSAIC_MARKED_EMPTY, mosaicBlockCells, mosaicPropagate, mosaicSolveByLogic } from './solver.ts';
+import { MOSAIC_MARKED_EMPTY, mosaicBlockCells, mosaicDepth, mosaicPropagate, mosaicSolveByLogic } from './solver.ts';
 
 export { MOSAIC_MARKED_EMPTY } from './solver.ts';
 
-export const MOSAIC_VERSION = 1;
+export const MOSAIC_VERSION = 2;
 
 export interface MosaicConfig {
   rows: number;
@@ -27,18 +27,17 @@ export type MosaicState = Uint8Array;
 export const MOSAIC_PRESETS: Record<Difficulty, MosaicConfig> = {
   easy: { rows: 5, cols: 5, density: 0.5, clueRatio: 0.9 },
   medium: { rows: 8, cols: 8, density: 0.5, clueRatio: 0.8 },
-  hard: { rows: 10, cols: 10, density: 0.5, clueRatio: 0.7 },
-  genius: { rows: 15, cols: 15, density: 0.5, clueRatio: 0.6 },
+  hard: { rows: 13, cols: 10, density: 0.5, clueRatio: 0.7 },
+  genius: { rows: 16, cols: 10, density: 0.5, clueRatio: 0.6 },
 };
 
 export interface MosaicOptions {
-  sizeDelta?: number;
+  rowDelta?: number;
 }
 
 export function mosaicConfig(difficulty: Difficulty, options: MosaicOptions = {}): MosaicConfig {
   const base = MOSAIC_PRESETS[difficulty];
-  const delta = options.sizeDelta ?? 0;
-  return { ...base, rows: base.rows + delta, cols: base.cols + delta };
+  return { ...base, rows: base.rows + (options.rowDelta ?? 0) };
 }
 
 export function mosaicClues(solution: Uint8Array, rows: number, cols: number): Int8Array {
@@ -114,10 +113,20 @@ function removeClues(spec: MosaicSpec, pairwise: boolean, rng: Rng): void {
   }
 }
 
+// Boards stop at 10 columns, so hard and genius differ by these windows, not by size.
+const DEPTH_GATES: Partial<Record<Difficulty, { min?: number; max?: number }>> = {
+  hard: { max: 60 },
+  genius: { min: 64 },
+};
+
 export function generateMosaic(seed: number, difficulty: Difficulty, options: MosaicOptions = {}): MosaicSpec {
   const config = mosaicConfig(difficulty, options);
+  const cells = config.rows * config.cols;
+  const gate = DEPTH_GATES[difficulty];
   const rng = new Rng(seed);
   const pairwise = usesPairwise(difficulty);
+  let closest: MosaicSpec | null = null;
+  let closestMiss = Infinity;
   for (let attempt = 0; attempt < 2000; attempt++) {
     const solution = randomSolution(config, rng);
     if (!validSolution(solution)) continue;
@@ -125,8 +134,18 @@ export function generateMosaic(seed: number, difficulty: Difficulty, options: Mo
     const spec: MosaicSpec = { version: MOSAIC_VERSION, seed, difficulty, config, solution, clues };
     if (!mosaicSolveByLogic(spec, pairwise).solved) continue;
     removeClues(spec, pairwise, rng);
-    return spec;
+    if (!gate) return spec;
+    const depth = mosaicDepth(mosaicSolveByLogic(spec, pairwise), cells);
+    const miss = Math.max((gate.min ?? -Infinity) - depth, depth - (gate.max ?? Infinity), 0);
+    if (miss === 0) return spec;
+    // No seed may come back empty or the weekly/monthly schedule throws; closest miss wins.
+    if (miss < closestMiss) {
+      closestMiss = miss;
+      closest = spec;
+    }
+    if (attempt >= 40 && closest) break;
   }
+  if (closest) return closest;
   throw new Error(`could not generate mosaic for seed ${seed} / ${difficulty}`);
 }
 

@@ -82,9 +82,9 @@ export const nonogramAdapter: PuzzleAdapter<NonogramOptions> = {
   options(period) {
     switch (period) {
       case 'weekly':
-        return { sizeDelta: 2 };
+        return { rowDelta: 2 };
       case 'monthly':
-        return { sizeDelta: 5 };
+        return { rowDelta: 4 };
       default:
         return {};
     }
@@ -113,9 +113,9 @@ export const mosaicAdapter: PuzzleAdapter<MosaicOptions> = {
   options(period) {
     switch (period) {
       case 'weekly':
-        return { sizeDelta: 2 };
+        return { rowDelta: 2 };
       case 'monthly':
-        return { sizeDelta: 5 };
+        return { rowDelta: 4 };
       default:
         return {};
     }

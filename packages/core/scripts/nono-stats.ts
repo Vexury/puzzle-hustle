@@ -6,12 +6,12 @@ const N = Number(process.argv[2] ?? 400);
 
 const pct = (a: number[], p: number) => a.slice().sort((x, y) => x - y)[Math.min(a.length - 1, Math.floor(a.length * p))]!;
 
-function sample(label: string, difficulty: Difficulty, colorDelta: number, sizeDelta: number) {
+function sample(label: string, difficulty: Difficulty, colorDelta: number, rowDelta: number) {
   const scores: number[] = [];
   const rounds: number[] = [];
   const depths: number[] = [];
   for (let i = 0; i < N; i++) {
-    const spec = generateNonogram(7_000_000 + i * 104_729, difficulty, { colorDelta, sizeDelta });
+    const spec = generateNonogram(7_000_000 + i * 104_729, difficulty, { colorDelta, rowDelta });
     const rep = nonogramDifficultyReport(spec);
     scores.push(rep.score);
     rounds.push(rep.rounds);
@@ -33,5 +33,5 @@ function sample(label: string, difficulty: Difficulty, colorDelta: number, sizeD
 }
 
 sample('10x10 1 Farbe', 'medium', 0, 0);
-sample('10x10 2 Farben', 'hard', 0, 0);
-sample('10x10 3 Farben', 'genius', 0, 0);
+sample('10x14 2 Farben', 'hard', 0, 0);
+sample('10x15 3 Farben', 'genius', 0, 0);
