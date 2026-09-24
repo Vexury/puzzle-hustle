@@ -34,7 +34,7 @@ export function PuzzleIcon({ type, size = 56 }: { type: PuzzleTypeId; size?: num
               <line key={`v${i}`} x1={6 + i * 9.33} y1="6" x2={6 + i * 9.33} y2="34" />
             ))}
           </g>
-          <path d="M4 4l5 5h6l5-5v12a8 6 0 0 1-16 0Z" transform="translate(9.2 8.5) scale(0.9)" className="ic-a" />
+          <path d="M4 4l5 5h6l5-5v12a8 6 0 0 1-16 0Z" transform="translate(14.96 14.54) scale(0.42)" className="ic-a" />
         </svg>
       ) : type === 'stars' ? (
         <svg viewBox="0 0 40 40">
@@ -46,8 +46,8 @@ export function PuzzleIcon({ type, size = 56 }: { type: PuzzleTypeId; size?: num
               <line key={`v${i}`} x1={6 + i * 9.33} y1="6" x2={6 + i * 9.33} y2="34" />
             ))}
           </g>
-          <path d="M12 21C6 16.5 2 13 2 8.5 2 5.5 4.3 3.5 7 3.5c2 0 3.8 1.1 5 3 1.2-1.9 3-3 5-3 2.7 0 5 2 5 5 0 4.5-4 8-10 12.5Z" transform="translate(5.5 5.5) scale(0.75)" className="ic-a" />
-          <path d="M12 21C6 16.5 2 13 2 8.5 2 5.5 4.3 3.5 7 3.5c2 0 3.8 1.1 5 3 1.2-1.9 3-3 5-3 2.7 0 5 2 5 5 0 4.5-4 8-10 12.5Z" transform="translate(21.4 20.6) scale(0.55)" className="ic-a" />
+          <path d="M12 21C6 16.5 2 13 2 8.5 2 5.5 4.3 3.5 7 3.5c2 0 3.8 1.1 5 3 1.2-1.9 3-3 5-3 2.7 0 5 2 5 5 0 4.5-4 8-10 12.5Z" transform="translate(6.11 6.02) scale(0.38)" className="ic-a" />
+          <path d="M12 21C6 16.5 2 13 2 8.5 2 5.5 4.3 3.5 7 3.5c2 0 3.8 1.1 5 3 1.2-1.9 3-3 5-3 2.7 0 5 2 5 5 0 4.5-4 8-10 12.5Z" transform="translate(24.77 24.68) scale(0.38)" className="ic-a" />
         </svg>
       ) : type === 'slabs' ? (
         <svg viewBox="0 0 40 40">
