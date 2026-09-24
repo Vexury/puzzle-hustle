@@ -13,7 +13,7 @@
   -webkit-user-select: none;
 }
 .slabs-board { max-width: 100%; touch-action: none; line-height: 0; }
-.slabs-wrap .tools { width: calc(var(--cols) * var(--cell) + 4px); max-width: 100%; }
+.slabs-wrap .tools { width: calc(var(--cols) * var(--cell)); max-width: 100%; }
 .slabs-svg {
   width: calc(var(--cols) * var(--cell));
   height: calc(var(--rows) * var(--cell));
@@ -22,8 +22,6 @@
   touch-action: none;
 }
 .slabs-cell { fill: var(--board-cell); }
-/* Blocked cells are not drawn; the hatch behind the board shows through so they read as out of play. */
-.slabs-hatch { stroke: var(--text-muted); stroke-width: 0.05; opacity: 0.45; }
 .slabs-cell.flash { animation: slabs-flash 0.75s ease-out 4; }
 @keyframes slabs-flash {
   0%, 45% { stroke: var(--success); stroke-width: 0.12; }
@@ -31,6 +29,7 @@
 }
 .slabs-grid { stroke: var(--board-line); stroke-width: 0.02; }
 .slabs-boundary { stroke: var(--text-muted); stroke-width: 0.045; stroke-dasharray: 0.12 0.09; stroke-linecap: round; }
+/* No frame around the board: blocked cells are simply not drawn and the rim traces the playable shape. */
 .slabs-rim { stroke: var(--border-mid); stroke-width: 0.06; stroke-linecap: round; }
 
 /* Slabs let the region colour show through, so a placed slab still says which region it sits in. */
@@ -47,7 +46,7 @@
   25% { transform: translateX(-6%); }
   75% { transform: translateX(6%); }
 }
-.board-frame.solved .slab-body { stroke: var(--success); }
+.slabs-board.solved .slab-body, .slabs-board.solved .slabs-rim { stroke: var(--success); }
 
 .slabs-badge rect { fill: var(--text); opacity: 0.82; }
 .slabs-badge text {
