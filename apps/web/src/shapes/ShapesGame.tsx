@@ -14,6 +14,7 @@ import {
 } from '@puzzle-hustle/core';
 import { outlinePoints } from './PieceShape.tsx';
 import { useHistory } from '../lib/useHistory.ts';
+import { useFlash } from '../lib/useFlash.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
 import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 
@@ -50,7 +51,7 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
   const [order, setOrder] = useState<number[]>(() => spec.pieces.map((_, i) => i));
   const [drag, setDrag] = useState<Drag | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
-  const [flash, setFlash] = useState<number | null>(null);
+  const [flash, setFlash] = useFlash<number>();
   const [hintBusy, setHintBusy] = useState(false);
   const history = useHistory<ShapesState>();
   const boardRef = useRef<SVGSVGElement>(null);
@@ -158,7 +159,6 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     place(h.pieceId, h.placement);
     raise(h.pieceId);
     setFlash(h.pieceId);
-    setTimeout(() => setFlash(null), 3000);
   }
 
   function reset() {

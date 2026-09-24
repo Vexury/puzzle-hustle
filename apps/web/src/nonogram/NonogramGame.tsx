@@ -14,6 +14,7 @@ import { useZoomViewport } from '../lib/useZoomViewport.ts';
 import './nonogram.css';
 import { gridLineClasses } from '../lib/gridLines.ts';
 import { useHistory } from '../lib/useHistory.ts';
+import { useFlash } from '../lib/useFlash.ts';
 import { press } from '../lib/haptics.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
@@ -73,7 +74,7 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
   const { rows, cols, colors } = spec.config;
   const [state, setState] = useState<NonogramState>(() => (initialState && initialState.length === emptyState(spec).length ? Uint8Array.from(initialState) : emptyState(spec)));
   const [color, setColor] = useState(1);
-  const [flash, setFlash] = useState<number | null>(null);
+  const [flash, setFlash] = useFlash<number>();
   const [hintBusy, setHintBusy] = useState(false);
   const history = useHistory<NonogramState>();
   const stateRef = useRef(state);
@@ -201,7 +202,6 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
     history.remember(stateRef.current);
     setCells([idx], h.value);
     setFlash(idx);
-    setTimeout(() => setFlash(null), 3000);
   }
 
   function reset() {

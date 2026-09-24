@@ -13,6 +13,7 @@ import {
 } from '@puzzle-hustle/core';
 import './sudoku.css';
 import { useHistory } from '../lib/useHistory.ts';
+import { useFlash } from '../lib/useFlash.ts';
 import { readSetting } from '../lib/storage.ts';
 import { cageLayout } from './cages.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
@@ -67,7 +68,7 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
   // Read once per puzzle: the switch lives on the Profile tab, which cannot be open while a
   // board is.
   const highlightEnabled = useRef(readSetting('ph:sudokuHighlight') !== '0').current;
-  const [flash, setFlash] = useState<number | null>(null);
+  const [flash, setFlash] = useFlash<number>();
   const [hintBusy, setHintBusy] = useState(false);
   const history = useHistory<SudokuState>();
   const stateRef = useRef(state);
@@ -144,7 +145,6 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     setValue(h.cell, h.value);
     setSelected(h.cell);
     setFlash(h.cell);
-    setTimeout(() => setFlash(null), 3000);
   }
 
   function reset() {

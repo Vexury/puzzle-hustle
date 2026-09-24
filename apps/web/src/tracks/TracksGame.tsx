@@ -23,6 +23,8 @@ import {
   type TracksState,
 } from '@puzzle-hustle/core';
 import { useHistory } from '../lib/useHistory.ts';
+import { useFlash } from '../lib/useFlash.ts';
+import { HintMark } from '../components/HintMark.tsx';
 import { ResetButton } from '../components/ResetButton.tsx';
 import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 import './tracks.css';
@@ -133,7 +135,7 @@ function TrackShape({ track, className }: { track: Track; className: string }) {
 export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintAd, locked, initialState, onStateChange }: TracksGameProps) {
   const { cols, rows } = spec.config;
   const [state, setState] = useState<TracksState>(() => validTracksState(spec, initialState));
-  const [flash, setFlash] = useState<number | null>(null);
+  const [flash, setFlash] = useFlash<number>();
   const [hintBusy, setHintBusy] = useState(false);
   const stateRef = useRef(state);
   const drag = useRef<Drag | null>(null);
@@ -244,7 +246,6 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     commit(applyTracksHint(spec, stateRef.current, fresh));
     const at = fresh.kind === 'remove-edge' ? fresh.a : fresh.cell;
     setFlash(at);
-    setTimeout(() => setFlash(null), 3000);
   }
 
   function reset() {
@@ -283,7 +284,7 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
   for (let i = 0; i < cols * rows; i++) {
     const r = Math.floor(i / cols);
     const c = i % cols;
-    cells.push(<rect key={i} className={flash === i ? 'tracks-cell flash' : 'tracks-cell'} x={c} y={r} width={1} height={1} />);
+    cells.push(<rect key={i} className="tracks-cell" x={c} y={r} width={1} height={1} />);
     const m = tracksMask(spec, state, i);
     // A cell shows a piece only once its direction is known: given, drawn into by the player, or
     // closed by two given neighbours. A lone given edge (or A/B) stops at the cell's edge instead
@@ -334,6 +335,7 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
           onContextMenu={(e) => e.preventDefault()}
         >
           <g className="tracks-cells">{cells}</g>
+          {flash !== null && <HintMark x={flash % cols} y={Math.floor(flash / cols)} />}
           <g className="tracks-marks">{marks}</g>
           <TrackShape className="tracks-piece given" track={straightTrack(0, entryY, -PAD_L, entryY, STUB_SLEEPERS_A)} />
           <TrackShape className="tracks-piece given" track={straightTrack(exitX, rows, exitX, rows + PAD_B, STUB_SLEEPERS_B)} />

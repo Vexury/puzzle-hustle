@@ -14,6 +14,7 @@ import {
 } from '@puzzle-hustle/core';
 import './regions.css';
 import { useHistory } from '../lib/useHistory.ts';
+import { useFlash } from '../lib/useFlash.ts';
 import { press } from '../lib/haptics.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
@@ -72,7 +73,7 @@ function Glyph({ symbol }: { symbol: 'cat' | 'heart' }) {
 export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, requestHint, hintAd, locked, initialState, onStateChange }: RegionsGameProps) {
   const n = spec.config.size;
   const [state, setState] = useState<RegionsState>(() => (initialState && initialState.length === spec.config.size * spec.config.size ? Uint8Array.from(initialState) : emptyRegionsState(spec)));
-  const [flash, setFlash] = useState<number | null>(null);
+  const [flash, setFlash] = useFlash<number>();
   const [hintBusy, setHintBusy] = useState(false);
   const history = useHistory<RegionsState>();
   const stateRef = useRef(state);
@@ -175,7 +176,6 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
     history.remember(stateRef.current);
     setCell(idx, h.value);
     setFlash(idx);
-    setTimeout(() => setFlash(null), 3000);
   }
 
   function reset() {

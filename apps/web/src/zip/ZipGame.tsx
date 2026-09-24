@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { emptyZipState, isZipSolved, zipHint, zipStart, zipStepAllowed, type ZipSpec, type ZipState } from '@puzzle-hustle/core';
 import { useHistory } from '../lib/useHistory.ts';
+import { useFlash } from '../lib/useFlash.ts';
+import { HintMark } from '../components/HintMark.tsx';
 import { ResetButton } from '../components/ResetButton.tsx';
 import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 import './zip.css';
@@ -80,7 +82,7 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintA
   const n = spec.config.size;
   const start = zipStart(spec);
   const [path, setPath] = useState<ZipState>(() => validInitial(spec, initialState));
-  const [flash, setFlash] = useState<number | null>(null);
+  const [flash, setFlash] = useFlash<number>();
   const [hintBusy, setHintBusy] = useState(false);
   const pathRef = useRef(path);
   const drag = useRef<Drag | null>(null);
@@ -238,7 +240,6 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintA
     next.push(h.index);
     commit(next);
     setFlash(h.index);
-    setTimeout(() => setFlash(null), 3000);
   }
 
   function reset() {
@@ -271,7 +272,6 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintA
     const c = i % n;
     const cls = ['zip-cell'];
     if (inPath[i]) cls.push('filled');
-    if (flash === i) cls.push('flash');
     cells.push(<rect key={i} className={cls.join(' ')} x={c} y={r} width={1} height={1} />);
     const w = spec.walls[i]!;
     if (w & 2) walls.push(<line key={`w${i}r`} className="zip-wall" x1={c + 1} y1={r} x2={c + 1} y2={r + 1} />);
@@ -307,6 +307,7 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintA
           onContextMenu={(e) => e.preventDefault()}
         >
           <g className="zip-cells">{cells}</g>
+          {flash !== null && <HintMark x={flash % n} y={Math.floor(flash / n)} />}
           {path.length > 1 && <polyline className="zip-path" points={points} />}
           {path.length === 1 && <circle className="zip-path-dot" cx={(head % n) + 0.5} cy={Math.floor(head / n) + 0.5} r={0.21} />}
           <g className="zip-numbers">{numbers}</g>

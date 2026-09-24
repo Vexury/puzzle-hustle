@@ -698,6 +698,14 @@ p { margin: 0; }
 .piece-hit:active { cursor: grabbing; }
 .hint-flash { fill: none; stroke: var(--success); stroke-width: 0.13; animation: flash 0.75s ease-out 4; pointer-events: none; }
 @keyframes flash { 0%, 45% { opacity: 1; } 100% { opacity: 0.15; } }
+.hint-mark {
+  fill: color-mix(in srgb, var(--success) 22%, transparent);
+  stroke: var(--success);
+  stroke-width: 0.08;
+  animation: hint-mark 0.75s ease-out 4 forwards;
+  pointer-events: none;
+}
+@keyframes hint-mark { 0%, 45% { opacity: 1; } 100% { opacity: 0; } }
 
 /* Both sides pinned plus auto margins: with only left: 50% a fixed element can grow to at most
    half the viewport, and longer messages broke into a narrow column. */

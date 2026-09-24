@@ -23,6 +23,8 @@ import {
   type SlabsState,
 } from '@puzzle-hustle/core';
 import { useHistory } from '../lib/useHistory.ts';
+import { useFlash } from '../lib/useFlash.ts';
+import { HintMark } from '../components/HintMark.tsx';
 import { ResetButton } from '../components/ResetButton.tsx';
 import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 import * as haptics from '../lib/haptics.ts';
@@ -148,7 +150,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
   const [ghost, setGhost] = useState<Ghost | null>(null);
   const [turn, setTurn] = useState<Turn | null>(null);
   const [shake, setShake] = useState<number | null>(null);
-  const [flash, setFlash] = useState<number[] | null>(null);
+  const [flash, setFlash] = useFlash<number[]>();
   const [hintBusy, setHintBusy] = useState(false);
   const stateRef = useRef(state);
   const drag = useRef<Drag | null>(null);
@@ -356,8 +358,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     onHintUsed();
     history.remember(before);
     commit(applySlabsHint(spec, before, fresh));
-    setFlash(where ? [...where] : null);
-    setTimeout(() => setFlash(null), 3000);
+    if (where) setFlash([...where]);
   }
 
   function reset() {
@@ -394,7 +395,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     cells.push(
       <rect
         key={i}
-        className={flash?.includes(i) ? 'slabs-cell flash' : 'slabs-cell'}
+        className="slabs-cell"
         x={c}
         y={r}
         width={1}
@@ -446,6 +447,15 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
       </g>
     );
   });
+
+  let hintMark: React.ReactNode = null;
+  if (flash) {
+    const xs = flash.map((cell) => cell % cols);
+    const ys = flash.map((cell) => Math.floor(cell / cols));
+    const x = Math.min(...xs);
+    const y = Math.min(...ys);
+    hintMark = <HintMark x={x} y={y} w={Math.max(...xs) - x + 1} h={Math.max(...ys) - y + 1} rx={0.16} />;
+  }
 
   let preview: React.ReactNode = null;
   if (ghost) {
@@ -502,6 +512,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
           <g>{lines}</g>
           {preview}
           <g>{pieces}</g>
+          {hintMark}
           <g>{badges}</g>
         </svg>
       </div>

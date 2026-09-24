@@ -13,6 +13,7 @@ import { useZoomViewport } from '../lib/useZoomViewport.ts';
 import './mosaic.css';
 import { gridLineClasses } from '../lib/gridLines.ts';
 import { useHistory } from '../lib/useHistory.ts';
+import { useFlash } from '../lib/useFlash.ts';
 import { press } from '../lib/haptics.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
@@ -58,7 +59,7 @@ function nextValue(current: number, mark: boolean): number {
 export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintAd, locked, initialState, onStateChange, viewKey }: MosaicGameProps) {
   const { rows, cols } = spec.config;
   const [state, setState] = useState<MosaicState>(() => (initialState && initialState.length === emptyMosaicState(spec).length ? Uint8Array.from(initialState) : emptyMosaicState(spec)));
-  const [flash, setFlash] = useState<number | null>(null);
+  const [flash, setFlash] = useFlash<number>();
   const [hintBusy, setHintBusy] = useState(false);
   const history = useHistory<MosaicState>();
   const stateRef = useRef(state);
@@ -176,7 +177,6 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     history.remember(stateRef.current);
     setCells([idx], h.value);
     setFlash(idx);
-    setTimeout(() => setFlash(null), 3000);
   }
 
   function reset() {

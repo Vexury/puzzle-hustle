@@ -22,11 +22,6 @@
   touch-action: none;
 }
 .slabs-cell { fill: var(--board-cell); }
-.slabs-cell.flash { animation: slabs-flash 0.75s ease-out 4; }
-@keyframes slabs-flash {
-  0%, 45% { stroke: var(--success); stroke-width: 0.12; }
-  100% { stroke: transparent; stroke-width: 0; }
-}
 .slabs-grid { stroke: var(--board-line); stroke-width: 0.02; }
 .slabs-boundary { stroke: var(--text-muted); stroke-width: 0.045; stroke-dasharray: 0.12 0.09; stroke-linecap: round; }
 /* No frame around the board: blocked cells are simply not drawn and the rim traces the playable shape. */
@@ -92,5 +87,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .slab.shake, .slabs-slot.shake svg, .slabs-cell.flash { animation: none; }
+  .slab.shake, .slabs-slot.shake svg { animation: none; }
 }

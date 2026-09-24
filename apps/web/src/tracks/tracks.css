@@ -23,11 +23,6 @@
 }
 .tracks-svg:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
 .tracks-cell { fill: var(--board-cell); stroke: var(--board-line); stroke-width: 0.03; }
-.tracks-cell.flash { animation: tracks-flash 0.75s ease-out 4; }
-@keyframes tracks-flash {
-  0%, 45% { fill: color-mix(in srgb, var(--success) 22%, transparent); stroke: var(--success); stroke-width: 0.12; }
-  100% { fill: var(--board-cell); stroke: var(--board-line); stroke-width: 0.03; }
-}
 .tracks-piece { fill: none; stroke: var(--accent); stroke-linecap: round; }
 .tracks-piece.given { stroke: var(--text); }
 .tracks-rails { stroke-width: 0.065; }
