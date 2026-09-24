@@ -122,12 +122,27 @@ interface Board {
 
 interface Dyn {
   alive: Uint8Array;
+  // The ids still alive, compacted once per round; `alive` may already be 0 for some of them.
+  live: Int32Array;
+  liveN: number;
   allowed: Uint8Array;
   fixed: Int32Array;
   order: number[];
 }
 
+// The placement lists depend only on the blocked cells and the slabs, not on the rules. The
+// generator asks about the same board with changing rules many times, so they are kept per board.
+const layouts = new WeakMap<Uint8Array, { slabs: [number, number][]; board: Omit<Board, 'p' | 'regions'> }>();
+
 function buildBoard(p: SlabsPuzzle): Board {
+  const cached = layouts.get(p.blocked);
+  if (cached && cached.slabs === p.slabs) return { ...cached.board, p, regions: slabsRegions(p) };
+  const board = buildLayout(p);
+  layouts.set(p.blocked, { slabs: p.slabs, board });
+  return { ...board, p, regions: slabsRegions(p) };
+}
+
+function buildLayout(p: SlabsPuzzle): Omit<Board, 'p' | 'regions'> {
   const { cols, rows } = p.config;
   const cells = cols * rows;
   const slab: number[] = [];
@@ -162,7 +177,6 @@ function buildBoard(p: SlabsPuzzle): Board {
     }
   }
   return {
-    p,
     cells,
     pSlab: Int16Array.from(slab),
     pC1: Int16Array.from(c1),
@@ -171,18 +185,19 @@ function buildBoard(p: SlabsPuzzle): Board {
     pV2: Uint8Array.from(v2),
     bySlab,
     byCell,
-    regions: slabsRegions(p),
   };
 }
 
 function initialDyn(b: Board): Dyn {
   const allowed = new Uint8Array(b.cells);
   for (let i = 0; i < b.cells; i++) allowed[i] = b.p.blocked[i] ? 0 : ALL_VALUES;
-  return { alive: new Uint8Array(b.pSlab.length).fill(1), allowed, fixed: new Int32Array(b.p.slabs.length).fill(-1), order: [] };
+  const live = new Int32Array(b.pSlab.length);
+  for (let i = 0; i < live.length; i++) live[i] = i;
+  return { alive: new Uint8Array(b.pSlab.length).fill(1), live, liveN: live.length, allowed, fixed: new Int32Array(b.p.slabs.length).fill(-1), order: [] };
 }
 
 function cloneDyn(d: Dyn): Dyn {
-  return { alive: d.alive.slice(), allowed: d.allowed.slice(), fixed: d.fixed.slice(), order: [...d.order] };
+  return { alive: d.alive.slice(), live: d.live.slice(0, d.liveN), liveN: d.liveN, allowed: d.allowed.slice(), fixed: d.fixed.slice(), order: [...d.order] };
 }
 
 function fix(b: Board, d: Dyn, id: number) {
@@ -255,17 +270,37 @@ function ruleBounds(b: Board, d: Dyn): number {
 
 // Tier 1 to its fixpoint. Returns false on contradiction.
 function propagate(b: Board, d: Dyn): boolean {
+  const slabCount = b.bySlab.length;
   const cover = new Int32Array(b.cells);
-  for (let round = 0; ; round++) {
+  const perSlab = new Int32Array(slabCount);
+  const onlyOf = new Int32Array(slabCount);
+  const cellCount = new Int32Array(b.cells);
+  const cellSlab = new Int32Array(b.cells);
+  const cellMate = new Int32Array(b.cells);
+  const cellValues = new Uint8Array(b.cells);
+  const note = (cell: number, s: number, mate: number, v: number) => {
+    cellCount[cell]!++;
+    cellSlab[cell] = cellSlab[cell] === -2 || cellSlab[cell] === s ? s : -1;
+    cellMate[cell] = cellMate[cell] === -2 || cellMate[cell] === mate ? mate : -1;
+    cellValues[cell] = cellValues[cell]! | (1 << v);
+  };
+  for (let round = 0; round < 10_000; round++) {
     let changed = false;
     cover.fill(-1);
-    for (let s = 0; s < d.fixed.length; s++) {
+    for (let s = 0; s < slabCount; s++) {
       const id = d.fixed[s]!;
       if (id < 0) continue;
       cover[b.pC1[id]!] = s;
       cover[b.pC2[id]!] = s;
     }
-    for (let id = 0; id < d.alive.length; id++) {
+    perSlab.fill(0);
+    cellCount.fill(0);
+    cellSlab.fill(-2);
+    cellMate.fill(-2);
+    cellValues.fill(0);
+    let w = 0;
+    for (let k = 0; k < d.liveN; k++) {
+      const id = d.live[k]!;
       if (!d.alive[id]) continue;
       const s = b.pSlab[id]!;
       const a = b.pC1[id]!;
@@ -279,58 +314,49 @@ function propagate(b: Board, d: Dyn): boolean {
         d.alive[id] = 0;
         changed = true;
         if (d.fixed[s] === id) return false;
+        continue;
       }
+      d.live[w++] = id;
+      perSlab[s]!++;
+      onlyOf[s] = id;
+      note(a, s, c, b.pV1[id]!);
+      note(c, s, a, b.pV2[id]!);
     }
-    for (let s = 0; s < b.bySlab.length; s++) {
+    d.liveN = w;
+    for (let s = 0; s < slabCount; s++) {
       if (d.fixed[s]! >= 0) continue;
-      let only = -1;
-      let count = 0;
-      for (const id of b.bySlab[s]!) {
-        if (!d.alive[id]) continue;
-        count++;
-        only = id;
-      }
-      if (count === 0) return false;
-      if (count === 1) {
-        fix(b, d, only);
+      if (perSlab[s] === 0) return false;
+      if (perSlab[s] === 1) {
+        fix(b, d, onlyOf[s]!);
         changed = true;
       }
     }
     for (let cell = 0; cell < b.cells; cell++) {
       if (b.p.blocked[cell]) continue;
-      let slab = -2;
-      let partner = -2;
-      let values = 0;
-      let count = 0;
-      for (const id of b.byCell[cell]!) {
-        if (!d.alive[id]) continue;
-        count++;
-        const s = b.pSlab[id]!;
-        slab = slab === -2 || slab === s ? s : -1;
-        const mate = b.pC1[id] === cell ? b.pC2[id]! : b.pC1[id]!;
-        partner = partner === -2 || partner === mate ? mate : -1;
-        values |= 1 << (b.pC1[id] === cell ? b.pV1[id]! : b.pV2[id]!);
-      }
-      if (count === 0) return false;
-      // Only one slab can cover this cell: that slab lies nowhere else.
-      if (slab >= 0) {
-        for (const id of b.bySlab[slab]!) {
-          if (d.alive[id] && b.pC1[id] !== cell && b.pC2[id] !== cell) {
-            d.alive[id] = 0;
-            changed = true;
+      if (cellCount[cell] === 0) return false;
+      if (cover[cell]! < 0) {
+        const slab = cellSlab[cell]!;
+        // Only one slab can cover this cell: that slab lies nowhere else.
+        if (slab >= 0 && perSlab[slab]! > cellCount[cell]!) {
+          for (const id of b.bySlab[slab]!) {
+            if (d.alive[id] && b.pC1[id] !== cell && b.pC2[id] !== cell) {
+              d.alive[id] = 0;
+              changed = true;
+            }
+          }
+        }
+        // Only one partner is possible: nothing else may cover that partner.
+        const partner = cellMate[cell]!;
+        if (partner >= 0 && cellCount[partner]! > cellCount[cell]!) {
+          for (const id of b.byCell[partner]!) {
+            if (d.alive[id] && b.pC1[id] !== cell && b.pC2[id] !== cell) {
+              d.alive[id] = 0;
+              changed = true;
+            }
           }
         }
       }
-      // Only one partner is possible: nothing else may cover that partner.
-      if (partner >= 0) {
-        for (const id of b.byCell[partner]!) {
-          if (d.alive[id] && b.pC1[id] !== cell && b.pC2[id] !== cell) {
-            d.alive[id] = 0;
-            changed = true;
-          }
-        }
-      }
-      const next = d.allowed[cell]! & values;
+      const next = d.allowed[cell]! & cellValues[cell]!;
       if (!next) return false;
       if (next !== d.allowed[cell]) {
         d.allowed[cell] = next;
@@ -341,8 +367,8 @@ function propagate(b: Board, d: Dyn): boolean {
     if (bounds < 0) return false;
     if (bounds) changed = true;
     if (!changed) return true;
-    if (round > 10_000) return true;
   }
+  return true;
 }
 
 // Tier 2: every value tuple of each region against its rule. -1 contradiction, 1 changed, 0 stuck.
@@ -399,14 +425,20 @@ function consistent(b: Board, d: Dyn): boolean {
   }
 }
 
+// Trial placements one solve may probe at tier 3. A fixed count keeps the cut-off identical on
+// every device, unlike a time limit, and stops hopeless candidates early in the generator.
+const LOOKAHEAD_TRIALS = 600;
+
 // Tier 3: one placement whose tier-2 consequences contradict is removed. Tight slabs first.
-function lookahead(b: Board, d: Dyn): boolean {
+function lookahead(b: Board, d: Dyn, budget: { trials: number }): boolean {
   const open: number[] = [];
   for (let s = 0; s < d.fixed.length; s++) if (d.fixed[s]! < 0) open.push(s);
   const live = (s: number) => b.bySlab[s]!.filter((id) => d.alive[id]);
   open.sort((x, y) => live(x).length - live(y).length || x - y);
   for (const s of open) {
+    if (live(s).length > 6) break;
     for (const id of live(s)) {
+      if (--budget.trials < 0) return false;
       const trial = cloneDyn(d);
       fix(b, trial, id);
       if (!consistent(b, trial)) {
@@ -440,6 +472,7 @@ export function solveSlabs(p: SlabsPuzzle, maxTier: 1 | 2 | 3): SlabsSolveResult
   const b = buildBoard(p);
   const d = initialDyn(b);
   const steps: [number, number, number] = [0, 0, 0];
+  const budget = { trials: LOOKAHEAD_TRIALS };
   let contradiction = false;
   for (;;) {
     const before = d.order.length;
@@ -460,7 +493,7 @@ export function solveSlabs(p: SlabsPuzzle, maxTier: 1 | 2 | 3): SlabsSolveResult
         continue;
       }
     }
-    if (maxTier >= 3 && lookahead(b, d)) {
+    if (maxTier >= 3 && lookahead(b, d, budget)) {
       steps[2]++;
       continue;
     }
