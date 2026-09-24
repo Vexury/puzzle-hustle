@@ -1,0 +1,18 @@
+<en-US>
+Two new puzzles and a fresh look for the favourites.
+
+- New: Slabs. Place dominoes so every coloured region follows its rule
+- New: Tracks. Lay one track from A to B, the numbers count the rails
+- Crowns and Stars are now Cats and Hearts, Killer Sudoku is Sumdoku
+- Taller Nonogram and Mosaic boards fit the screen, thick lines every 5
+- Your account moved to Profile, Social shows once you sign in
+</en-US>
+<de-DE>
+Zwei neue Rätsel und ein frischer Look für die Lieblinge.
+
+- Neu: Slabs. Lege Dominosteine so, dass jede farbige Region ihre Regel erfüllt
+- Neu: Tracks. Verlege ein Gleis von A nach B, die Zahlen zählen die Schienen
+- Crowns und Stars heißen jetzt Cats und Hearts, Killer Sudoku heißt Sumdoku
+- Hohe Nonogramm- und Mosaik-Bretter passen auf den Bildschirm, dicke Linien alle 5
+- Dein Konto ist ins Profil gewandert, Social erscheint nach der Anmeldung
+</de-DE>
