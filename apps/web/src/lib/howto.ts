@@ -26,9 +26,9 @@ export const HOW_TO: Record<PuzzleTypeId, string[]> = {
     'Every puzzle has exactly one solution and can be solved by logic alone.',
   ],
   stars: [
-    'Place exactly two dogs in every row, every column and every coloured region.',
-    'Dogs may never touch, not even diagonally, so two dogs in one row need a gap between them.',
-    'Tap a cell to place a dog, tap it again to clear. Long-press or right-click marks an X, and dragging marks a whole row of them.',
+    'Place exactly two hearts in every row, every column and every coloured region.',
+    'Hearts may never touch, not even diagonally, so two hearts in one row need a gap between them.',
+    'Tap a cell to place a heart, tap it again to clear. Long-press or right-click marks an X, and dragging marks a whole row of them.',
     'Every puzzle has exactly one solution. Small regions are the best place to start.',
   ],
   sudoku: [

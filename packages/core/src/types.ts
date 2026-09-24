@@ -36,8 +36,8 @@ export const PUZZLE_META: Record<PuzzleTypeId, PuzzleMeta> = {
   },
   stars: {
     id: 'stars',
-    name: 'Dogs',
-    tagline: 'Two dogs per row, column and colour. Dogs never touch.',
+    name: 'Hearts',
+    tagline: 'Two hearts per row, column and colour. Hearts never touch.',
   },
   sudoku: {
     id: 'sudoku',

@@ -382,7 +382,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
       ) : 'regions' in spec ? (
         <RegionsGame
           spec={spec}
-          symbol={puzzleRef.type === 'crowns' ? 'cat' : 'dog'}
+          symbol={puzzleRef.type === 'crowns' ? 'cat' : 'heart'}
           onMove={onMove}
           onSolved={onSolved}
           onHintUsed={onHintUsed}
