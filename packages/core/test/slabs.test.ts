@@ -7,6 +7,7 @@ import {
   classifySlabsGesture,
   emptySlabsState,
   generateSlabs,
+  isSlabsJerk,
   isSlabsSolved,
   slabsHint,
   slabsOccupancy,
@@ -285,5 +286,25 @@ describe('slabs gestures', () => {
     expect(classifySlabsGesture(20, 3, 600, cell)).toEqual({ kind: 'drag' });
     // Fast but long: a quick drag to another spot.
     expect(classifySlabsGesture(90, 0, 150, cell)).toEqual({ kind: 'drag' });
+  });
+
+  it('spots a jerk while a slab is held', () => {
+    const path = (...pts: [number, number, number][]) => pts.map(([x, y, t]) => ({ x, y, t }));
+    // Out and back within a quarter second.
+    expect(isSlabsJerk(path([100, 100, 0], [115, 100, 40], [130, 100, 80], [118, 100, 120], [104, 100, 160]), cell)).toBe(true);
+    expect(isSlabsJerk(path([100, 100, 0], [100, 76, 60], [101, 97, 130]), cell)).toBe(true);
+    // Held still first: no events come in, the rest position still counts as the start.
+    expect(isSlabsJerk(path([100, 100, 0], [115, 100, 900], [130, 100, 930], [115, 100, 960], [100, 100, 990]), cell)).toBe(true);
+    // A fast drag goes one way and never comes back.
+    expect(isSlabsJerk(path([100, 100, 0], [130, 100, 40], [170, 100, 80], [210, 100, 120]), cell)).toBe(false);
+    // Turning a corner is not coming back.
+    expect(isSlabsJerk(path([100, 100, 0], [140, 100, 60], [140, 140, 120]), cell)).toBe(false);
+    // Too small a wiggle.
+    expect(isSlabsJerk(path([100, 100, 0], [110, 100, 40], [101, 100, 80]), cell)).toBe(false);
+    // Only halfway back.
+    expect(isSlabsJerk(path([100, 100, 0], [130, 100, 60], [116, 100, 120]), cell)).toBe(false);
+    // Out and back, but slowly.
+    expect(isSlabsJerk(path([100, 100, 0], [115, 100, 100], [130, 100, 200], [115, 100, 300], [102, 100, 400]), cell)).toBe(false);
+    expect(isSlabsJerk([], cell)).toBe(false);
   });
 });

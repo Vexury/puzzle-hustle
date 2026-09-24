@@ -498,3 +498,23 @@ export function classifySlabsGesture(dx: number, dy: number, ms: number, cell: n
   }
   return { kind: 'drag' };
 }
+
+export interface SlabsSample {
+  x: number;
+  y: number;
+  t: number;
+}
+
+// A jerk while a slab is held: out at least half a cell and most of the way back, all within
+// 250 ms. A fast drag goes one way and never comes back, so it never counts. Pixels and ms.
+// A still finger sends no events, so the start is the last sample from before the window.
+export function isSlabsJerk(samples: readonly SlabsSample[], cell: number): boolean {
+  const last = samples[samples.length - 1];
+  if (!last) return false;
+  let i = samples.length - 1;
+  while (i > 0 && last.t - samples[i]!.t < 250) i--;
+  const start = samples[i]!;
+  let peak = 0;
+  for (let k = i + 1; k < samples.length - 1; k++) peak = Math.max(peak, Math.hypot(samples[k]!.x - start.x, samples[k]!.y - start.y));
+  return peak >= cell * 0.5 && Math.hypot(last.x - start.x, last.y - start.y) <= peak * 0.35;
+}

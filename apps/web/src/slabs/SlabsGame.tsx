@@ -5,6 +5,7 @@ import {
   applySlabsHint,
   classifySlabsGesture,
   emptySlabsState,
+  isSlabsJerk,
   isSlabsSolved,
   slabCells,
   slabNeighbour,
@@ -19,6 +20,7 @@ import {
   slabsToTray,
   validSlabsState,
   type SlabsRule,
+  type SlabsSample,
   type SlabsSpec,
   type SlabsState,
 } from '@puzzle-hustle/core';
@@ -52,11 +54,18 @@ interface Drag {
   grabX: number;
   grabY: number;
   cell: number;
+  // The pose the slab will drop in; a jerk while held turns it.
+  dir: number;
+  turned: boolean;
+  lastTurn: number;
+  moved: boolean;
+  samples: SlabsSample[];
 }
 
 interface Ghost {
   slab: number;
   pivot: 0 | 1;
+  dir: number;
   x: number;
   y: number;
   grabX: number;
@@ -217,7 +226,24 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     if (locked || solved || drag.current) return;
     e.preventDefault();
     (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
-    drag.current = { pointerId: e.pointerId, slab, pivot, from, x0: e.clientX, y0: e.clientY, t0: performance.now(), grabX, grabY, cell: cellPx() };
+    const t0 = performance.now();
+    drag.current = {
+      pointerId: e.pointerId,
+      slab,
+      pivot,
+      from,
+      x0: e.clientX,
+      y0: e.clientY,
+      t0,
+      grabX,
+      grabY,
+      cell: cellPx(),
+      dir: stateRef.current[slab * 2 + 1]!,
+      turned: false,
+      lastTurn: 0,
+      moved: false,
+      samples: [{ x: e.clientX, y: e.clientY, t: t0 }],
+    };
   }
 
   function boardDown(e: React.PointerEvent<SVGSVGElement>) {
@@ -245,15 +271,28 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
   function pointerMove(e: React.PointerEvent) {
     const d = drag.current;
     if (!d || d.pointerId !== e.pointerId) return;
-    if (Math.hypot(e.clientX - d.x0, e.clientY - d.y0) < d.cell * 0.2) return;
-    setGhost({ slab: d.slab, pivot: d.pivot, x: e.clientX, y: e.clientY, grabX: d.grabX, grabY: d.grabY, cell: d.cell });
+    const t = performance.now();
+    d.samples.push({ x: e.clientX, y: e.clientY, t });
+    while (d.samples.length > 1 && t - d.samples[1]!.t >= 300) d.samples.shift();
+    if (t - d.lastTurn > 250 && isSlabsJerk(d.samples, d.cell)) {
+      d.dir = (d.dir + 1) % 4;
+      d.turned = true;
+      d.lastTurn = t;
+      d.samples = [{ x: e.clientX, y: e.clientY, t }];
+      haptics.tap();
+      // The ghost turns around its pivot half, which sits at (1.5, 1.5) in its own box.
+      if (!reducedMotion()) setTurn({ slab: d.slab, px: 1.5, py: 1.5, from: -90, start: t, angle: -90 });
+    }
+    if (!d.moved && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) < d.cell * 0.2) return;
+    d.moved = true;
+    setGhost({ slab: d.slab, pivot: d.pivot, dir: d.dir, x: e.clientX, y: e.clientY, grabX: d.grabX, grabY: d.grabY, cell: d.cell });
   }
 
   // The pose a drop at (x, y) would give: the pivot half on the cell under the finger.
-  function dropPose(d: { slab: number; pivot: 0 | 1; grabX: number; grabY: number }, x: number, y: number, current: SlabsState): { anchor: number; dir: number } | null {
+  function dropPose(d: { pivot: 0 | 1; dir: number; grabX: number; grabY: number }, x: number, y: number): { anchor: number; dir: number } | null {
     const cell = cellAt(x - d.grabX, y - d.grabY);
     if (cell < 0) return null;
-    const dir = current[d.slab * 2 + 1]!;
+    const dir = d.dir;
     if (d.pivot === 0) return { anchor: cell, dir };
     const anchor = slabNeighbour(cols, rows, cell, (dir + 2) % 4);
     return anchor < 0 ? null : { anchor, dir };
@@ -265,7 +304,9 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     drag.current = null;
     setGhost(null);
     const cur = stateRef.current;
-    const gesture = classifySlabsGesture(e.clientX - d.x0, e.clientY - d.y0, performance.now() - d.t0, d.cell);
+    if (d.turned) setTurn(null);
+    // After a turn in hand the release is always a drop, even if the finger ended where it began.
+    const gesture = d.turned ? { kind: 'drag' as const } : classifySlabsGesture(e.clientX - d.x0, e.clientY - d.y0, performance.now() - d.t0, d.cell);
     if (gesture.kind === 'tap' || gesture.kind === 'flick') {
       if (gesture.kind === 'flick' && otherDir(cur[d.slab * 2 + 1]!, d.pivot) === gesture.dir) return;
       const next = gesture.kind === 'tap' ? slabsRotate(spec, cur, d.slab, d.pivot) : slabsOrient(spec, cur, d.slab, d.pivot, gesture.dir);
@@ -284,7 +325,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
       commit(slabsToTray(cur, d.slab));
       return;
     }
-    const pose = dropPose(d, e.clientX, e.clientY, cur);
+    const pose = dropPose(d, e.clientX, e.clientY);
     const next = pose && slabsPlace(spec, cur, d.slab, pose.anchor, pose.dir);
     if (!next) return;
     history.remember(cur);
@@ -297,6 +338,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     if (!d || d.pointerId !== e.pointerId) return;
     drag.current = null;
     setGhost(null);
+    if (d.turned) setTurn(null);
   }
 
   async function useHint() {
@@ -407,7 +449,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
 
   let preview: React.ReactNode = null;
   if (ghost) {
-    const pose = dropPose(ghost, ghost.x, ghost.y, state);
+    const pose = dropPose(ghost, ghost.x, ghost.y);
     const pair = pose && slabCells(spec, pose.anchor, pose.dir);
     if (pair) {
       const [x0, y0] = center(pair[0]);
@@ -418,7 +460,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
 
   let ghostView: React.ReactNode = null;
   if (ghost) {
-    const dir = state[ghost.slab * 2 + 1]!;
+    const dir = ghost.dir;
     const pivot = ghost.pivot;
     // The pivot half sits at the pointer; the other half extends in its direction.
     const od = otherDir(dir, pivot);
@@ -434,7 +476,9 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
         style={{ left: ghost.x - ghost.grabX - 1.5 * ghost.cell, top: ghost.y - ghost.grabY - 1.5 * ghost.cell, width: 3 * ghost.cell, height: 3 * ghost.cell }}
         aria-hidden="true"
       >
-        <SlabShape x0={x0} y0={y0} x1={x1} y1={y1} a={spec.slabs[ghost.slab]![0]} b={spec.slabs[ghost.slab]![1]} />
+        <g transform={turn?.slab === ghost.slab ? `rotate(${turn.angle} ${turn.px} ${turn.py})` : undefined}>
+          <SlabShape x0={x0} y0={y0} x1={x1} y1={y1} a={spec.slabs[ghost.slab]![0]} b={spec.slabs[ghost.slab]![1]} />
+        </g>
       </svg>
     );
   }
