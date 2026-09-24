@@ -164,6 +164,23 @@ describe('state helpers', () => {
     expect(isZipSolved(spec, [...sol].reverse())).toBe(false);
   });
 
+  it('requires the path to end on the last number', () => {
+    const spec: ZipSpec = {
+      version: ZIP_VERSION,
+      seed: 0,
+      difficulty: 'easy',
+      config: { size: 3, numbers: 2, walls: 0 },
+      numbers: Uint8Array.from([1, 0, 2, 0, 0, 0, 0, 0, 0]),
+      walls: new Uint8Array(9),
+      solution: Uint16Array.from([0, 3, 6, 7, 8, 5, 4, 1, 2]),
+    };
+    const overrun = [0, 1, 2, 5, 4, 3, 6, 7, 8];
+    expect(isZipSolved(spec, [...spec.solution])).toBe(true);
+    expect(isZipSolved(spec, overrun)).toBe(false);
+    expect(zipPathValid(spec, overrun.slice(0, 3))).toBe(true);
+    expect(zipPathValid(spec, overrun.slice(0, 4))).toBe(false);
+  });
+
   it('respects walls in step checks', () => {
     const spec = generateZip(9, 'medium');
     const n = spec.config.size;

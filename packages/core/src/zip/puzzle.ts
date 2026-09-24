@@ -342,8 +342,10 @@ export function zipPathValid(spec: ZipSpec, state: ZipState): boolean {
   if (state.length === 0) return true;
   if (state[0] !== spec.solution[0]) return false;
   const seen = new Uint8Array(n * n);
+  const last = zipNumberCount(spec);
   let next = 1;
   for (let i = 0; i < state.length; i++) {
+    if (next > last) return false;
     const cell = state[i]!;
     if (cell < 0 || cell >= n * n || seen[cell]) return false;
     seen[cell] = 1;
