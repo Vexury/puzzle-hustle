@@ -338,11 +338,16 @@ export function isTracksSolved(spec: TracksSpec, state: TracksState): boolean {
   return true;
 }
 
+// Counts the cells the board shows as track: given, closed by two given edges, drawn into by the
+// player, or marked. A cell the track merely must enter (A/B, one given edge) waits for the player.
 export function tracksLineCounts(spec: TracksSpec, state: TracksState): { rows: number[]; cols: number[] } {
   const { cols, rows } = spec.config;
   const out = { rows: new Array<number>(rows).fill(0), cols: new Array<number>(cols).fill(0) };
+  const empty = emptyTracksState(spec);
   for (let i = 0; i < cols * rows; i++) {
-    if (!tracksMask(spec, state, i) && !(state[i]! & TRACKS_STATE_T)) continue;
+    const m = tracksMask(spec, state, i);
+    const shown = spec.given[i] || bits(m) >= 2 || m !== tracksMask(spec, empty, i);
+    if (!shown && !(state[i]! & TRACKS_STATE_T)) continue;
     out.rows[Math.floor(i / cols)]!++;
     out.cols[i % cols]!++;
   }

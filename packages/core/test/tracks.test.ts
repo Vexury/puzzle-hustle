@@ -100,6 +100,8 @@ function masksOf(cols: number, rows: number, entryRow: number, exitCol: number, 
   return masks;
 }
 
+const bits4 = (m: number) => ((m & 1) + ((m >> 1) & 1) + ((m >> 2) & 1) + ((m >> 3) & 1));
+
 describe('tracks solver', () => {
   // The propagator's rules are only useful if they are sound (never cut a real solution) and the
   // search is complete. Brute force over every A-to-B path on small boards is the ground truth.
@@ -390,6 +392,17 @@ describe('tracks state', () => {
     const after = tracksLineCounts(spec, s);
     expect(after.rows[Math.floor(free / cols)]).toBe(before.rows[Math.floor(free / cols)]! + 1);
     expect(after.cols[free % cols]).toBe(before.cols[free % cols]! + 1);
+  });
+
+  it('counts only cells whose piece shows, not the A cell before the player touches it', () => {
+    const entry = spec.entryRow * cols;
+    const empty = emptyTracksState(spec);
+    const shown = (i: number) => spec.given[i] !== 0 || bits4(tracksMask(spec, empty, i)) === 2;
+    const row = spec.entryRow;
+    const expected = Array.from({ length: cols }, (_, c) => row * cols + c).filter(shown).length;
+    expect(tracksLineCounts(spec, empty).rows[row]).toBe(expected);
+    const marked = tracksCycleMark(spec, empty, entry)!;
+    expect(tracksLineCounts(spec, marked).rows[row]).toBe(expected + 1);
   });
 
   it('steps straight toward a target, never diagonally', () => {
