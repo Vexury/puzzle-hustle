@@ -81,9 +81,18 @@ interface Turn {
   start: number;
   // Degrees still to turn; eased from `from` to 0 frame by frame.
   angle: number;
-  // A blocked turn: swings out to `from` and back to 0 instead.
-  bounce?: boolean;
 }
+
+// A tap may turn a slab into a pose that does not fit, so it can be turned on over the rim to one
+// that does. It stays drawn there, and springs back if no further tap follows within REVERT_MS.
+interface Pending {
+  slab: number;
+  pivot: 0 | 1;
+  // Where the other half points, seen from the pivot half.
+  od: number;
+}
+
+const REVERT_MS = 900;
 
 const TURN_MS = 150;
 const PIPS: Record<number, [number, number][]> = {
@@ -151,7 +160,9 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
   const [state, setState] = useState<SlabsState>(() => validSlabsState(spec, initialState));
   const [ghost, setGhost] = useState<Ghost | null>(null);
   const [turn, setTurn] = useState<Turn | null>(null);
-  const [shake, setShake] = useState<number | null>(null);
+  const [pending, setPendingView] = useState<Pending | null>(null);
+  const pendingRef = useRef<Pending | null>(null);
+  const revertTimer = useRef(0);
   const [flash, setFlash] = useFlash<number[]>();
   const [hintBusy, setHintBusy] = useState(false);
   const stateRef = useRef(state);
@@ -169,12 +180,12 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     if (!turn) return;
     let raf = 0;
     const tick = () => {
-      const t = (performance.now() - turn.start) / (turn.bounce ? 2 * TURN_MS : TURN_MS);
+      const t = (performance.now() - turn.start) / TURN_MS;
       if (t >= 1) {
         setTurn(null);
         return;
       }
-      const angle = turn.bounce ? turn.from * Math.sin(Math.PI * t) : turn.from * (1 - t) ** 3;
+      const angle = turn.from * (1 - t) ** 3;
       setTurn((cur) => (cur && cur.start === turn.start ? { ...cur, angle } : cur));
       raf = requestAnimationFrame(tick);
     };
@@ -182,7 +193,16 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     return () => cancelAnimationFrame(raf);
   }, [turn?.start]);
 
+  useEffect(() => () => clearTimeout(revertTimer.current), []);
+
+  function setPending(p: Pending | null) {
+    clearTimeout(revertTimer.current);
+    pendingRef.current = p;
+    setPendingView(p);
+  }
+
   function commit(next: SlabsState) {
+    setPending(null);
     stateRef.current = next;
     setState(next);
     onMove();
@@ -208,35 +228,44 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     return !!rect && x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
   }
 
-  function flashShake(slab: number) {
-    setShake(slab);
-    setTimeout(() => setShake((s) => (s === slab ? null : s)), 320);
+  // Turn `degrees` back from the drawn pose, around the pivot half's cell.
+  function spin(slab: number, pivot: 0 | 1, degrees: number) {
+    if (reducedMotion()) return;
+    const cell = slabsPivotCell(spec, stateRef.current, slab, pivot);
+    setTurn({ slab, px: (cell % cols) + 0.5, py: Math.floor(cell / cols) + 0.5, from: degrees, start: performance.now(), angle: degrees });
   }
 
-  // Animate the new pose from the old one, turning around the pivot half.
-  function animateTurn(slab: number, pivot: 0 | 1, before: SlabsState, after: SlabsState) {
-    if (before[slab * 2]! < 0 || after[slab * 2]! < 0 || reducedMotion()) return;
-    const cell = slabsPivotCell(spec, after, slab, pivot);
-    const oldAngle = otherDir(before[slab * 2 + 1]!, pivot) * 90;
-    const newAngle = otherDir(after[slab * 2 + 1]!, pivot) * 90;
-    let delta = (((oldAngle - newAngle) % 360) + 540) % 360 - 180;
-    if (delta === -180) delta = 180;
-    setTurn({ slab, px: (cell % cols) + 0.5, py: Math.floor(cell / cols) + 0.5, from: delta, start: performance.now(), angle: delta });
-  }
-
-  // A turn that does not fit: the slab swings a quarter turn around the pivot half and back.
-  function bounceTurn(slab: number, pivot: 0 | 1) {
-    if (reducedMotion()) {
-      flashShake(slab);
+  // A tap turns a quarter clockwise. A pose that fits is taken at once; one that does not is only
+  // drawn, and the next tap turns on from there.
+  function tapTurn(slab: number, pivot: 0 | 1) {
+    const cur = stateRef.current;
+    const committed = otherDir(cur[slab * 2 + 1]!, pivot);
+    const p = pendingRef.current;
+    const from = p && p.slab === slab && p.pivot === pivot ? p.od : committed;
+    const od = (from + 1) % 4;
+    const turns = (od - committed + 4) % 4;
+    setPending(null);
+    spin(slab, pivot, -90);
+    if (turns === 0) return;
+    const next = slabsRotate(spec, cur, slab, pivot, turns);
+    if (next) {
+      history.remember(cur);
+      commit(next);
       return;
     }
-    const cell = slabsPivotCell(spec, stateRef.current, slab, pivot);
-    setTurn({ slab, px: (cell % cols) + 0.5, py: Math.floor(cell / cols) + 0.5, from: 90, start: performance.now(), angle: 0, bounce: true });
+    setPending({ slab, pivot, od });
+    revertTimer.current = window.setTimeout(() => {
+      setPending(null);
+      let delta = (((od - committed) * 90) % 360 + 540) % 360 - 180;
+      if (delta === -180) delta = 180;
+      spin(slab, pivot, delta);
+    }, REVERT_MS);
   }
 
   function beginDrag(e: React.PointerEvent, slab: number, pivot: 0 | 1, from: 'board' | 'tray', grabX: number, grabY: number) {
     if (locked || solved || drag.current) return;
     e.preventDefault();
+    if (pendingRef.current && (pendingRef.current.slab !== slab || from === 'tray')) setPending(null);
     (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
     const t0 = performance.now();
     drag.current = {
@@ -321,16 +350,16 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     // turn in hand the release is always a drop, even if the finger ended where it began.
     const still = !d.moved && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) < d.cell * 0.2;
     if (still && !d.turned) {
-      const next = slabsRotate(spec, cur, d.slab, d.pivot);
-      if (!next) {
-        bounceTurn(d.slab, d.pivot);
+      if (d.from === 'tray') {
+        const next = slabsRotate(spec, cur, d.slab, d.pivot)!;
+        history.remember(cur);
+        commit(next);
         return;
       }
-      history.remember(cur);
-      animateTurn(d.slab, d.pivot, cur, next);
-      commit(next);
+      tapTurn(d.slab, d.pivot);
       return;
     }
+    setPending(null);
     // Blocked cells are not drawn, so a release there counts as off the board too.
     const under = cellAt(e.clientX, e.clientY);
     if (overTray(e.clientX, e.clientY) || under < 0 || spec.blocked[under]) {
@@ -434,12 +463,20 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     if (state[s * 2]! < 0 || ghost?.slab === s) continue;
     const pair = slabCells(spec, state[s * 2]!, state[s * 2 + 1]!);
     if (!pair) continue;
-    const [x0, y0] = center(pair[0]);
-    const [x1, y1] = center(pair[1]);
+    let [x0, y0] = center(pair[0]);
+    let [x1, y1] = center(pair[1]);
+    const held = pending?.slab === s ? pending : null;
+    if (held) {
+      // Drawn in its pending pose, which may hang over the rim or onto another slab.
+      const [px, py] = center(slabsPivotCell(spec, state, s, held.pivot));
+      const ox = px + SLAB_DC[held.od as 0]!;
+      const oy = py + SLAB_DR[held.od as 0]!;
+      [x0, y0, x1, y1] = held.pivot === 0 ? [px, py, ox, oy] : [ox, oy, px, py];
+    }
     const transform = turn?.slab === s ? `rotate(${turn.angle} ${turn.px} ${turn.py})` : undefined;
     pieces.push(
       <g key={s} transform={transform}>
-        <SlabShape x0={x0} y0={y0} x1={x1} y1={y1} a={spec.slabs[s]![0]} b={spec.slabs[s]![1]} placed className={shake === s ? 'shake' : undefined} />
+        <SlabShape x0={x0} y0={y0} x1={x1} y1={y1} a={spec.slabs[s]![0]} b={spec.slabs[s]![1]} placed className={held ? 'pending' : undefined} />
       </g>,
     );
   }
@@ -539,7 +576,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
             return (
               <div
                 key={s}
-                className={placed || ghost?.slab === s ? 'slabs-slot empty' : shake === s ? 'slabs-slot shake' : 'slabs-slot'}
+                className={placed || ghost?.slab === s ? 'slabs-slot empty' : 'slabs-slot'}
                 onPointerDown={placed || locked ? undefined : (e) => trayDown(e, s)}
                 onPointerMove={pointerMove}
                 onPointerUp={pointerUp}

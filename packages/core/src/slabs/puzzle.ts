@@ -515,18 +515,18 @@ function fitsFree(spec: SlabsPuzzle, occ: Int16Array, slab: number, pose: SlabsP
   return !!cells && cells.every((c) => occ[c]! < 0 || occ[c] === slab);
 }
 
-// A quarter turn clockwise in place around the pressed half; null when that pose is blocked or taken.
-export function slabsRotate(spec: SlabsPuzzle, state: SlabsState, slab: number, pivot: 0 | 1): SlabsState | null {
+// `turns` quarter turns clockwise in place around the pressed half; null when that pose is blocked or taken.
+export function slabsRotate(spec: SlabsPuzzle, state: SlabsState, slab: number, pivot: 0 | 1, turns = 1): SlabsState | null {
   const anchor = state[slab * 2]!;
   const dir = state[slab * 2 + 1]!;
   const next = [...state];
   if (anchor < 0) {
-    next[slab * 2 + 1] = (dir + 1) % 4;
+    next[slab * 2 + 1] = (dir + turns) % 4;
     return next;
   }
   const pivotCell = slabsPivotCell(spec, state, slab, pivot);
   const occ = slabsOccupancy(spec, state);
-  const pose = poseAround(spec, pivotCell, pivot, (otherDir(dir, pivot) + 1) % 4);
+  const pose = poseAround(spec, pivotCell, pivot, (otherDir(dir, pivot) + turns) % 4);
   if (!fitsFree(spec, occ, slab, pose)) return null;
   next[slab * 2] = pose!.anchor;
   next[slab * 2 + 1] = pose!.dir;

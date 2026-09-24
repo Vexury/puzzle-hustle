@@ -36,12 +36,7 @@
 .slab.placed .slab-body { fill: color-mix(in srgb, var(--card-bg) 50%, transparent); stroke: var(--text); stroke-width: 0.07; }
 .slab-divider { stroke: var(--piece-line); stroke-width: 0.035; stroke-linecap: round; }
 .slab-pip { fill: var(--text); }
-.slab.shake { animation: slabs-shake 0.3s ease-in-out; transform-box: fill-box; transform-origin: center; }
-@keyframes slabs-shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-6%); }
-  75% { transform: translateX(6%); }
-}
+.slab.pending .slab-body { stroke: var(--danger); }
 .slabs-board.solved .slab-body, .slabs-board.solved .slabs-rim { stroke: var(--success); }
 
 .slabs-badge rect { fill: var(--text); }
@@ -77,7 +72,6 @@
 .slabs-slot svg { width: 100%; height: 100%; display: block; }
 .slabs-slot.empty { cursor: default; }
 .slabs-slot.empty svg { opacity: 0.15; }
-.slabs-slot.shake svg { animation: slabs-shake 0.3s ease-in-out; }
 
 .slabs-ghost {
   position: fixed;
@@ -86,6 +80,3 @@
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.18));
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .slab.shake, .slabs-slot.shake svg { animation: none; }
-}
