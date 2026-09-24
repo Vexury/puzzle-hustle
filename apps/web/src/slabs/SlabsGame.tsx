@@ -81,6 +81,8 @@ interface Turn {
   start: number;
   // Degrees still to turn; eased from `from` to 0 frame by frame.
   angle: number;
+  // A blocked turn: swings out to `from` and back to 0 instead.
+  bounce?: boolean;
 }
 
 const TURN_MS = 150;
@@ -167,12 +169,12 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     if (!turn) return;
     let raf = 0;
     const tick = () => {
-      const t = (performance.now() - turn.start) / TURN_MS;
+      const t = (performance.now() - turn.start) / (turn.bounce ? 2 * TURN_MS : TURN_MS);
       if (t >= 1) {
         setTurn(null);
         return;
       }
-      const angle = turn.from * (1 - t) ** 3;
+      const angle = turn.bounce ? turn.from * Math.sin(Math.PI * t) : turn.from * (1 - t) ** 3;
       setTurn((cur) => (cur && cur.start === turn.start ? { ...cur, angle } : cur));
       raf = requestAnimationFrame(tick);
     };
@@ -211,22 +213,25 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     setTimeout(() => setShake((s) => (s === slab ? null : s)), 320);
   }
 
-  // Animate the new pose from the old one. The turn's centre is the point that carries the new
-  // pose back onto the old one: the pivot half's cell when it stayed, else a point beside it.
+  // Animate the new pose from the old one, turning around the pivot half.
   function animateTurn(slab: number, pivot: 0 | 1, before: SlabsState, after: SlabsState) {
     if (before[slab * 2]! < 0 || after[slab * 2]! < 0 || reducedMotion()) return;
-    const centre = (cell: number) => [(cell % cols) + 0.5, Math.floor(cell / cols) + 0.5] as const;
-    const [x0, y0] = centre(slabsPivotCell(spec, before, slab, pivot));
-    const [x1, y1] = centre(slabsPivotCell(spec, after, slab, pivot));
-    let delta = ((((before[slab * 2 + 1]! - after[slab * 2 + 1]!) * 90) % 360) + 540) % 360 - 180;
+    const cell = slabsPivotCell(spec, after, slab, pivot);
+    const oldAngle = otherDir(before[slab * 2 + 1]!, pivot) * 90;
+    const newAngle = otherDir(after[slab * 2 + 1]!, pivot) * 90;
+    let delta = (((oldAngle - newAngle) % 360) + 540) % 360 - 180;
     if (delta === -180) delta = 180;
-    const t = (delta * Math.PI) / 180;
-    const c = Math.cos(t);
-    const s = Math.sin(t);
-    const rx = x0 - (c * x1 - s * y1);
-    const ry = y0 - (s * x1 + c * y1);
-    const det = 2 - 2 * c;
-    setTurn({ slab, px: ((1 - c) * rx - s * ry) / det, py: (s * rx + (1 - c) * ry) / det, from: delta, start: performance.now(), angle: delta });
+    setTurn({ slab, px: (cell % cols) + 0.5, py: Math.floor(cell / cols) + 0.5, from: delta, start: performance.now(), angle: delta });
+  }
+
+  // A turn that does not fit: the slab swings a quarter turn around the pivot half and back.
+  function bounceTurn(slab: number, pivot: 0 | 1) {
+    if (reducedMotion()) {
+      flashShake(slab);
+      return;
+    }
+    const cell = slabsPivotCell(spec, stateRef.current, slab, pivot);
+    setTurn({ slab, px: (cell % cols) + 0.5, py: Math.floor(cell / cols) + 0.5, from: 90, start: performance.now(), angle: 0, bounce: true });
   }
 
   function beginDrag(e: React.PointerEvent, slab: number, pivot: 0 | 1, from: 'board' | 'tray', grabX: number, grabY: number) {
@@ -318,7 +323,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     if (still && !d.turned) {
       const next = slabsRotate(spec, cur, d.slab, d.pivot);
       if (!next) {
-        flashShake(d.slab);
+        bounceTurn(d.slab, d.pivot);
         return;
       }
       history.remember(cur);

@@ -515,9 +515,7 @@ function fitsFree(spec: SlabsPuzzle, occ: Int16Array, slab: number, pose: SlabsP
   return !!cells && cells.every((c) => occ[c]! < 0 || occ[c] === slab);
 }
 
-// A quarter turn clockwise per tap, keeping the tapped cell covered: the pressed half stays put if
-// it can, else the slab slides so its other half lands on that cell, which in a one-cell corridor
-// swaps the halves. Only an orientation with neither fitting is skipped.
+// A quarter turn clockwise in place around the pressed half; null when that pose is blocked or taken.
 export function slabsRotate(spec: SlabsPuzzle, state: SlabsState, slab: number, pivot: 0 | 1): SlabsState | null {
   const anchor = state[slab * 2]!;
   const dir = state[slab * 2 + 1]!;
@@ -528,16 +526,11 @@ export function slabsRotate(spec: SlabsPuzzle, state: SlabsState, slab: number, 
   }
   const pivotCell = slabsPivotCell(spec, state, slab, pivot);
   const occ = slabsOccupancy(spec, state);
-  for (let k = 1; k <= 3; k++) {
-    const turned = (otherDir(dir, pivot) + k) % 4;
-    for (const pose of [poseAround(spec, pivotCell, pivot, turned), poseAround(spec, pivotCell, pivot === 0 ? 1 : 0, (turned + 2) % 4)]) {
-      if (!fitsFree(spec, occ, slab, pose)) continue;
-      next[slab * 2] = pose!.anchor;
-      next[slab * 2 + 1] = pose!.dir;
-      return next;
-    }
-  }
-  return null;
+  const pose = poseAround(spec, pivotCell, pivot, (otherDir(dir, pivot) + 1) % 4);
+  if (!fitsFree(spec, occ, slab, pose)) return null;
+  next[slab * 2] = pose!.anchor;
+  next[slab * 2 + 1] = pose!.dir;
+  return next;
 }
 
 export function slabsValues(spec: SlabsPuzzle, state: SlabsState): Int8Array {

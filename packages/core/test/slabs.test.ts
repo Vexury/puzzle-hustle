@@ -214,12 +214,12 @@ describe('slabs player state', () => {
     expect(slabsPlace(spec, empty, 0, spec.config.cols - 1, 0)).toBeNull();
   });
 
-  it('keeps the pressed cell covered and never turns onto blocked or taken cells', () => {
+  it('rotates around the pressed half and never onto blocked or taken cells', () => {
     for (let s = 0; s < spec.slabs.length; s++) {
       const alone = slabsPlace(spec, empty, s, solution[s * 2]!, solution[s * 2 + 1]!)!;
       for (const pivot of [0, 1] as const) {
         const turned = slabsRotate(spec, alone, s, pivot);
-        if (turned) expect(slabsOccupancy(spec, turned)[slabsPivotCell(spec, alone, s, pivot)]).toBe(s);
+        if (turned) expect(slabsPivotCell(spec, turned, s, pivot)).toBe(slabsPivotCell(spec, alone, s, pivot));
         const crowded = slabsRotate(spec, solution, s, pivot);
         if (!crowded) continue;
         expect(validSlabsState(spec, crowded)).toEqual(crowded);
@@ -235,10 +235,10 @@ describe('slabs player state', () => {
     expect(slabsRotate(tiny, start, 0, 1)).toEqual([2, 1]);
   });
 
-  it('swaps the halves in a one-cell corridor instead of refusing to turn', () => {
+  it('refuses a turn that leaves the board instead of sliding the slab', () => {
     const corridor = tinySpec(puzzle(2, 1, [[1, 2]], [-1, -1], []), [{ anchor: 0, dir: 0 }]);
-    expect(slabsRotate(corridor, [0, 0], 0, 0)).toEqual([1, 2]);
-    expect(slabsRotate(corridor, [1, 2], 0, 1)).toEqual([0, 0]);
+    expect(slabsRotate(corridor, [0, 0], 0, 0)).toBeNull();
+    expect(slabsRotate(corridor, [0, 0], 0, 1)).toBeNull();
   });
 
   it('counts a double laid the other way round as correct', () => {
