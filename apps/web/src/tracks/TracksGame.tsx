@@ -64,20 +64,67 @@ function edgePoint(c: number, r: number, dir: number): [number, number] {
   return [c, r + 0.5];
 }
 
-// Straight pieces are lines, curves a quadratic bend through the cell centre, a dangling end a
-// stub from the centre to the edge.
-function piecePath(c: number, r: number, mask: number): string {
+// Half the distance between the two rails, and half a sleeper's length.
+const GAUGE = 0.17;
+const SLEEPER = 0.25;
+
+interface Track {
+  rails: string;
+  sleepers: string;
+}
+
+// Two rails from (x1, y1) to (x2, y2) with sleepers at the given fractions of the way.
+function straightTrack(x1: number, y1: number, x2: number, y2: number, at: number[]): Track {
+  const len = Math.hypot(x2 - x1, y2 - y1);
+  const nx = (-(y2 - y1) / len) * GAUGE;
+  const ny = ((x2 - x1) / len) * GAUGE;
+  const rails = `M${x1 + nx} ${y1 + ny}L${x2 + nx} ${y2 + ny}M${x1 - nx} ${y1 - ny}L${x2 - nx} ${y2 - ny}`;
+  const k = SLEEPER / GAUGE;
+  const sleepers = at
+    .map((t) => {
+      const x = x1 + (x2 - x1) * t;
+      const y = y1 + (y2 - y1) * t;
+      return `M${x + nx * k} ${y + ny * k}L${x - nx * k} ${y - ny * k}`;
+    })
+    .join('');
+  return { rails, sleepers };
+}
+
+// Straight pieces run edge to edge, curves are a quarter circle around the corner the two edges
+// share, a dangling end runs from the centre to its edge. Sleepers every third of a cell.
+function pieceTrack(c: number, r: number, mask: number): Track {
   const dirs = [TRACK_N, TRACK_E, TRACK_S, TRACK_W].filter((d) => mask & d);
   const cx = c + 0.5;
   const cy = r + 0.5;
   if (dirs.length === 1) {
     const [x, y] = edgePoint(c, r, dirs[0]!);
-    return `M${cx} ${cy}L${x} ${y}`;
+    return straightTrack(cx, cy, x, y, [0, 2 / 3]);
   }
   const [x1, y1] = edgePoint(c, r, dirs[0]!);
   const [x2, y2] = edgePoint(c, r, dirs[1]!);
-  const straight = (dirs[0]! | dirs[1]!) === (TRACK_N | TRACK_S) || (dirs[0]! | dirs[1]!) === (TRACK_E | TRACK_W);
-  return straight ? `M${x1} ${y1}L${x2} ${y2}` : `M${x1} ${y1}Q${cx} ${cy} ${x2} ${y2}`;
+  if ((mask & (TRACK_N | TRACK_S)) === (TRACK_N | TRACK_S) || (mask & (TRACK_E | TRACK_W)) === (TRACK_E | TRACK_W)) {
+    return straightTrack(x1, y1, x2, y2, [1 / 6, 1 / 2, 5 / 6]);
+  }
+  const ox = mask & TRACK_E ? c + 1 : c;
+  const oy = mask & TRACK_N ? r : r + 1;
+  const a0 = Math.atan2(y1 - oy, x1 - ox);
+  let sweep = Math.atan2(y2 - oy, x2 - ox) - a0;
+  if (sweep > Math.PI) sweep -= 2 * Math.PI;
+  if (sweep < -Math.PI) sweep += 2 * Math.PI;
+  const flag = sweep > 0 ? 1 : 0;
+  const at = (rad: number, a: number) => `${ox + rad * Math.cos(a)} ${oy + rad * Math.sin(a)}`;
+  const rails = [0.5 - GAUGE, 0.5 + GAUGE].map((rad) => `M${at(rad, a0)}A${rad} ${rad} 0 0 ${flag} ${at(rad, a0 + sweep)}`).join('');
+  const sleepers = [1 / 6, 1 / 2, 5 / 6].map((t) => `M${at(0.5 - SLEEPER, a0 + sweep * t)}L${at(0.5 + SLEEPER, a0 + sweep * t)}`).join('');
+  return { rails, sleepers };
+}
+
+function TrackShape({ track, className }: { track: Track; className: string }) {
+  return (
+    <g className={className}>
+      <path className="tracks-sleepers" d={track.sleepers} />
+      <path className="tracks-rails" d={track.rails} />
+    </g>
+  );
 }
 
 export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintAd, locked, initialState, onStateChange }: TracksGameProps) {
@@ -236,7 +283,7 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     // of leaving a half piece that says "track here" without saying which way.
     const player = hasPlayerEdge(i, c, r);
     if (m && (player || spec.given[i] || (m & (m - 1)) !== 0)) {
-      pieces.push(<path key={`p${i}`} className={player ? 'tracks-piece' : 'tracks-piece given'} d={piecePath(c, r, m)} />);
+      pieces.push(<TrackShape key={`p${i}`} className={player ? 'tracks-piece' : 'tracks-piece given'} track={pieceTrack(c, r, m)} />);
     }
     if (state[i]! & TRACKS_STATE_X) {
       marks.push(
@@ -281,13 +328,13 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
         >
           <g className="tracks-cells">{cells}</g>
           <g className="tracks-marks">{marks}</g>
-          <line className="tracks-piece given" x1={-PAD_L} y1={entryY} x2={0} y2={entryY} />
-          <line className="tracks-piece given" x1={exitX} y1={rows} x2={exitX} y2={rows + PAD_B} />
+          <TrackShape className="tracks-piece given" track={straightTrack(-PAD_L, entryY, 0, entryY, [0.3])} />
+          <TrackShape className="tracks-piece given" track={straightTrack(exitX, rows, exitX, rows + PAD_B, [0.7])} />
           <g className="tracks-pieces">{pieces}</g>
-          <text className="tracks-end" x={-PAD_L / 2} y={entryY - 0.28} dy="0.33em">
+          <text className="tracks-end" x={-PAD_L / 2} y={entryY - 0.5} dy="0.33em">
             A
           </text>
-          <text className="tracks-end" x={exitX + 0.3} y={rows + PAD_B / 2} dy="0.33em">
+          <text className="tracks-end" x={exitX + 0.5} y={rows + PAD_B / 2} dy="0.33em">
             B
           </text>
           {[...spec.colCounts].map((want, c) => (
