@@ -12,6 +12,7 @@ export default defineConfig({
           TEST_MIGRATIONS: migrations,
           SESSION_SECRET: 'test-secret',
           GOOGLE_CLIENT_IDS: 'test-client-id',
+          APPLE_AUDIENCES: 'test.bundle.id',
         },
       },
     }),

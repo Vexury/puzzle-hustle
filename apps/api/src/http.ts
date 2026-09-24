@@ -6,6 +6,7 @@ export interface Env {
   DB: D1Database;
   SESSION_SECRET: string;
   GOOGLE_CLIENT_IDS: string;
+  APPLE_AUDIENCES: string;
   SESSION_LIMIT?: RateLimiter;
 }
 

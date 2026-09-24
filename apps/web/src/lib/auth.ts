@@ -15,15 +15,17 @@ export const CLIENT_ID =
   '455101583494-lfg3kbscmqgubeqrsocg0919269n2a23.apps.googleusercontent.com';
 const GSI_SRC = 'https://accounts.google.com/gsi/client';
 
-// Android signs in natively with Google, the web through Google's widget. iOS will offer Apple
-// alone (decision 2026-09-22) and has no sign-in until that exists.
+// Android signs in natively with Google, the web through Google's widget, iOS with Apple
+// alone (decision 2026-09-22).
 export const NATIVE_GOOGLE = Capacitor.getPlatform() === 'android';
-export const SIGN_IN_AVAILABLE = NATIVE_GOOGLE || !Capacitor.isNativePlatform();
+export const NATIVE_APPLE = Capacitor.getPlatform() === 'ios';
+export const SIGN_IN_AVAILABLE = NATIVE_GOOGLE || NATIVE_APPLE || !Capacitor.isNativePlatform();
+const NATIVE_PROVIDER = NATIVE_APPLE ? 'apple' : 'google';
 
-async function startSession(idToken: string): Promise<Session> {
+async function startSession(provider: 'google' | 'apple', idToken: string): Promise<Session> {
   const session = await apiFetch<Session>('/session', {
     method: 'POST',
-    body: JSON.stringify({ provider: 'google', idToken, name: readSetting('ph:name') ?? undefined }),
+    body: JSON.stringify({ provider, idToken, name: readSetting('ph:name') ?? undefined }),
   });
   writeSession(session);
   // Solves made while signed out wait in the queue. Nothing else fires when the sign-in sheet
@@ -47,23 +49,31 @@ async function startSession(idToken: string): Promise<Session> {
 let nativeReady: Promise<void> | null = null;
 
 function initNative(): Promise<void> {
-  nativeReady ??= SocialLogin.initialize({ google: { webClientId: CLIENT_ID } }).catch((err: unknown) => {
+  const options = NATIVE_APPLE ? { apple: {} } : { google: { webClientId: CLIENT_ID } };
+  nativeReady ??= SocialLogin.initialize(options).catch((err: unknown) => {
     nativeReady = null;
     throw err;
   });
   return nativeReady;
 }
 
-// Resolves false when the player dismissed Google's sheet, which is a choice, not a failure.
+// Resolves false when the player dismissed the system sheet, which is a choice, not a failure.
 export async function nativeSignIn(): Promise<boolean> {
   try {
     await initNative();
-    // No scopes: the ID token is all the server needs, and asking for any on Android would
-    // route through the AuthorizationClient, which the plugin only allows with a patched activity.
-    const login = await SocialLogin.login({ provider: 'google', options: {} });
-    const idToken = login.result.responseType === 'online' ? login.result.idToken : null;
+    // No scopes: the ID token is all the server needs. On Android asking for any would route
+    // through the AuthorizationClient, which the plugin only allows with a patched activity; on
+    // iOS an empty list keeps Apple's sheet from asking for name and e-mail we never store.
+    let idToken: string | null;
+    if (NATIVE_APPLE) {
+      const login = await SocialLogin.login({ provider: 'apple', options: { scopes: [] } });
+      idToken = login.result.idToken;
+    } else {
+      const login = await SocialLogin.login({ provider: 'google', options: {} });
+      idToken = login.result.responseType === 'online' ? login.result.idToken : null;
+    }
     if (!idToken) throw new Error('no id token');
-    await startSession(idToken);
+    await startSession(NATIVE_PROVIDER, idToken);
     return true;
   } catch (err) {
     if ((err as { code?: string }).code === 'USER_CANCELLED') return false;
@@ -135,7 +145,7 @@ export async function renderSignInButton(
     callback: (response) => {
       void (async () => {
         try {
-          onDone(await startSession(response.credential));
+          onDone(await startSession('google', response.credential));
         } catch {
           toast('Sign-in failed. Try again.');
         }
@@ -179,11 +189,11 @@ export function signOut() {
     // Google's auto-select hint is a convenience. If the browser refuses it, that is no
     // reason to keep the player signed in locally.
   }
-  // The Android counterpart: clears Credential Manager's remembered choice so the next sign-in
-  // asks for an account again instead of silently picking the last one.
-  if (NATIVE_GOOGLE) {
+  // The native counterpart: on Android it clears Credential Manager's remembered choice so the
+  // next sign-in asks for an account again, on iOS it drops the plugin's stored Apple tokens.
+  if (NATIVE_GOOGLE || NATIVE_APPLE) {
     void initNative()
-      .then(() => SocialLogin.logout({ provider: 'google' }))
+      .then(() => SocialLogin.logout({ provider: NATIVE_PROVIDER }))
       .catch(() => undefined);
   }
   writeSession(null);

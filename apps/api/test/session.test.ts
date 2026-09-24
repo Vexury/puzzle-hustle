@@ -1,6 +1,7 @@
 import { applyD1Migrations, env } from 'cloudflare:test';
 import { beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import worker from '../src/index.ts';
+import * as apple from '../src/apple.ts';
 import * as google from '../src/google.ts';
 import { upsertPlayer } from '../src/players.ts';
 import { signSession } from '../src/token.ts';
@@ -51,6 +52,25 @@ it('never stores the e-mail address', async () => {
 it('refuses an invalid id token', async () => {
   vi.spyOn(google, 'verifyGoogleIdToken').mockResolvedValue(null);
   const response = await post('/session', { provider: 'google', idToken: 'x' });
+  expect(response.status).toBe(401);
+});
+
+it('signs in with Apple and keeps it apart from a Google account with the same subject', async () => {
+  vi.spyOn(google, 'verifyGoogleIdToken').mockResolvedValue('same-subject');
+  vi.spyOn(apple, 'verifyAppleIdToken').mockResolvedValue('same-subject');
+
+  const viaGoogle = (await (await post('/session', { provider: 'google', idToken: 'x' })).json()) as {
+    player: { id: string };
+  };
+  const response = await post('/session', { provider: 'apple', idToken: 'y' });
+  expect(response.status).toBe(200);
+  const viaApple = (await response.json()) as { player: { id: string } };
+  expect(viaApple.player.id).not.toBe(viaGoogle.player.id);
+});
+
+it('refuses an invalid Apple token', async () => {
+  vi.spyOn(apple, 'verifyAppleIdToken').mockResolvedValue(null);
+  const response = await post('/session', { provider: 'apple', idToken: 'x' });
   expect(response.status).toBe(401);
 });
 

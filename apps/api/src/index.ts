@@ -1,5 +1,6 @@
 import { isCosmeticOf } from '@puzzle-hustle/core';
 import { readBoard } from './board.ts';
+import { verifyAppleIdToken } from './apple.ts';
 import { verifyGoogleIdToken } from './google.ts';
 import { createGroup, joinGroup, leaveGroup, listGroups, removeMember } from './groups.ts';
 import { cors, error, json, type Env } from './http.ts';
@@ -17,6 +18,10 @@ async function body(request: Request): Promise<Record<string, unknown>> {
   }
 }
 
+function list(value: string): string[] {
+  return value.split(',').map((id) => id.trim()).filter(Boolean);
+}
+
 async function postSession(request: Request, env: Env): Promise<Response> {
   if (env.SESSION_LIMIT) {
     const key = request.headers.get('CF-Connecting-IP') ?? 'unknown';
@@ -24,16 +29,19 @@ async function postSession(request: Request, env: Env): Promise<Response> {
     if (!success) return error(429, 'too_many_requests');
   }
   const input = await body(request);
-  if (input.provider !== 'google') return error(400, 'unsupported_provider');
+  const provider = input.provider;
+  if (provider !== 'google' && provider !== 'apple') return error(400, 'unsupported_provider');
   if (typeof input.idToken !== 'string') return error(400, 'missing_token');
 
-  const audiences = env.GOOGLE_CLIENT_IDS.split(',').map((id) => id.trim()).filter(Boolean);
-  const subject = await verifyGoogleIdToken(input.idToken, { audiences });
+  const subject =
+    provider === 'google'
+      ? await verifyGoogleIdToken(input.idToken, { audiences: list(env.GOOGLE_CLIENT_IDS) })
+      : await verifyAppleIdToken(input.idToken, { audiences: list(env.APPLE_AUDIENCES) });
   if (!subject) return error(401, 'bad_token');
 
   const offered = typeof input.name === 'string' ? validateName(input.name) : null;
   const name = offered?.ok ? offered.name : generatedName();
-  const player = await upsertPlayer(env.DB, 'google', subject, name);
+  const player = await upsertPlayer(env.DB, provider, subject, name);
   return json({ token: await signSession(player.id, env.SESSION_SECRET), player });
 }
 

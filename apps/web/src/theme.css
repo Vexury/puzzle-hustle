@@ -331,6 +331,11 @@ p { margin: 0; }
 .pill:disabled { opacity: 0.5; cursor: default; transform: none; }
 .pill.outline { background: transparent; color: var(--text); border-color: var(--border-mid); }
 .pill.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+/* Apple's button rules allow black on light surfaces and white on dark ones, nothing tinted,
+   so this one ignores the accent colour on purpose. */
+.pill.apple-signin { background: #000; border-color: #000; color: #fff; font-weight: 600; }
+[data-theme="dark"] .pill.apple-signin { background: #fff; border-color: #fff; color: #000; }
+.pill.apple-signin svg { width: 1.05em; height: 1.05em; margin-top: -0.15em; fill: currentColor; }
 .reset-confirm { display: flex; gap: 8px; }
 .friends-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .friends-actions input {

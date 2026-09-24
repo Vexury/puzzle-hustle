@@ -18,3 +18,5 @@ simple = { limit = 20, period = 60 }
 
 [vars]
 GOOGLE_CLIENT_IDS = "455101583494-lfg3kbscmqgubeqrsocg0919269n2a23.apps.googleusercontent.com"
+# The iOS bundle ID. A Services ID joins it once Apple sign-in comes to the web.
+APPLE_AUDIENCES = "dev.vexury.puzzlehustle"
