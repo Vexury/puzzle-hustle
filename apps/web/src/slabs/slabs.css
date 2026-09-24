@@ -22,6 +22,8 @@
   touch-action: none;
 }
 .slabs-cell { fill: var(--board-cell); }
+/* Blocked cells are not drawn; the hatch behind the board shows through so they read as out of play. */
+.slabs-hatch { stroke: var(--text-muted); stroke-width: 0.05; opacity: 0.45; }
 .slabs-cell.flash { animation: slabs-flash 0.75s ease-out 4; }
 @keyframes slabs-flash {
   0%, 45% { stroke: var(--success); stroke-width: 0.12; }

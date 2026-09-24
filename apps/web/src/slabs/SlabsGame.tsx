@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import {
   SLAB_DC,
   SLAB_DR,
@@ -145,6 +145,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
   const stateRef = useRef(state);
   const drag = useRef<Drag | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const hatchId = `slabs-hatch-${useId().replace(/[^\w-]/g, '')}`;
   const trayRef = useRef<HTMLDivElement>(null);
   const history = useHistory<SlabsState>();
   const solved = isSlabsSolved(spec, state);
@@ -453,6 +454,12 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
           onPointerCancel={pointerCancel}
           onContextMenu={(e) => e.preventDefault()}
         >
+          <defs>
+            <pattern id={hatchId} patternUnits="userSpaceOnUse" width={0.18} height={0.18} patternTransform="rotate(45)">
+              <line className="slabs-hatch" x1={0} y1={0} x2={0} y2={0.18} />
+            </pattern>
+          </defs>
+          {spec.blocked.some(Boolean) && <rect className="slabs-void" width={cols} height={rows} fill={`url(#${hatchId})`} />}
           <g>{cells}</g>
           <g>{lines}</g>
           {preview}
