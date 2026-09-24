@@ -319,7 +319,9 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
       commit(next);
       return;
     }
-    if (overTray(e.clientX, e.clientY)) {
+    // Blocked cells are not drawn, so a release there counts as off the board too.
+    const under = cellAt(e.clientX, e.clientY);
+    if (overTray(e.clientX, e.clientY) || under < 0 || spec.blocked[under]) {
       if (d.from === 'tray') return;
       history.remember(cur);
       commit(slabsToTray(cur, d.slab));
