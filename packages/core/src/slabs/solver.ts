@@ -128,6 +128,10 @@ interface Dyn {
   allowed: Uint8Array;
   fixed: Int32Array;
   order: number[];
+  // Propagation rounds so far, and the round in which each slab was fixed: how long the chain
+  // of deductions leading to it is.
+  round: number;
+  wave: Int16Array;
 }
 
 // The placement lists depend only on the blocked cells and the slabs, not on the rules. The
@@ -193,17 +197,18 @@ function initialDyn(b: Board): Dyn {
   for (let i = 0; i < b.cells; i++) allowed[i] = b.p.blocked[i] ? 0 : ALL_VALUES;
   const live = new Int32Array(b.pSlab.length);
   for (let i = 0; i < live.length; i++) live[i] = i;
-  return { alive: new Uint8Array(b.pSlab.length).fill(1), live, liveN: live.length, allowed, fixed: new Int32Array(b.p.slabs.length).fill(-1), order: [] };
+  return { alive: new Uint8Array(b.pSlab.length).fill(1), live, liveN: live.length, allowed, fixed: new Int32Array(b.p.slabs.length).fill(-1), order: [], round: 0, wave: new Int16Array(b.p.slabs.length).fill(-1) };
 }
 
 function cloneDyn(d: Dyn): Dyn {
-  return { alive: d.alive.slice(), live: d.live.slice(0, d.liveN), liveN: d.liveN, allowed: d.allowed.slice(), fixed: d.fixed.slice(), order: [...d.order] };
+  return { alive: d.alive.slice(), live: d.live.slice(0, d.liveN), liveN: d.liveN, allowed: d.allowed.slice(), fixed: d.fixed.slice(), order: [...d.order], round: d.round, wave: d.wave.slice() };
 }
 
 function fix(b: Board, d: Dyn, id: number) {
   const s = b.pSlab[id]!;
   d.fixed[s] = id;
   d.order.push(s);
+  d.wave[s] = d.round;
   for (const other of b.bySlab[s]!) if (other !== id) d.alive[other] = 0;
 }
 
@@ -286,6 +291,7 @@ function propagate(b: Board, d: Dyn): boolean {
   };
   for (let round = 0; round < 10_000; round++) {
     let changed = false;
+    d.round++;
     cover.fill(-1);
     for (let s = 0; s < slabCount; s++) {
       const id = d.fixed[s]!;
@@ -456,6 +462,8 @@ export interface SlabsSolveResult {
   steps: [number, number, number];
   placements: (SlabsPlacement | null)[];
   order: number[];
+  // Per slab, the propagation round in which it was fixed (-1 if never).
+  waves: number[];
 }
 
 function valuesOf(b: Board, d: Dyn): Int8Array {
@@ -518,7 +526,7 @@ export function solveSlabs(p: SlabsPuzzle, maxTier: 1 | 2 | 3): SlabsSolveResult
     const second = first === b.pC1[id] ? b.pC2[id]! : b.pC1[id]!;
     return { anchor: first, dir: slabDirection(cols, first, second) };
   });
-  return { solved, contradiction, steps, placements, order: d.order };
+  return { solved, contradiction, steps, placements, order: d.order, waves: [...d.wave] };
 }
 
 export function countSlabsSolutions(p: SlabsPuzzle, limit = 2, maxNodes = 2_000_000): { count: number; complete: boolean } {

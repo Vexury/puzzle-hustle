@@ -149,6 +149,8 @@ describe('slabs generator', () => {
         const res = solveSlabs(spec, cfg.maxTier);
         expect(res.solved).toBe(true);
         expect(res.order.length).toBe(cfg.slabs);
+        expect(new Set(res.waves).size).toBeLessThanOrEqual(cfg.maxWaves);
+        expect(res.waves.filter((w) => w === Math.min(...res.waves)).length).toBeGreaterThanOrEqual(cfg.minFirst);
         // Genius is proven unique by the logic solver alone; the brute-force count is too slow there.
         if (difficulty !== 'genius') expect(countSlabsSolutions(spec).count).toBe(1);
       }

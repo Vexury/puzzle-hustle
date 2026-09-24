@@ -10,11 +10,12 @@ import {
   slabsRegions,
   solveSlabs,
   type SlabsPlacement,
+  type SlabsSolveResult,
   type SlabsPuzzle,
   type SlabsRule,
 } from './solver.ts';
 
-export const SLABS_VERSION = 2;
+export const SLABS_VERSION = 3;
 
 export interface SlabsConfig {
   cols: number;
@@ -37,14 +38,18 @@ export interface SlabsConfig {
   islands: number;
   // Chance that a slab is laid so one of its halves matches a neighbour, which feeds `=` regions.
   matchBias: number;
+  // Shape of the solve: at most this many waves of slabs falling into place one after another,
+  // and at least this many slabs in the first wave, so a player can work along from the start.
+  maxWaves: number;
+  minFirst: number;
 }
 
 // At most eight columns, so the board and the tray fit a phone without zoom.
 export const SLABS_PRESETS: Record<Difficulty, SlabsConfig> = {
-  easy: { cols: 4, rows: 5, slabs: 6, maxTier: 1, minTopSteps: 0, minRegion: 1, maxRegion: 3, weaken: 0.2, blank: 0.5, maxTopSteps: 0, islands: 1, matchBias: 0.85 },
-  medium: { cols: 6, rows: 6, slabs: 10, maxTier: 1, minTopSteps: 0, minRegion: 1, maxRegion: 4, weaken: 0.4, blank: 0.6, maxTopSteps: 0, islands: 2, matchBias: 0.85 },
-  hard: { cols: 7, rows: 7, slabs: 14, maxTier: 2, minTopSteps: 1, minRegion: 2, maxRegion: 4, weaken: 0.6, blank: 0.6, maxTopSteps: 4, islands: 2, matchBias: 0.85 },
-  genius: { cols: 8, rows: 8, slabs: 20, maxTier: 3, minTopSteps: 1, minRegion: 2, maxRegion: 5, weaken: 0.8, blank: 0.6, maxTopSteps: 12, islands: 3, matchBias: 0.85 },
+  easy: { cols: 4, rows: 5, slabs: 6, maxTier: 1, minTopSteps: 0, minRegion: 1, maxRegion: 3, weaken: 0.2, blank: 0.5, maxTopSteps: 0, islands: 1, matchBias: 0.85, maxWaves: 3, minFirst: 2 },
+  medium: { cols: 6, rows: 6, slabs: 10, maxTier: 1, minTopSteps: 0, minRegion: 1, maxRegion: 4, weaken: 0.4, blank: 0.6, maxTopSteps: 0, islands: 2, matchBias: 0.85, maxWaves: 4, minFirst: 3 },
+  hard: { cols: 7, rows: 7, slabs: 14, maxTier: 2, minTopSteps: 0, minRegion: 2, maxRegion: 4, weaken: 0.6, blank: 0.6, maxTopSteps: 4, islands: 2, matchBias: 0.85, maxWaves: 6, minFirst: 3 },
+  genius: { cols: 8, rows: 8, slabs: 20, maxTier: 3, minTopSteps: 1, minRegion: 2, maxRegion: 5, weaken: 0.8, blank: 0.6, maxTopSteps: 12, islands: 3, matchBias: 0.85, maxWaves: 9, minFirst: 4 },
 };
 
 export interface SlabsSpec extends SlabsPuzzle {
@@ -171,8 +176,28 @@ export function carveRegions(rng: Rng, cols: number, rows: number, blocked: Uint
   return regionOf;
 }
 
-// While the solver still leaves slabs open, one cell those slabs cover leaves its region and gets
-// its own exact sum. Pieces of the old region that fall apart become regions of their own.
+// The waves of a solve: a slab's wave is the propagation round it was fixed in, counted over the
+// distinct rounds that fixed anything.
+function waveShape(res: SlabsSolveResult): { waves: number; first: number; ranks: number[] } {
+  const rounds = [...new Set(res.waves.filter((w) => w >= 0))].sort((a, b) => a - b);
+  const ranks = res.waves.map((w) => rounds.indexOf(w));
+  return { waves: rounds.length, first: ranks.filter((r) => r === 0).length, ranks };
+}
+
+function fits(res: SlabsSolveResult, cfg: SlabsConfig): boolean {
+  if (!res.solved) return false;
+  const { waves, first } = waveShape(res);
+  return waves <= cfg.maxWaves && first >= cfg.minFirst;
+}
+
+function solvesWell(p: SlabsPuzzle, cfg: SlabsConfig): boolean {
+  return fits(solveSlabs(p, cfg.maxTier), cfg);
+}
+
+// While the solver still leaves slabs open, or the chain of deductions is too long or starts too
+// thin, one cell of the slabs concerned leaves its region and gets its own exact sum: open slabs
+// first, else the last wave, else the second. Pieces of the old region that fall apart become
+// regions of their own.
 function splitUntilSolved(
   rng: Rng,
   cols: number,
@@ -182,19 +207,25 @@ function splitUntilSolved(
   base: Omit<SlabsPuzzle, 'regionOf' | 'rules'>,
   rules: (SlabsRule | null)[],
   resum: (reg: number) => void,
-  tier: 1 | 2 | 3,
+  cfg: SlabsConfig,
 ): boolean {
   for (;;) {
-    const res = solveSlabs(compact(base, regionOf, rules), tier);
-    if (res.solved) return true;
+    const res = solveSlabs(compact(base, regionOf, rules), cfg.maxTier);
+    if (fits(res, cfg)) return true;
     if (res.contradiction) return false;
     const size = (reg: number) => regionOf.reduce((n, r) => n + (r === reg ? 1 : 0), 0);
+    const { waves, ranks } = waveShape(res);
+    // Open slabs; else the last wave, falling back to earlier ones; else the second wave.
+    const targets = !res.solved ? [-1] : waves > cfg.maxWaves ? Array.from({ length: waves - 1 }, (_, i) => waves - 1 - i) : [1];
     const unsure: number[] = [];
-    res.placements.forEach((placed, s) => {
-      if (placed) return;
-      const cells = slabCells(base as SlabsPuzzle, solution[s]!.anchor, solution[s]!.dir)!;
-      for (const c of cells) if (size(regionOf[c]!) > 1) unsure.push(c);
-    });
+    for (const target of targets) {
+      res.placements.forEach((placed, s) => {
+        if (target < 0 ? placed : ranks[s] !== target) return;
+        const cells = slabCells(base as SlabsPuzzle, solution[s]!.anchor, solution[s]!.dir)!;
+        for (const c of cells) if (size(regionOf[c]!) > 1) unsure.push(c);
+      });
+      if (unsure.length) break;
+    }
     if (!unsure.length) return false;
     unsure.sort((a, b) => a - b);
     const cell = rng.pick(unsure);
@@ -267,7 +298,7 @@ function mergeWhileSolved(
     for (const c of union) regionOf[c] = a;
     resum(a);
     rules[b] = null;
-    if (solveSlabs(compact(base, regionOf, rules), cfg.maxTier).solved) continue;
+    if (solvesWell(compact(base, regionOf, rules), cfg)) continue;
     union.forEach((c, i) => (regionOf[c] = before[i]!));
     resum(a);
     resum(b);
@@ -376,27 +407,27 @@ export function generateSlabs(seed: number, difficulty: Difficulty): SlabsSpec {
     };
     const regionCount = regionOf.reduce((m, r) => Math.max(m, r + 1), 0);
     for (let reg = 0; reg < regionCount; reg++) resum(reg);
-    if (!splitUntilSolved(rng, cols, rows, regionOf, solution, base, rules, resum, cfg.maxTier)) continue;
+    if (!splitUntilSolved(rng, cols, rows, regionOf, solution, base, rules, resum, cfg)) continue;
     mergeWhileSolved(rng, cfg, regionOf, mate, base, rules, resum, values);
     const order = rng.shuffle(rules.map((_, i) => i));
     for (const reg of order) {
       const sum = rules[reg];
       if (!sum || sum.kind !== 'sum' || rng.next() >= cfg.blank) continue;
       rules[reg] = null;
-      if (!solveSlabs(compact(base, regionOf, rules), cfg.maxTier).solved) rules[reg] = sum;
+      if (!solvesWell(compact(base, regionOf, rules), cfg)) rules[reg] = sum;
     }
     for (const reg of order) {
       const strong = rules[reg];
       if (!strong || strong.kind !== 'sum' || rng.next() >= cfg.weaken) continue;
       for (const weaker of weakerRules(rng, regionValues[reg]!)) {
         rules[reg] = weaker;
-        if (solveSlabs(compact(base, regionOf, rules), cfg.maxTier).solved) break;
+        if (solvesWell(compact(base, regionOf, rules), cfg)) break;
         rules[reg] = strong;
       }
     }
     const puzzle = compact(base, regionOf, rules);
     const res = solveSlabs(puzzle, cfg.maxTier);
-    if (!res.solved) continue;
+    if (!fits(res, cfg)) continue;
     const top = res.steps[cfg.maxTier - 1]!;
     if (cfg.maxTier > 1 && (top < cfg.minTopSteps || top > cfg.maxTopSteps)) continue;
     return { ...puzzle, version: SLABS_VERSION, seed, difficulty, config: cfg, solution, order: res.order };
