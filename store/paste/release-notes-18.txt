@@ -1,0 +1,14 @@
+<en-US>
+Fixes from your feedback.
+
+- Zip: a path now has to end on the last number to count as solved
+- Nonogram: colours 2 and 3 match your accent colour and stay easy to tell apart
+- Mosaic and Nonogram: boards fit the screen again after it changes size
+</en-US>
+<de-DE>
+Korrekturen nach eurem Feedback.
+
+- Zip: ein Pfad zählt nur noch als gelöst, wenn er auf der letzten Zahl endet
+- Nonogramm: Farben 2 und 3 passen zur Akzentfarbe und bleiben gut unterscheidbar
+- Mosaik und Nonogramm: Bretter passen sich wieder an, wenn sich die Bildschirmgröße ändert
+</de-DE>

@@ -12,7 +12,7 @@ android {
         applicationId "dev.vexury.puzzlehustle"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 17
+        versionCode 18
         versionName "1.0"
         manifestPlaceholders = [admobAppId: signingProperty('PH_ADMOB_APP_ID') ?: 'ca-app-pub-3552688457242630~1280410110']
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
