@@ -46,7 +46,7 @@ export const PUZZLE_META: Record<PuzzleTypeId, PuzzleMeta> = {
   },
   killer: {
     id: 'killer',
-    name: 'Killer Sudoku',
+    name: 'Sumdoku',
     tagline: 'No givens, just cages. Each dashed cage adds up to its number.',
   },
   zip: {

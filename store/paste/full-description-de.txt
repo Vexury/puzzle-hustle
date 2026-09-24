@@ -1,6 +1,6 @@
 Jeden Tag warten sieben frische Logikrätsel auf dich, und bei keinem einzigen brauchst du Glück. Hol dir einen Kaffee und leg los!
 
-Puzzle Hustle bringt Sudoku, Killer Sudoku, Nonogram, Mosaic, Crowns, Stars, Zip und Shapes in einer freundlichen kleinen App zusammen. Morgens auf dem Weg zur Arbeit wach werden, abends bei einem ruhigen Gitter runterkommen. Es wartet immer etwas Neues auf dich.
+Puzzle Hustle bringt Sudoku, Sumdoku, Nonogram, Mosaic, Crowns, Stars, Zip und Shapes in einer freundlichen kleinen App zusammen. Morgens auf dem Weg zur Arbeit wach werden, abends bei einem ruhigen Gitter runterkommen. Es wartet immer etwas Neues auf dich.
 
 🧩 JEDEN TAG EIN FRISCHER SATZ
 Jeden Tag gibt es sieben frische Rätsel, und weltweit bekommen alle genau dieselben. Löse drei davon, und deine Serie wächst weiter. Lust auf etwas Größeres? Ein knackigeres Weekly und ein richtig dickes Monthly warten auf die Tage, an denen du es dir gemütlich machst.
@@ -10,7 +10,7 @@ Jedes Rätsel läuft durch unseren Löser, bevor es bei dir ankommt. Es gibt gen
 
 🎯 ACHT RÄTSEL ZUM VERLIEBEN
 • Sudoku: der Klassiker, den du längst kennst
-• Killer Sudoku: Sudoku, dazu Käfige, deren Zahlen aufgehen müssen
+• Sumdoku: Sudoku, dazu Käfige, deren Zahlen aufgehen müssen
 • Nonogram: male das versteckte Bild aus den Zahlen, schwarzweiß oder bunt
 • Mosaic: jede Zahl verrät, wie viele Felder rund um sie herum gefüllt sind
 • Crowns: eine Krone pro Zeile, Spalte und Region, und nebeneinander stehen sie nie
