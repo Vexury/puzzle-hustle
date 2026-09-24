@@ -387,6 +387,8 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
 
   const cells: React.ReactNode[] = [];
   const lines: React.ReactNode[] = [];
+  // Region boundaries sit above the slabs so a placed slab never hides where a region ends.
+  const bounds: React.ReactNode[] = [];
   for (let i = 0; i < cols * rows; i++) {
     if (spec.blocked[i]) continue;
     const r = Math.floor(i / cols);
@@ -411,7 +413,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
         dir === 0 ? [c + 1, r, c + 1, r + 1] : dir === 1 ? [c, r + 1, c + 1, r + 1] : dir === 2 ? [c, r, c, r + 1] : [c, r, c + 1, r];
       const rim = !free(n);
       const boundary = !rim && spec.regionOf[n] !== reg && (reg >= 0 || spec.regionOf[n]! >= 0);
-      lines.push(<line key={`${i}-${dir}`} className={rim ? 'slabs-rim' : boundary ? 'slabs-boundary' : 'slabs-grid'} x1={x1} y1={y1} x2={x2} y2={y2} />);
+      (boundary ? bounds : lines).push(<line key={`${i}-${dir}`} className={rim ? 'slabs-rim' : boundary ? 'slabs-boundary' : 'slabs-grid'} x1={x1} y1={y1} x2={x2} y2={y2} />);
     }
   }
 
@@ -501,6 +503,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
           <g>{lines}</g>
           {preview}
           <g>{pieces}</g>
+          <g>{bounds}</g>
           <g>{badges}</g>
         </svg>
       </div>
