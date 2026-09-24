@@ -33,7 +33,7 @@
   stroke: var(--piece-line);
   stroke-width: 0.05;
 }
-.slab.placed .slab-body { fill: color-mix(in srgb, var(--card-bg) 20%, transparent); stroke: var(--text); stroke-width: 0.07; }
+.slab.placed .slab-body { fill: color-mix(in srgb, var(--card-bg) 40%, transparent); stroke: var(--text); stroke-width: 0.07; }
 .slab-divider { stroke: var(--piece-line); stroke-width: 0.035; stroke-linecap: round; }
 .slab-pip { fill: var(--text); }
 .slab.shake { animation: slabs-shake 0.3s ease-in-out; transform-box: fill-box; transform-origin: center; }
