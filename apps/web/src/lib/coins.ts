@@ -68,7 +68,7 @@ export function balance(): number {
 export function useBalance(): number {
   'use no memo';
   useSolves();
-  useSyncExternalStore(subscribe, () => version);
+  useSyncExternalStore(subscribe, () => version, () => version);
   return balance();
 }
 
@@ -118,7 +118,7 @@ export function readEquipped(): Equipped {
 export function useEquipped(): Equipped {
   'use no memo';
   useSolves();
-  useSyncExternalStore(subscribe, () => version);
+  useSyncExternalStore(subscribe, () => version, () => version);
   return readEquipped();
 }
 

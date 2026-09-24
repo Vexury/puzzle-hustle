@@ -63,6 +63,7 @@ export function useSolves(): Record<string, SolveRecord> {
       return () => listeners.delete(l);
     },
     () => cache,
+    () => cache,
   );
 }
 
