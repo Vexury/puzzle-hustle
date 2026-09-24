@@ -238,6 +238,8 @@ export function validTracksState(spec: TracksSpec, initial: number[] | undefined
     if (v & TRACKS_STATE_E && i % cols === cols - 1) return emptyTracksState(spec);
     if (v & TRACKS_STATE_S && Math.floor(i / cols) === rows - 1) return emptyTracksState(spec);
   }
+  // Laying never gives a cell a third connection, so a board that has one was saved on another puzzle.
+  for (let i = 0; i < initial.length; i++) if (bits(tracksMask(spec, initial, i)) > 2) return emptyTracksState(spec);
   return [...initial];
 }
 

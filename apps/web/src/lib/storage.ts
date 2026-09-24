@@ -72,6 +72,9 @@ export interface Progress {
   seconds: number;
   moves: number;
   hints: number;
+  // The generator version the board was played on. A new version can build a different puzzle
+  // under the same level number or period key, where the old moves would make no sense.
+  version?: number;
 }
 
 const PROGRESS_PREFIX = 'ph:progress:';

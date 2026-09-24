@@ -17,6 +17,7 @@ import {
   generateTracks,
   generateZip,
   HINT_PRICE,
+  adapter,
   levelRef,
   mosaicAdapter,
   nonogramAdapter,
@@ -137,7 +138,12 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   // A solved period comes back with its finished board, which the game shows solved and frozen.
   // Solves from before boards were kept have none, and an empty board under "Solved!" would be
   // playable again, so those show the result alone.
-  const saved = useMemo(() => readProgress(id), [id]);
+  const version = adapter(puzzleRef.type).version;
+  // Boards saved before versions were kept carry none and are trusted; each game still checks them.
+  const saved = useMemo(() => {
+    const p = readProgress(id);
+    return p && (p.version === undefined || p.version === version) ? p : null;
+  }, [id, version]);
   const showBoard = useRef(replayable || !existing || saved !== null).current;
   const [moves, setMoves] = useState(saved?.moves ?? 0);
   const [hints, setHints] = useState(saved?.hints ?? 0);
@@ -277,7 +283,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
 
   const persist = () => {
     if (resultRef.current || !lastState.current || startedAt.current === null) return;
-    writeProgress(id, { state: lastState.current, seconds: elapsedNow(), moves: counters.current.moves, hints: counters.current.hints });
+    writeProgress(id, { state: lastState.current, seconds: elapsedNow(), moves: counters.current.moves, hints: counters.current.hints, version });
   };
 
   const onStateChange = (state: number[]) => {
@@ -335,7 +341,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
     syncAchievements();
     syncFlairs();
     if (replayable) clearProgress(id);
-    else if (lastState.current) keepFinalBoard(id, { state: lastState.current, seconds: elapsed, moves: record.moves, hints: record.hints });
+    else if (lastState.current) keepFinalBoard(id, { state: lastState.current, seconds: elapsed, moves: record.moves, hints: record.hints, version });
   };
 
   const doShare = async () => {

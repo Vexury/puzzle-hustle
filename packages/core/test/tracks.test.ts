@@ -3,6 +3,8 @@ import { Rng } from '../src/rng.ts';
 import { DIFFICULTIES } from '../src/types.ts';
 import {
   TRACKS_PRESETS,
+  TRACKS_STATE_E,
+  TRACKS_STATE_S,
   TRACKS_STATE_T,
   TRACKS_STATE_X,
   applyTracksHint,
@@ -434,6 +436,17 @@ describe('tracks state', () => {
     const bothMarks = new Array(n).fill(0);
     bothMarks[free] = TRACKS_STATE_X | TRACKS_STATE_T;
     expect(validTracksState(spec, bothMarks)).toEqual(emptyTracksState(spec));
+  });
+
+  it('drops a saved state that gives a cell three connections, as one from another puzzle would', () => {
+    const empty = emptyTracksState(spec);
+    const cell = [...Array(spec.solution.length).keys()].find(
+      (i) => i % cols > 0 && i % cols < cols - 1 && i + cols < spec.solution.length && tracksMask(spec, empty, i) === 0 && tracksMask(spec, empty, i - 1) === 0,
+    )!;
+    const threeWay = [...empty];
+    threeWay[cell - 1] = TRACKS_STATE_E;
+    threeWay[cell] = TRACKS_STATE_E | TRACKS_STATE_S;
+    expect(validTracksState(spec, threeWay)).toEqual(empty);
   });
 
   it('is solved exactly when the track matches, and counts lines', () => {
