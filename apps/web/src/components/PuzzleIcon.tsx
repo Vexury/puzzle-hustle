@@ -51,16 +51,16 @@ export function PuzzleIcon({ type, size = 56 }: { type: PuzzleTypeId; size?: num
         </svg>
       ) : type === 'slabs' ? (
         <svg viewBox="0 0 40 40">
-          <rect x="5" y="8" width="20" height="10" rx="2.6" className="ic-a" />
-          <line x1="15" y1="10" x2="15" y2="16" className="ic-cut" />
-          <circle cx="10" cy="13" r="1.4" className="ic-cut" />
-          <circle cx="18" cy="11" r="1.2" className="ic-cut" />
-          <circle cx="22" cy="15" r="1.2" className="ic-cut" />
-          <rect x="24" y="16" width="10" height="20" rx="2.6" className="ic-a" />
-          <line x1="26" y1="26" x2="32" y2="26" className="ic-cut" />
-          <circle cx="26.8" cy="18.8" r="1.2" className="ic-cut" />
-          <circle cx="31.2" cy="23.2" r="1.2" className="ic-cut" />
-          <circle cx="29" cy="31" r="1.4" className="ic-cut" />
+          <rect x="6" y="13" width="28" height="14" rx="3.6" className="ic-a" />
+          <line x1="20" y1="15.5" x2="20" y2="24.5" className="ic-cut" />
+          <circle cx="9.4" cy="16.4" r="1.25" className="ic-cut" />
+          <circle cx="13" cy="20" r="1.25" className="ic-cut" />
+          <circle cx="16.6" cy="23.6" r="1.25" className="ic-cut" />
+          <circle cx="23.4" cy="16.4" r="1.25" className="ic-cut" />
+          <circle cx="30.6" cy="16.4" r="1.25" className="ic-cut" />
+          <circle cx="27" cy="20" r="1.25" className="ic-cut" />
+          <circle cx="23.4" cy="23.6" r="1.25" className="ic-cut" />
+          <circle cx="30.6" cy="23.6" r="1.25" className="ic-cut" />
         </svg>
       ) : type === 'tracks' ? (
         <svg viewBox="0 0 40 40">
