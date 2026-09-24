@@ -31,7 +31,7 @@ interface Drag {
 
 export interface RegionsGameProps {
   spec: RegionsSpec;
-  symbol: 'cat' | 'dog';
+  symbol: 'cat' | 'heart';
   onMove(): void;
   onSolved(): void;
   onHintUsed(): void;
@@ -61,10 +61,10 @@ function paintValue(current: number): number | null {
   return null;
 }
 
-function Glyph({ symbol }: { symbol: 'cat' | 'dog' }) {
+function Glyph({ symbol }: { symbol: 'cat' | 'heart' }) {
   return (
     <svg viewBox="0 0 24 24" className="regions-glyph" aria-hidden="true">
-      {symbol === 'cat' ? <path d="M4 4l5 5h6l5-5v12a8 6 0 0 1-16 0Z" /> : <path d="M7 7h10a3 3 0 0 1 3 3v6a8 6 0 0 1-16 0v-6a3 3 0 0 1 3-3ZM8 8 4.8 15c-1 2-3.2 1.5-3.5-.5C.8 9.5 2.5 5.5 6.5 6.5ZM17.5 6.5c4-1 5.7 3 5.2 8-.3 2-2.5 2.5-3.5.5L16 8Z" />}
+      {symbol === 'cat' ? <path d="M4 4l5 5h6l5-5v12a8 6 0 0 1-16 0Z" /> : <path d="M12 21C6 16.5 2 13 2 8.5 2 5.5 4.3 3.5 7 3.5c2 0 3.8 1.1 5 3 1.2-1.9 3-3 5-3 2.7 0 5 2 5 5 0 4.5-4 8-10 12.5Z" />}
     </svg>
   );
 }
@@ -222,7 +222,7 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
         onPointerCancel={cancelDrag}
         onContextMenu={(e) => e.preventDefault()}
         role="application"
-        aria-label={symbol === 'cat' ? 'Cats board' : 'Dogs board'}
+        aria-label={symbol === 'cat' ? 'Cats board' : 'Hearts board'}
       >
         {Array.from({ length: n * n }, (_, i) => {
           const v = state[i]!;

@@ -58,10 +58,10 @@ const PACK_FLAIRS: Record<PuzzleTypeId, Record<Difficulty, { id: string; title: 
     genius: { id: 'crowned-head', title: 'Top Cat' },
   },
   stars: {
-    easy: { id: 'stargazer', title: 'Puppy Pal' },
-    medium: { id: 'star-chaser', title: 'Dog Walker' },
-    hard: { id: 'constellation', title: 'Pack Leader' },
-    genius: { id: 'supernova', title: 'Top Dog' },
+    easy: { id: 'stargazer', title: 'Soft Heart' },
+    medium: { id: 'star-chaser', title: 'Heart Collector' },
+    hard: { id: 'constellation', title: 'Heartbreaker' },
+    genius: { id: 'supernova', title: 'Lionheart' },
   },
   sudoku: {
     easy: { id: 'number-cruncher', title: 'Number Cruncher' },
