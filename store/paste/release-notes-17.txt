@@ -6,7 +6,6 @@ Slabs and Tracks made friendlier, from your feedback.
 - Slabs: turn a slab over the edge to a spot that fits; the pips turn with it
 - Slabs: drag a slab off the board to put it back
 - Tracks: every level a notch easier
-- Nonograms: colours 2 and 3 now stand apart from every accent colour
 - A puzzle started before an update now starts fresh instead of mixing up the board
 </en-US>
 <de-DE>
@@ -17,6 +16,5 @@ Slabs und Tracks zugänglicher, nach eurem Feedback.
 - Slabs: über den Rand hinweg in eine passende Lage drehen, die Augen drehen mit
 - Slabs: vom Brett gezogene Steine gehen zurück
 - Tracks: jede Stufe eine Kerbe leichter
-- Nonogramme: Farbe 2 und 3 heben sich von jeder Akzentfarbe ab
 - Vor einem Update begonnene Rätsel starten neu, statt das Brett durcheinanderzubringen
 </de-DE>
