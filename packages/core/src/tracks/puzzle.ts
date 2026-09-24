@@ -2,7 +2,7 @@ import { Rng } from '../rng.ts';
 import type { Difficulty } from '../types.ts';
 import { TRACK_E, TRACK_N, TRACK_S, TRACK_W, solveTracks, tracksGivenCount, tracksOutside, type TracksPuzzle } from './solver.ts';
 
-export const TRACKS_VERSION = 2;
+export const TRACKS_VERSION = 3;
 
 export interface TracksConfig {
   cols: number;
@@ -13,16 +13,20 @@ export interface TracksConfig {
   // How many deductions the top allowed tier must contribute, so a medium board is not
   // secretly an easy one.
   minTopSteps: number;
+  // Softeners on top of the minimal set: extra given pieces, and a cap on the top tier's
+  // deductions, so a hard rule shows up a few times instead of carrying the whole board.
+  minGivens: number;
+  maxTopSteps: number;
   maxGivens: number;
 }
 
 // Never wider than ten columns: on a phone that is the most that stays comfortable to swipe,
 // and the harder boards grow downwards instead of needing zoom and pan.
 export const TRACKS_PRESETS: Record<Difficulty, TracksConfig> = {
-  easy: { cols: 6, rows: 6, minPath: 12, maxPath: 22, maxTier: 1, minTopSteps: 0, maxGivens: 4 },
-  medium: { cols: 8, rows: 8, minPath: 22, maxPath: 38, maxTier: 2, minTopSteps: 1, maxGivens: 4 },
-  hard: { cols: 10, rows: 12, minPath: 40, maxPath: 72, maxTier: 3, minTopSteps: 1, maxGivens: 5 },
-  genius: { cols: 10, rows: 15, minPath: 55, maxPath: 95, maxTier: 3, minTopSteps: 3, maxGivens: 5 },
+  easy: { cols: 6, rows: 6, minPath: 12, maxPath: 22, maxTier: 1, minTopSteps: 0, minGivens: 2, maxTopSteps: 0, maxGivens: 4 },
+  medium: { cols: 8, rows: 8, minPath: 22, maxPath: 38, maxTier: 1, minTopSteps: 0, minGivens: 2, maxTopSteps: 0, maxGivens: 4 },
+  hard: { cols: 10, rows: 10, minPath: 34, maxPath: 60, maxTier: 2, minTopSteps: 2, minGivens: 2, maxTopSteps: 8, maxGivens: 5 },
+  genius: { cols: 10, rows: 12, minPath: 45, maxPath: 75, maxTier: 3, minTopSteps: 1, minGivens: 2, maxTopSteps: 6, maxGivens: 5 },
 };
 
 export interface TracksSpec extends TracksPuzzle {
@@ -181,8 +185,13 @@ function chooseGivens(rng: Rng, puzzle: TracksPuzzle, solution: Uint8Array, path
     puzzle.given[cell] = 0;
     if (!solveTracks(puzzle, cfg.maxTier).solved) puzzle.given[cell] = kept;
   }
-  if (cfg.maxTier === 1) return true;
-  return solveTracks(puzzle, cfg.maxTier).steps[cfg.maxTier - 1]! >= cfg.minTopSteps;
+  const top = () => solveTracks(puzzle, cfg.maxTier).steps[cfg.maxTier - 1]!;
+  while (tracksGivenCount(puzzle) < cfg.minGivens || (cfg.maxTier > 1 && top() > cfg.maxTopSteps)) {
+    const cell = order.find((i) => !puzzle.given[i]);
+    if (cell === undefined || tracksGivenCount(puzzle) >= cfg.maxGivens) return false;
+    puzzle.given[cell] = solution[cell]!;
+  }
+  return cfg.maxTier === 1 || top() >= cfg.minTopSteps;
 }
 
 export function generateTracks(seed: number, difficulty: Difficulty): TracksSpec {

@@ -258,10 +258,12 @@ describe('tracks generator', () => {
     });
   }
 
-  it('needs the top tier on medium, not just the basic rules', () => {
-    const spec = generateTracks(4, 'medium');
-    expect(solveTracks(spec, 1).solved).toBe(false);
-    expect(tracksDifficultyReport(spec).steps[1]).toBeGreaterThan(0);
+  it('solves medium with the basic rules and needs the loop rules on hard', () => {
+    expect(solveTracks(generateTracks(4, 'medium'), 1).solved).toBe(true);
+    const hard = generateTracks(4, 'hard');
+    expect(solveTracks(hard, 1).solved).toBe(false);
+    expect(tracksDifficultyReport(hard).steps[1]).toBeGreaterThan(0);
+    expect(tracksDifficultyReport(hard).steps[2]).toBe(0);
   });
 
   it('is deterministic per seed and differs across seeds', () => {
@@ -269,10 +271,13 @@ describe('tracks generator', () => {
     expect(tracksCanonicalKey(generateTracks(9, 'medium'))).not.toBe(tracksCanonicalKey(generateTracks(10, 'medium')));
   });
 
-  it('builds a genius board of 10 by 15', () => {
+  it('builds a genius board of 10 by 12 that looks ahead only a few times', () => {
     const spec = generateTracks(1, 'genius');
-    expect([spec.config.cols, spec.config.rows]).toEqual([10, 15]);
+    expect([spec.config.cols, spec.config.rows]).toEqual([10, 12]);
     expect(solveTracks(spec, 3).solved).toBe(true);
+    const lookahead = tracksDifficultyReport(spec).steps[2];
+    expect(lookahead).toBeGreaterThanOrEqual(TRACKS_PRESETS.genius.minTopSteps);
+    expect(lookahead).toBeLessThanOrEqual(TRACKS_PRESETS.genius.maxTopSteps);
   }, 60_000);
 
   // R7: a tall or wide board must never leave a whole row or column without track.
