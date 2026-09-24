@@ -67,6 +67,9 @@ function edgePoint(c: number, r: number, dir: number): [number, number] {
 // Half the distance between the two rails, and half a sleeper's length.
 const GAUGE = 0.17;
 const SLEEPER = 0.25;
+// The A and B stubs keep the board's rhythm: sleepers 1/6 and 1/2 of a cell past the rim.
+const STUB_SLEEPERS_A = [1 / 6 / PAD_L, 1 / 2 / PAD_L];
+const STUB_SLEEPERS_B = [1 / 6 / PAD_B, 1 / 2 / PAD_B];
 
 interface Track {
   rails: string;
@@ -328,8 +331,8 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
         >
           <g className="tracks-cells">{cells}</g>
           <g className="tracks-marks">{marks}</g>
-          <TrackShape className="tracks-piece given" track={straightTrack(-PAD_L, entryY, 0, entryY, [0.3])} />
-          <TrackShape className="tracks-piece given" track={straightTrack(exitX, rows, exitX, rows + PAD_B, [0.7])} />
+          <TrackShape className="tracks-piece given" track={straightTrack(0, entryY, -PAD_L, entryY, STUB_SLEEPERS_A)} />
+          <TrackShape className="tracks-piece given" track={straightTrack(exitX, rows, exitX, rows + PAD_B, STUB_SLEEPERS_B)} />
           <g className="tracks-pieces">{pieces}</g>
           <text className="tracks-end" x={-PAD_L / 2} y={entryY - 0.5} dy="0.33em">
             A
