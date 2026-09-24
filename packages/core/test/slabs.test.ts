@@ -4,18 +4,15 @@ import { DIFFICULTIES } from '../src/types.ts';
 import {
   SLABS_PRESETS,
   applySlabsHint,
-  classifySlabsGesture,
   emptySlabsState,
   generateSlabs,
   isSlabsJerk,
   isSlabsSolved,
   slabsHint,
   slabsOccupancy,
-  slabsOrient,
   slabsPivotCell,
   slabsPlace,
   slabsRegionStatus,
-  slabsReleaseSpeed,
   slabsRotate,
   validSlabsState,
   type SlabsSpec,
@@ -229,17 +226,9 @@ describe('slabs player state', () => {
     }
   });
 
-  it('flicks the free half in the given direction', () => {
+  it('turns around the tapped half', () => {
     const tiny = tinySpec(puzzle(3, 3, [[1, 2]], new Array(9).fill(-1), []), [{ anchor: 4, dir: 0 }]);
     const start = [4, 0];
-    expect(slabsOrient(tiny, start, 0, 0, 1)).toEqual([4, 1]);
-    expect(slabsOrient(tiny, start, 0, 0, 3)).toEqual([4, 3]);
-    expect(slabsOrient(tiny, start, 0, 0, 0)).toBeNull();
-    // Holding the right half (cell 5) and flicking up puts the left half above it.
-    expect(slabsOrient(tiny, start, 0, 1, 3)).toEqual([2, 1]);
-    // Holding the right half and flicking right would leave the board.
-    expect(slabsOrient(tiny, start, 0, 1, 0)).toBeNull();
-    expect(slabsOrient(tiny, [-1, 0], 0, 1, 3)).toEqual([-1, 1]);
     // A tap on the right half turns the left half up above it (clockwise, skipping nothing).
     expect(slabsRotate(tiny, start, 0, 1)).toEqual([2, 1]);
   });
@@ -275,31 +264,6 @@ describe('slabs player state', () => {
 
 describe('slabs gestures', () => {
   const cell = 40;
-
-  it('tells taps, flicks and drags apart', () => {
-    const fast = 0.3;
-    expect(classifySlabsGesture(3, 2, 90, cell, fast)).toEqual({ kind: 'tap' });
-    expect(classifySlabsGesture(3, 2, 900, cell, 0)).toEqual({ kind: 'tap' });
-    expect(classifySlabsGesture(20, 3, 120, cell, fast)).toEqual({ kind: 'flick', dir: 0 });
-    expect(classifySlabsGesture(2, 25, 120, cell, fast)).toEqual({ kind: 'flick', dir: 1 });
-    expect(classifySlabsGesture(-20, 3, 120, cell, fast)).toEqual({ kind: 'flick', dir: 2 });
-    expect(classifySlabsGesture(2, -25, 120, cell, fast)).toEqual({ kind: 'flick', dir: 3 });
-    // Slow and short: a careful move, not a flick.
-    expect(classifySlabsGesture(20, 3, 600, cell, fast)).toEqual({ kind: 'drag' });
-    // Fast but long: a quick drag to another spot.
-    expect(classifySlabsGesture(90, 0, 150, cell, fast)).toEqual({ kind: 'drag' });
-    // A quick push by one cell that stops before the finger lifts moves the slab.
-    expect(classifySlabsGesture(40, 2, 200, cell, 0.02)).toEqual({ kind: 'drag' });
-  });
-
-  it('measures the speed at lift-off', () => {
-    const path = (...pts: [number, number, number][]) => pts.map(([x, y, t]) => ({ x, y, t }));
-    // Still moving when the finger lifts.
-    expect(slabsReleaseSpeed(path([100, 100, 0], [110, 100, 40], [120, 100, 80]), { x: 130, y: 100, t: 120 })).toBeCloseTo(0.25);
-    // Stopped at the target first: no events for 100 ms, then the lift.
-    expect(slabsReleaseSpeed(path([100, 100, 0], [120, 100, 40], [140, 100, 80]), { x: 141, y: 100, t: 180 })).toBeLessThan(0.02);
-    expect(slabsReleaseSpeed([], { x: 0, y: 0, t: 0 })).toBe(0);
-  });
 
   it('spots a jerk while a slab is held', () => {
     const path = (...pts: [number, number, number][]) => pts.map(([x, y, t]) => ({ x, y, t }));

@@ -52,7 +52,7 @@ export const HOW_TO: Record<PuzzleTypeId, string[]> = {
   slabs: [
     'Place every slab from the tray on the board. Together they cover every open cell.',
     'Each coloured region has a rule: a number is the sum of its pips, <N and >N bound the sum, = means all pips equal, ≠ means all different. Cells without colour have no rule.',
-    'Drag a slab to move it. Tap it to turn it around the half you touched, or flick from one half toward where the other half should go.',
+    'Drag a slab to move it. Tap it to turn it around the half you touched.',
     'A badge turns green when its region is right and red when it can no longer work. Every puzzle has exactly one solution.',
   ],
   killer: [

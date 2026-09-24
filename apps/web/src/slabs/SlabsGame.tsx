@@ -3,7 +3,6 @@ import {
   SLAB_DC,
   SLAB_DR,
   applySlabsHint,
-  classifySlabsGesture,
   emptySlabsState,
   isSlabsJerk,
   isSlabsSolved,
@@ -11,12 +10,10 @@ import {
   slabNeighbour,
   slabsHint,
   slabsOccupancy,
-  slabsOrient,
   slabsPivotCell,
   slabsPlace,
   slabsRegionStatus,
   slabsRegions,
-  slabsReleaseSpeed,
   slabsRotate,
   slabsToTray,
   validSlabsState,
@@ -306,13 +303,11 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     setGhost(null);
     const cur = stateRef.current;
     if (d.turned) setTurn(null);
-    // After a turn in hand the release is always a drop, even if the finger ended where it began.
-    const now = performance.now();
-    const release = slabsReleaseSpeed(d.samples, { x: e.clientX, y: e.clientY, t: now });
-    const gesture = d.turned ? { kind: 'drag' as const } : classifySlabsGesture(e.clientX - d.x0, e.clientY - d.y0, now - d.t0, d.cell, release);
-    if (gesture.kind === 'tap' || gesture.kind === 'flick') {
-      if (gesture.kind === 'flick' && otherDir(cur[d.slab * 2 + 1]!, d.pivot) === gesture.dir) return;
-      const next = gesture.kind === 'tap' ? slabsRotate(spec, cur, d.slab, d.pivot) : slabsOrient(spec, cur, d.slab, d.pivot, gesture.dir);
+    // Only a finger that never left its spot turns the slab; any real movement moves it. After a
+    // turn in hand the release is always a drop, even if the finger ended where it began.
+    const still = !d.moved && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) < d.cell * 0.2;
+    if (still && !d.turned) {
+      const next = slabsRotate(spec, cur, d.slab, d.pivot);
       if (!next) {
         flashShake(d.slab);
         return;

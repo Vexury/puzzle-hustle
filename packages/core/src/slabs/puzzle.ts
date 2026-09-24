@@ -410,24 +410,6 @@ export function slabsRotate(spec: SlabsPuzzle, state: SlabsState, slab: number, 
   return null;
 }
 
-// The other half swings to `towards` as seen from the pivot. Null when that spot is blocked,
-// taken, or already where the half lies.
-export function slabsOrient(spec: SlabsPuzzle, state: SlabsState, slab: number, pivot: 0 | 1, towards: number): SlabsState | null {
-  const anchor = state[slab * 2]!;
-  const dir = state[slab * 2 + 1]!;
-  if (otherDir(dir, pivot) === towards) return null;
-  const next = [...state];
-  if (anchor < 0) {
-    next[slab * 2 + 1] = pivot === 0 ? towards : (towards + 2) % 4;
-    return next;
-  }
-  const pose = poseAround(spec, slabsPivotCell(spec, state, slab, pivot), pivot, towards);
-  if (!fitsFree(spec, slabsOccupancy(spec, state), slab, pose)) return null;
-  next[slab * 2] = pose!.anchor;
-  next[slab * 2 + 1] = pose!.dir;
-  return next;
-}
-
 export function slabsValues(spec: SlabsPuzzle, state: SlabsState): Int8Array {
   const values = new Int8Array(spec.config.cols * spec.config.rows).fill(-1);
   for (let s = 0; s < spec.slabs.length; s++) {
@@ -485,35 +467,10 @@ export function applySlabsHint(spec: SlabsSpec, state: SlabsState, hint: SlabsHi
   return slabsPlace(spec, state, hint.slab, anchor, dir) ?? state;
 }
 
-export type SlabsGesture = { kind: 'tap' } | { kind: 'flick'; dir: number } | { kind: 'drag' };
-
-// Tap: barely moved. Flick: quick, short and let go while still moving; a quick push to a nearby
-// cell slows down before the finger lifts and moves the slab. Everything else moves the slab too.
-// Distances in pixels, `cell` is the board's cell size in pixels, `release` the speed at lift-off
-// in pixels per ms (see slabsReleaseSpeed).
-export function classifySlabsGesture(dx: number, dy: number, ms: number, cell: number, release: number): SlabsGesture {
-  const dist = Math.hypot(dx, dy) / cell;
-  if (dist < 0.2) return { kind: 'tap' };
-  if (ms <= 250 && dist >= 0.35 && dist < 1.5 && release / cell >= 0.003) {
-    const dir = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 0 : 2) : dy > 0 ? 1 : 3;
-    return { kind: 'flick', dir };
-  }
-  return { kind: 'drag' };
-}
-
 export interface SlabsSample {
   x: number;
   y: number;
   t: number;
-}
-
-// Speed at lift-off in pixels per ms, over the last 40 ms up to `up`. A finger that stopped sends
-// no events, so the reference is then the last sample before it stopped and the speed comes out low.
-export function slabsReleaseSpeed(samples: readonly SlabsSample[], up: SlabsSample): number {
-  let ref = samples[0];
-  for (const s of samples) if (s.t <= up.t - 40) ref = s;
-  if (!ref || up.t <= ref.t) return 0;
-  return Math.hypot(up.x - ref.x, up.y - ref.y) / (up.t - ref.t);
 }
 
 // A jerk while a slab is held: out at least half a cell and most of the way back, all within
