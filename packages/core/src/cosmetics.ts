@@ -81,6 +81,12 @@ const PACK_FLAIRS: Record<PuzzleTypeId, Record<Difficulty, { id: string; title: 
     hard: { id: 'switchman', title: 'Switchman' },
     genius: { id: 'railway-baron', title: 'Railway Baron' },
   },
+  slabs: {
+    easy: { id: 'stone-setter', title: 'Stone Setter' },
+    medium: { id: 'slab-stacker', title: 'Slab Stacker' },
+    hard: { id: 'mason', title: 'Mason' },
+    genius: { id: 'master-builder', title: 'Master Builder' },
+  },
 };
 
 function packFlair(type: PuzzleTypeId, difficulty: Difficulty): FlairCosmetic {

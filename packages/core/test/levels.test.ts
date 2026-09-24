@@ -15,6 +15,8 @@ import { ZIP_VERSION, generateZip } from '../src/zip/puzzle.ts';
 import { isZipUnique, zipCanonicalKey } from '../src/zip/solver.ts';
 import { TRACKS_PRESETS, TRACKS_VERSION, generateTracks } from '../src/tracks/puzzle.ts';
 import { solveTracks, tracksCanonicalKey } from '../src/tracks/solver.ts';
+import { SLABS_PRESETS, SLABS_VERSION, generateSlabs } from '../src/slabs/puzzle.ts';
+import { slabsCanonicalKey, solveSlabs } from '../src/slabs/solver.ts';
 import { decodeRef, encodeRef, levelRef, refId } from '../src/ref.ts';
 
 describe('level pack', () => {
@@ -28,6 +30,7 @@ describe('level pack', () => {
     expect(LEVEL_PACK.versions.stars).toBe(REGIONS_VERSION);
     expect(LEVEL_PACK.versions.zip).toBe(ZIP_VERSION);
     expect(LEVEL_PACK.versions.tracks).toBe(TRACKS_VERSION);
+    expect(LEVEL_PACK.versions.slabs).toBe(SLABS_VERSION);
   });
 
   // Every type and difficulty, without generating anything: a short or unsorted pack is
@@ -63,6 +66,20 @@ describe('level pack', () => {
   }, 180_000);
 
   // Hard and genius probe with lookahead and are too slow to re-verify in CI, like zip.
+  it('has 50 distinct slabs levels per difficulty that the solver finishes', () => {
+    for (const difficulty of DIFFICULTIES) {
+      const list = levelList('slabs', difficulty);
+      expect(list.length).toBe(50);
+      const keys = new Set<string>();
+      for (const entry of list) {
+        const spec = generateSlabs(entry.seed, difficulty);
+        expect(solveSlabs(spec, SLABS_PRESETS[difficulty].maxTier).solved).toBe(true);
+        keys.add(slabsCanonicalKey(spec));
+      }
+      expect(keys.size).toBe(list.length);
+    }
+  }, 180_000);
+
   it('has 50 distinct tracks levels for easy and medium that the solver finishes', () => {
     for (const difficulty of ['easy', 'medium'] as const) {
       const list = levelList('tracks', difficulty);

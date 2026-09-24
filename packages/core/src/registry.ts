@@ -8,6 +8,8 @@ import { generateShapes, SHAPES_VERSION, type ShapesOptions } from './shapes/puz
 import { generateKiller, generateSudoku, KILLER_VERSION, SUDOKU_VERSION, type SudokuOptions, type SudokuSpec } from './sudoku/puzzle.ts';
 import { killerFamilyKey, sudokuCanonicalKey, sudokuDifficultyReport } from './sudoku/solver.ts';
 import { canonicalKey, difficultyReport, isUnique, shapesFamilyKey } from './shapes/solver.ts';
+import { generateSlabs, SLABS_VERSION } from './slabs/puzzle.ts';
+import { slabsCanonicalKey, slabsDifficultyReport, slabsFamilyKey } from './slabs/solver.ts';
 import { generateTracks, TRACKS_VERSION } from './tracks/puzzle.ts';
 import { tracksCanonicalKey, tracksDifficultyReport, tracksFamilyKey } from './tracks/solver.ts';
 import { generateZip, ZIP_VERSION, type ZipOptions } from './zip/puzzle.ts';
@@ -263,6 +265,33 @@ export const tracksAdapter: PuzzleAdapter<Record<string, never>> = {
   },
 };
 
+const slabs = reuse(generateSlabs);
+
+// No period options yet: hard and genius are not in the weekly/monthly rotation.
+export const slabsAdapter: PuzzleAdapter<Record<string, never>> = {
+  version: SLABS_VERSION,
+  options() {
+    return {};
+  },
+  accepts(seed, difficulty) {
+    try {
+      slabs(seed, difficulty);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  key(seed, difficulty) {
+    return slabsCanonicalKey(slabs(seed, difficulty));
+  },
+  score(seed, difficulty) {
+    return slabsDifficultyReport(slabs(seed, difficulty)).score;
+  },
+  family(seed, difficulty) {
+    return slabsFamilyKey(slabs(seed, difficulty));
+  },
+};
+
 export const ADAPTERS: { [K in PuzzleTypeId]: PuzzleAdapter<never> } = {
   shapes: shapesAdapter as PuzzleAdapter<never>,
   nonogram: nonogramAdapter as PuzzleAdapter<never>,
@@ -273,6 +302,7 @@ export const ADAPTERS: { [K in PuzzleTypeId]: PuzzleAdapter<never> } = {
   killer: killerAdapter as PuzzleAdapter<never>,
   zip: zipAdapter as PuzzleAdapter<never>,
   tracks: tracksAdapter as PuzzleAdapter<never>,
+  slabs: slabsAdapter as PuzzleAdapter<never>,
 };
 
 export function adapter(type: PuzzleTypeId): PuzzleAdapter<never> {

@@ -24,6 +24,8 @@ import { generateZip } from '../src/zip/puzzle.ts';
 import { zipCanonicalKey, zipDifficultyReport } from '../src/zip/solver.ts';
 import { generateTracks } from '../src/tracks/puzzle.ts';
 import { tracksCanonicalKey, tracksFamilyKey } from '../src/tracks/solver.ts';
+import { generateSlabs } from '../src/slabs/puzzle.ts';
+import { slabsCanonicalKey, slabsFamilyKey } from '../src/slabs/solver.ts';
 
 const MS_PER_CELL = Number(process.argv[2] ?? 20_000);
 const MAX_SEEDS = Number(process.argv[3] ?? 20_000);
@@ -136,6 +138,12 @@ const probes: Record<PuzzleTypeId, Probe> = {
     build: (seed, difficulty) => generateTracks(seed, difficulty),
     key: (spec: ReturnType<typeof generateTracks>) => tracksCanonicalKey(spec),
     family: (spec: ReturnType<typeof generateTracks>) => tracksFamilyKey(spec),
+  },
+  // Vocabulary = mix of rule kinds and ruleless cells, same as the level generator's family.
+  slabs: {
+    build: (seed, difficulty) => generateSlabs(seed, difficulty),
+    key: (spec: ReturnType<typeof generateSlabs>) => slabsCanonicalKey(spec),
+    family: (spec: ReturnType<typeof generateSlabs>) => slabsFamilyKey(spec),
   },
 };
 
