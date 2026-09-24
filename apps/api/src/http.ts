@@ -10,9 +10,15 @@ export interface Env {
   SESSION_LIMIT?: RateLimiter;
 }
 
-// The app runs on its own domain in the browser, on https://localhost inside the Capacitor
-// WebView, and on the Vite dev server while developing.
-const ALLOWED_ORIGINS = ['https://puzzles.vexury.dev', 'https://localhost', 'http://localhost:5173'];
+// The app runs on its own domain in the browser, on https://localhost inside Android's
+// WebView, on capacitor://localhost inside iOS's (WKWebView reserves https for real sites),
+// and on the Vite dev server while developing.
+const ALLOWED_ORIGINS = [
+  'https://puzzles.vexury.dev',
+  'https://localhost',
+  'capacitor://localhost',
+  'http://localhost:5173',
+];
 
 export function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {

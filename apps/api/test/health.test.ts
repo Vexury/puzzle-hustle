@@ -51,3 +51,11 @@ it('reflects an allowed origin and refuses an unknown one', async () => {
   );
   expect(foreign.headers.get('Access-Control-Allow-Origin')).toBeNull();
 });
+
+it('allows the iOS app, whose WebView uses its own scheme', async () => {
+  const response = await worker.fetch(
+    new Request('https://api.test/health', { headers: { Origin: 'capacitor://localhost' } }),
+    env,
+  );
+  expect(response.headers.get('Access-Control-Allow-Origin')).toBe('capacitor://localhost');
+});
