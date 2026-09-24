@@ -231,7 +231,13 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     const c = i % cols;
     cells.push(<rect key={i} className={flash === i ? 'tracks-cell flash' : 'tracks-cell'} x={c} y={r} width={1} height={1} />);
     const m = tracksMask(spec, state, i);
-    if (m) pieces.push(<path key={`p${i}`} className={hasPlayerEdge(i, c, r) ? 'tracks-piece' : 'tracks-piece given'} d={piecePath(c, r, m)} />);
+    // A cell shows a piece only once its direction is known: given, drawn into by the player, or
+    // closed by two given neighbours. A lone given edge (or A/B) stops at the cell's edge instead
+    // of leaving a half piece that says "track here" without saying which way.
+    const player = hasPlayerEdge(i, c, r);
+    if (m && (player || spec.given[i] || (m & (m - 1)) !== 0)) {
+      pieces.push(<path key={`p${i}`} className={player ? 'tracks-piece' : 'tracks-piece given'} d={piecePath(c, r, m)} />);
+    }
     if (state[i]! & TRACKS_STATE_X) {
       marks.push(
         <g key={`x${i}`} className="tracks-cross">
