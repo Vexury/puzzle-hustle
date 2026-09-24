@@ -3,17 +3,19 @@ import { Rng } from '../src/rng.ts';
 import { DIFFICULTIES } from '../src/types.ts';
 import {
   TRACKS_PRESETS,
+  TRACKS_STATE_T,
+  TRACKS_STATE_X,
   applyTracksHint,
   emptyTracksState,
   generateTracks,
   isTracksSolved,
+  tracksCycleMark,
   tracksHasEdge,
   tracksHint,
   tracksLineCounts,
   tracksMask,
   tracksSetEdge,
   tracksStepToward,
-  tracksToggleCross,
   validTracksState,
 } from '../src/tracks/puzzle.ts';
 import {
@@ -297,6 +299,11 @@ describe('tracks state', () => {
     }
     throw new Error('no free cells');
   })();
+  // A cell with no given piece that the solution never touches, for wrong-mark hint tests.
+  const offPath = (() => {
+    for (let i = 0; i < spec.solution.length; i++) if (!spec.given[i] && !spec.solution[i]) return i;
+    throw new Error('no off-path cell');
+  })();
 
   it('lays and lifts an edge', () => {
     const s1 = tracksSetEdge(spec, emptyTracksState(spec), free, free + 1, true)!;
@@ -317,12 +324,33 @@ describe('tracks state', () => {
     if (g >= 0) expect(tracksSetEdge(spec, s, g, g + 1, false)).toBeNull();
   });
 
-  it('clears a cross when track is laid through it, and only crosses empty cells', () => {
-    let s = tracksToggleCross(spec, emptyTracksState(spec), free)!;
-    expect(s[free]! & 4).toBe(4);
+  it('cycles an empty cell through cross, track mark and back to empty', () => {
+    let s = tracksCycleMark(spec, emptyTracksState(spec), free)!;
+    expect(s[free]! & TRACKS_STATE_X).toBe(TRACKS_STATE_X);
+    expect(s[free]! & TRACKS_STATE_T).toBe(0);
+    s = tracksCycleMark(spec, s, free)!;
+    expect(s[free]! & TRACKS_STATE_X).toBe(0);
+    expect(s[free]! & TRACKS_STATE_T).toBe(TRACKS_STATE_T);
+    s = tracksCycleMark(spec, s, free)!;
+    expect(s[free]! & (TRACKS_STATE_X | TRACKS_STATE_T)).toBe(0);
+  });
+
+  it('clears both marks when track is laid through the cell, and only marks empty cells', () => {
+    let s = tracksCycleMark(spec, emptyTracksState(spec), free)!; // X
+    s = tracksCycleMark(spec, s, free)!; // track mark
+    expect(s[free]! & TRACKS_STATE_T).toBe(TRACKS_STATE_T);
     s = tracksSetEdge(spec, s, free, free + 1, true)!;
-    expect(s[free]! & 4).toBe(0);
-    expect(tracksToggleCross(spec, s, free)).toBeNull();
+    expect(s[free]! & (TRACKS_STATE_X | TRACKS_STATE_T)).toBe(0);
+    expect(tracksCycleMark(spec, s, free)).toBeNull();
+  });
+
+  it('counts a track mark as track for the line counts', () => {
+    const before = tracksLineCounts(spec, emptyTracksState(spec));
+    let s = tracksCycleMark(spec, emptyTracksState(spec), free)!; // X
+    s = tracksCycleMark(spec, s, free)!; // track mark
+    const after = tracksLineCounts(spec, s);
+    expect(after.rows[Math.floor(free / cols)]).toBe(before.rows[Math.floor(free / cols)]! + 1);
+    expect(after.cols[free % cols]).toBe(before.cols[free % cols]! + 1);
   });
 
   it('steps straight toward a target, never diagonally', () => {
@@ -337,12 +365,18 @@ describe('tracks state', () => {
     const n = spec.solution.length;
     expect(validTracksState(spec, undefined)).toEqual(emptyTracksState(spec));
     expect(validTracksState(spec, [1, 2])).toEqual(emptyTracksState(spec));
-    expect(validTracksState(spec, new Array(n).fill(9))).toEqual(emptyTracksState(spec));
+    expect(validTracksState(spec, new Array(n).fill(16))).toEqual(emptyTracksState(spec));
     const eastOffBoard = new Array(n).fill(0);
     eastOffBoard[cols - 1] = 1;
     expect(validTracksState(spec, eastOffBoard)).toEqual(emptyTracksState(spec));
     const ok = tracksSetEdge(spec, emptyTracksState(spec), free, free + 1, true)!;
     expect(validTracksState(spec, ok)).toEqual(ok);
+    const markOk = new Array(n).fill(0);
+    markOk[free] = TRACKS_STATE_T;
+    expect(validTracksState(spec, markOk)).toEqual(markOk);
+    const bothMarks = new Array(n).fill(0);
+    bothMarks[free] = TRACKS_STATE_X | TRACKS_STATE_T;
+    expect(validTracksState(spec, bothMarks)).toEqual(emptyTracksState(spec));
   });
 
   it('is solved exactly when the track matches, and counts lines', () => {
@@ -368,6 +402,14 @@ describe('tracks state', () => {
       }
     }
     expect(tracksHint(spec, s)).toEqual({ kind: 'remove-edge', a: wrong![0], b: wrong![1] });
+  });
+
+  it('removes a wrong track mark before placing the next path cell', () => {
+    let s = tracksCycleMark(spec, emptyTracksState(spec), offPath)!; // X
+    s = tracksCycleMark(spec, s, offPath)!; // track mark, off the solution path: wrong
+    expect(tracksHint(spec, s)).toEqual({ kind: 'remove-mark', cell: offPath });
+    s = applyTracksHint(spec, s, tracksHint(spec, s)!);
+    expect(s[offPath]! & (TRACKS_STATE_X | TRACKS_STATE_T)).toBe(0);
   });
 
   // Regression: the A cell's solution mask carries the outside west stub bit (the B cell carries
@@ -396,7 +438,11 @@ describe('tracks state', () => {
       const b = a % mc < mc - 1 && rng.int(2) ? a + 1 : a + mc;
       if (b >= m.solution.length) continue;
       s = tracksSetEdge(m, s, a, b, true) ?? s;
-      if (rng.int(4) === 0) s = tracksToggleCross(m, s, rng.int(m.solution.length)) ?? s;
+      if (rng.int(4) === 0) {
+        const cell = rng.int(m.solution.length);
+        s = tracksCycleMark(m, s, cell) ?? s; // X
+        if (rng.int(2)) s = tracksCycleMark(m, s, cell) ?? s; // track mark
+      }
     }
     let guard = 0;
     for (let hint = tracksHint(m, s); hint && guard < 500; hint = tracksHint(m, s), guard++) s = applyTracksHint(m, s, hint);

@@ -47,7 +47,7 @@ export const HOW_TO: Record<PuzzleTypeId, string[]> = {
     'Lay one track from A on the left edge to B on the bottom edge.',
     'The numbers count the track cells in each row and column. A number turns green when its line is right.',
     'Pieces are straight or curved. The track never branches, never crosses itself and forms no separate loops. Given pieces stay put.',
-    'Drag across cells to lay track, drag along it again to lift it. Tap an empty cell to mark it with an X.',
+    'Drag across cells to lay track, drag along it again to lift it. Tap an empty cell to cycle an X, a track mark (track goes here, direction open), and empty.',
   ],
   killer: [
     'Normal Sudoku rules apply: 1 to 9 once per row, column and 3x3 box.',

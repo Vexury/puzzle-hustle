@@ -31,6 +31,7 @@
 .tracks-piece { fill: none; stroke: var(--accent); stroke-width: 0.2; stroke-linecap: round; }
 .tracks-piece.given { stroke: var(--text); }
 .tracks-cross line { stroke: var(--text-muted); stroke-width: 0.07; stroke-linecap: round; opacity: 0.55; }
+.tracks-mark line { stroke: var(--text-muted); stroke-width: 0.05; stroke-linecap: round; opacity: 0.4; }
 .tracks-count, .tracks-end {
   font-family: var(--font-num);
   font-size: 0.5px;

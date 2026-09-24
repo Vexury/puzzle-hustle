@@ -211,6 +211,7 @@ export function generateTracks(seed: number, difficulty: Difficulty): TracksSpec
 export const TRACKS_STATE_E = 1;
 export const TRACKS_STATE_S = 2;
 export const TRACKS_STATE_X = 4;
+export const TRACKS_STATE_T = 8;
 
 export type TracksState = number[];
 
@@ -223,7 +224,8 @@ export function validTracksState(spec: TracksSpec, initial: number[] | undefined
   if (!initial || initial.length !== cols * rows) return emptyTracksState(spec);
   for (let i = 0; i < initial.length; i++) {
     const v = initial[i]!;
-    if (!Number.isInteger(v) || v < 0 || v > 7) return emptyTracksState(spec);
+    if (!Number.isInteger(v) || v < 0 || v > 15) return emptyTracksState(spec);
+    if (v & TRACKS_STATE_X && v & TRACKS_STATE_T) return emptyTracksState(spec);
     if (v & TRACKS_STATE_E && i % cols === cols - 1) return emptyTracksState(spec);
     if (v & TRACKS_STATE_S && Math.floor(i / cols) === rows - 1) return emptyTracksState(spec);
   }
@@ -285,16 +287,21 @@ export function tracksSetEdge(spec: TracksSpec, state: TracksState, a: number, b
   const next = [...state];
   next[low] = on ? next[low]! | bit : next[low]! & ~bit;
   if (on) {
-    next[a] = next[a]! & ~TRACKS_STATE_X;
-    next[b] = next[b]! & ~TRACKS_STATE_X;
+    next[a] = next[a]! & ~(TRACKS_STATE_X | TRACKS_STATE_T);
+    next[b] = next[b]! & ~(TRACKS_STATE_X | TRACKS_STATE_T);
   }
   return next;
 }
 
-export function tracksToggleCross(spec: TracksSpec, state: TracksState, cell: number): TracksState | null {
+// A cell with no track connection cycles empty -> cross -> track-mark (direction still unknown)
+// -> empty. A cell that already carries a connection never takes a mark.
+export function tracksCycleMark(spec: TracksSpec, state: TracksState, cell: number): TracksState | null {
   if (cell < 0 || cell >= state.length || tracksMask(spec, state, cell) !== 0) return null;
   const next = [...state];
-  next[cell] = next[cell]! ^ TRACKS_STATE_X;
+  const v = next[cell]!;
+  if (v & TRACKS_STATE_X) next[cell] = (v & ~TRACKS_STATE_X) | TRACKS_STATE_T;
+  else if (v & TRACKS_STATE_T) next[cell] = v & ~TRACKS_STATE_T;
+  else next[cell] = v | TRACKS_STATE_X;
   return next;
 }
 
@@ -317,14 +324,14 @@ export function tracksLineCounts(spec: TracksSpec, state: TracksState): { rows: 
   const { cols, rows } = spec.config;
   const out = { rows: new Array<number>(rows).fill(0), cols: new Array<number>(cols).fill(0) };
   for (let i = 0; i < cols * rows; i++) {
-    if (!tracksMask(spec, state, i)) continue;
+    if (!tracksMask(spec, state, i) && !(state[i]! & TRACKS_STATE_T)) continue;
     out.rows[Math.floor(i / cols)]!++;
     out.cols[i % cols]!++;
   }
   return out;
 }
 
-export type TracksHint = { kind: 'remove-edge'; a: number; b: number } | { kind: 'remove-cross'; cell: number } | { kind: 'place'; cell: number };
+export type TracksHint = { kind: 'remove-edge'; a: number; b: number } | { kind: 'remove-mark'; cell: number } | { kind: 'place'; cell: number };
 
 export function tracksHint(spec: TracksSpec, state: TracksState): TracksHint | null {
   const cols = spec.config.cols;
@@ -332,7 +339,10 @@ export function tracksHint(spec: TracksSpec, state: TracksState): TracksHint | n
     if (state[i]! & TRACKS_STATE_E && !(spec.solution[i]! & TRACK_E)) return { kind: 'remove-edge', a: i, b: i + 1 };
     if (state[i]! & TRACKS_STATE_S && !(spec.solution[i]! & TRACK_S)) return { kind: 'remove-edge', a: i, b: i + cols };
   }
-  for (let i = 0; i < state.length; i++) if (state[i]! & TRACKS_STATE_X && spec.solution[i]) return { kind: 'remove-cross', cell: i };
+  for (let i = 0; i < state.length; i++) {
+    if (state[i]! & TRACKS_STATE_X && spec.solution[i]) return { kind: 'remove-mark', cell: i };
+    if (state[i]! & TRACKS_STATE_T && !spec.solution[i]) return { kind: 'remove-mark', cell: i };
+  }
   for (const cell of spec.path) if (tracksMask(spec, state, cell) !== spec.solution[cell]) return { kind: 'place', cell };
   return null;
 }
@@ -346,8 +356,8 @@ export function applyTracksHint(spec: TracksSpec, state: TracksState, hint: Trac
     next[slot[0]] = next[slot[0]]! & ~slot[1];
     return next;
   }
-  if (hint.kind === 'remove-cross') {
-    next[hint.cell] = next[hint.cell]! & ~TRACKS_STATE_X;
+  if (hint.kind === 'remove-mark') {
+    next[hint.cell] = next[hint.cell]! & ~(TRACKS_STATE_X | TRACKS_STATE_T);
     return next;
   }
   const cell = hint.cell;
@@ -366,8 +376,8 @@ export function applyTracksHint(spec: TracksSpec, state: TracksState, hint: Trac
     const slot = edgeSlot(cols, total, cell, other);
     if (!slot || givenEdge(spec, slot[0], slot[1])) continue;
     next[slot[0]] = next[slot[0]]! | slot[1];
-    next[other] = next[other]! & ~TRACKS_STATE_X;
+    next[other] = next[other]! & ~(TRACKS_STATE_X | TRACKS_STATE_T);
   }
-  next[cell] = next[cell]! & ~TRACKS_STATE_X;
+  next[cell] = next[cell]! & ~(TRACKS_STATE_X | TRACKS_STATE_T);
   return next;
 }

@@ -6,17 +6,18 @@ import {
   TRACK_W,
   TRACKS_STATE_E,
   TRACKS_STATE_S,
+  TRACKS_STATE_T,
   TRACKS_STATE_X,
   applyTracksHint,
   emptyTracksState,
   isTracksSolved,
+  tracksCycleMark,
   tracksHasEdge,
   tracksHint,
   tracksLineCounts,
   tracksMask,
   tracksSetEdge,
   tracksStepToward,
-  tracksToggleCross,
   validTracksState,
   type TracksSpec,
   type TracksState,
@@ -160,7 +161,7 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     if (!d || d.pointerId !== e.pointerId) return;
     drag.current = null;
     if (d.moved) return;
-    const next = tracksToggleCross(spec, stateRef.current, d.start);
+    const next = tracksCycleMark(spec, stateRef.current, d.start);
     if (!next) return;
     rememberOnce(d);
     commit(next);
@@ -222,7 +223,7 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
   const counts = tracksLineCounts(spec, state);
   const cells: React.ReactNode[] = [];
   const pieces: React.ReactNode[] = [];
-  const crosses: React.ReactNode[] = [];
+  const marks: React.ReactNode[] = [];
   for (let i = 0; i < cols * rows; i++) {
     const r = Math.floor(i / cols);
     const c = i % cols;
@@ -230,10 +231,22 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     const m = tracksMask(spec, state, i);
     if (m) pieces.push(<path key={`p${i}`} className={hasPlayerEdge(i, c, r) ? 'tracks-piece' : 'tracks-piece given'} d={piecePath(c, r, m)} />);
     if (state[i]! & TRACKS_STATE_X) {
-      crosses.push(
+      marks.push(
         <g key={`x${i}`} className="tracks-cross">
           <line x1={c + 0.35} y1={r + 0.35} x2={c + 0.65} y2={r + 0.65} />
           <line x1={c + 0.65} y1={r + 0.35} x2={c + 0.35} y2={r + 0.65} />
+        </g>,
+      );
+    } else if (state[i]! & TRACKS_STATE_T) {
+      const railTop = r + 0.36;
+      const railBottom = r + 0.64;
+      marks.push(
+        <g key={`t${i}`} className="tracks-mark">
+          <line x1={c + 0.22} y1={railTop} x2={c + 0.78} y2={railTop} />
+          <line x1={c + 0.22} y1={railBottom} x2={c + 0.78} y2={railBottom} />
+          <line x1={c + 0.32} y1={railTop - 0.06} x2={c + 0.32} y2={railBottom + 0.06} />
+          <line x1={c + 0.5} y1={railTop - 0.06} x2={c + 0.5} y2={railBottom + 0.06} />
+          <line x1={c + 0.68} y1={railTop - 0.06} x2={c + 0.68} y2={railBottom + 0.06} />
         </g>,
       );
     }
@@ -259,7 +272,7 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
           onContextMenu={(e) => e.preventDefault()}
         >
           <g className="tracks-cells">{cells}</g>
-          <g className="tracks-crosses">{crosses}</g>
+          <g className="tracks-marks">{marks}</g>
           <line className="tracks-piece given" x1={-PAD_L} y1={entryY} x2={0} y2={entryY} />
           <line className="tracks-piece given" x1={exitX} y1={rows} x2={exitX} y2={rows + PAD_B} />
           <g className="tracks-pieces">{pieces}</g>
