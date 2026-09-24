@@ -33,7 +33,7 @@
 .tracks-rails { stroke-width: 0.065; }
 .tracks-sleepers { stroke-width: 0.075; opacity: 0.7; }
 .tracks-cross line { stroke: var(--text-muted); stroke-width: 1.5px; vector-effect: non-scaling-stroke; opacity: var(--mark-opacity); }
-.tracks-mark line { stroke: var(--text-muted); stroke-width: 0.06; stroke-linecap: round; opacity: 0.4; }
+.tracks-mark line { stroke: var(--accent); stroke-width: 0.06; stroke-linecap: round; opacity: 0.5; }
 .tracks-count, .tracks-end {
   font-family: var(--font-num);
   font-size: 0.5px;
