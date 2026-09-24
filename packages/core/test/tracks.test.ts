@@ -335,13 +335,38 @@ describe('tracks state', () => {
     expect(s[free]! & (TRACKS_STATE_X | TRACKS_STATE_T)).toBe(0);
   });
 
-  it('clears both marks when track is laid through the cell, and only marks empty cells', () => {
+  it('clears both marks when track is laid through the cell', () => {
     let s = tracksCycleMark(spec, emptyTracksState(spec), free)!; // X
     s = tracksCycleMark(spec, s, free)!; // track mark
     expect(s[free]! & TRACKS_STATE_T).toBe(TRACKS_STATE_T);
     s = tracksSetEdge(spec, s, free, free + 1, true)!;
     expect(s[free]! & (TRACKS_STATE_X | TRACKS_STATE_T)).toBe(0);
-    expect(tracksCycleMark(spec, s, free)).toBeNull();
+  });
+
+  it('lifts the drawn track off a tapped cell and crosses it', () => {
+    let s = tracksSetEdge(spec, emptyTracksState(spec), free, free + 1, true)!;
+    s = tracksSetEdge(spec, s, free + 1, free + 2, true)!;
+    s = tracksCycleMark(spec, s, free + 1)!;
+    expect(tracksHasEdge(spec, s, free, free + 1)).toBe(false);
+    expect(tracksHasEdge(spec, s, free + 1, free + 2)).toBe(false);
+    expect(s[free + 1]! & TRACKS_STATE_X).toBe(TRACKS_STATE_X);
+    s = tracksCycleMark(spec, s, free + 1)!;
+    expect(s[free + 1]! & TRACKS_STATE_T).toBe(TRACKS_STATE_T);
+  });
+
+  it('marks a forced cell with the track mark when its drawn track is lifted, keeping A/B', () => {
+    const cell = spec.entryRow * cols;
+    expect(spec.given[cell]).toBe(0);
+    expect(tracksMask(spec, emptyTracksState(spec), cell)).toBe(TRACK_W);
+    const other = [cell + 1, cell + cols, cell - cols].find((n) => tracksSetEdge(spec, emptyTracksState(spec), cell, n, true));
+    expect(other).toBeDefined();
+    let s = tracksSetEdge(spec, emptyTracksState(spec), cell, other!, true)!;
+    s = tracksCycleMark(spec, s, cell)!;
+    expect(tracksHasEdge(spec, s, cell, other!)).toBe(false);
+    expect(tracksMask(spec, s, cell)).toBe(TRACK_W);
+    expect(s[cell]! & (TRACKS_STATE_X | TRACKS_STATE_T)).toBe(TRACKS_STATE_T);
+    const g = spec.given.findIndex((m) => m !== 0);
+    expect(tracksCycleMark(spec, emptyTracksState(spec), g)).toBeNull();
   });
 
   it('lets a cell the track must enter take only the track mark until its way on is drawn', () => {

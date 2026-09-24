@@ -295,15 +295,25 @@ export function tracksSetEdge(spec: TracksSpec, state: TracksState, a: number, b
 
 // A cell with no track connection cycles empty -> cross -> track-mark (direction still unknown)
 // -> empty. A cell the track must enter (A/B, or a single given edge) but whose way on is still
-// open toggles only the track mark, since a cross there could never be right. A cell with a
-// drawn connection, or with both ends fixed, never takes a mark.
+// open toggles only the track mark, since a cross there could never be right. Tapping drawn
+// track lifts the cell's drawn connections and starts the cycle at the cross (track mark for a
+// forced cell). A given cell, or one with both ends fixed, never takes a mark.
 export function tracksCycleMark(spec: TracksSpec, state: TracksState, cell: number): TracksState | null {
   if (cell < 0 || cell >= state.length) return null;
+  const { cols } = spec.config;
   const m = tracksMask(spec, state, cell);
+  const fixed = tracksMask(spec, emptyTracksState(spec), cell);
   const next = [...state];
+  if (m !== fixed) {
+    next[cell] = next[cell]! & ~(TRACKS_STATE_E | TRACKS_STATE_S);
+    if (cell % cols > 0) next[cell - 1] = next[cell - 1]! & ~TRACKS_STATE_E;
+    if (cell >= cols) next[cell - cols] = next[cell - cols]! & ~TRACKS_STATE_S;
+    next[cell] = next[cell]! | (fixed ? TRACKS_STATE_T : TRACKS_STATE_X);
+    return next;
+  }
   const v = next[cell]!;
   if (m) {
-    if (spec.given[cell] || bits(m) >= 2 || m !== tracksMask(spec, emptyTracksState(spec), cell)) return null;
+    if (spec.given[cell] || bits(m) >= 2) return null;
     next[cell] = v ^ TRACKS_STATE_T;
     return next;
   }
