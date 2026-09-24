@@ -34,8 +34,7 @@ export function PuzzleIcon({ type, size = 56 }: { type: PuzzleTypeId; size?: num
               <line key={`v${i}`} x1={6 + i * 9.33} y1="6" x2={6 + i * 9.33} y2="34" />
             ))}
           </g>
-          <path d="M11.8 24.9 L11.2 14.7 L16.6 18.8 L20 12 L23.4 18.8 L28.8 14.7 L28.2 24.9 Z" className="ic-a" />
-          <rect x="11.8" y="26" width="16.4" height="2" rx="0.7" className="ic-a" />
+          <path d="M4 4l5 5h6l5-5v12a8 6 0 0 1-16 0Z" transform="translate(9.2 8.5) scale(0.9)" className="ic-a" />
         </svg>
       ) : type === 'stars' ? (
         <svg viewBox="0 0 40 40">
@@ -47,8 +46,8 @@ export function PuzzleIcon({ type, size = 56 }: { type: PuzzleTypeId; size?: num
               <line key={`v${i}`} x1={6 + i * 9.33} y1="6" x2={6 + i * 9.33} y2="34" />
             ))}
           </g>
-          <polygon points="15,7 17.6,13 24,13.6 19.2,17.8 20.7,24 15,20.7 9.3,24 10.8,17.8 6,13.6 12.4,13" className="ic-a" />
-          <polygon points="28,21 29.8,25.2 34.3,25.6 30.9,28.6 32,33 28,30.7 24,33 25.1,28.6 21.7,25.6 26.2,25.2" className="ic-a" />
+          <path d="M7 7h10a3 3 0 0 1 3 3v6a8 6 0 0 1-16 0v-6a3 3 0 0 1 3-3ZM8 8 4.8 15c-1 2-3.2 1.5-3.5-.5C.8 9.5 2.5 5.5 6.5 6.5ZM17.5 6.5c4-1 5.7 3 5.2 8-.3 2-2.5 2.5-3.5.5L16 8Z" transform="translate(5 4.5) scale(0.8)" className="ic-a" />
+          <path d="M7 7h10a3 3 0 0 1 3 3v6a8 6 0 0 1-16 0v-6a3 3 0 0 1 3-3ZM8 8 4.8 15c-1 2-3.2 1.5-3.5-.5C.8 9.5 2.5 5.5 6.5 6.5ZM17.5 6.5c4-1 5.7 3 5.2 8-.3 2-2.5 2.5-3.5.5L16 8Z" transform="translate(21.3 20) scale(0.55)" className="ic-a" />
         </svg>
       ) : type === 'tracks' ? (
         <svg viewBox="0 0 40 40">

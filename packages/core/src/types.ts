@@ -31,13 +31,13 @@ export const PUZZLE_META: Record<PuzzleTypeId, PuzzleMeta> = {
   },
   crowns: {
     id: 'crowns',
-    name: 'Crowns',
-    tagline: 'One crown per row, column and colour. Crowns never touch.',
+    name: 'Cats',
+    tagline: 'One cat per row, column and colour. Cats never touch.',
   },
   stars: {
     id: 'stars',
-    name: 'Stars',
-    tagline: 'Two stars per row, column and colour. Stars never touch.',
+    name: 'Dogs',
+    tagline: 'Two dogs per row, column and colour. Dogs never touch.',
   },
   sudoku: {
     id: 'sudoku',
