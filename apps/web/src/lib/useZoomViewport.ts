@@ -44,9 +44,10 @@ export function useZoomViewport(cols: number, rows: number, reserve: Reserve, re
   const maxCell = useRef(MAX_CELL);
   const storageKey = viewKey ? `ph:view:${viewKey}` : null;
 
-  useLayoutEffect(() => {
+  // Sets the zoom limits for the space the viewport has now and returns the starting cell size.
+  function fitLimits(): number | null {
     const el = viewport.current;
-    if (!el) return;
+    if (!el) return null;
     // Not el.clientWidth: the viewport shrinks to its content once the board fits, which
     // makes the sum circular.
     const box = getComputedStyle(el);
@@ -72,6 +73,14 @@ export function useZoomViewport(cols: number, rows: number, reserve: Reserve, re
     const overflows = fit < initial;
     minCell.current = overflows ? Math.max(fit, MIN_CELL) : initial;
     maxCell.current = overflows ? MAX_CELL : initial;
+    return initial;
+  }
+  const fitLimitsRef = useRef(fitLimits);
+  fitLimitsRef.current = fitLimits;
+
+  useLayoutEffect(() => {
+    const initial = fitLimits();
+    if (initial === null) return;
     const saved = storageKey ? parseView(readSetting(storageKey)) : null;
     if (saved) {
       // Clamp both ways: a size saved before a layout change would keep overflowing.
@@ -82,6 +91,18 @@ export function useZoomViewport(cols: number, rows: number, reserve: Reserve, re
     }
     setCellPx(initial);
   }, [cols, rows, reserve, reserveY, storageKey]);
+
+  // The max-height follows 100dvh, which changes after the first measure when a mobile browser
+  // shows or hides its toolbars (iOS Safari opens a puzzle with the bar collapsed from scrolling
+  // the list, then brings it back). The limits follow, and the cell size is pulled into them.
+  useEffect(() => {
+    const onResize = () => {
+      if (fitLimitsRef.current() === null) return;
+      setCellPx((c) => Math.min(Math.max(c, minCell.current), maxCell.current));
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   useLayoutEffect(() => {
     const el = viewport.current;
