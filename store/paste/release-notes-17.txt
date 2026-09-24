@@ -1,0 +1,20 @@
+<en-US>
+Slabs and Tracks made friendlier, from your feedback.
+
+- Slabs: easier at every level, with more = regions, free cells and islands
+- Slabs: more slabs are clear from the start
+- Slabs: turn a slab over the edge to a spot that fits; the pips turn with it
+- Slabs: drag a slab off the board to put it back
+- Tracks: every level a notch easier
+- A puzzle started before an update now starts fresh instead of mixing up the board
+</en-US>
+<de-DE>
+Slabs und Tracks zugänglicher, nach eurem Feedback.
+
+- Slabs: in jeder Stufe leichter, mit mehr =, freien Feldern und Inseln
+- Slabs: mehr Steine stehen von Anfang an fest
+- Slabs: über den Rand hinweg in eine passende Lage drehen, die Augen drehen mit
+- Slabs: vom Brett gezogene Steine gehen zurück
+- Tracks: jede Stufe eine Kerbe leichter
+- Vor einem Update begonnene Rätsel starten neu, statt das Brett durcheinanderzubringen
+</de-DE>
