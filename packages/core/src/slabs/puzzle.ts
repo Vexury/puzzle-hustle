@@ -14,7 +14,7 @@ import {
   type SlabsRule,
 } from './solver.ts';
 
-export const SLABS_VERSION = 1;
+export const SLABS_VERSION = 2;
 
 export interface SlabsConfig {
   cols: number;
@@ -28,14 +28,23 @@ export interface SlabsConfig {
   maxRegion: number;
   // Chance that a region is offered a weaker rule than its exact sum.
   weaken: number;
+  // Chance that a sum region is offered no rule at all, leaving its cells free.
+  blank: number;
+  // Cap on the top tier's deductions, so the hardest rule shows up a few times instead of
+  // carrying the whole board.
+  maxTopSteps: number;
+  // The board splits into 1 to this many separate islands.
+  islands: number;
+  // Chance that a slab is laid so one of its halves matches a neighbour, which feeds `=` regions.
+  matchBias: number;
 }
 
 // At most eight columns, so the board and the tray fit a phone without zoom.
 export const SLABS_PRESETS: Record<Difficulty, SlabsConfig> = {
-  easy: { cols: 4, rows: 5, slabs: 6, maxTier: 1, minTopSteps: 0, minRegion: 1, maxRegion: 3, weaken: 0.35 },
-  medium: { cols: 6, rows: 6, slabs: 10, maxTier: 2, minTopSteps: 1, minRegion: 1, maxRegion: 4, weaken: 0.6 },
-  hard: { cols: 7, rows: 7, slabs: 14, maxTier: 3, minTopSteps: 1, minRegion: 2, maxRegion: 4, weaken: 0.85 },
-  genius: { cols: 8, rows: 8, slabs: 20, maxTier: 3, minTopSteps: 2, minRegion: 2, maxRegion: 5, weaken: 1 },
+  easy: { cols: 4, rows: 5, slabs: 6, maxTier: 1, minTopSteps: 0, minRegion: 1, maxRegion: 3, weaken: 0.2, blank: 0.5, maxTopSteps: 0, islands: 1, matchBias: 0.85 },
+  medium: { cols: 6, rows: 6, slabs: 10, maxTier: 1, minTopSteps: 0, minRegion: 1, maxRegion: 4, weaken: 0.4, blank: 0.6, maxTopSteps: 0, islands: 2, matchBias: 0.85 },
+  hard: { cols: 7, rows: 7, slabs: 14, maxTier: 2, minTopSteps: 1, minRegion: 2, maxRegion: 4, weaken: 0.6, blank: 0.6, maxTopSteps: 4, islands: 2, matchBias: 0.85 },
+  genius: { cols: 8, rows: 8, slabs: 20, maxTier: 3, minTopSteps: 1, minRegion: 2, maxRegion: 5, weaken: 0.8, blank: 0.6, maxTopSteps: 12, islands: 3, matchBias: 0.85 },
 };
 
 export interface SlabsSpec extends SlabsPuzzle {
@@ -51,20 +60,53 @@ export interface SlabsSpec extends SlabsPuzzle {
 const DOUBLE_SIX: [number, number][] = [];
 for (let a = 0; a <= SLAB_MAX_PIPS; a++) for (let b = a; b <= SLAB_MAX_PIPS; b++) DOUBLE_SIX.push([a, b]);
 
-// Grows a connected area domino by domino, preferring pairs that hug the area already laid,
-// so the board comes out as a compact blob with the odd notch or hole.
-export function growTiling(rng: Rng, cols: number, rows: number, count: number): [number, number][] | null {
+// Grows each island domino by domino, preferring pairs that hug the area already laid, so an
+// island comes out as a compact blob with the odd notch or hole. Islands never touch, not even
+// at a corner, and each holds at least two slabs.
+export function growTiling(rng: Rng, cols: number, rows: number, count: number, islands = 1): [number, number][] | null {
   const used = new Uint8Array(cols * rows);
+  const island = new Int8Array(cols * rows).fill(-1);
   const dominoes: [number, number][] = [];
+  const perIsland = new Array<number>(islands).fill(0);
   const neighbours = (cell: number) => [0, 1, 2, 3].map((d) => slabNeighbour(cols, rows, cell, d)).filter((n) => n >= 0);
   const touching = (cell: number, other: number) => neighbours(cell).filter((n) => n !== other && used[n]).length;
-  const first = rng.int(cols * rows);
-  const firstMate = rng.pick(neighbours(first));
-  used[first] = 1;
-  used[firstMate] = 1;
-  dominoes.push([first, firstMate]);
+  // Islands met within the 3x3 around a cell.
+  const near = (cell: number): number[] => {
+    const r = Math.floor(cell / cols);
+    const c = cell % cols;
+    const found: number[] = [];
+    for (let dr = -1; dr <= 1; dr++) {
+      for (let dc = -1; dc <= 1; dc++) {
+        const rr = r + dr;
+        const cc = c + dc;
+        if (rr < 0 || cc < 0 || rr >= rows || cc >= cols) continue;
+        const id = island[rr * cols + cc]!;
+        if (id >= 0 && !found.includes(id)) found.push(id);
+      }
+    }
+    return found;
+  };
+  const lay = (pair: [number, number], id: number) => {
+    for (const c of pair) {
+      used[c] = 1;
+      island[c] = id;
+    }
+    perIsland[id]!++;
+    dominoes.push(pair);
+  };
+  for (let id = 0; id < islands; id++) {
+    const starts: [number, number][] = [];
+    for (let cell = 0; cell < cols * rows; cell++) {
+      for (const dir of [0, 1]) {
+        const other = slabNeighbour(cols, rows, cell, dir);
+        if (other >= 0 && !near(cell).length && !near(other).length) starts.push([cell, other]);
+      }
+    }
+    if (!starts.length) return null;
+    lay(rng.pick(starts), id);
+  }
   while (dominoes.length < count) {
-    const options: { pair: [number, number]; weight: number }[] = [];
+    const options: { pair: [number, number]; weight: number; id: number }[] = [];
     for (let cell = 0; cell < cols * rows; cell++) {
       if (used[cell]) continue;
       for (const dir of [0, 1]) {
@@ -72,7 +114,12 @@ export function growTiling(rng: Rng, cols: number, rows: number, count: number):
         if (other < 0 || used[other]) continue;
         const touch = touching(cell, other) + touching(other, cell);
         if (!touch) continue;
-        options.push({ pair: [cell, other], weight: 1 + touch * touch });
+        const ids = [...new Set([...near(cell), ...near(other)])];
+        if (ids.length !== 1) continue;
+        const id = ids[0]!;
+        // Small islands are fed first, so none stays a lone slab.
+        const hunger = perIsland[id]! < 2 ? 4 : 1;
+        options.push({ pair: [cell, other], weight: (1 + touch * touch) * hunger, id });
       }
     }
     if (!options.length) return null;
@@ -85,11 +132,9 @@ export function growTiling(rng: Rng, cols: number, rows: number, count: number):
         break;
       }
     }
-    used[chosen.pair[0]] = 1;
-    used[chosen.pair[1]] = 1;
-    dominoes.push(chosen.pair);
+    lay(chosen.pair, chosen.id);
   }
-  return dominoes;
+  return perIsland.every((n) => n >= 2) ? dominoes : null;
 }
 
 // A region never holds both halves of a slab with two different values: every rule is blind to
@@ -196,6 +241,7 @@ function mergeWhileSolved(
   base: Omit<SlabsPuzzle, 'regionOf' | 'rules'>,
   rules: (SlabsRule | null)[],
   resum: (reg: number) => void,
+  values: Int8Array,
 ) {
   const { cols, rows } = cfg;
   const pairs: [number, number][] = [];
@@ -206,7 +252,10 @@ function mergeWhileSolved(
       pairs.push([cell, n]);
     }
   }
-  for (const [x, y] of rng.shuffle(pairs)) {
+  // Neighbours with equal values go first: joined, they give `=` instead of two sums.
+  const shuffled = rng.shuffle(pairs);
+  const same = ([x, y]: [number, number]) => values[x] === values[y];
+  for (const [x, y] of [...shuffled.filter(same), ...shuffled.filter((p) => !same(p))]) {
     const a = regionOf[x]!;
     const b = regionOf[y]!;
     if (a === b) continue;
@@ -251,25 +300,62 @@ function compact(base: Omit<SlabsPuzzle, 'regionOf' | 'rules'>, regionOf: Int16A
   return { ...base, regionOf: out, rules: kept };
 }
 
+// One slab per domino, all different. With chance `bias` a domino takes a slab, and an order of
+// its halves, that repeats a value already lying next to it, so equal groups exist to become `=`.
+// Each domino comes back ordered so its first cell holds the slab's first value.
+function pickSlabs(rng: Rng, cols: number, rows: number, dominoes: [number, number][], bias: number): [number, number][] {
+  const free = rng.shuffle([...DOUBLE_SIX]);
+  const values = new Int8Array(cols * rows).fill(-1);
+  const out: [number, number][] = [];
+  dominoes.forEach((pair, i) => {
+    const around = (cell: number) =>
+      [0, 1, 2, 3]
+        .map((d) => slabNeighbour(cols, rows, cell, d))
+        .filter((n) => n >= 0 && !pair.includes(n) && values[n]! >= 0)
+        .map((n) => values[n]!);
+    const flip = rng.int(2);
+    const orders: [number, number][] = flip ? [[pair[0], pair[1]], [pair[1], pair[0]]] : [[pair[1], pair[0]], [pair[0], pair[1]]];
+    let slab = 0;
+    let cells = orders[0]!;
+    if (rng.next() < bias) {
+      search: for (let k = 0; k < free.length; k++) {
+        const [a, b] = free[k]!;
+        for (const [x, y] of orders) {
+          if (around(x).includes(a) || around(y).includes(b)) {
+            slab = k;
+            cells = [x, y];
+            break search;
+          }
+        }
+      }
+    }
+    const [a, b] = free.splice(slab, 1)[0]!;
+    values[cells[0]] = a;
+    values[cells[1]] = b;
+    out.push([a, b]);
+    dominoes[i] = cells;
+  });
+  return out;
+}
+
 export function generateSlabs(seed: number, difficulty: Difficulty): SlabsSpec {
   const cfg = SLABS_PRESETS[difficulty];
   const { cols, rows } = cfg;
   const rng = new Rng(seed);
-  for (let attempt = 0; attempt < 40; attempt++) {
-    const dominoes = growTiling(rng, cols, rows, cfg.slabs);
+  for (let attempt = 0; attempt < 150; attempt++) {
+    const dominoes = growTiling(rng, cols, rows, cfg.slabs, 1 + rng.int(cfg.islands));
     if (!dominoes) continue;
     const blocked = new Uint8Array(cols * rows).fill(1);
     const values = new Int8Array(cols * rows).fill(-1);
-    const slabs = rng.shuffle([...DOUBLE_SIX]).slice(0, cfg.slabs);
+    const slabs = pickSlabs(rng, cols, rows, dominoes, cfg.matchBias);
     const solution: SlabsPlacement[] = [];
     const mate = new Int16Array(cols * rows).fill(-1);
-    dominoes.forEach(([x, y], i) => {
+    dominoes.forEach(([first, second], i) => {
       const [a, b] = slabs[i]!;
       if (a !== b) {
-        mate[x] = y;
-        mate[y] = x;
+        mate[first] = second;
+        mate[second] = first;
       }
-      const [first, second] = rng.int(2) ? [x, y] : [y, x];
       blocked[first] = 0;
       blocked[second] = 0;
       values[first] = a;
@@ -284,16 +370,24 @@ export function generateSlabs(seed: number, difficulty: Difficulty): SlabsSpec {
       const vals: number[] = [];
       for (let i = 0; i < regionOf.length; i++) if (regionOf[i] === reg) vals.push(values[i]!);
       regionValues[reg] = vals;
-      rules[reg] = { kind: 'sum', target: vals.reduce((sum, v) => sum + v, 0) };
+      // A region of equal values always reads as `=`, the rule players like best.
+      rules[reg] =
+        vals.length >= 2 && vals.every((v) => v === vals[0]) ? { kind: 'eq', target: 0 } : { kind: 'sum', target: vals.reduce((sum, v) => sum + v, 0) };
     };
     const regionCount = regionOf.reduce((m, r) => Math.max(m, r + 1), 0);
     for (let reg = 0; reg < regionCount; reg++) resum(reg);
     if (!splitUntilSolved(rng, cols, rows, regionOf, solution, base, rules, resum, cfg.maxTier)) continue;
-    mergeWhileSolved(rng, cfg, regionOf, mate, base, rules, resum);
+    mergeWhileSolved(rng, cfg, regionOf, mate, base, rules, resum, values);
     const order = rng.shuffle(rules.map((_, i) => i));
     for (const reg of order) {
+      const sum = rules[reg];
+      if (!sum || sum.kind !== 'sum' || rng.next() >= cfg.blank) continue;
+      rules[reg] = null;
+      if (!solveSlabs(compact(base, regionOf, rules), cfg.maxTier).solved) rules[reg] = sum;
+    }
+    for (const reg of order) {
       const strong = rules[reg];
-      if (!strong || rng.next() >= cfg.weaken) continue;
+      if (!strong || strong.kind !== 'sum' || rng.next() >= cfg.weaken) continue;
       for (const weaker of weakerRules(rng, regionValues[reg]!)) {
         rules[reg] = weaker;
         if (solveSlabs(compact(base, regionOf, rules), cfg.maxTier).solved) break;
@@ -303,7 +397,8 @@ export function generateSlabs(seed: number, difficulty: Difficulty): SlabsSpec {
     const puzzle = compact(base, regionOf, rules);
     const res = solveSlabs(puzzle, cfg.maxTier);
     if (!res.solved) continue;
-    if (cfg.maxTier > 1 && res.steps[cfg.maxTier - 1]! < cfg.minTopSteps) continue;
+    const top = res.steps[cfg.maxTier - 1]!;
+    if (cfg.maxTier > 1 && (top < cfg.minTopSteps || top > cfg.maxTopSteps)) continue;
     return { ...puzzle, version: SLABS_VERSION, seed, difficulty, config: cfg, solution, order: res.order };
   }
   throw new Error(`could not generate slabs puzzle for seed ${seed} / ${difficulty}`);
