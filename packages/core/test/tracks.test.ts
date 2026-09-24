@@ -344,6 +344,20 @@ describe('tracks state', () => {
     expect(tracksCycleMark(spec, s, free)).toBeNull();
   });
 
+  it('lets a cell the track must enter take only the track mark until its way on is drawn', () => {
+    const entry = spec.entryRow * cols;
+    const exit = (spec.solution.length / cols - 1) * cols + spec.exitCol;
+    const cell = !spec.given[entry] && tracksMask(spec, emptyTracksState(spec), entry) === TRACK_W ? entry : exit;
+    if (spec.given[cell]) return;
+    let s = tracksCycleMark(spec, emptyTracksState(spec), cell)!;
+    expect(s[cell]! & TRACKS_STATE_T).toBe(TRACKS_STATE_T);
+    expect(s[cell]! & TRACKS_STATE_X).toBe(0);
+    s = tracksCycleMark(spec, s, cell)!;
+    expect(s[cell]! & (TRACKS_STATE_X | TRACKS_STATE_T)).toBe(0);
+    const g = spec.given.findIndex((m) => m !== 0);
+    expect(tracksCycleMark(spec, emptyTracksState(spec), g)).toBeNull();
+  });
+
   it('counts a track mark as track for the line counts', () => {
     const before = tracksLineCounts(spec, emptyTracksState(spec));
     let s = tracksCycleMark(spec, emptyTracksState(spec), free)!; // X

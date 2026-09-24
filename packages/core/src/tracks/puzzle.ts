@@ -294,11 +294,19 @@ export function tracksSetEdge(spec: TracksSpec, state: TracksState, a: number, b
 }
 
 // A cell with no track connection cycles empty -> cross -> track-mark (direction still unknown)
-// -> empty. A cell that already carries a connection never takes a mark.
+// -> empty. A cell the track must enter (A/B, or a single given edge) but whose way on is still
+// open toggles only the track mark, since a cross there could never be right. A cell with a
+// drawn connection, or with both ends fixed, never takes a mark.
 export function tracksCycleMark(spec: TracksSpec, state: TracksState, cell: number): TracksState | null {
-  if (cell < 0 || cell >= state.length || tracksMask(spec, state, cell) !== 0) return null;
+  if (cell < 0 || cell >= state.length) return null;
+  const m = tracksMask(spec, state, cell);
   const next = [...state];
   const v = next[cell]!;
+  if (m) {
+    if (spec.given[cell] || bits(m) >= 2 || m !== tracksMask(spec, emptyTracksState(spec), cell)) return null;
+    next[cell] = v ^ TRACKS_STATE_T;
+    return next;
+  }
   if (v & TRACKS_STATE_X) next[cell] = (v & ~TRACKS_STATE_X) | TRACKS_STATE_T;
   else if (v & TRACKS_STATE_T) next[cell] = v & ~TRACKS_STATE_T;
   else next[cell] = v | TRACKS_STATE_X;
