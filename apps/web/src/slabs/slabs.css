@@ -32,12 +32,13 @@
 /* No frame around the board: blocked cells are simply not drawn and the rim traces the playable shape. */
 .slabs-rim { stroke: var(--border-mid); stroke-width: 0.06; stroke-linecap: round; }
 
-/* Slabs let the region colour show through, so a placed slab still says which region it sits in. */
+/* Slabs in the tray and in hand are solid; on the board they are see-through (see SlabShape). */
 .slab-body {
   fill: color-mix(in srgb, var(--card-bg) 82%, transparent);
   stroke: var(--piece-line);
   stroke-width: 0.05;
 }
+.slab.placed .slab-body { fill: none; }
 .slab-divider { stroke: var(--piece-line); stroke-width: 0.035; stroke-linecap: round; }
 .slab-pip { fill: var(--text); }
 .slab.shake { animation: slabs-shake 0.3s ease-in-out; transform-box: fill-box; transform-origin: center; }

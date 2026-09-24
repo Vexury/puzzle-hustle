@@ -110,8 +110,9 @@ function reducedMotion(): boolean {
   return typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 }
 
-// One slab in cell units, first half centred on (x0, y0), second on (x1, y1).
-function SlabShape({ x0, y0, x1, y1, a, b, className }: { x0: number; y0: number; x1: number; y1: number; a: number; b: number; className?: string | undefined }) {
+// One slab in cell units, first half centred on (x0, y0), second on (x1, y1). Placed on the board it is
+// see-through and drops its divider, so the region colours and dashed boundaries under it stay visible.
+function SlabShape({ x0, y0, x1, y1, a, b, placed, className }: { x0: number; y0: number; x1: number; y1: number; a: number; b: number; placed?: boolean; className?: string | undefined }) {
   const inset = 0.07;
   const left = Math.min(x0, x1) - 0.5 + inset;
   const top = Math.min(y0, y1) - 0.5 + inset;
@@ -119,9 +120,9 @@ function SlabShape({ x0, y0, x1, y1, a, b, className }: { x0: number; y0: number
   const mx = (x0 + x1) / 2;
   const my = (y0 + y1) / 2;
   return (
-    <g className={className ? `slab ${className}` : 'slab'}>
+    <g className={[className ? `slab ${className}` : 'slab', placed ? 'placed' : ''].join(' ').trim()}>
       <rect className="slab-body" x={left} y={top} width={Math.abs(x1 - x0) + 1 - 2 * inset} height={Math.abs(y1 - y0) + 1 - 2 * inset} rx={0.16} />
-      {horizontal ? (
+      {placed ? null : horizontal ? (
         <line className="slab-divider" x1={mx} y1={y0 - 0.32} x2={mx} y2={y0 + 0.32} />
       ) : (
         <line className="slab-divider" x1={x0 - 0.32} y1={my} x2={x0 + 0.32} y2={my} />
@@ -387,8 +388,6 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
 
   const cells: React.ReactNode[] = [];
   const lines: React.ReactNode[] = [];
-  // Region boundaries sit above the slabs so a placed slab never hides where a region ends.
-  const bounds: React.ReactNode[] = [];
   for (let i = 0; i < cols * rows; i++) {
     if (spec.blocked[i]) continue;
     const r = Math.floor(i / cols);
@@ -413,7 +412,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
         dir === 0 ? [c + 1, r, c + 1, r + 1] : dir === 1 ? [c, r + 1, c + 1, r + 1] : dir === 2 ? [c, r, c, r + 1] : [c, r, c + 1, r];
       const rim = !free(n);
       const boundary = !rim && spec.regionOf[n] !== reg && (reg >= 0 || spec.regionOf[n]! >= 0);
-      (boundary ? bounds : lines).push(<line key={`${i}-${dir}`} className={rim ? 'slabs-rim' : boundary ? 'slabs-boundary' : 'slabs-grid'} x1={x1} y1={y1} x2={x2} y2={y2} />);
+      lines.push(<line key={`${i}-${dir}`} className={rim ? 'slabs-rim' : boundary ? 'slabs-boundary' : 'slabs-grid'} x1={x1} y1={y1} x2={x2} y2={y2} />);
     }
   }
 
@@ -427,7 +426,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     const transform = turn?.slab === s ? `rotate(${turn.angle} ${turn.px} ${turn.py})` : undefined;
     pieces.push(
       <g key={s} transform={transform}>
-        <SlabShape x0={x0} y0={y0} x1={x1} y1={y1} a={spec.slabs[s]![0]} b={spec.slabs[s]![1]} className={shake === s ? 'shake' : undefined} />
+        <SlabShape x0={x0} y0={y0} x1={x1} y1={y1} a={spec.slabs[s]![0]} b={spec.slabs[s]![1]} placed className={shake === s ? 'shake' : undefined} />
       </g>,
     );
   }
@@ -503,7 +502,6 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
           <g>{lines}</g>
           {preview}
           <g>{pieces}</g>
-          <g>{bounds}</g>
           <g>{badges}</g>
         </svg>
       </div>
