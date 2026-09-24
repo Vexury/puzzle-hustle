@@ -397,7 +397,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     return (
       <g key={reg} className={`slabs-badge ${status[reg]}`}>
         <rect x={c + 0.04} y={r + 0.04} width={w} height={0.34} rx={0.12} />
-        <text x={c + 0.04 + w / 2} y={r + 0.215}>
+        <text x={c + 0.04 + w / 2} y={r + 0.215} dy="0.33em">
           {label}
         </text>
       </g>

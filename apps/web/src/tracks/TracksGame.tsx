@@ -276,19 +276,19 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
           <line className="tracks-piece given" x1={-PAD_L} y1={entryY} x2={0} y2={entryY} />
           <line className="tracks-piece given" x1={exitX} y1={rows} x2={exitX} y2={rows + PAD_B} />
           <g className="tracks-pieces">{pieces}</g>
-          <text className="tracks-end" x={-PAD_L / 2} y={entryY - 0.28}>
+          <text className="tracks-end" x={-PAD_L / 2} y={entryY - 0.28} dy="0.33em">
             A
           </text>
-          <text className="tracks-end" x={exitX + 0.3} y={rows + PAD_B / 2}>
+          <text className="tracks-end" x={exitX + 0.3} y={rows + PAD_B / 2} dy="0.33em">
             B
           </text>
           {[...spec.colCounts].map((want, c) => (
-            <text key={`c${c}`} className={lineClass(counts.cols[c]!, want)} x={c + 0.5} y={-0.5}>
+            <text key={`c${c}`} className={lineClass(counts.cols[c]!, want)} x={c + 0.5} y={-0.5} dy="0.33em">
               {want}
             </text>
           ))}
           {[...spec.rowCounts].map((want, r) => (
-            <text key={`r${r}`} className={lineClass(counts.rows[r]!, want)} x={cols + 0.5} y={r + 0.5}>
+            <text key={`r${r}`} className={lineClass(counts.rows[r]!, want)} x={cols + 0.5} y={r + 0.5} dy="0.33em">
               {want}
             </text>
           ))}

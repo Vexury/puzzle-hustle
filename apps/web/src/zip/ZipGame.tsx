@@ -281,7 +281,7 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintA
       numbers.push(
         <g key={`n${i}`} className={inPath[i] ? 'zip-number filled' : 'zip-number'} style={{ '--k': v } as React.CSSProperties}>
           <circle cx={c + 0.5} cy={r + 0.5} r={0.36} />
-          <text x={c + 0.5} y={r + 0.5}>
+          <text x={c + 0.5} y={r + 0.5} dy="0.33em">
             {v}
           </text>
         </g>,

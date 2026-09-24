@@ -37,7 +37,6 @@
   font-size: 0.5px;
   font-weight: 700;
   text-anchor: middle;
-  dominant-baseline: central;
   fill: var(--text);
 }
 .tracks-count.done { fill: var(--success); }
