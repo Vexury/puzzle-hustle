@@ -95,7 +95,21 @@ export function PuzzleIcon({ type, size = 56 }: { type: PuzzleTypeId; size?: num
             3
           </text>
         </svg>
-      ) : type === 'sudoku' || type === 'killer' ? (
+      ) : type === 'killer' ? (
+        <svg viewBox="0 0 40 40">
+          <line x1="20" y1="12" x2="20" y2="28" className="ic-grid" />
+          <rect x="6.5" y="12" width="27" height="16" rx="2" className="ic-dash" />
+          <text x="8.8" y="17.2" fontSize="5.5" fontWeight="700" className="ic-num">
+            12
+          </text>
+          <text x="13.5" y="26" textAnchor="middle" fontSize="10" fontWeight="700" className="ic-text">
+            7
+          </text>
+          <text x="26.5" y="26" textAnchor="middle" fontSize="10" fontWeight="700" className="ic-text">
+            5
+          </text>
+        </svg>
+      ) : type === 'sudoku' ? (
         <svg viewBox="0 0 40 40">
           <g className="ic-grid">
             {[1, 2].map((i) => (
@@ -105,32 +119,18 @@ export function PuzzleIcon({ type, size = 56 }: { type: PuzzleTypeId; size?: num
               <line key={`v${i}`} x1={6 + i * 9.33} y1="6" x2={6 + i * 9.33} y2="34" />
             ))}
           </g>
-          {type === 'killer' ? (
-            <>
-              <rect x="8" y="8" width="24.6" height="15" rx="2" className="ic-dash" />
-              <text x="10.5" y="14" fontSize="6" fontWeight="700" className="ic-text">
-                12
-              </text>
-              <text x="20" y="31.5" textAnchor="middle" fontSize="10" fontWeight="700" className="ic-text">
-                7
-              </text>
-            </>
-          ) : (
-            <>
-              <text x="10.7" y="14.5" textAnchor="middle" fontSize="8" fontWeight="700" className="ic-text">
-                3
-              </text>
-              <text x="29.3" y="14.5" textAnchor="middle" fontSize="8" fontWeight="700" className="ic-text">
-                8
-              </text>
-              <text x="20" y="24.5" textAnchor="middle" fontSize="11" fontWeight="700" className="ic-num">
-                5
-              </text>
-              <text x="10.7" y="33" textAnchor="middle" fontSize="8" fontWeight="700" className="ic-text">
-                1
-              </text>
-            </>
-          )}
+          <text x="10.7" y="14.5" textAnchor="middle" fontSize="8" fontWeight="700" className="ic-text">
+            3
+          </text>
+          <text x="29.3" y="14.5" textAnchor="middle" fontSize="8" fontWeight="700" className="ic-text">
+            8
+          </text>
+          <text x="20" y="24.5" textAnchor="middle" fontSize="11" fontWeight="700" className="ic-num">
+            5
+          </text>
+          <text x="10.7" y="33" textAnchor="middle" fontSize="8" fontWeight="700" className="ic-text">
+            1
+          </text>
         </svg>
       ) : type === 'mosaic' ? (
         <svg viewBox="0 0 40 40">
