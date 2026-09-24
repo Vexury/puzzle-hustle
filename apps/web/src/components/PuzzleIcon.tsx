@@ -49,6 +49,19 @@ export function PuzzleIcon({ type, size = 56 }: { type: PuzzleTypeId; size?: num
           <path d="M12 21C6 16.5 2 13 2 8.5 2 5.5 4.3 3.5 7 3.5c2 0 3.8 1.1 5 3 1.2-1.9 3-3 5-3 2.7 0 5 2 5 5 0 4.5-4 8-10 12.5Z" transform="translate(5.5 5.5) scale(0.75)" className="ic-a" />
           <path d="M12 21C6 16.5 2 13 2 8.5 2 5.5 4.3 3.5 7 3.5c2 0 3.8 1.1 5 3 1.2-1.9 3-3 5-3 2.7 0 5 2 5 5 0 4.5-4 8-10 12.5Z" transform="translate(21.4 20.6) scale(0.55)" className="ic-a" />
         </svg>
+      ) : type === 'slabs' ? (
+        <svg viewBox="0 0 40 40">
+          <rect x="5" y="8" width="20" height="10" rx="2.6" className="ic-a" />
+          <line x1="15" y1="10" x2="15" y2="16" className="ic-cut" />
+          <circle cx="10" cy="13" r="1.4" className="ic-cut" />
+          <circle cx="18" cy="11" r="1.2" className="ic-cut" />
+          <circle cx="22" cy="15" r="1.2" className="ic-cut" />
+          <rect x="24" y="16" width="10" height="20" rx="2.6" className="ic-a" />
+          <line x1="26" y1="26" x2="32" y2="26" className="ic-cut" />
+          <circle cx="26.8" cy="18.8" r="1.2" className="ic-cut" />
+          <circle cx="31.2" cy="23.2" r="1.2" className="ic-cut" />
+          <circle cx="29" cy="31" r="1.4" className="ic-cut" />
+        </svg>
       ) : type === 'tracks' ? (
         <svg viewBox="0 0 40 40">
           <g className="ic-grid">

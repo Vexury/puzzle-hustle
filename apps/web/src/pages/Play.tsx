@@ -11,6 +11,7 @@ import {
   generateMosaic,
   generateNonogram,
   generateShapes,
+  generateSlabs,
   generateStars,
   generateSudoku,
   generateTracks,
@@ -46,6 +47,7 @@ import { ShapesGame } from '../shapes/ShapesGame.tsx';
 import { NonogramGame } from '../nonogram/NonogramGame.tsx';
 import { ZipGame } from '../zip/ZipGame.tsx';
 import { TracksGame } from '../tracks/TracksGame.tsx';
+import { SlabsGame } from '../slabs/SlabsGame.tsx';
 import { MosaicGame } from '../mosaic/MosaicGame.tsx';
 import { SudokuGame } from '../sudoku/SudokuGame.tsx';
 import { RegionsGame } from '../regions/RegionsGame.tsx';
@@ -93,7 +95,9 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const bestBefore = useRef(existing?.seconds ?? null).current;
   const spec = useMemo(
     () =>
-      puzzleRef.type === 'tracks'
+      puzzleRef.type === 'slabs'
+        ? generateSlabs(puzzleRef.seed, puzzleRef.difficulty)
+        : puzzleRef.type === 'tracks'
         ? generateTracks(puzzleRef.seed, puzzleRef.difficulty)
         : puzzleRef.type === 'zip'
         ? generateZip(puzzleRef.seed, puzzleRef.difficulty, zipAdapter.options(puzzleRef.period))
@@ -113,7 +117,9 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
     [puzzleRef],
   );
   const sizeLabel =
-    'entryRow' in spec
+    'slabs' in spec
+      ? `${spec.config.cols}×${spec.config.rows}, ${spec.slabs.length} slabs`
+      : 'entryRow' in spec
       ? `${spec.config.cols}×${spec.config.rows}`
       : 'pieces' in spec
       ? `${spec.config.inner}×${spec.config.inner}, ${spec.pieces.length} shapes`
@@ -372,7 +378,19 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
         {result ? <span className="diff-pill solved">Solved</span> : <span className={`diff-pill ${puzzleRef.difficulty}`}>{puzzleRef.difficulty}</span>}
       </div>
 
-      {!showBoard ? null : 'entryRow' in spec ? (
+      {!showBoard ? null : 'slabs' in spec ? (
+        <SlabsGame
+          spec={spec}
+          onMove={onMove}
+          onSolved={onSolved}
+          onHintUsed={onHintUsed}
+          requestHint={() => hintProvider.request()}
+          hintAd={hintProvider !== freeHints}
+          locked={false}
+          initialState={saved?.state}
+          onStateChange={onStateChange}
+        />
+      ) : 'entryRow' in spec ? (
         <TracksGame
           spec={spec}
           onMove={onMove}
