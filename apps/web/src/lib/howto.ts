@@ -20,15 +20,15 @@ export const HOW_TO: Record<PuzzleTypeId, string[]> = {
     'Numbers fade once their block is satisfied. Every puzzle can be solved by logic alone.',
   ],
   crowns: [
-    'Place exactly one crown in every row, every column and every coloured region.',
-    'Crowns may never touch, not even diagonally.',
-    'Tap a cell to place a crown, tap it again to clear. Long-press or right-click marks an X, and dragging marks a whole row of them.',
+    'Place exactly one cat in every row, every column and every coloured region.',
+    'Cats may never touch, not even diagonally.',
+    'Tap a cell to place a cat, tap it again to clear. Long-press or right-click marks an X, and dragging marks a whole row of them.',
     'Every puzzle has exactly one solution and can be solved by logic alone.',
   ],
   stars: [
-    'Place exactly two stars in every row, every column and every coloured region.',
-    'Stars may never touch, not even diagonally, so two stars in one row need a gap between them.',
-    'Tap a cell to place a star, tap it again to clear. Long-press or right-click marks an X, and dragging marks a whole row of them.',
+    'Place exactly two dogs in every row, every column and every coloured region.',
+    'Dogs may never touch, not even diagonally, so two dogs in one row need a gap between them.',
+    'Tap a cell to place a dog, tap it again to clear. Long-press or right-click marks an X, and dragging marks a whole row of them.',
     'Every puzzle has exactly one solution. Small regions are the best place to start.',
   ],
   sudoku: [
