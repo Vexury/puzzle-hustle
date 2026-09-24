@@ -54,6 +54,8 @@ const PAD_L = 0.6;
 const PAD_T = 1;
 const PAD_R = 1;
 const PAD_B = 0.6;
+// Same X as the other puzzles: two bars of --mark-length (76% of the cell) crossed at the centre.
+const X_HALF = 0.76 / 2 / Math.SQRT2;
 
 function edgePoint(c: number, r: number, dir: number): [number, number] {
   if (dir === TRACK_N) return [c + 0.5, r];
@@ -233,20 +235,20 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     if (state[i]! & TRACKS_STATE_X) {
       marks.push(
         <g key={`x${i}`} className="tracks-cross">
-          <line x1={c + 0.35} y1={r + 0.35} x2={c + 0.65} y2={r + 0.65} />
-          <line x1={c + 0.65} y1={r + 0.35} x2={c + 0.35} y2={r + 0.65} />
+          <line x1={c + 0.5 - X_HALF} y1={r + 0.5 - X_HALF} x2={c + 0.5 + X_HALF} y2={r + 0.5 + X_HALF} />
+          <line x1={c + 0.5 + X_HALF} y1={r + 0.5 - X_HALF} x2={c + 0.5 - X_HALF} y2={r + 0.5 + X_HALF} />
         </g>,
       );
     } else if (state[i]! & TRACKS_STATE_T) {
-      const railTop = r + 0.36;
-      const railBottom = r + 0.64;
+      const railTop = r + 0.32;
+      const railBottom = r + 0.68;
       marks.push(
         <g key={`t${i}`} className="tracks-mark">
-          <line x1={c + 0.22} y1={railTop} x2={c + 0.78} y2={railTop} />
-          <line x1={c + 0.22} y1={railBottom} x2={c + 0.78} y2={railBottom} />
-          <line x1={c + 0.32} y1={railTop - 0.06} x2={c + 0.32} y2={railBottom + 0.06} />
-          <line x1={c + 0.5} y1={railTop - 0.06} x2={c + 0.5} y2={railBottom + 0.06} />
-          <line x1={c + 0.68} y1={railTop - 0.06} x2={c + 0.68} y2={railBottom + 0.06} />
+          <line x1={c + 0.13} y1={railTop} x2={c + 0.87} y2={railTop} />
+          <line x1={c + 0.13} y1={railBottom} x2={c + 0.87} y2={railBottom} />
+          <line x1={c + 0.26} y1={railTop - 0.08} x2={c + 0.26} y2={railBottom + 0.08} />
+          <line x1={c + 0.5} y1={railTop - 0.08} x2={c + 0.5} y2={railBottom + 0.08} />
+          <line x1={c + 0.74} y1={railTop - 0.08} x2={c + 0.74} y2={railBottom + 0.08} />
         </g>,
       );
     }
