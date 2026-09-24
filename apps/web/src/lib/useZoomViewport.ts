@@ -30,8 +30,10 @@ export interface ZoomViewport {
   pointerCancel(e: React.PointerEvent<HTMLElement>): void;
 }
 
-// `reserve` is a function because the nonogram clue gutter scales with the cell size.
-export function useZoomViewport(cols: number, reserve: number | ((cell: number) => number), viewKey: string | undefined): ZoomViewport {
+type Reserve = number | ((cell: number) => number);
+
+// The reserves are functions because the nonogram clue gutters scale with the cell size.
+export function useZoomViewport(cols: number, rows: number, reserve: Reserve, reserveY: Reserve, viewKey: string | undefined): ZoomViewport {
   const viewport = useRef<HTMLDivElement>(null);
   const [cellPx, setCellPx] = useState(24);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
@@ -51,15 +53,22 @@ export function useZoomViewport(cols: number, reserve: number | ((cell: number) 
     const chrome =
       parseFloat(box.borderLeftWidth) + parseFloat(box.borderRightWidth) + parseFloat(box.paddingLeft) + parseFloat(box.paddingRight);
     const width = (el.parentElement?.clientWidth ?? el.clientWidth) - chrome;
+    // max-height resolves to pixels; tall boards have to fit it too or their bottom rows hide
+    // in the scroll area on shorter screens.
+    const chromeY =
+      parseFloat(box.borderTopWidth) + parseFloat(box.borderBottomWidth) + parseFloat(box.paddingTop) + parseFloat(box.paddingBottom);
+    const maxHeight = parseFloat(box.maxHeight);
+    const height = Number.isNaN(maxHeight) ? Infinity : maxHeight - chromeY;
     const reserveAt = typeof reserve === 'function' ? reserve : () => reserve;
+    const reserveYAt = typeof reserveY === 'function' ? reserveY : () => reserveY;
     let fit = MIN_CELL;
     for (let c = 44; c >= MIN_CELL; c--) {
-      if (reserveAt(c) + cols * c <= width) {
+      if (reserveAt(c) + cols * c <= width && reserveYAt(c) + rows * c <= height) {
         fit = c;
         break;
       }
     }
-    const initial = Math.max(fit, 20);
+    const initial = Math.max(fit, 18);
     const overflows = fit < initial;
     minCell.current = overflows ? Math.max(fit, MIN_CELL) : initial;
     maxCell.current = overflows ? MAX_CELL : initial;
@@ -72,7 +81,7 @@ export function useZoomViewport(cols: number, reserve: number | ((cell: number) 
       return;
     }
     setCellPx(initial);
-  }, [cols, reserve, storageKey]);
+  }, [cols, rows, reserve, reserveY, storageKey]);
 
   useLayoutEffect(() => {
     const el = viewport.current;
