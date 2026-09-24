@@ -130,6 +130,9 @@ function SlabShape({ x0, y0, x1, y1, a, b, placed, className }: { x0: number; y0
   const horizontal = y0 === y1;
   const mx = (x0 + x1) / 2;
   const my = (y0 + y1) / 2;
+  // The pip patterns are drawn for a slab lying left to right and turn with it.
+  const ux = x1 - x0;
+  const uy = y1 - y0;
   return (
     <g className={[className ? `slab ${className}` : 'slab', placed ? 'placed' : ''].join(' ').trim()}>
       <rect className="slab-body" x={left} y={top} width={Math.abs(x1 - x0) + 1 - 2 * inset} height={Math.abs(y1 - y0) + 1 - 2 * inset} rx={0.16} />
@@ -139,10 +142,10 @@ function SlabShape({ x0, y0, x1, y1, a, b, placed, className }: { x0: number; y0
         <line className="slab-divider" x1={x0 - 0.32} y1={my} x2={x0 + 0.32} y2={my} />
       )}
       {PIPS[a]!.map(([dx, dy], i) => (
-        <circle key={`a${i}`} className="slab-pip" cx={x0 + dx * 0.22} cy={y0 + dy * 0.22} r={0.075} />
+        <circle key={`a${i}`} className="slab-pip" cx={x0 + (dx * ux - dy * uy) * 0.22} cy={y0 + (dx * uy + dy * ux) * 0.22} r={0.075} />
       ))}
       {PIPS[b]!.map(([dx, dy], i) => (
-        <circle key={`b${i}`} className="slab-pip" cx={x1 + dx * 0.22} cy={y1 + dy * 0.22} r={0.075} />
+        <circle key={`b${i}`} className="slab-pip" cx={x1 + (dx * ux - dy * uy) * 0.22} cy={y1 + (dx * uy + dy * ux) * 0.22} r={0.075} />
       ))}
     </g>
   );
