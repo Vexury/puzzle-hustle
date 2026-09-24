@@ -1,7 +1,9 @@
 import { AdMob, AdmobConsentStatus, MaxAdContentRating, RewardAdPluginEvents } from '@capacitor-community/admob';
 import { Capacitor } from '@capacitor/core';
 
-const REWARD_UNIT = 'ca-app-pub-3552688457242630/8666936384';
+const ios = Capacitor.getPlatform() === 'ios';
+
+const REWARD_UNIT = ios ? 'ca-app-pub-3552688457242630/5760645401' : 'ca-app-pub-3552688457242630/8666936384';
 
 // Devices that always get test ads. Drop one from this list and a tap on a real ad from
 // that phone counts as invalid traffic, which can cost the AdMob account. The id is
@@ -89,7 +91,8 @@ export async function showRewardedAd(): Promise<boolean> {
     // must not hold the puzzle hostage: past the limit it counts as no ad, and the hint is free.
     let timer = 0;
     await Promise.race([
-      AdMob.prepareRewardVideoAd({ adId: REWARD_UNIT }),
+      // iPhones are not in TEST_DEVICES yet, so iOS asks for test ads outright.
+      AdMob.prepareRewardVideoAd({ adId: REWARD_UNIT, isTesting: ios }),
       new Promise((_, reject) => (timer = window.setTimeout(() => reject(new Error('ad load timeout')), LOAD_TIMEOUT_MS))),
     ]).finally(() => clearTimeout(timer));
     const reward = await AdMob.showRewardVideoAd();
