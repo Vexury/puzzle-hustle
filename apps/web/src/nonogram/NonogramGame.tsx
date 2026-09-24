@@ -80,10 +80,14 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
   const drag = useRef<Drag | null>(null);
   const solved = isNonogramSolved(spec, state);
   const clueSlots = Math.max(...spec.rowClues.map((c) => Math.max(c.length, 1)));
+  const colClueSlots = Math.max(...spec.colClues.map((c) => Math.max(c.length, 1)));
+  const clueFont = (cell: number) => Math.min(14, Math.max(10, cell * 0.5));
   // Must match nonogram.css: 8 left, 6 right, 1.25em per clue, 2 between. Drifting apart
   // here is what pushed 10x10 boards into a scroll they did not need.
-  const clueW = (cell: number) => 14 + clueSlots * 1.25 * Math.min(14, Math.max(10, cell * 0.5)) + Math.max(clueSlots - 1, 0) * 2;
-  const { viewport, cellPx, pointerDown, pointerMove, pointerUp, pointerCancel } = useZoomViewport(cols, clueW, viewKey);
+  const clueW = (cell: number) => 14 + clueSlots * 1.25 * clueFont(cell) + Math.max(clueSlots - 1, 0) * 2;
+  // Column clues: 8 top, 4 bottom, one line of 1em per clue, 2 between.
+  const clueH = (cell: number) => 12 + colClueSlots * clueFont(cell) + Math.max(colClueSlots - 1, 0) * 2;
+  const { viewport, cellPx, pointerDown, pointerMove, pointerUp, pointerCancel } = useZoomViewport(cols, rows, clueW, clueH, viewKey);
 
 
   useEffect(() => {
