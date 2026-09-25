@@ -1,0 +1,18 @@
+<en-US>
+New achievements.
+
+- 40 achievements: two for every puzzle type, longer streaks and bigger goals
+- See how close you are, with the next goals at the top of the page
+- Filter by puzzle type and tap a badge for its details
+- Five new flairs to earn with the big milestones
+- A faster replay with a hint no longer replaces a hint-free level time
+</en-US>
+<de-DE>
+Neue Achievements.
+
+- 40 Achievements: zwei für jeden Rätseltyp, längere Serien und größere Ziele
+- Sieh, wie nah du dran bist, mit den nächsten Zielen oben auf der Seite
+- Nach Rätseltyp filtern und ein Abzeichen für Details antippen
+- Fünf neue Flairs für die großen Meilensteine
+- Eine schnellere Wiederholung mit Hint ersetzt keine Levelzeit ohne Hint mehr
+</de-DE>
