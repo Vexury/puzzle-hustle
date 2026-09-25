@@ -23,3 +23,10 @@ it('an earned flair is owned, and equips once worn', () => {
 it('treats an unknown id as locked', () => {
   expect(itemState('nope', new Set(), none, 1000)).toBe('locked');
 });
+
+it('names the state of each theme pack', () => {
+  expect(itemState('paper', new Set(['paper']), { ...none, theme: 'paper' }, 0)).toBe('equipped');
+  expect(itemState('paper', new Set(['paper']), none, 0)).toBe('owned');
+  expect(itemState('paper', new Set(), none, 400)).toBe('buyable');
+  expect(itemState('paper', new Set(), none, 399)).toBe('locked');
+});

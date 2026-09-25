@@ -78,6 +78,10 @@ export function equipPack(id: string | null, origin?: Origin): boolean {
 }
 
 export function usePack(): ThemeCosmetic | null {
+  // Same reason as useBalance()/useEquipped() in coins.ts: activePack() takes no arguments and
+  // reads module state the compiler can't see, so without this it gets cached forever and a
+  // pack change never shows without a reload.
+  'use no memo';
   const subscribe = (l: () => void) => {
     listeners.add(l);
     return () => listeners.delete(l);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ACTIVITY_FLAIRS,
   COSMETICS,
@@ -6,24 +6,29 @@ import {
   packProgress,
   PUZZLE_META,
   PUZZLE_TYPES,
+  THEMES,
   type BadgeCosmetic,
   type FlairCosmetic,
+  type ThemeCosmetic,
 } from '@puzzle-hustle/core';
 import { BadgeIcon } from '../components/BadgeIcon.tsx';
 import { NameCell } from '../components/Board.tsx';
 import { CoinPill } from '../components/CoinPill.tsx';
 import { toast } from '../components/Toast.tsx';
 import { useSession } from '../lib/auth.ts';
+import { storedAccent } from '../lib/accent.ts';
 import { storedSolves } from '../lib/achievements.ts';
+import { pushBackGuard } from '../lib/back.ts';
 import { buyItem, equip, owned, useBalance, useEquipped, type Equipped } from '../lib/coins.ts';
 import { requirementText } from '../lib/flairs.ts';
 import { readSetting } from '../lib/storage.ts';
+import { centerOf, equipPack, tryOnPack, usePack, useTheme } from '../lib/theme.ts';
 
 const REVERT_MS = 4000;
 const BADGES: readonly BadgeCosmetic[] = COSMETICS.filter((c): c is BadgeCosmetic => c.kind === 'badge');
 
 export function itemState(id: string, ownedIds: Set<string>, equipped: Equipped, balance: number): 'equipped' | 'owned' | 'buyable' | 'locked' {
-  if (equipped.badge === id || equipped.flair === id) return 'equipped';
+  if (equipped.badge === id || equipped.flair === id || equipped.theme === id) return 'equipped';
   if (ownedIds.has(id)) return 'owned';
   const item = COSMETICS.find((c) => c.id === id);
   if (!item || item.kind === 'flair') return 'locked';
@@ -37,12 +42,65 @@ export function Shop() {
   const ownedIds = owned();
   const solves = storedSolves();
   const [armed, setArmed] = useState<string | null>(null);
+  const active = usePack();
+  const { theme: vexuryMode } = useTheme();
+  const [trying, setTrying] = useState<ThemeCosmetic | null>(null);
+  const tryingRef = useRef(trying);
+  tryingRef.current = trying;
 
   useEffect(() => {
     if (!armed) return;
     const timer = setTimeout(() => setArmed(null), REVERT_MS);
     return () => clearTimeout(timer);
   }, [armed]);
+
+  const endTryOn = () => {
+    tryOnPack(null);
+    setTrying(null);
+  };
+
+  // The try-on never outlives the shop: leaving it, backgrounding the app or the back button
+  // all put the equipped look back.
+  useEffect(() => {
+    const blur = () => endTryOn();
+    window.addEventListener('appBlur', blur);
+    window.addEventListener('pagehide', blur);
+    const pop = pushBackGuard(() => {
+      if (!tryingRef.current) return false;
+      endTryOn();
+      return true;
+    });
+    return () => {
+      window.removeEventListener('appBlur', blur);
+      window.removeEventListener('pagehide', blur);
+      pop();
+      tryOnPack(null);
+    };
+  }, []);
+
+  const tapTheme = (item: ThemeCosmetic | null, event: React.MouseEvent<HTMLElement>) => {
+    const origin = centerOf(event.currentTarget);
+    if (item === null || ownedIds.has(item.id)) {
+      setTrying(null);
+      equipPack(item?.id ?? null, origin);
+      return;
+    }
+    setTrying(item);
+    tryOnPack(item.id, origin);
+  };
+
+  const buyTheme = () => {
+    if (!trying || !buyItem(trying.id)) return;
+    setTrying(null);
+    equipPack(trying.id);
+  };
+
+  const themeLabel = (item: ThemeCosmetic) => {
+    const state = itemState(item.id, ownedIds, equipped, balance);
+    if (state === 'equipped') return 'Equipped';
+    if (state === 'owned') return 'Owned';
+    return `${item.price}`;
+  };
 
   const name = session?.player.name ?? readSetting('ph:name') ?? 'You';
 
@@ -110,6 +168,30 @@ export function Shop() {
         </section>
 
         <section className="card-lg">
+          <h2>Themes</h2>
+          <div className="theme-grid">
+            <button type="button" className={`theme-card${!active && !trying ? ' equipped' : ''}`} onClick={(e) => tapTheme(null, e)} aria-label="Vexury, free">
+              <MiniBoard mode={vexuryMode} accent={storedAccent()} />
+              <b className="small">Vexury</b>
+              <span className="small">{!equipped.theme ? 'Equipped' : 'Free'}</span>
+            </button>
+            {THEMES.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={`theme-card ${itemState(item.id, ownedIds, equipped, balance)}${trying?.id === item.id ? ' trying' : ''}`}
+                onClick={(e) => tapTheme(item, e)}
+                aria-label={`${item.title}, ${themeLabel(item)}`}
+              >
+                <MiniBoard pack={item} />
+                <b className="small">{item.title}</b>
+                <span className="small">{themeLabel(item)}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="card-lg">
           <h2>Badges</h2>
           <div className="shop-grid">
             {BADGES.map((item) => (
@@ -172,6 +254,30 @@ export function Shop() {
           </div>
         </section>
       </div>
+
+      {trying && (
+        <div className="tryon-bar" role="region" aria-label={`Trying ${trying.title}`}>
+          <button type="button" className="pill outline" onClick={endTryOn}>
+            Back
+          </button>
+          <button type="button" className="pill" onClick={buyTheme} disabled={balance < trying.price}>
+            {balance < trying.price ? `Need ${trying.price - balance} more` : `Buy for ${trying.price}`}
+          </button>
+        </div>
+      )}
     </>
+  );
+}
+
+// Nine cells in a pack's own colours: its attributes on this element make the same token block
+// apply here as on the whole app. The Vexury card passes its stored mode and accent instead,
+// because under a pack the root carries neither.
+function MiniBoard({ pack, mode, accent }: { pack?: ThemeCosmetic; mode?: string; accent?: string }) {
+  return (
+    <span className="mini-board" data-theme={pack?.mode ?? mode} data-pack={pack?.id} data-accent={pack ? undefined : accent} aria-hidden="true">
+      {Array.from({ length: 9 }, (_, i) => (
+        <i key={i} className={i === 4 ? 'on' : undefined} />
+      ))}
+    </span>
   );
 }

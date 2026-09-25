@@ -28,5 +28,6 @@
   --radius-sm: 10px;
   --nono-c2: #d9822b;
   --nono-c3: #b8508a;
-  --pack-pattern: radial-gradient(rgba(120, 100, 60, 0.06) 1px, transparent 1px) 0 0 / 5px 5px;
+  --pack-pattern-image: radial-gradient(rgba(120, 100, 60, 0.06) 1px, transparent 1px);
+  --pack-pattern-size: 5px 5px;
 }
