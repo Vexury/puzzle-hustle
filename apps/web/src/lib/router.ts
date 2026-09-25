@@ -35,17 +35,36 @@ export function useRoute(): Route {
   return useSyncExternalStore(subscribe, () => snapshot);
 }
 
+// A pushed entry remembers the URL it was pushed from, so leaveTo can tell whether the screen
+// below is the one it wants to go to.
 export function navigate(to: string, replace = false) {
-  if (replace) history.replaceState(null, '', to);
-  else history.pushState(null, '', to);
+  if (replace) history.replaceState(history.state, '', to);
+  else history.pushState({ from: location.pathname + location.search }, '', to);
   emit();
   window.scrollTo({ top: 0 });
 }
 
-export function onLinkClick(event: React.MouseEvent<HTMLAnchorElement>) {
-  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+// Steps back when the screen below is the target, otherwise replaces this one. A push would
+// leave this screen under the target, so the next back press would return into it.
+export function leaveTo(to: string) {
+  if ((history.state as { from?: string } | null)?.from === to) history.back();
+  else navigate(to, true);
+}
+
+function linkTarget(event: React.MouseEvent<HTMLAnchorElement>): string | null {
+  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return null;
   const target = event.currentTarget.getAttribute('href');
-  if (!target || !target.startsWith('/')) return;
+  if (!target || !target.startsWith('/')) return null;
   event.preventDefault();
-  navigate(target);
+  return target;
+}
+
+export function onLinkClick(event: React.MouseEvent<HTMLAnchorElement>, replace = false) {
+  const target = linkTarget(event);
+  if (target) navigate(target, replace);
+}
+
+export function onBackLinkClick(event: React.MouseEvent<HTMLAnchorElement>) {
+  const target = linkTarget(event);
+  if (target) leaveTo(target);
 }
