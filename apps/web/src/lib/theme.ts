@@ -1,6 +1,9 @@
 import { Capacitor, registerPlugin } from '@capacitor/core';
 import { useSyncExternalStore } from 'react';
 import { flushSync } from 'react-dom';
+import { findCosmetic, type ThemeCosmetic } from '@puzzle-hustle/core';
+import { equip, readEquipped } from './coins.ts';
+import { storedAccent } from './accent.ts';
 import { readSetting, writeSetting } from './storage.ts';
 
 export interface Origin {
@@ -32,13 +35,55 @@ function resolve(p: ThemePref): Theme {
   return p === 'system' ? (media.matches ? 'dark' : 'light') : p;
 }
 
+// A try-on shows a pack without buying or saving it; the shop clears it on the way out.
+let trying: string | null = null;
+
+export function activePack(): ThemeCosmetic | null {
+  const item = findCosmetic(trying ?? readEquipped().theme);
+  return item?.kind === 'theme' ? item : null;
+}
+
 function apply() {
-  const theme = resolve(pref());
-  document.documentElement.dataset['theme'] = theme;
+  const root = document.documentElement;
+  const pack = activePack();
+  const theme = pack ? pack.mode : resolve(pref());
+  root.dataset['theme'] = theme;
+  if (pack) {
+    root.dataset['pack'] = pack.id;
+    delete root.dataset['accent'];
+  } else {
+    delete root.dataset['pack'];
+    root.dataset['accent'] = storedAccent();
+  }
   if (Capacitor.isNativePlatform()) {
     void StatusBarStyle.setStyle({ style: theme === 'dark' ? 'DARK' : 'LIGHT' });
   }
   for (const l of listeners) l();
+}
+
+export function refreshAppearance() {
+  apply();
+}
+
+export function tryOnPack(id: string | null, origin?: Origin) {
+  trying = findCosmetic(id)?.kind === 'theme' ? id : null;
+  reveal(origin, apply);
+}
+
+export function equipPack(id: string | null, origin?: Origin): boolean {
+  trying = null;
+  if (!equip('theme', id)) return false;
+  reveal(origin, apply);
+  return true;
+}
+
+export function usePack(): ThemeCosmetic | null {
+  const subscribe = (l: () => void) => {
+    listeners.add(l);
+    return () => listeners.delete(l);
+  };
+  useSyncExternalStore(subscribe, () => activePack()?.id ?? null);
+  return activePack();
 }
 
 // The new theme grows out of the button that was pressed. Without view transitions, or when the

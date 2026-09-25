@@ -15,13 +15,15 @@ export const ACCENT_NAMES: Record<Accent, string> = {
 
 const listeners = new Set<() => void>();
 
-function stored(): Accent {
+export function storedAccent(): Accent {
   const saved = readSetting('ph:accent') ?? '';
   return (ACCENTS as readonly string[]).includes(saved) ? (saved as Accent) : 'amber';
 }
 
+// Under a pack the accent attribute stays off, so no accent rule competes with the pack's tokens.
 function apply() {
-  document.documentElement.dataset['accent'] = stored();
+  const root = document.documentElement;
+  if (!root.dataset['pack']) root.dataset['accent'] = storedAccent();
   for (const l of listeners) l();
 }
 
@@ -30,7 +32,7 @@ export function useAccent(): { accent: Accent; setAccent(a: Accent): void } {
     listeners.add(l);
     return () => listeners.delete(l);
   };
-  const accent = useSyncExternalStore(subscribe, stored);
+  const accent = useSyncExternalStore(subscribe, storedAccent);
   return {
     accent,
     setAccent: (a: Accent) => {
