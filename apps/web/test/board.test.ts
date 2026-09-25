@@ -46,6 +46,15 @@ it('hides chosen players but never the viewer', () => {
   expect(hidden.map((e) => e.playerId)).toEqual(['a']);
 });
 
+it('keeps the full-board rank when players above are hidden', () => {
+  const entries = [{ playerId: 'a' }, { playerId: 'me' }, { playerId: 'b' }, { playerId: 'c' }];
+  const { shown } = splitHidden(entries, ['a', 'b'], 'me');
+  expect(shown.map((e) => [e.playerId, e.rank])).toEqual([
+    ['me', 2],
+    ['c', 4],
+  ]);
+});
+
 it('stores hidden players once and survives a corrupt setting', () => {
   localStorage.setItem('ph:hidden', '{nope');
   expect(readHidden()).toEqual([]);

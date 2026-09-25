@@ -65,10 +65,14 @@ export function splitHidden<T extends { playerId: string }>(
   entries: T[],
   hidden: string[],
   meId: string,
-): { shown: T[]; hidden: T[] } {
+): { shown: Array<T & { rank: number }>; hidden: T[] } {
   const set = new Set(hidden);
   const isHidden = (entry: T) => entry.playerId !== meId && set.has(entry.playerId);
-  return { shown: entries.filter((e) => !isHidden(e)), hidden: entries.filter(isHidden) };
+  // Rank stays the place on the full board, so hiding someone never moves the others up.
+  return {
+    shown: entries.flatMap((e, index) => (isHidden(e) ? [] : [{ ...e, rank: index + 1 }])),
+    hidden: entries.filter(isHidden),
+  };
 }
 
 // How long an armed Remove stays armed, as for Reset on Profile.
@@ -180,14 +184,14 @@ export function Board({
   return (
     <>
       <ol className="leaderboard">
-        {shown.map((entry, index) => (
+        {shown.map((entry) => (
           <Fragment key={entry.playerId}>
             <li
-              className={`leaderboard-row${index < 3 ? ` podium ${MEDALS[index]}` : ''}${entry.playerId === meId ? ' me' : ''}`}
+              className={`leaderboard-row${entry.rank <= 3 ? ` podium ${MEDALS[entry.rank - 1]}` : ''}${entry.playerId === meId ? ' me' : ''}`}
             >
               <span className="leaderboard-rank">
-                {index === 0 && <Crown />}
-                {index + 1}
+                {entry.rank === 1 && <Crown />}
+                {entry.rank}
               </span>
               <NameCell entry={entry} />
               {entry.hints > 0 && <span className="muted small">{entry.hints} hint{entry.hints === 1 ? '' : 's'}</span>}
