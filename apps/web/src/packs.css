@@ -178,5 +178,5 @@
   --pack-pattern-size: auto;
 }
 
-[data-pack="synthwave"] .board-frame { box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 45%, transparent); }
-[data-pack="terminal"] .board-frame { box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent); }
+[data-pack="synthwave"] .board-frame:not(.solved) { box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 45%, transparent); }
+[data-pack="terminal"] .board-frame:not(.solved) { box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent); }
