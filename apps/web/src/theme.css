@@ -318,15 +318,16 @@ p { margin: 0; }
 .pill:disabled { opacity: 0.5; cursor: default; transform: none; }
 .pill.outline { background: transparent; color: var(--text); border-color: var(--border-mid); }
 .pill.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
-/* Apple's button rules allow black on light surfaces and white on dark ones, nothing tinted,
-   so this one ignores the accent colour on purpose. */
-.pill.apple-signin { background: #000; border-color: #000; color: #fff; font-weight: 600; }
-[data-theme="dark"] .pill.apple-signin { background: #fff; border-color: #fff; color: #000; }
+/* Apple's button rules allow white on dark surfaces and white with a black outline on light
+   ones, nothing tinted, so this one ignores the accent colour on purpose. White in both themes
+   keeps it level with Google's button beside it on the web. */
+.pill.apple-signin { background: #fff; border-color: #000; color: #000; font-weight: 600; }
+[data-theme="dark"] .pill.apple-signin { border-color: #fff; }
 .pill.apple-signin svg { width: 1.05em; height: 1.05em; margin-top: -0.15em; fill: currentColor; }
-/* Google's colours for a custom button: white with a grey outline on light surfaces, near-black
-   on dark ones, the G always in its own colours. */
+/* Google's light colours for a custom button, white with a grey outline and the G in its own
+   colours. Kept in the dark theme too, so it matches the white Apple button. */
 .pill.google-signin { background: #fff; border-color: #747775; color: #1f1f1f; font-weight: 600; }
-[data-theme="dark"] .pill.google-signin { background: #131314; border-color: #8e918f; color: #e3e3e3; }
+[data-theme="dark"] .pill.google-signin { border-color: #fff; }
 .pill.google-signin svg { width: 1.05em; height: 1.05em; }
 /* Both providers stacked at the width of the wider one, so they read as one choice. */
 .signin-options { display: flex; flex-direction: column; gap: 0.5rem; width: fit-content; }
