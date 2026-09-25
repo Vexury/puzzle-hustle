@@ -1,5 +1,6 @@
 import { beforeEach, expect, it } from 'vitest';
-import { getSolve, keepFinalBoard, readProgress, recordSolve, rehydrate, writeProgress } from '../src/lib/storage.ts';
+import { adapter } from '@puzzle-hustle/core';
+import { getSolve, keepFinalBoard, readCurrentProgress, readProgress, recordSolve, rehydrate, startedIds, writeProgress } from '../src/lib/storage.ts';
 
 beforeEach(() => {
   localStorage.clear();
@@ -44,4 +45,15 @@ it('keeps only the latest finished board per type and period', () => {
   expect(readProgress('zip:daily:2026-09-23')!.state).toEqual([4]);
   expect(readProgress('crowns:daily:2026-09-22')!.state).toEqual([2]);
   expect(readProgress('zip:weekly:2026-W39')!.state).toEqual([3]);
+});
+
+it('does not count a board saved on another generator version as started', () => {
+  const board = { state: [1], seconds: 30, moves: 3, hints: 0 };
+  const version = adapter('sudoku').version;
+  writeProgress('sudoku:level:easy:1', { ...board, version });
+  writeProgress('sudoku:level:easy:2', { ...board, version: version + 1 });
+  writeProgress('sudoku:level:easy:3', board);
+  expect([...startedIds()].sort()).toEqual(['sudoku:level:easy:1', 'sudoku:level:easy:3']);
+  expect(readCurrentProgress('sudoku:level:easy:2')).toBeNull();
+  expect(readCurrentProgress('sudoku:level:easy:1')?.seconds).toBe(30);
 });

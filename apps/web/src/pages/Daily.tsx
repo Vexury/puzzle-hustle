@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { CLEAN_SWEEP_COINS, DAILY_TYPES, PUZZLE_META, dailyRef, encodeRef, nextPeriodStart, periodRef, refId, type Period, type PuzzleRef } from '@puzzle-hustle/core';
 import { PuzzleIcon } from '../components/PuzzleIcon.tsx';
 import { href, onLinkClick } from '../lib/router.ts';
-import { readProgress, useSolves } from '../lib/storage.ts';
+import { readCurrentProgress, useSolves } from '../lib/storage.ts';
 import { capitalize, formatSeconds } from '../lib/share.ts';
 import { ThemeToggle } from '../components/ThemeToggle.tsx';
 import { CoinPill } from '../components/CoinPill.tsx';
@@ -28,7 +28,7 @@ export function useCountdown(period: Period): string {
 function ChallengeCard({ puzzleRef, label }: { puzzleRef: PuzzleRef; label: string }) {
   const solves = useSolves();
   const solve = solves[refId(puzzleRef)];
-  const started = !solve && readProgress(refId(puzzleRef)) !== null;
+  const started = !solve && readCurrentProgress(refId(puzzleRef)) !== null;
   const url = href(`/play?${encodeRef(puzzleRef)}`);
   return (
     <a href={url} onClick={onLinkClick} className={solve ? 'row-card solved' : 'row-card'}>
