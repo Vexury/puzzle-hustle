@@ -163,6 +163,22 @@ it('revokes the Apple authorization before deleting an Apple account', async () 
   expect(rows?.n).toBe(0);
 });
 
+it('revokes with the Services ID a web code was issued to', async () => {
+  const me = await signInWithApple('apple-1');
+  const revoke = vi.spyOn(apple, 'revokeAppleAuthorization').mockResolvedValue(true);
+  const body = JSON.stringify({ appleCode: 'code-1', appleClientId: 'test.web.id' });
+  await call('/account', me.token, { method: 'DELETE', body });
+  expect(revoke).toHaveBeenCalledWith('code-1', expect.objectContaining({ clientId: 'test.web.id' }));
+});
+
+it('ignores a client ID outside APPLE_AUDIENCES', async () => {
+  const me = await signInWithApple('apple-1');
+  const revoke = vi.spyOn(apple, 'revokeAppleAuthorization').mockResolvedValue(true);
+  const body = JSON.stringify({ appleCode: 'code-1', appleClientId: 'someone.else' });
+  await call('/account', me.token, { method: 'DELETE', body });
+  expect(revoke).toHaveBeenCalledWith('code-1', expect.objectContaining({ clientId: 'test.bundle.id' }));
+});
+
 it('deletes an Apple account even when the revocation fails', async () => {
   const me = await signInWithApple('apple-1');
   vi.spyOn(apple, 'revokeAppleAuthorization').mockResolvedValue(false);

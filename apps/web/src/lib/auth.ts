@@ -14,6 +14,10 @@ export const CLIENT_ID =
   (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) ||
   '455101583494-lfg3kbscmqgubeqrsocg0919269n2a23.apps.googleusercontent.com';
 const GSI_SRC = 'https://accounts.google.com/gsi/client';
+// The web's Services ID, grouped under the app's App ID, so an Apple ID is the same player in
+// both. Apple only returns to registered URLs, which rules out localhost.
+export const APPLE_WEB_CLIENT_ID = 'dev.vexury.puzzlehustle.web';
+const APPLE_JS_SRC = 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js';
 
 // Android signs in natively with Google, the web through Google's widget, iOS with Apple
 // alone (decision 2026-09-22).
@@ -22,6 +26,9 @@ export const NATIVE_APPLE = Capacitor.getPlatform() === 'ios';
 export const SIGN_IN_AVAILABLE = NATIVE_GOOGLE || NATIVE_APPLE || !Capacitor.isNativePlatform();
 const NATIVE_PROVIDER = NATIVE_APPLE ? 'apple' : 'google';
 const NAME_KEY = 'ph:name';
+// Set on every sign-in and kept on sign-out: the web shows this provider's button first, and
+// account deletion needs to know whether the running session is an Apple one.
+const PROVIDER_KEY = 'ph:provider';
 const PREVIOUS_PLAYER_KEY = 'ph:previousPlayer';
 
 async function startSession(provider: 'google' | 'apple', idToken: string): Promise<Session> {
@@ -30,6 +37,7 @@ async function startSession(provider: 'google' | 'apple', idToken: string): Prom
     body: JSON.stringify({ provider, idToken, name: readSetting(NAME_KEY) ?? undefined }),
   });
   writeSession(session);
+  writeSetting(PROVIDER_KEY, provider);
   // Solves made while signed out wait in the queue. Nothing else fires when the sign-in sheet
   // closes, it covers the app without hiding it, so send them now instead of on the next resume.
   resetBackoff();
@@ -108,25 +116,28 @@ export function useSession(): Session | null {
   return useSyncExternalStore(subscribeSession, sessionSnapshot);
 }
 
-let loading: Promise<void> | null = null;
+const loading = new Map<string, Promise<void>>();
 
-// Google's widget is a script tag, not a package. It is loaded on demand so that a player
-// who never signs in never talks to Google at all.
-function loadGsi(): Promise<void> {
-  if (loading) return loading;
-  loading = new Promise((resolve, reject) => {
+// Google's widget and Apple's popup are script tags, not packages. They are loaded on demand
+// so that a player who never signs in never talks to either.
+function loadScript(src: string): Promise<void> {
+  const pending = loading.get(src);
+  if (pending) return pending;
+  const next = new Promise<void>((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = GSI_SRC;
+    script.src = src;
     script.async = true;
     script.onload = () => resolve();
     script.onerror = () => {
       // Let a later call try again instead of being stuck with this rejected promise forever.
-      loading = null;
-      reject(new Error('gsi unavailable'));
+      loading.delete(src);
+      script.remove();
+      reject(new Error(`${src} unavailable`));
     };
     document.head.append(script);
   });
-  return loading;
+  loading.set(src, next);
+  return next;
 }
 
 interface GsiCredential {
@@ -149,7 +160,7 @@ export async function renderSignInButton(
   theme: 'light' | 'dark' = 'light',
 ): Promise<void> {
   if (!CLIENT_ID) throw new Error('no client id');
-  await loadGsi();
+  await loadScript(GSI_SRC);
   const gsi = (window as unknown as { google?: Gsi }).google;
   if (!gsi) throw new Error('gsi unavailable');
 
@@ -196,6 +207,66 @@ export async function renderSignInButton(
   });
 }
 
+export function lastProvider(): 'google' | 'apple' | null {
+  const value = readSetting(PROVIDER_KEY);
+  return value === 'google' || value === 'apple' ? value : null;
+}
+
+interface AppleAuth {
+  auth: {
+    init(options: { clientId: string; redirectURI: string; usePopup: boolean }): void;
+    signIn(): Promise<{ authorization: { code: string; id_token: string } }>;
+  };
+}
+
+let appleReady: Promise<AppleAuth> | null = null;
+
+// Apple opens its popup from signIn(), and browsers only allow that close to a click. Call this
+// ahead of time, when the button appears, so the click itself has nothing left to wait for.
+export function prepareAppleWeb(): Promise<AppleAuth> {
+  appleReady ??= loadScript(APPLE_JS_SRC)
+    .then(() => {
+      const apple = (window as unknown as { AppleID?: AppleAuth }).AppleID;
+      if (!apple) throw new Error('apple js unavailable');
+      // No scope, as on iOS: name and e-mail are never stored, so Apple need not ask for them.
+      apple.auth.init({ clientId: APPLE_WEB_CLIENT_ID, redirectURI: `${location.origin}/`, usePopup: true });
+      return apple;
+    })
+    .catch((err: unknown) => {
+      appleReady = null;
+      throw err;
+    });
+  return appleReady;
+}
+
+// Null when the player closed the popup, which is a choice, not a failure.
+async function appleWebAuthorization(): Promise<{ code: string; id_token: string } | null> {
+  const apple = await prepareAppleWeb();
+  try {
+    return (await apple.auth.signIn()).authorization;
+  } catch (err) {
+    const code = (err as { error?: string }).error;
+    if (code === 'popup_closed_by_user' || code === 'user_cancelled_authorize') return null;
+    throw err;
+  }
+}
+
+export async function appleWebSignIn(): Promise<boolean> {
+  try {
+    const authorization = await appleWebAuthorization();
+    if (!authorization) return false;
+    await startSession('apple', authorization.id_token);
+    return true;
+  } catch {
+    toast('Sign-in failed. Try again.');
+    return false;
+  }
+}
+
+export function isAppleSession(): boolean {
+  return NATIVE_APPLE || (!Capacitor.isNativePlatform() && lastProvider() === 'apple');
+}
+
 export function signOut() {
   try {
     const gsi = (window as unknown as { google?: Gsi }).google;
@@ -230,6 +301,7 @@ export async function setName(name: string): Promise<void> {
 // closed the sheet, which cancels the deletion.
 async function appleCodeForDeletion(): Promise<string | null> {
   try {
+    if (!NATIVE_APPLE) return (await appleWebAuthorization())?.code ?? null;
     await initNative();
     const login = await SocialLogin.login({ provider: 'apple', options: { scopes: [] } });
     return login.result.authorizationCode ?? null;
@@ -239,16 +311,16 @@ async function appleCodeForDeletion(): Promise<string | null> {
 }
 
 export async function deleteAccount(): Promise<void> {
-  let appleCode: string | undefined;
-  if (NATIVE_APPLE) {
+  let apple: { appleCode: string; appleClientId?: string } | null = null;
+  if (isAppleSession()) {
     const code = await appleCodeForDeletion();
     if (!code) return;
-    appleCode = code;
+    apple = NATIVE_APPLE ? { appleCode: code } : { appleCode: code, appleClientId: APPLE_WEB_CLIENT_ID };
   }
   // A failed delete must not sign the player out: the account is still fully present on the
   // server, and keeping the session is what lets them retry rather than silently doing nothing.
   try {
-    await apiFetch('/account', { method: 'DELETE', auth: true, body: appleCode ? JSON.stringify({ appleCode }) : null });
+    await apiFetch('/account', { method: 'DELETE', auth: true, body: apple ? JSON.stringify(apple) : null });
   } catch {
     toast('Could not delete your account. Try again.');
     return;

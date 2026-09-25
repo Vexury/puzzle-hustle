@@ -4,8 +4,12 @@ import {
   NATIVE_APPLE,
   NATIVE_GOOGLE,
   SIGN_IN_AVAILABLE,
+  appleWebSignIn,
   deleteAccount,
+  isAppleSession,
+  lastProvider,
   nativeSignIn,
+  prepareAppleWeb,
   renderSignInButton,
   setName as setAccountName,
   signOut,
@@ -117,6 +121,8 @@ export function AccountCard() {
               className={confirmDelete ? 'pill danger' : 'pill outline'}
               onClick={() => {
                 if (!confirmDelete) {
+                  // Apple's popup must open right on the confirming click, with its script ready.
+                  if (isAppleSession() && !NATIVE_APPLE) void prepareAppleWeb().catch(() => undefined);
                   setConfirmDelete(true);
                   return;
                 }
@@ -146,11 +152,17 @@ function SignInButton() {
   // a dark card. Ours says only "Sign in" — the Google wording and mark belong on Google's.
   const [asked, setAsked] = useState(false);
   const [signingIn, setSigningIn] = useState(false);
+  const [appleReady, setAppleReady] = useState(false);
+  const appleFirst = lastProvider() === 'apple';
 
   const attemptSignIn = () => {
     if (!buttonHost.current) return;
     setFailed(false);
     renderSignInButton(buttonHost.current, () => setFailed(false), theme).catch(() => setFailed(true));
+    prepareAppleWeb().then(
+      () => setAppleReady(true),
+      () => setFailed(true),
+    );
   };
 
   useEffect(() => {
@@ -159,32 +171,35 @@ function SignInButton() {
     if (asked && !session && !NATIVE_GOOGLE && !NATIVE_APPLE) attemptSignIn();
   }, [session, theme, asked]);
 
+  const appleButton = (onClick: () => void, disabled: boolean) => (
+    <button type="button" className="pill apple-signin" disabled={disabled} onClick={onClick}>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701" />
+      </svg>
+      Sign in with Apple
+    </button>
+  );
+
+  const signIn = (run: () => Promise<boolean>) => () => {
+    setSigningIn(true);
+    void run().finally(() => setSigningIn(false));
+  };
+
+  // The web offers both providers, the one used last on this device first (decision 2026-09-22):
+  // the provider is the identity, so picking the other one makes a second, empty player.
+  const webAppleRow = <div className="friends-actions">{appleButton(signIn(appleWebSignIn), !appleReady || signingIn)}</div>;
+
   return (
     <>
       {!asked && (
         // In the same wrapper the signed-in actions use: the card is a flex column, so a
         // bare button stretches the full width and reads as a bar rather than a button.
         <div className="friends-actions">
-          {NATIVE_GOOGLE || NATIVE_APPLE ? (
-            <button
-              type="button"
-              className={NATIVE_APPLE ? 'pill apple-signin' : 'pill'}
-              disabled={signingIn}
-              onClick={() => {
-                setSigningIn(true);
-                void nativeSignIn().finally(() => setSigningIn(false));
-              }}
-            >
-              {NATIVE_APPLE ? (
-                <>
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701" />
-                  </svg>
-                  Sign in with Apple
-                </>
-              ) : (
-                'Sign in with Google'
-              )}
+          {NATIVE_APPLE ? (
+            appleButton(signIn(nativeSignIn), signingIn)
+          ) : NATIVE_GOOGLE ? (
+            <button type="button" className="pill" disabled={signingIn} onClick={signIn(nativeSignIn)}>
+              Sign in with Google
             </button>
           ) : (
             <button type="button" className="pill" onClick={() => setAsked(true)}>
@@ -193,7 +208,9 @@ function SignInButton() {
           )}
         </div>
       )}
+      {asked && appleFirst && webAppleRow}
       {asked && <div className="gsi-host" ref={buttonHost} />}
+      {asked && !appleFirst && webAppleRow}
       {failed && (
         <button type="button" className="linklike muted small" onClick={attemptSignIn}>
           Sign-in is unavailable right now. Try again.

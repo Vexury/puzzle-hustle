@@ -31,8 +31,11 @@ async function revokeIfApple(request: Request, env: Env, playerId: string): Prom
     .first<{ provider: string }>();
   if (player?.provider !== 'apple') return;
   const input = await body(request);
-  // The bundle ID comes first in APPLE_AUDIENCES; codes from the app are issued to it.
-  const clientId = list(env.APPLE_AUDIENCES)[0];
+  // A code belongs to whoever asked for it: the web names its Services ID, the app sends none
+  // and gets the bundle ID, which comes first in APPLE_AUDIENCES.
+  const audiences = list(env.APPLE_AUDIENCES);
+  const named = input.appleClientId;
+  const clientId = typeof named === 'string' && audiences.includes(named) ? named : audiences[0];
   if (typeof input.appleCode !== 'string') {
     console.log('apple revoke: skipped, the app sent no authorization code');
     return;
