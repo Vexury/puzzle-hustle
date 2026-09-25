@@ -1,4 +1,5 @@
 import { levelEntry } from './levels.ts';
+import { parsePuzzleId } from './puzzleId.ts';
 import { adapter } from './registry.ts';
 import { hashString, randomSeed } from './rng.ts';
 import { periodDifficulty, periodKey, periodPuzzleType } from './schedule.ts';
@@ -83,14 +84,15 @@ export function decodeRef(query: string | URLSearchParams): PuzzleRef | null {
     const ref = levelRef(type, difficulty, level);
     if (ref) return ref;
   }
-  const ref: PuzzleRef = { type, difficulty, seed };
+  // A period link names its puzzle by period and key alone. Seed and difficulty in the link
+  // are ignored, so a stale or edited link cannot claim the period's solve slot for another
+  // puzzle; a period this type does not own falls back to a plain random ref.
   const period = params.get('p');
   const key = params.get('k');
-  if (isPeriod(period) && key) {
-    ref.period = period;
-    ref.key = key;
+  if (isPeriod(period) && key && parsePuzzleId(`${type}:${period}:${key}`)) {
+    if (period === 'daily' || type === periodPuzzleType(period, key)) return { ...scheduledRef(type, period, key), period, key };
   }
-  return ref;
+  return { type, difficulty, seed };
 }
 
 export function refId(ref: PuzzleRef): string {
