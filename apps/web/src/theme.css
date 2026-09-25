@@ -58,6 +58,22 @@
   color-scheme: light;
 }
 
+/* Vexury light restated on the attribute, not just :root: a nested element that carries its own
+   data-theme (the Vexury card's MiniBoard, under an active pack on the root) would otherwise
+   inherit the pack's surface tokens from the root instead of Vexury's own. --pack-pattern-image
+   is reset here too, so that inherited preview never picks up a pack's grain. */
+[data-theme="light"] {
+  --bg: #faf9f8;
+  --card-bg: #fffdf7;
+  --text: #2d2d2d;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+  --border-mid: #c0c0c0;
+  --board-cell: #f3f1ed;
+  --board-line: #d9d5cf;
+  --pack-pattern-image: none;
+}
+
 [data-theme="dark"] {
   --bg: #111110;
   --card-bg: #1c1b19;
@@ -81,6 +97,7 @@
   --success: #5fc47f;
   --success-soft: rgba(95, 196, 127, 0.14);
   --danger: #e0685a;
+  --pack-pattern-image: none;
   color-scheme: dark;
   -webkit-font-smoothing: antialiased;
 }

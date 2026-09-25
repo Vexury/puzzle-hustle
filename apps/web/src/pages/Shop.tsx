@@ -170,7 +170,12 @@ export function Shop() {
         <section className="card-lg">
           <h2>Themes</h2>
           <div className="theme-grid">
-            <button type="button" className={`theme-card${!active && !trying ? ' equipped' : ''}`} onClick={(e) => tapTheme(null, e)} aria-label="Vexury, free">
+            <button
+              type="button"
+              className={`theme-card${!active && !trying ? ' equipped' : ''}`}
+              onClick={(e) => tapTheme(null, e)}
+              aria-label={`Vexury, ${equipped.theme ? 'Free' : 'Equipped'}`}
+            >
               <MiniBoard mode={vexuryMode} accent={storedAccent()} />
               <b className="small">Vexury</b>
               <span className="small">{!equipped.theme ? 'Equipped' : 'Free'}</span>
