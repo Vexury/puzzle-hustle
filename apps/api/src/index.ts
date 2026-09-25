@@ -1,6 +1,6 @@
 import { isCosmeticOf } from '@puzzle-hustle/core';
 import { readBoard } from './board.ts';
-import { verifyAppleIdToken } from './apple.ts';
+import { revokeAppleAuthorization, verifyAppleIdToken } from './apple.ts';
 import { verifyGoogleIdToken } from './google.ts';
 import { createGroup, joinGroup, leaveGroup, listGroups, removeMember } from './groups.ts';
 import { cors, error, json, type Env } from './http.ts';
@@ -20,6 +20,27 @@ async function body(request: Request): Promise<Record<string, unknown>> {
 
 function list(value: string): string[] {
   return value.split(',').map((id) => id.trim()).filter(Boolean);
+}
+
+// Best effort: the revocation is Apple's request, the deletion is the player's, so a missing
+// code, a missing key or an Apple outage never keeps the account alive.
+async function revokeIfApple(request: Request, env: Env, playerId: string): Promise<void> {
+  const player = await env.DB.prepare('SELECT provider FROM players WHERE id = ?')
+    .bind(playerId)
+    .first<{ provider: string }>();
+  if (player?.provider !== 'apple') return;
+  const input = await body(request);
+  // The bundle ID comes first in APPLE_AUDIENCES; codes from the app are issued to it.
+  const clientId = list(env.APPLE_AUDIENCES)[0];
+  if (typeof input.appleCode !== 'string' || !clientId || !env.APPLE_TEAM_ID || !env.APPLE_KEY_ID || !env.APPLE_SIGNIN_KEY) {
+    return;
+  }
+  await revokeAppleAuthorization(input.appleCode, {
+    clientId,
+    teamId: env.APPLE_TEAM_ID,
+    keyId: env.APPLE_KEY_ID,
+    privateKey: env.APPLE_SIGNIN_KEY,
+  });
 }
 
 async function postSession(request: Request, env: Env): Promise<Response> {
@@ -153,6 +174,7 @@ async function route(request: Request, env: Env): Promise<Response> {
   }
 
   if (method === 'DELETE' && path === '/account') {
+    await revokeIfApple(request, env, playerId);
     const { results } = await env.DB.prepare('SELECT group_id AS id FROM members WHERE player_id = ?')
       .bind(playerId)
       .all<{ id: string }>();

@@ -7,6 +7,10 @@ export interface Env {
   SESSION_SECRET: string;
   GOOGLE_CLIENT_IDS: string;
   APPLE_AUDIENCES: string;
+  APPLE_TEAM_ID?: string;
+  APPLE_KEY_ID?: string;
+  // Secret, set in the Cloudflare dashboard. Without it account deletion skips the revocation.
+  APPLE_SIGNIN_KEY?: string;
   SESSION_LIMIT?: RateLimiter;
 }
 

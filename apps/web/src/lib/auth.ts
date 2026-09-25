@@ -49,7 +49,9 @@ async function startSession(provider: 'google' | 'apple', idToken: string): Prom
 let nativeReady: Promise<void> | null = null;
 
 function initNative(): Promise<void> {
-  const options = NATIVE_APPLE ? { apple: {} } : { google: { webClientId: CLIENT_ID } };
+  // useProperTokenExchange makes the plugin hand out Apple's authorization code under its own
+  // name, which account deletion passes to the server for revoking.
+  const options = NATIVE_APPLE ? { apple: { useProperTokenExchange: true } } : { google: { webClientId: CLIENT_ID } };
   nativeReady ??= SocialLogin.initialize(options).catch((err: unknown) => {
     nativeReady = null;
     throw err;
@@ -205,11 +207,30 @@ export async function setName(name: string): Promise<void> {
   if (session) writeSession({ ...session, player: { ...session.player, name: result.name } });
 }
 
+// Apple asks apps to revoke the player's Apple tokens on deletion. The server keeps none, so it
+// needs a fresh authorization code, and only Apple's sheet can issue one. Null means the player
+// closed the sheet, which cancels the deletion.
+async function appleCodeForDeletion(): Promise<string | null> {
+  try {
+    await initNative();
+    const login = await SocialLogin.login({ provider: 'apple', options: { scopes: [] } });
+    return login.result.authorizationCode ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function deleteAccount(): Promise<void> {
+  let appleCode: string | undefined;
+  if (NATIVE_APPLE) {
+    const code = await appleCodeForDeletion();
+    if (!code) return;
+    appleCode = code;
+  }
   // A failed delete must not sign the player out: the account is still fully present on the
   // server, and keeping the session is what lets them retry rather than silently doing nothing.
   try {
-    await apiFetch('/account', { method: 'DELETE', auth: true });
+    await apiFetch('/account', { method: 'DELETE', auth: true, body: appleCode ? JSON.stringify({ appleCode }) : null });
   } catch {
     toast('Could not delete your account. Try again.');
     return;

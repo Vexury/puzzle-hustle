@@ -1,6 +1,7 @@
 import { applyD1Migrations, env } from 'cloudflare:test';
 import { beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import worker from '../src/index.ts';
+import * as apple from '../src/apple.ts';
 import * as google from '../src/google.ts';
 
 beforeAll(async () => {
@@ -141,4 +142,39 @@ it('hands a deleted owner\'s group on to the longest-standing remaining member a
     .bind(owner.player.id)
     .first<{ n: number }>();
   expect(ownerMemberships?.n).toBe(0);
+});
+
+async function signInWithApple(subject: string) {
+  vi.spyOn(apple, 'verifyAppleIdToken').mockResolvedValue(subject);
+  const response = await worker.fetch(
+    new Request('https://api.test/session', { method: 'POST', body: JSON.stringify({ provider: 'apple', idToken: 'x' }) }),
+    env,
+  );
+  return (await response.json()) as { token: string; player: { id: string } };
+}
+
+it('revokes the Apple authorization before deleting an Apple account', async () => {
+  const me = await signInWithApple('apple-1');
+  const revoke = vi.spyOn(apple, 'revokeAppleAuthorization').mockResolvedValue(true);
+  const response = await call('/account', me.token, { method: 'DELETE', body: JSON.stringify({ appleCode: 'code-1' }) });
+  expect(response.status).toBe(200);
+  expect(revoke).toHaveBeenCalledWith('code-1', expect.objectContaining({ clientId: 'test.bundle.id', teamId: 'TEAMID1234' }));
+  const rows = await env.DB.prepare('SELECT COUNT(*) AS n FROM players').first<{ n: number }>();
+  expect(rows?.n).toBe(0);
+});
+
+it('deletes an Apple account even when the revocation fails', async () => {
+  const me = await signInWithApple('apple-1');
+  vi.spyOn(apple, 'revokeAppleAuthorization').mockResolvedValue(false);
+  const response = await call('/account', me.token, { method: 'DELETE', body: JSON.stringify({ appleCode: 'code-1' }) });
+  expect(response.status).toBe(200);
+  const rows = await env.DB.prepare('SELECT COUNT(*) AS n FROM players').first<{ n: number }>();
+  expect(rows?.n).toBe(0);
+});
+
+it('never revokes for a Google account', async () => {
+  const me = await signIn('s1', 'Moritz');
+  const revoke = vi.spyOn(apple, 'revokeAppleAuthorization');
+  await call('/account', me.token, { method: 'DELETE', body: JSON.stringify({ appleCode: 'code-1' }) });
+  expect(revoke).not.toHaveBeenCalled();
 });
