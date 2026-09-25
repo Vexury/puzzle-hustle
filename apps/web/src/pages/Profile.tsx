@@ -33,6 +33,11 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
 
   useEffect(() => onEntitlement(() => setUnlimited(hasUnlimitedHints())), []);
   useEffect(() => onAdsConsent(() => setPrivacy(privacyOptionsAvailable())), []);
+  useEffect(() => {
+    if (!confirmReset) return;
+    const t = setTimeout(() => setConfirmReset(false), 2000);
+    return () => clearTimeout(t);
+  }, [confirmReset]);
 
   return (
     <>
@@ -209,22 +214,17 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
             <span className="muted small">{confirmReset ? 'Deletes all solves and streaks on this device.' : 'Start over from zero.'}</span>
           </span>
           {confirmReset ? (
-            <span className="reset-confirm">
-              <button type="button" className="pill outline" onClick={() => setConfirmReset(false)}>
-                Keep
-              </button>
-              <button
-                type="button"
-                className="pill danger"
-                onClick={() => {
-                  resetProgress();
-                  void pushCosmetics();
-                  setConfirmReset(false);
-                }}
-              >
-                Delete
-              </button>
-            </span>
+            <button
+              type="button"
+              className="pill danger"
+              onClick={() => {
+                resetProgress();
+                void pushCosmetics();
+                setConfirmReset(false);
+              }}
+            >
+              Delete
+            </button>
           ) : (
             <button type="button" className="pill outline" onClick={() => setConfirmReset(true)}>
               Reset
