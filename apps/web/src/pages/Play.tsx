@@ -33,7 +33,7 @@ import {
   type PuzzleRef,
 } from '@puzzle-hustle/core';
 import { storedSolves, syncAchievements } from '../lib/achievements.ts';
-import { href, navigate, onLinkClick } from '../lib/router.ts';
+import { href, leaveTo, navigate, onBackLinkClick, onLinkClick } from '../lib/router.ts';
 import { pushBackGuard } from '../lib/back.ts';
 import { clearProgress, getSolve, keepFinalBoard, readProgress, readSetting, recordSolve, useSolves, writeProgress, writeSetting, type SolveRecord } from '../lib/storage.ts';
 import { capitalize, formatSeconds, share, shareText } from '../lib/share.ts';
@@ -145,6 +145,8 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
     return p && (p.version === undefined || p.version === version) ? p : null;
   }, [id, version]);
   const showBoard = useRef(replayable || !existing || saved !== null).current;
+  // A period left before its first move is saved without a board, see persist.
+  const initialState = saved?.state.length ? saved.state : undefined;
   const [moves, setMoves] = useState(saved?.moves ?? 0);
   const [hints, setHints] = useState(saved?.hints ?? 0);
   const [seconds, setSeconds] = useState(saved?.seconds ?? 0);
@@ -243,6 +245,14 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   backGuard.current = () => {
     if (result) return false;
     if (adWaitRef.current) return true;
+    if (askHint) {
+      answerHint(null);
+      return true;
+    }
+    if (askLeaveRef.current) {
+      stay();
+      return true;
+    }
     pauseClock();
     setAskLeave(true);
     return true;
@@ -255,12 +265,10 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
     resumeClock();
   };
 
-  // Replace instead of push: a pushed entry would send the next back press straight back
-  // into the puzzle we just left.
   const leave = () => {
     setAskLeave(false);
     askLeaveRef.current = false;
-    navigate(back.url, true);
+    leaveTo(back.url);
   };
 
   const onMove = () => {
@@ -277,13 +285,16 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
     setHints(counters.current.hints);
   };
 
-  const lastState = useRef<number[] | null>(saved?.state ?? null);
+  const lastState = useRef<number[] | null>(initialState ?? null);
   const resultRef = useRef(result);
   resultRef.current = result;
 
+  // A period is saved even before the first move, with an empty board, or leaving and
+  // reopening it would start its clock at 0 again.
   const persist = () => {
-    if (resultRef.current || !lastState.current || startedAt.current === null) return;
-    writeProgress(id, { state: lastState.current, seconds: elapsedNow(), moves: counters.current.moves, hints: counters.current.hints, version });
+    if (resultRef.current || startedAt.current === null) return;
+    if (!lastState.current && !puzzleRef.period) return;
+    writeProgress(id, { state: lastState.current ?? [], seconds: elapsedNow(), moves: counters.current.moves, hints: counters.current.hints, version });
   };
 
   const onStateChange = (state: number[]) => {
@@ -350,7 +361,9 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
     else if (outcome === 'failed') toast('Could not share');
   };
 
-  const another = () => navigate(href(`/play?${encodeRef(randomRef(puzzleRef.type, puzzleRef.difficulty))}`));
+  // The next puzzle replaces this one, so the header chevron still steps back to the list.
+  const another = () => navigate(href(`/play?${encodeRef(randomRef(puzzleRef.type, puzzleRef.difficulty))}`), true);
+  const onNextClick = (event: React.MouseEvent<HTMLAnchorElement>) => onLinkClick(event, true);
   const nextLevel = puzzleRef.level ? levelRef(puzzleRef.type, puzzleRef.difficulty, puzzleRef.level + 1) : null;
   const nextChallenge = useMemo(() => {
     if (!puzzleRef.period) return null;
@@ -365,7 +378,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   return (
     <section className="play">
       <div className="play-bar">
-        <a href={back.url} onClick={onLinkClick} className="icon-round" aria-label={`Back to ${back.label}`}>
+        <a href={back.url} onClick={onBackLinkClick} className="icon-round" aria-label={`Back to ${back.label}`}>
           <Chevron />
         </a>
         <h1>
@@ -393,7 +406,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           requestHint={() => hintProvider.request()}
           hintAd={hintProvider !== freeHints}
           locked={false}
-          initialState={saved?.state}
+          initialState={initialState}
           onStateChange={onStateChange}
         />
       ) : 'entryRow' in spec ? (
@@ -405,7 +418,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           requestHint={() => hintProvider.request()}
           hintAd={hintProvider !== freeHints}
           locked={false}
-          initialState={saved?.state}
+          initialState={initialState}
           onStateChange={onStateChange}
         />
       ) : 'pieces' in spec ? (
@@ -417,7 +430,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           requestHint={() => hintProvider.request()}
           hintAd={hintProvider !== freeHints}
           locked={false}
-          initialState={saved?.state}
+          initialState={initialState}
           onStateChange={onStateChange}
           viewKey={id}
         />
@@ -431,7 +444,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           requestHint={() => hintProvider.request()}
           hintAd={hintProvider !== freeHints}
           locked={false}
-          initialState={saved?.state}
+          initialState={initialState}
           onStateChange={onStateChange}
         />
       ) : 'walls' in spec ? (
@@ -443,7 +456,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           requestHint={() => hintProvider.request()}
           hintAd={hintProvider !== freeHints}
           locked={false}
-          initialState={saved?.state}
+          initialState={initialState}
           onStateChange={onStateChange}
         />
       ) : 'cages' in spec ? (
@@ -455,7 +468,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           requestHint={() => hintProvider.request()}
           hintAd={hintProvider !== freeHints}
           locked={false}
-          initialState={saved?.state}
+          initialState={initialState}
           onStateChange={onStateChange}
         />
       ) : 'clues' in spec ? (
@@ -467,7 +480,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           requestHint={() => hintProvider.request()}
           hintAd={hintProvider !== freeHints}
           locked={false}
-          initialState={saved?.state}
+          initialState={initialState}
           onStateChange={onStateChange}
           viewKey={id}
         />
@@ -480,7 +493,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           requestHint={() => hintProvider.request()}
           hintAd={hintProvider !== freeHints}
           locked={false}
-          initialState={saved?.state}
+          initialState={initialState}
           onStateChange={onStateChange}
           viewKey={id}
         />
@@ -509,7 +522,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
             <ShareIcon />
           </button>
           {nextLevel && (
-            <a href={href(`/play?${encodeRef(nextLevel)}`)} className="pill" onClick={onLinkClick}>
+            <a href={href(`/play?${encodeRef(nextLevel)}`)} className="pill" onClick={onNextClick}>
               Level #{nextLevel.level} ›
             </a>
           )}
@@ -519,7 +532,7 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
             </button>
           )}
           {nextChallenge && (
-            <a href={href(`/play?${encodeRef(nextChallenge)}`)} className="pill" onClick={onLinkClick}>
+            <a href={href(`/play?${encodeRef(nextChallenge)}`)} className="pill" onClick={onNextClick}>
               {nextChallenge.period === 'daily' ? PUZZLE_META[nextChallenge.type].name : capitalize(nextChallenge.period!)} ›
             </a>
           )}
