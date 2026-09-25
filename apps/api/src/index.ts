@@ -4,6 +4,7 @@ import { revokeAppleAuthorization, verifyAppleIdToken } from './apple.ts';
 import { verifyGoogleIdToken } from './google.ts';
 import { createGroup, joinGroup, leaveGroup, listGroups, removeMember } from './groups.ts';
 import { cors, error, json, type Env } from './http.ts';
+import { JwksUnavailable } from './idtoken.ts';
 import { generatedName, validateName } from './names.ts';
 import { requirePlayer, upsertPlayer } from './players.ts';
 import { MAX_BATCH, submitScores } from './scores.ts';
@@ -59,10 +60,16 @@ async function postSession(request: Request, env: Env): Promise<Response> {
   if (provider !== 'google' && provider !== 'apple') return error(400, 'unsupported_provider');
   if (typeof input.idToken !== 'string') return error(400, 'missing_token');
 
-  const subject =
-    provider === 'google'
-      ? await verifyGoogleIdToken(input.idToken, { audiences: list(env.GOOGLE_CLIENT_IDS) })
-      : await verifyAppleIdToken(input.idToken, { audiences: list(env.APPLE_AUDIENCES) });
+  let subject: string | null;
+  try {
+    subject =
+      provider === 'google'
+        ? await verifyGoogleIdToken(input.idToken, { audiences: list(env.GOOGLE_CLIENT_IDS) })
+        : await verifyAppleIdToken(input.idToken, { audiences: list(env.APPLE_AUDIENCES) });
+  } catch (err) {
+    if (err instanceof JwksUnavailable) return error(503, 'provider_unavailable');
+    throw err;
+  }
   if (!subject) return error(401, 'bad_token');
 
   const offered = typeof input.name === 'string' ? validateName(input.name) : null;
@@ -120,6 +127,10 @@ async function route(request: Request, env: Env): Promise<Response> {
   }
 
   if (method === 'POST' && path === '/groups/join') {
+    if (env.JOIN_LIMIT) {
+      const { success } = await env.JOIN_LIMIT.limit({ key: playerId });
+      if (!success) return error(429, 'too_many_requests');
+    }
     const input = await body(request);
     if (typeof input.code !== 'string') return error(400, 'missing_code');
     const joined = await joinGroup(env.DB, playerId, input.code);

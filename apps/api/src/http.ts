@@ -12,6 +12,7 @@ export interface Env {
   // Secret, set in the Cloudflare dashboard. Without it account deletion skips the revocation.
   APPLE_SIGNIN_KEY?: string;
   SESSION_LIMIT?: RateLimiter;
+  JOIN_LIMIT?: RateLimiter;
 }
 
 // The app runs on its own domain in the browser, on https://localhost inside Android's

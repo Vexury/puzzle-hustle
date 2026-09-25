@@ -104,9 +104,15 @@ export async function submitScores(
       budget--;
       results.push({ puzzle: entry.puzzle, status: 'stored' });
     } catch {
-      // The primary key is (player_id, puzzle): a failure here means the first solve is
-      // already stored, and the first solve is the one that counts.
-      results.push({ puzzle: entry.puzzle, status: 'duplicate' });
+      // Usually the primary key (player_id, puzzle): a concurrent request stored the first
+      // solve, and that is the one that counts. Anything else stored nothing, and the client
+      // drops every answer except 'throttled', so that is the status that keeps it queued.
+      const stored = await db
+        .prepare('SELECT 1 AS ok FROM scores WHERE player_id = ? AND puzzle = ?')
+        .bind(playerId, entry.puzzle)
+        .first<{ ok: number }>()
+        .catch(() => null);
+      results.push({ puzzle: entry.puzzle, status: stored ? 'duplicate' : 'throttled' });
     }
   }
   return results;

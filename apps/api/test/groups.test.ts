@@ -148,3 +148,88 @@ it('hands ownership to the longest standing member when the owner leaves', async
   const list = (await (await call('/groups', guest)).json()) as { groups: Array<{ owner: boolean }> };
   expect(list.groups[0]?.owner).toBe(true);
 });
+
+it('bans a removed member from rejoining with the same code', async () => {
+  const owner = await signIn('s1', 'Moritz');
+  const group = (await (await post('/groups', owner, { name: 'Family' })).json()) as { id: string; code: string };
+  const guest = await signInWithId('s2', 'Daniela');
+  await post('/groups/join', guest.token, { code: group.code });
+  await post('/groups/remove', owner, { id: group.id, playerId: guest.id });
+
+  const rejoin = await post('/groups/join', guest.token, { code: group.code });
+  expect(rejoin.status).toBe(403);
+  expect(await rejoin.json()).toEqual({ error: 'group_banned' });
+});
+
+it('bans nobody for an id that was never a member', async () => {
+  const owner = await signIn('s1', 'Moritz');
+  const group = (await (await post('/groups', owner, { name: 'Family' })).json()) as { id: string };
+  expect((await post('/groups/remove', owner, { id: group.id, playerId: 'nobody' })).status).toBe(200);
+  const bans = await env.DB.prepare('SELECT COUNT(*) AS n FROM group_bans').first<{ n: number }>();
+  expect(bans?.n).toBe(0);
+});
+
+it('drops the bans with the group and with a deleted account', async () => {
+  const owner = await signIn('s1', 'Moritz');
+  const first = (await (await post('/groups', owner, { name: 'Family' })).json()) as { id: string; code: string };
+  const second = (await (await post('/groups', owner, { name: 'Friends' })).json()) as { id: string; code: string };
+  const guest = await signInWithId('s2', 'Daniela');
+  for (const group of [first, second]) {
+    await post('/groups/join', guest.token, { code: group.code });
+    await post('/groups/remove', owner, { id: group.id, playerId: guest.id });
+  }
+  const count = async () => (await env.DB.prepare('SELECT COUNT(*) AS n FROM group_bans').first<{ n: number }>())?.n;
+  expect(await count()).toBe(2);
+
+  await post('/groups/leave', owner, { id: first.id });
+  expect(await count()).toBe(1);
+
+  expect((await call('/account', guest.token, { method: 'DELETE' })).status).toBe(200);
+  expect(await count()).toBe(0);
+});
+
+it('reads O as 0 and I or L as 1 in a typed code', async () => {
+  const owner = await signIn('s1', 'Moritz');
+  const group = (await (await post('/groups', owner, { name: 'Family' })).json()) as { id: string };
+  await env.DB.prepare('UPDATE groups SET code = ? WHERE id = ?').bind('A01B1C', group.id).run();
+
+  const guest = await signIn('s2', 'Daniela');
+  expect((await post('/groups/join', guest, { code: ' aoIblc ' })).status).toBe(200);
+});
+
+it('answers a player at the cap the same for a real and an unknown code', async () => {
+  const other = await signIn('s2', 'Daniela');
+  const foreign = ((await (await post('/groups', other, { name: 'Other' })).json()) as { code: string }).code;
+
+  const token = await signIn('s1', 'Moritz');
+  for (let i = 0; i < 5; i++) await post('/groups', token, { name: `G${i}` });
+  const real = await post('/groups/join', token, { code: foreign });
+  const unknown = await post('/groups/join', token, { code: 'ZZZZZZ' });
+  expect([real.status, unknown.status]).toEqual([403, 403]);
+  expect(await real.json()).toEqual(await unknown.json());
+});
+
+it('rate limits joining per player', async () => {
+  const token = await signIn('s1', 'Moritz');
+  const keys: string[] = [];
+  const limited = {
+    ...env,
+    JOIN_LIMIT: {
+      limit: async ({ key }: { key: string }) => {
+        keys.push(key);
+        return { success: false };
+      },
+    },
+  };
+  const response = await worker.fetch(
+    new Request('https://api.test/groups/join', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ code: 'ZZZZZZ' }),
+    }),
+    limited,
+  );
+  expect(response.status).toBe(429);
+  const player = await env.DB.prepare('SELECT id FROM players').first<{ id: string }>();
+  expect(keys).toEqual([player!.id]);
+});
