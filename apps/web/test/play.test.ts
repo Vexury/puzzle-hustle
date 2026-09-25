@@ -1,12 +1,16 @@
 import { act, createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { dailyRef, encodeRef, levelRef, refId } from '@puzzle-hustle/core';
+import { dailyRef, encodeRef, generateStars, levelRef, refId } from '@puzzle-hustle/core';
 import { Play } from '../src/pages/Play.tsx';
 import { handleBackPress } from '../src/lib/back.ts';
 import { readProgress, writeSetting } from '../src/lib/storage.ts';
 
 vi.mock('../src/lib/haptics.ts', () => ({ solved: vi.fn(), tap: vi.fn(), press: vi.fn() }));
+vi.mock('@puzzle-hustle/core', async (original) => {
+  const core = await original<typeof import('@puzzle-hustle/core')>();
+  return { ...core, generateStars: vi.fn(core.generateStars) };
+});
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 window.scrollTo = () => {};
@@ -62,4 +66,12 @@ it('a back press opens the leave question and a second one dismisses it', () => 
   act(() => void (outcome = handleBackPress(true)));
   expect(outcome).toBe('guarded');
   expect(container.textContent).not.toContain('Leave this puzzle?');
+});
+
+it('takes a scheduled stars puzzle from the adapter instead of generating it again', () => {
+  writeSetting('ph:howto:stars', '1');
+  vi.mocked(generateStars).mockClear();
+  mount(encodeRef(dailyRef('stars')));
+  expect(generateStars).not.toHaveBeenCalled();
+  expect(container.querySelector('.play')).not.toBeNull();
 });

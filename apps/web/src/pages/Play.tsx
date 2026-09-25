@@ -6,13 +6,11 @@ import {
   encodeRef,
   coinsForSolve,
   crownsAdapter,
-  generateCrowns,
   generateKiller,
   generateMosaic,
   generateNonogram,
   generateShapes,
   generateSlabs,
-  generateStars,
   generateSudoku,
   generateTracks,
   generateZip,
@@ -103,9 +101,9 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
         : puzzleRef.type === 'zip'
         ? generateZip(puzzleRef.seed, puzzleRef.difficulty, zipAdapter.options(puzzleRef.period))
         : puzzleRef.type === 'crowns'
-        ? generateCrowns(puzzleRef.seed, puzzleRef.difficulty, crownsAdapter.options(puzzleRef.period))
+        ? crownsAdapter.spec(puzzleRef.seed, puzzleRef.difficulty, crownsAdapter.options(puzzleRef.period))
         : puzzleRef.type === 'stars'
-          ? generateStars(puzzleRef.seed, puzzleRef.difficulty, starsAdapter.options(puzzleRef.period))
+          ? starsAdapter.spec(puzzleRef.seed, puzzleRef.difficulty, starsAdapter.options(puzzleRef.period))
           : puzzleRef.type === 'sudoku'
         ? generateSudoku(puzzleRef.seed, puzzleRef.difficulty)
         : puzzleRef.type === 'killer'
