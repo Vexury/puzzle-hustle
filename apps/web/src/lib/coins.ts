@@ -82,15 +82,15 @@ export function spendHint(puzzle: string): boolean {
   return true;
 }
 
-// Bought badges plus earned flairs: a flair is never in ph:coins:spent (buyItem refuses it), so
-// the two sources never overlap.
+// Bought badges and themes plus earned flairs: a flair is never in ph:coins:spent (buyItem
+// refuses it), so the two sources never overlap.
 export function owned(): Set<string> {
   return new Set([...ownedItems(readSpent()), ...earnedFlairs(storedSolves())]);
 }
 
 export function buyItem(id: string): boolean {
   const item = findCosmetic(id);
-  if (!item || item.kind !== 'badge' || owned().has(id) || balance() < item.price) return false;
+  if (!item || (item.kind !== 'badge' && item.kind !== 'theme') || owned().has(id) || balance() < item.price) return false;
   appendSpent({ kind: 'item', item: id, coins: item.price, at: Date.now() });
   return true;
 }
@@ -98,6 +98,7 @@ export function buyItem(id: string): boolean {
 export interface Equipped {
   badge: string | null;
   flair: string | null;
+  theme: string | null;
 }
 
 export function readEquipped(): Equipped {
@@ -106,12 +107,10 @@ export function readEquipped(): Equipped {
     const parsed = raw ? (JSON.parse(raw) as unknown) : null;
     const v = parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
     const ownedIds = owned();
-    return {
-      badge: findCosmetic(v.badge)?.kind === 'badge' && ownedIds.has(v.badge as string) ? (v.badge as string) : null,
-      flair: findCosmetic(v.flair)?.kind === 'flair' && ownedIds.has(v.flair as string) ? (v.flair as string) : null,
-    };
+    const pick = (kind: CosmeticKind) => (findCosmetic(v[kind])?.kind === kind && ownedIds.has(v[kind] as string) ? (v[kind] as string) : null);
+    return { badge: pick('badge'), flair: pick('flair'), theme: pick('theme') };
   } catch {
-    return { badge: null, flair: null };
+    return { badge: null, flair: null, theme: null };
   }
 }
 
@@ -145,7 +144,8 @@ export function solveCoinLine(awards: CoinAward[], firstSolve: boolean): string 
 export async function pushCosmetics(): Promise<void> {
   if (!readSession()) return;
   try {
-    await apiFetch('/cosmetics', { method: 'POST', body: JSON.stringify(readEquipped()), auth: true });
+    const { badge, flair } = readEquipped();
+    await apiFetch('/cosmetics', { method: 'POST', body: JSON.stringify({ badge, flair }), auth: true });
   } catch {
     /* next sign-in sends it again */
   }

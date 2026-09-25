@@ -34,20 +34,20 @@ it('reads a missing or malformed spend log as empty', () => {
 
 it('reads malformed equipped cosmetics as nothing equipped', () => {
   localStorage.setItem('ph:cosmetics', '"bolt"');
-  expect(readEquipped()).toEqual({ badge: null, flair: null });
+  expect(readEquipped()).toEqual({ badge: null, flair: null, theme: null });
   earnBasicZipper();
   localStorage.setItem('ph:cosmetics', JSON.stringify({ badge: 'crown', flair: 'basic-zipper' }));
-  expect(readEquipped()).toEqual({ badge: null, flair: 'basic-zipper' });
+  expect(readEquipped()).toEqual({ badge: null, flair: 'basic-zipper', theme: null });
 });
 
 it('unequips a cosmetic once it falls out of ownership because the epoch moved past its purchase', () => {
   earnSome(50);
   buyItem('bolt');
   equip('badge', 'bolt');
-  expect(readEquipped()).toEqual({ badge: 'bolt', flair: null });
+  expect(readEquipped()).toEqual({ badge: 'bolt', flair: null, theme: null });
   const rewritten = readSpent().map((e) => (e.kind === 'item' && e.item === 'bolt' ? { ...e, at: ACHIEVEMENTS_EPOCH - 1 } : e));
   localStorage.setItem('ph:coins:spent', JSON.stringify(rewritten));
-  expect(readEquipped()).toEqual({ badge: null, flair: null });
+  expect(readEquipped()).toEqual({ badge: null, flair: null, theme: null });
 });
 
 it('spends 20 on a hint only when the balance covers it', () => {
@@ -105,9 +105,9 @@ it('equips only owned items of the right kind and unequips with null', () => {
   buyItem('bolt');
   expect(equip('flair', 'bolt')).toBe(false);
   expect(equip('badge', 'bolt')).toBe(true);
-  expect(readEquipped()).toEqual({ badge: 'bolt', flair: null });
+  expect(readEquipped()).toEqual({ badge: 'bolt', flair: null, theme: null });
   expect(equip('badge', null)).toBe(true);
-  expect(readEquipped()).toEqual({ badge: null, flair: null });
+  expect(readEquipped()).toEqual({ badge: null, flair: null, theme: null });
 });
 
 it('drops a spend entry with a negative coin amount', () => {
@@ -127,7 +127,7 @@ it('forgets spending and equipped items on a progress reset', () => {
   equip('badge', 'bolt');
   resetProgress();
   expect(readSpent()).toEqual([]);
-  expect(readEquipped()).toEqual({ badge: null, flair: null });
+  expect(readEquipped()).toEqual({ badge: null, flair: null, theme: null });
   expect(balance()).toBe(0);
 });
 
@@ -142,4 +142,44 @@ it('writes the solve line from the awards', () => {
 it('writes no line for nothing earned or a replay', () => {
   expect(solveCoinLine([], true)).toBeNull();
   expect(solveCoinLine([{ reason: 'level', coins: 3 }], false)).toBeNull();
+});
+
+it('buys a theme for its price and equips it', () => {
+  earnSome(50);
+  const before = balance();
+  expect(buyItem('paper')).toBe(true);
+  expect(balance()).toBe(before - 400);
+  expect(owned().has('paper')).toBe(true);
+  expect(equip('theme', 'paper')).toBe(true);
+  expect(readEquipped().theme).toBe('paper');
+  expect(equip('theme', null)).toBe(true);
+  expect(readEquipped().theme).toBeNull();
+});
+
+it('refuses a theme it cannot afford, and one it does not own', () => {
+  expect(buyItem('synthwave')).toBe(false);
+  expect(equip('theme', 'synthwave')).toBe(false);
+  expect(equip('theme', 'bolt')).toBe(false);
+});
+
+it('drops an equipped theme once the epoch moves past its purchase', () => {
+  earnSome(50);
+  buyItem('paper');
+  equip('theme', 'paper');
+  const rewritten = readSpent().map((e) => (e.kind === 'item' && e.item === 'paper' ? { ...e, at: ACHIEVEMENTS_EPOCH - 1 } : e));
+  localStorage.setItem('ph:coins:spent', JSON.stringify(rewritten));
+  expect(readEquipped().theme).toBeNull();
+});
+
+it('never sends the theme to the server', async () => {
+  earnSome(50);
+  buyItem('paper');
+  localStorage.setItem('ph:session', JSON.stringify({ token: 't', player: { id: 'p', name: 'Mo' } }));
+  const fetchMock = vi.fn(async () => new Response('{}', { status: 200 }));
+  vi.stubGlobal('fetch', fetchMock);
+  equip('theme', 'paper');
+  await vi.waitFor(() => expect(fetchMock).toHaveBeenCalled());
+  const body = JSON.parse(String((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body));
+  expect(body).toEqual({ badge: null, flair: null });
+  vi.unstubAllGlobals();
 });
