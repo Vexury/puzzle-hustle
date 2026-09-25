@@ -7,7 +7,7 @@ const REVOKE_URL = 'https://appleid.apple.com/auth/revoke';
 
 // The audience is the bundle ID for tokens from the iOS app, a Services ID for the web flow.
 export function verifyAppleIdToken(token: string, options: VerifyOptions): Promise<string | null> {
-  return verifyIdToken(token, ISSUERS, () => cachedJwks(KEYS_URL), options);
+  return verifyIdToken(token, ISSUERS, (refresh) => cachedJwks(KEYS_URL, refresh), options);
 }
 
 export interface AppleClient {

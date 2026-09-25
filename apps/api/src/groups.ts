@@ -7,6 +7,11 @@ export const MAX_GROUPS = 5;
 // reading a code off a phone screen, and no accidental words.
 const ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
 
+// Crockford's decoding rules: a typed O means 0, an I or L means 1.
+export function normalizeCode(raw: string): string {
+  return raw.trim().toUpperCase().replace(/O/g, '0').replace(/[IL]/g, '1');
+}
+
 export interface GroupRow {
   id: string;
   code: string;
@@ -81,13 +86,36 @@ export async function joinGroup(
   db: D1Database,
   playerId: string,
   rawCode: string,
-): Promise<{ ok: true; group: GroupRow } | { ok: false; reason: 'unknown' | 'already' | 'full' | 'limit' }> {
-  const code = rawCode.trim().toUpperCase();
+): Promise<
+  { ok: true; group: GroupRow } | { ok: false; reason: 'unknown' | 'already' | 'full' | 'limit' | 'banned' }
+> {
+  const code = normalizeCode(rawCode);
+
+  // Checked before the code is looked up, so a player at the cap cannot learn which codes
+  // exist. Only a group they are already in gets the more precise answer.
+  const mine = await db
+    .prepare('SELECT COUNT(*) AS n FROM members WHERE player_id = ?')
+    .bind(playerId)
+    .first<{ n: number }>();
+  if ((mine?.n ?? 0) >= MAX_GROUPS) {
+    const own = await db
+      .prepare('SELECT 1 AS ok FROM members m JOIN groups g ON g.id = m.group_id WHERE g.code = ? AND m.player_id = ?')
+      .bind(code, playerId)
+      .first<{ ok: number }>();
+    return { ok: false, reason: own ? 'already' : 'limit' };
+  }
+
   const group = await db
     .prepare('SELECT id, code, name, owner_id AS ownerId FROM groups WHERE code = ?')
     .bind(code)
     .first<{ id: string; code: string; name: string; ownerId: string }>();
   if (!group) return { ok: false, reason: 'unknown' };
+
+  const banned = await db
+    .prepare('SELECT 1 AS ok FROM group_bans WHERE group_id = ? AND player_id = ?')
+    .bind(group.id, playerId)
+    .first<{ ok: number }>();
+  if (banned) return { ok: false, reason: 'banned' };
 
   const already = await db
     .prepare('SELECT 1 AS ok FROM members WHERE group_id = ? AND player_id = ?')
@@ -100,12 +128,6 @@ export async function joinGroup(
     .bind(group.id)
     .first<{ n: number }>();
   if ((members?.n ?? 0) >= MAX_MEMBERS) return { ok: false, reason: 'full' };
-
-  const mine = await db
-    .prepare('SELECT COUNT(*) AS n FROM members WHERE player_id = ?')
-    .bind(playerId)
-    .first<{ n: number }>();
-  if ((mine?.n ?? 0) >= MAX_GROUPS) return { ok: false, reason: 'limit' };
 
   try {
     await db
@@ -153,6 +175,15 @@ export async function removeMember(
     .bind(groupId)
     .first<{ ownerId: string }>();
   if (!group || group.ownerId !== ownerId || playerId === ownerId) return false;
-  await db.prepare('DELETE FROM members WHERE group_id = ? AND player_id = ?').bind(groupId, playerId).run();
+  // Removal is for keeping someone out, so it also bans them from rejoining with the same code.
+  // The ban is taken from the members row, so only a real member is banned; one transaction.
+  await db.batch([
+    db
+      .prepare(
+        'INSERT OR IGNORE INTO group_bans (group_id, player_id, created_at) SELECT group_id, player_id, ? FROM members WHERE group_id = ? AND player_id = ?',
+      )
+      .bind(Date.now(), groupId, playerId),
+    db.prepare('DELETE FROM members WHERE group_id = ? AND player_id = ?').bind(groupId, playerId),
+  ]);
   return true;
 }

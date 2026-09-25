@@ -3,6 +3,7 @@ import { beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import worker from '../src/index.ts';
 import * as apple from '../src/apple.ts';
 import * as google from '../src/google.ts';
+import { JwksUnavailable } from '../src/idtoken.ts';
 import { upsertPlayer } from '../src/players.ts';
 import { signSession } from '../src/token.ts';
 
@@ -53,6 +54,13 @@ it('refuses an invalid id token', async () => {
   vi.spyOn(google, 'verifyGoogleIdToken').mockResolvedValue(null);
   const response = await post('/session', { provider: 'google', idToken: 'x' });
   expect(response.status).toBe(401);
+});
+
+it('answers a key set outage with a retryable 503, not bad_token', async () => {
+  vi.spyOn(google, 'verifyGoogleIdToken').mockRejectedValue(new JwksUnavailable());
+  const response = await post('/session', { provider: 'google', idToken: 'x' });
+  expect(response.status).toBe(503);
+  expect(await response.json()).toEqual({ error: 'provider_unavailable' });
 });
 
 it('signs in with Apple and keeps it apart from a Google account with the same subject', async () => {

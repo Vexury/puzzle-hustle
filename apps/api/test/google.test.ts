@@ -1,5 +1,6 @@
 import { expect, it } from 'vitest';
 import { verifyGoogleIdToken, type Jwks } from '../src/google.ts';
+import { JwksUnavailable } from '../src/idtoken.ts';
 
 const encoder = new TextEncoder();
 
@@ -70,4 +71,25 @@ it('rejects a token whose kid is not in the key set', async () => {
   await expect(
     verifyGoogleIdToken(token, { audiences: ['test-client-id'], fetchJwks }),
   ).resolves.toBeNull();
+});
+
+it('refetches the key set once for an unknown kid', async () => {
+  const { token, fetchJwks: current } = await issue(base);
+  const calls: Array<boolean | undefined> = [];
+  const fetchJwks = async (refresh?: boolean): Promise<Jwks> => {
+    calls.push(refresh);
+    return refresh ? current() : { keys: [] };
+  };
+  await expect(verifyGoogleIdToken(token, { audiences: ['test-client-id'], fetchJwks })).resolves.toBe('google-subject-1');
+  expect(calls).toEqual([false, true]);
+});
+
+it('throws JwksUnavailable instead of calling the token bad when the keys cannot be fetched', async () => {
+  const { token } = await issue(base);
+  const fetchJwks = async (): Promise<Jwks> => {
+    throw new Error('network');
+  };
+  await expect(verifyGoogleIdToken(token, { audiences: ['test-client-id'], fetchJwks })).rejects.toBeInstanceOf(
+    JwksUnavailable,
+  );
 });
