@@ -7,7 +7,7 @@ import { introDismissed } from './UnlockModal.tsx';
 const CARDS = [
   {
     title: 'Welcome to Puzzle Hustle',
-    body: 'Eight logic puzzles, a fresh set every day. Everything works offline, nothing needs an account.',
+    body: 'A fresh set of logic puzzles every day. Every puzzle works offline, and none needs an account.',
   },
   {
     title: 'Stuck? Take a hint',

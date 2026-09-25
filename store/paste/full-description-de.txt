@@ -1,22 +1,24 @@
-Jeden Tag warten sieben frische Logikrätsel auf dich, und bei keinem einzigen brauchst du Glück. Hol dir einen Kaffee und leg los!
+Jeden Tag warten neun frische Logikrätsel auf dich, und bei keinem einzigen brauchst du Glück. Hol dir einen Kaffee und leg los!
 
-Puzzle Hustle bringt Sudoku, Sumdoku, Nonogram, Mosaic, Crowns, Stars, Zip und Shapes in einer freundlichen kleinen App zusammen. Morgens auf dem Weg zur Arbeit wach werden, abends bei einem ruhigen Gitter runterkommen. Es wartet immer etwas Neues auf dich.
+Puzzle Hustle bringt Sudoku, Sumdoku, Nonogram, Mosaic, Cats, Hearts, Zip, Shapes, Tracks und Slabs in einer freundlichen kleinen App zusammen. Morgens auf dem Weg zur Arbeit wach werden, abends bei einem ruhigen Gitter runterkommen. Es wartet immer etwas Neues auf dich.
 
 🧩 JEDEN TAG EIN FRISCHER SATZ
-Jeden Tag gibt es sieben frische Rätsel, und weltweit bekommen alle genau dieselben. Löse drei davon, und deine Serie wächst weiter. Lust auf etwas Größeres? Ein knackigeres Weekly und ein richtig dickes Monthly warten auf die Tage, an denen du es dir gemütlich machst.
+Jeden Tag gibt es neun frische Rätsel, und weltweit bekommen alle genau dieselben. Löse drei davon, und deine Serie wächst weiter. Lust auf etwas Größeres? Ein knackigeres Weekly und ein richtig dickes Monthly warten auf die Tage, an denen du es dir gemütlich machst.
 
 ✓ IMMER FAIR, IMMER LÖSBAR
 Jedes Rätsel läuft durch unseren Löser, bevor es bei dir ankommt. Es gibt genau eine Lösung, und du kommst immer mit reiner Logik dorthin. Kein Raten, keine Sackgassen, kein Feld ausfüllen und auf das Beste hoffen. Wenn du feststeckst, liegt der nächste Schritt wirklich schon da und will nur gesehen werden. Und dieses kleine Klicken im Kopf, wenn du ihn endlich siehst, wird einfach nie langweilig.
 
-🎯 ACHT RÄTSEL ZUM VERLIEBEN
+🎯 ZEHN RÄTSEL ZUM VERLIEBEN
 • Sudoku: der Klassiker, den du längst kennst
 • Sumdoku: Sudoku, dazu Käfige, deren Zahlen aufgehen müssen
 • Nonogram: male das versteckte Bild aus den Zahlen, schwarzweiß oder bunt
 • Mosaic: jede Zahl verrät, wie viele Felder rund um sie herum gefüllt sind
-• Crowns: eine Krone pro Zeile, Spalte und Region, und nebeneinander stehen sie nie
-• Stars: dieselbe Idee, jetzt mit zwei Sternen pro Reihe
+• Cats: eine Katze pro Zeile, Spalte und Farbe, und nebeneinander sitzen sie nie
+• Hearts: dieselbe Idee, jetzt mit zwei Herzen pro Reihe
 • Zip: zeichne einen einzigen Pfad durch jedes Feld und sammle die Zahlen der Reihe nach ein
 • Shapes: schiebe die Teile, bis das leuchtende Muster zur Vorlage passt
+• Tracks: verlege ein Gleis von A nach B, die Zahlen am Rand zählen die Schienen
+• Slabs: lege jeden Stein so, dass jede farbige Region ihre Regel erfüllt
 
 ⭐ SPIEL SO LANGE DU MAGST
 • Level-Pakete für jeden Rätseltyp und jede Schwierigkeit, mit jedem Update mehr
@@ -24,9 +26,14 @@ Jedes Rätsel läuft durch unseren Löser, bevor es bei dir ankommt. Es gibt gen
 • Endlos neue Zufallsrätsel, wann immer du Nachschub brauchst
 • Vier Schwierigkeiten: Easy, Medium, Hard und Genius
 
+🏆 MIT FREUNDEN KNOBELN, WENN DU MAGST
+• Melde dich an, gründe eine private Gruppe und vergleicht eure Zeiten bei Daily, Weekly und Monthly
+• Verdiene beim Lösen Coins und Flairs und zeig Badge und Flair neben deinem Namen
+• Alles andere klappt ganz ohne Konto
+
 💡 GEBAUT FÜRS GEMÜTLICHE KNOBELN
 • Bleistiftnotizen für dein Sudoku
-• Rückgängig und Zurücksetzen, wann immer du sie brauchst
+• Rückgängig, Wiederholen und Zurücksetzen, wann immer du sie brauchst
 • Ein Hinweis, wenn du einen kleinen Schubs möchtest
 • Serie und Fortschritt speichern sich ganz von selbst
 • Ein Brett halb fertig liegen gelassen? Es wartet genau da, wo du aufgehört hast
@@ -35,4 +42,4 @@ Jedes Rätsel läuft durch unseren Löser, bevor es bei dir ankommt. Es gibt gen
 
 Die App selbst ist auf Englisch.
 
-Deine ersten sieben warten schon. Los, ran an die Rätsel!
+Deine ersten neun warten schon. Los, ran an die Rätsel!
