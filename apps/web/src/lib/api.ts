@@ -2,7 +2,7 @@ import { readSetting, removeSetting, writeSetting } from './storage.ts';
 
 export const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) || 'https://puzzles-api.vexury.dev';
 
-const SESSION_KEY = 'ph:session';
+export const SESSION_KEY = 'ph:session';
 // A stalled request (captive portal, half-open connection after resume) would otherwise never
 // settle and hold the score queue's single flush for the rest of the session.
 const TIMEOUT_MS = 15_000;

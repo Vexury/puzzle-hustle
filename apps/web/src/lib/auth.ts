@@ -1,10 +1,10 @@
 import { useSyncExternalStore } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { SocialLogin } from '@capgo/capacitor-social-login';
-import { apiFetch, readSession, subscribeSession, writeSession, type Session } from './api.ts';
+import { SESSION_KEY, apiFetch, readSession, subscribeSession, writeSession, type Session } from './api.ts';
 import { pushCosmetics } from './coins.ts';
 import { flush, resetBackoff } from './queue.ts';
-import { readSetting, writeSetting } from './storage.ts';
+import { readSetting, removeSetting, writeSetting } from './storage.ts';
 import { toast } from '../components/Toast.tsx';
 
 // The Web client's ID, public by design, so native builds made without the CI variable still
@@ -21,26 +21,32 @@ export const NATIVE_GOOGLE = Capacitor.getPlatform() === 'android';
 export const NATIVE_APPLE = Capacitor.getPlatform() === 'ios';
 export const SIGN_IN_AVAILABLE = NATIVE_GOOGLE || NATIVE_APPLE || !Capacitor.isNativePlatform();
 const NATIVE_PROVIDER = NATIVE_APPLE ? 'apple' : 'google';
+const NAME_KEY = 'ph:name';
+const PREVIOUS_PLAYER_KEY = 'ph:previousPlayer';
 
 async function startSession(provider: 'google' | 'apple', idToken: string): Promise<Session> {
   const session = await apiFetch<Session>('/session', {
     method: 'POST',
-    body: JSON.stringify({ provider, idToken, name: readSetting('ph:name') ?? undefined }),
+    body: JSON.stringify({ provider, idToken, name: readSetting(NAME_KEY) ?? undefined }),
   });
   writeSession(session);
   // Solves made while signed out wait in the queue. Nothing else fires when the sign-in sheet
   // closes, it covers the app without hiding it, so send them now instead of on the next resume.
   resetBackoff();
   void flush();
-  void pushCosmetics();
+  // The cosmetics equipped here belong to whoever signed out last. Only hand them to the same
+  // player, or to anyone when nobody was signed in on this device before.
+  const previous = readSetting(PREVIOUS_PLAYER_KEY);
+  removeSetting(PREVIOUS_PLAYER_KEY);
+  if (previous === null || previous === session.player.id) void pushCosmetics();
   // Sign-in rejects an invalid offered name server-side and replaces it with a generated one
   // without saying so. Keep the local name in step with whatever the server settled on, so
   // the Profile name field never disagrees with the server. Only toast about it when a local name
   // existed to be overridden: a first-ever sign-in has none, and announcing the generated name
   // would read as an error on the one screen meant to make signing in feel harmless.
-  const offered = readSetting('ph:name');
+  const offered = readSetting(NAME_KEY);
   if (session.player.name !== offered) {
-    writeSetting('ph:name', session.player.name);
+    writeSetting(NAME_KEY, session.player.name);
     if (offered) toast(`Signed in as ${session.player.name}.`);
   }
   return session;
@@ -84,15 +90,22 @@ export async function nativeSignIn(): Promise<boolean> {
   }
 }
 
-let current: Session | null = readSession();
-// Registered once at module load, so this always runs before any component's own listener
-// added later and `current` is never stale by the time React reads it.
-subscribeSession(() => {
-  current = readSession();
-});
+// Read lazily and keyed on the stored string: main.tsx restores the native backup after this
+// module has loaded, and a cache filled at load time would miss the restored session.
+let raw: string | null | undefined;
+let current: Session | null = null;
+
+export function sessionSnapshot(): Session | null {
+  const next = readSetting(SESSION_KEY);
+  if (next !== raw) {
+    raw = next;
+    current = readSession();
+  }
+  return current;
+}
 
 export function useSession(): Session | null {
-  return useSyncExternalStore(subscribeSession, () => current);
+  return useSyncExternalStore(subscribeSession, sessionSnapshot);
 }
 
 let loading: Promise<void> | null = null;
@@ -198,6 +211,11 @@ export function signOut() {
       .then(() => SocialLogin.logout({ provider: NATIVE_PROVIDER }))
       .catch(() => undefined);
   }
+  // On a shared device the next sign-in may be somebody else, whose new account would otherwise
+  // be created under this player's name. The same player gets theirs back from the server.
+  const player = readSession()?.player.id;
+  if (player) writeSetting(PREVIOUS_PLAYER_KEY, player);
+  removeSetting(NAME_KEY);
   writeSession(null);
 }
 
