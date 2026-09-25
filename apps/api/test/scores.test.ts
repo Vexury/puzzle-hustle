@@ -2,6 +2,7 @@ import { applyD1Migrations, env } from 'cloudflare:test';
 import { beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import worker from '../src/index.ts';
 import * as google from '../src/google.ts';
+import { submitScores } from '../src/scores.ts';
 
 beforeAll(async () => {
   await applyD1Migrations(env.DB, env.TEST_MIGRATIONS);
@@ -111,4 +112,34 @@ it('throttles a player past the daily limit', async () => {
   );
   await env.DB.batch(filler);
   expect((await submit(token, [entry()])).body.results[0]?.status).toBe('throttled');
+});
+
+// Every insert fails; `store` decides whether the row is there afterwards, as it would be when
+// a concurrent request won the race.
+function failingInserts(store: boolean): D1Database {
+  return new Proxy(env.DB, {
+    get(target, prop) {
+      if (prop !== 'prepare') return Reflect.get(target, prop);
+      return (sql: string) => {
+        if (!sql.startsWith('INSERT INTO scores')) return target.prepare(sql);
+        return {
+          bind: (...values: unknown[]) => ({
+            run: async () => {
+              if (store) await target.prepare(sql).bind(...values).run();
+              throw new Error('D1_ERROR');
+            },
+          }),
+        };
+      };
+    },
+  });
+}
+
+it('calls a failed insert a duplicate only when the row is there afterwards', async () => {
+  await signIn('s1');
+  const player = await env.DB.prepare('SELECT id FROM players').first<{ id: string }>();
+  const lost = await submitScores(failingInserts(false), player!.id, [entry()]);
+  expect(lost[0]?.status).toBe('throttled');
+  const raced = await submitScores(failingInserts(true), player!.id, [entry()]);
+  expect(raced[0]?.status).toBe('duplicate');
 });
