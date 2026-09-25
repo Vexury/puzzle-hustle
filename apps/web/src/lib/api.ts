@@ -3,6 +3,9 @@ import { readSetting, removeSetting, writeSetting } from './storage.ts';
 export const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) || 'https://puzzles-api.vexury.dev';
 
 const SESSION_KEY = 'ph:session';
+// A stalled request (captive portal, half-open connection after resume) would otherwise never
+// settle and hold the score queue's single flush for the rest of the session.
+const TIMEOUT_MS = 15_000;
 
 export interface Session {
   token: string;
@@ -59,10 +62,15 @@ export async function apiFetch<T>(path: string, init: RequestInit & { auth?: boo
     headers.set('Authorization', `Bearer ${sent}`);
   }
 
+  // A plain controller rather than AbortSignal.timeout/any, which older iOS WebViews lack.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  rest.signal?.addEventListener('abort', () => controller.abort());
   let response: Response;
   try {
-    response = await fetch(`${API_BASE}${path}`, { ...rest, headers });
+    response = await fetch(`${API_BASE}${path}`, { ...rest, headers, signal: controller.signal });
   } catch {
+    clearTimeout(timer);
     throw new ApiError('offline', 0);
   }
 
@@ -73,6 +81,7 @@ export async function apiFetch<T>(path: string, init: RequestInit & { auth?: boo
   } catch {
     parsed = false;
   }
+  clearTimeout(timer);
 
   if (!response.ok) {
     if (response.status === 401) writeSession(null);

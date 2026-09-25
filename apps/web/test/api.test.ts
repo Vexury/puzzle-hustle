@@ -56,3 +56,18 @@ it('still resolves a 200 whose body is a legitimately empty object', async () =>
   vi.stubGlobal('fetch', async () => new Response('{}', { status: 200 }));
   await expect(apiFetch('/health')).resolves.toEqual({});
 });
+
+it('gives up on a stalled request with an offline error', async () => {
+  vi.useFakeTimers();
+  try {
+    vi.stubGlobal('fetch', (_input: RequestInfo | URL, init?: RequestInit) =>
+      new Promise((_resolve, reject) => init?.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')))),
+    );
+    const pending = apiFetch('/scores', { method: 'POST', body: '{}' });
+    const settled = expect(pending).rejects.toMatchObject({ code: 'offline', status: 0 });
+    await vi.advanceTimersByTimeAsync(15_000);
+    await settled;
+  } finally {
+    vi.useRealTimers();
+  }
+});
