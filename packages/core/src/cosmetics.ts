@@ -106,6 +106,11 @@ export const ACTIVITY_FLAIRS: readonly FlairCosmetic[] = [
   { id: 'morning-person', kind: 'flair', title: 'Morning Person', requires: { achievement: 'early-bird' } },
   { id: 'sweeper', kind: 'flair', title: 'Clean Sweeper', requires: { achievement: 'perfect-10' } },
   { id: 'hustler', kind: 'flair', title: 'Hustler', requires: { achievement: 'streak-30' } },
+  { id: 'relentless', kind: 'flair', title: 'Relentless', requires: { achievement: 'streak-100' } },
+  { id: 'puzzle-legend', kind: 'flair', title: 'Puzzle Legend', requires: { achievement: 'streak-365' } },
+  { id: 'immaculate', kind: 'flair', title: 'Immaculate', requires: { achievement: 'perfect-day-no-hint' } },
+  { id: 'veteran', kind: 'flair', title: 'Veteran', requires: { achievement: 'solved-1000' } },
+  { id: 'regular', kind: 'flair', title: 'Regular', requires: { achievement: 'weekly-10' } },
 ];
 
 export const COSMETICS: readonly Cosmetic[] = [

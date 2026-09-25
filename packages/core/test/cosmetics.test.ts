@@ -9,9 +9,9 @@ const badges = COSMETICS.filter(isBadge);
 const flairs = COSMETICS.filter(isFlair);
 const achievementIds = new Set(ACHIEVEMENTS.map((a) => a.id));
 
-it('has eight badges, unchanged, and forty-five flairs, all with unique ids', () => {
+it('has eight badges, unchanged, and fifty flairs, all with unique ids', () => {
   expect(badges).toHaveLength(8);
-  expect(flairs).toHaveLength(45);
+  expect(flairs).toHaveLength(50);
   expect(new Set(COSMETICS.map((c) => c.id)).size).toBe(COSMETICS.length);
 });
 
@@ -66,4 +66,28 @@ it('every flair requirement is well formed: a real achievement id, or a pack wit
       expect(levelList(req.pack, req.difficulty).length).toBeGreaterThan(0);
     }
   }
+});
+
+it('grants exactly the ten milestone flairs from achievements', () => {
+  const byAchievement = Object.fromEntries(
+    flairs.filter((f) => 'achievement' in f.requires).map((f) => [(f.requires as { achievement: string }).achievement, f.id]),
+  );
+  expect(byAchievement).toEqual({
+    'every-type': 'puzzler',
+    'night-owl': 'night-shift',
+    'early-bird': 'morning-person',
+    'perfect-10': 'sweeper',
+    'streak-30': 'hustler',
+    'streak-100': 'relentless',
+    'streak-365': 'puzzle-legend',
+    'perfect-day-no-hint': 'immaculate',
+    'solved-1000': 'veteran',
+    'weekly-10': 'regular',
+  });
+  for (const id of Object.keys(byAchievement)) expect(achievementIds.has(id)).toBe(true);
+});
+
+it('never gives an achievement and a flair the same title', () => {
+  const flairTitles = new Set(flairs.map((f) => f.title));
+  for (const a of ACHIEVEMENTS) expect(flairTitles.has(a.title), a.title).toBe(false);
 });
