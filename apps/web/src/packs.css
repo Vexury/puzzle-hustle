@@ -31,3 +31,152 @@
   --pack-pattern-image: radial-gradient(rgba(120, 100, 60, 0.06) 1px, transparent 1px);
   --pack-pattern-size: 5px 5px;
 }
+
+[data-theme][data-pack="sakura"] {
+  color-scheme: light;
+  --bg: #fbf0f2;
+  --card-bg: #ffffff;
+  --text: #3a2a30;
+  --text-muted: #765f69;
+  --border: #f0dce2;
+  --border-mid: #d9b8c3;
+  --board-cell: #fff7f9;
+  --board-line: #efd3dc;
+  --hover-bg: #3a2a30;
+  --hover-text: #ffffff;
+  --accent: #e0567f;
+  --accent-text: #b0305b;
+  --accent-deep: #b0305b;
+  --on-accent: #3a0a1c;
+  --success: #3d9a5c;
+  --success-soft: rgba(61, 154, 92, 0.12);
+  --danger: #b8322a;
+  --shadow: 0 2px 10px rgba(180, 80, 110, 0.10);
+  --shadow-hover: 0 6px 18px rgba(180, 80, 110, 0.16);
+  --radius: 22px;
+  --radius-sm: 16px;
+  --nono-c2: #3f7fc4;
+  --nono-c3: #3f9a4f;
+  --pack-pattern-image: none;
+  --pack-pattern-size: auto;
+}
+
+[data-theme][data-pack="midnight"] {
+  color-scheme: dark;
+  --bg: #000000;
+  --card-bg: #0d0d0f;
+  --text: #e8e8ea;
+  --text-muted: #8b8d94;
+  --border: #1c1c20;
+  --border-mid: #34353b;
+  --board-cell: #0a0a0c;
+  --board-line: #1f2025;
+  --hover-bg: #e8e8ea;
+  --hover-text: #000000;
+  --accent: #9ecbff;
+  --accent-text: #9ecbff;
+  --accent-deep: #9ecbff;
+  --on-accent: #04121f;
+  --success: #4fbf77;
+  --success-soft: rgba(79, 191, 119, 0.14);
+  --danger: #e0645a;
+  --shadow: none;
+  --shadow-hover: none;
+  --radius: 18px;
+  --radius-sm: 12px;
+  --nono-c2: #f0a050;
+  --nono-c3: #d06aa4;
+  --pack-pattern-image: none;
+  --pack-pattern-size: auto;
+}
+
+[data-theme][data-pack="cat-cafe"] {
+  color-scheme: light;
+  --bg: #efe4d6;
+  --card-bg: #f8f1e8;
+  --text: #3b2a1e;
+  --text-muted: #6f5a48;
+  --border: #e2d3c1;
+  --border-mid: #c3ab91;
+  --board-cell: #f6ecdf;
+  --board-line: #d8c4ad;
+  --hover-bg: #3b2a1e;
+  --hover-text: #f8f1e8;
+  --accent: #c07a3a;
+  --accent-text: #8a4f1c;
+  --accent-deep: #8a4f1c;
+  --on-accent: #2a1a0e;
+  --success: #3d8a52;
+  --success-soft: rgba(61, 138, 82, 0.12);
+  --danger: #b8392c;
+  --shadow: 0 1px 4px rgba(80, 50, 20, 0.10);
+  --shadow-hover: 0 4px 14px rgba(80, 50, 20, 0.14);
+  --radius: 18px;
+  --radius-sm: 12px;
+  --nono-c2: #3f7fc4;
+  --nono-c3: #9a5cc9;
+  --pack-pattern-image: none;
+  --pack-pattern-size: auto;
+}
+
+[data-theme][data-pack="terminal"] {
+  color-scheme: dark;
+  --font-text: 'Inconsolata', ui-monospace, monospace;
+  --bg: #0a0c0a;
+  --card-bg: #101410;
+  --text: #ffd28a;
+  --text-muted: #b08a4a;
+  --border: #2a2412;
+  --border-mid: #5a4a20;
+  --board-cell: #0d100d;
+  --board-line: #3a3016;
+  --hover-bg: #ffb000;
+  --hover-text: #0a0c0a;
+  --accent: #ffb000;
+  --accent-text: #ffb000;
+  --accent-deep: #ffc84a;
+  --on-accent: #1a1200;
+  --success: #7ddc6a;
+  --success-soft: rgba(125, 220, 106, 0.14);
+  --danger: #ff5f4a;
+  --shadow: 0 0 8px rgba(255, 176, 0, 0.10);
+  --shadow-hover: 0 0 14px rgba(255, 176, 0, 0.22);
+  --radius: 4px;
+  --radius-sm: 2px;
+  --nono-c2: #5d9be0;
+  --nono-c3: #d06aa4;
+  --pack-pattern-image: repeating-linear-gradient(to bottom, rgba(255, 176, 0, 0.025) 0 1px, transparent 1px 3px);
+  --pack-pattern-size: auto;
+}
+
+[data-theme][data-pack="synthwave"] {
+  color-scheme: dark;
+  --bg: #1a0f2e;
+  --card-bg: #24163d;
+  --text: #f4e9ff;
+  --text-muted: #b39ccf;
+  --border: #3a2660;
+  --border-mid: #5d3f8f;
+  --board-cell: #1f1236;
+  --board-line: #4a2f78;
+  --hover-bg: #ff4fd8;
+  --hover-text: #1a0f2e;
+  --accent: #ff4fd8;
+  --accent-text: #ff7fe3;
+  --accent-deep: #ff7fe3;
+  --on-accent: #2a0822;
+  --success: #4fe08a;
+  --success-soft: rgba(79, 224, 138, 0.14);
+  --danger: #ff5a5a;
+  --shadow: 0 0 10px rgba(255, 79, 216, 0.12);
+  --shadow-hover: 0 0 18px rgba(255, 79, 216, 0.24);
+  --radius: 14px;
+  --radius-sm: 10px;
+  --nono-c2: #3ff0ff;
+  --nono-c3: #ffb347;
+  --pack-pattern-image: linear-gradient(to bottom, transparent 55%, rgba(255, 79, 216, 0.10));
+  --pack-pattern-size: auto;
+}
+
+[data-pack="synthwave"] .board-frame { box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 45%, transparent); }
+[data-pack="terminal"] .board-frame { box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent); }

@@ -30,7 +30,7 @@ function contrast(a: string, b: string): number {
 
 const REQUIRED = ['--bg', '--card-bg', '--text', '--text-muted', '--border', '--border-mid', '--board-cell', '--board-line', '--hover-bg', '--hover-text', '--accent', '--accent-text', '--accent-deep', '--on-accent', '--success', '--success-soft', '--danger', '--shadow', '--shadow-hover', '--radius', '--radius-sm', '--nono-c2', '--nono-c3', '--pack-pattern-image', '--pack-pattern-size', 'color-scheme'];
 
-const DONE = ['paper'];
+const DONE = THEMES.map((t) => t.id);
 
 it.each(DONE)('%s sets every pack token and the scheme of its mode', (id) => {
   const b = block(id);
