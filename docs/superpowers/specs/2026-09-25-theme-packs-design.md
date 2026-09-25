@@ -28,8 +28,8 @@ Give coins a larger goal than the 100 to 300 coin badges, and let players make t
 
 - A pack sets `data-pack="<id>"` on `<html>` and forces its mode through the existing `data-theme`. All `[data-theme="dark"]` rules keep working, and the status bar icons follow through the existing `StatusBarStylePlugin` call in `apply()`.
 - New file `apps/web/src/packs.css` with one `[data-pack="<id>"]` block per pack. Each sets the surface, text, border, board, piece, shadow, radius and accent tokens (`--bg`, `--card-bg`, `--text`, `--text-muted`, `--border`, `--border-mid`, `--board-cell`, `--board-line`, `--piece-line`, `--hover-bg`, `--shadow`, `--radius`, `--accent`, `--accent-text`, `--accent-deep`, `--on-accent`, `--accent-soft`, `--success`, `--danger`), where needed `--font-text`/`--font-num`, plus Nonogram colours 2 and 3 and an optional background pattern as a CSS gradient. No image files.
-- Hard-coded colours that bypass tokens today are moved onto tokens first. That is the only refactoring.
-- Pack selectors must win over `[data-accent]` and `[data-theme]` rules of equal specificity; `packs.css` loads after `theme.css`, and rules that combine theme and accent get a `:not([data-pack])` guard where they would otherwise win.
+- `theme.css` has almost no hard-coded colours outside tokens, and those it has are deliberate (white on danger, the sign-in brand colours, the dialog scrim), so no refactoring is needed.
+- Under a pack the root carries no `data-accent`, so no accent rule competes. Pack blocks use the selector `[data-theme][data-pack="<id>"]`, whose two attributes beat the single-attribute `[data-theme="dark"]` blocks of every stylesheet whatever their load order.
 
 ## Packs
 
@@ -42,7 +42,7 @@ Starting values, tuned on the device. Text on surface at least 4.5:1, checked by
 | midnight | dark | 500 | black `#000`, cards `#0d0d0f` | cool white-blue `#9ecbff` | very quiet lines, no shadows |
 | cat-cafe | light | 600 | latte `#efe4d6`, cards `#f8f1e8` | caramel `#c07a3a` | dark brown text, warm board cells |
 | terminal | dark | 900 | green-black `#0a0c0a` | amber phosphor `#ffb000` | Inconsolata everywhere, soft glow on accent and frame, square radii |
-| synthwave | dark | 1200 | deep violet `#1a0f2e`, cards `#24163d` | magenta `#ff4fd8`, cyan `#3ff0ff` second | neon glow on frame and placed pieces, horizon gradient behind |
+| synthwave | dark | 1200 | deep violet `#1a0f2e`, cards `#24163d` | magenta `#ff4fd8`, cyan `#3ff0ff` second | neon glow on the board frame, horizon gradient behind |
 
 ## Catalogue and state
 
@@ -75,6 +75,6 @@ Starting values, tuned on the device. Text on surface at least 4.5:1, checked by
 
 Three commits, each working on its own:
 
-1. Groundwork: `kind: 'theme'`, `Equipped.theme`, `apply()` with packs, profile and header changes, hard-coded colours onto tokens, and Paper as the first pack.
+1. Groundwork: `kind: 'theme'`, `Equipped.theme`, `apply()` with packs, profile and header changes, and Paper as the first pack.
 2. Shop section with cards and try-on.
 3. The other five packs.
