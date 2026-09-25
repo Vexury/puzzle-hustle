@@ -1,15 +1,17 @@
 import { DIFFICULTIES, PUZZLE_TYPES, type Difficulty, type PuzzleTypeId } from './types.ts';
 
-export type CosmeticKind = 'badge' | 'flair';
+export type CosmeticKind = 'badge' | 'flair' | 'theme';
 
 export type FlairRequirement = { pack: PuzzleTypeId; difficulty: Difficulty } | { achievement: string };
 
 export type Cosmetic =
   | { id: string; kind: 'badge'; title: string; price: number }
-  | { id: string; kind: 'flair'; title: string; requires: FlairRequirement };
+  | { id: string; kind: 'flair'; title: string; requires: FlairRequirement }
+  | { id: string; kind: 'theme'; title: string; price: number; mode: 'light' | 'dark' };
 
 export type BadgeCosmetic = Extract<Cosmetic, { kind: 'badge' }>;
 export type FlairCosmetic = Extract<Cosmetic, { kind: 'flair' }>;
+export type ThemeCosmetic = Extract<Cosmetic, { kind: 'theme' }>;
 
 // Ids are forever: a board row carries them to clients of every age, so an id may be added but
 // never renamed or removed. No crown (place 1 wears one) and no flame (the streak colour).
@@ -113,10 +115,21 @@ export const ACTIVITY_FLAIRS: readonly FlairCosmetic[] = [
   { id: 'regular', kind: 'flair', title: 'Regular', requires: { achievement: 'weekly-10' } },
 ];
 
+// Whole-app looks, each with one fixed mode. Only this device sees them, the worker never does.
+export const THEMES: readonly ThemeCosmetic[] = [
+  { id: 'paper', kind: 'theme', title: 'Paper', price: 400, mode: 'light' },
+  { id: 'sakura', kind: 'theme', title: 'Sakura', price: 400, mode: 'light' },
+  { id: 'midnight', kind: 'theme', title: 'Midnight', price: 500, mode: 'dark' },
+  { id: 'cat-cafe', kind: 'theme', title: 'Cat Café', price: 600, mode: 'light' },
+  { id: 'terminal', kind: 'theme', title: 'Terminal', price: 900, mode: 'dark' },
+  { id: 'synthwave', kind: 'theme', title: 'Synthwave', price: 1200, mode: 'dark' },
+];
+
 export const COSMETICS: readonly Cosmetic[] = [
   ...BADGES,
   ...PUZZLE_TYPES.flatMap((type) => FLAIRS_BY_TYPE[type]),
   ...ACTIVITY_FLAIRS,
+  ...THEMES,
 ];
 
 const BY_ID = new Map(COSMETICS.map((c) => [c.id, c]));

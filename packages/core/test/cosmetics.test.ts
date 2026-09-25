@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { ACHIEVEMENTS } from '../src/achievements.ts';
-import { COSMETICS, findCosmetic, isCosmeticOf, type Cosmetic } from '../src/cosmetics.ts';
+import { COSMETICS, THEMES, findCosmetic, isCosmeticOf, type Cosmetic } from '../src/cosmetics.ts';
 import { levelList } from '../src/levels.ts';
 
 const isBadge = (c: Cosmetic): c is Extract<Cosmetic, { kind: 'badge' }> => c.kind === 'badge';
@@ -90,4 +90,22 @@ it('grants exactly the ten milestone flairs from achievements', () => {
 it('never gives an achievement and a flair the same title', () => {
   const flairTitles = new Set(flairs.map((f) => f.title));
   for (const a of ACHIEVEMENTS) expect(flairTitles.has(a.title), a.title).toBe(false);
+});
+
+it('offers six theme packs with their prices and fixed modes, in shop order', () => {
+  expect(THEMES.map((t) => [t.id, t.price, t.mode])).toEqual([
+    ['paper', 400, 'light'],
+    ['sakura', 400, 'light'],
+    ['midnight', 500, 'dark'],
+    ['cat-cafe', 600, 'light'],
+    ['terminal', 900, 'dark'],
+    ['synthwave', 1200, 'dark'],
+  ]);
+  for (const t of THEMES) expect(findCosmetic(t.id)).toBe(t);
+});
+
+it('keeps theme ids apart from badge and flair ids', () => {
+  expect(isCosmeticOf('paper', 'theme')).toBe(true);
+  expect(isCosmeticOf('paper', 'badge')).toBe(false);
+  expect(isCosmeticOf('bolt', 'theme')).toBe(false);
 });
