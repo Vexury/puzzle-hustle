@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { parsePuzzleId, periodKey } from '@puzzle-hustle/core';
+import { adapter, isPuzzleTypeId, parsePuzzleId, periodKey } from '@puzzle-hustle/core';
 import { isBackedUp, scheduleBackup } from './backup.ts';
 
 // Shared by Intro.tsx and UnlockModal.tsx: neither component imports the other, so either can
@@ -89,6 +89,18 @@ export function readProgress(id: string): Progress | null {
   }
 }
 
+// Play discards a board saved on another generator version and opens a fresh one, so such a
+// board must not show as started either. Boards from before versions were kept are trusted.
+function isCurrent(id: string, progress: Progress): boolean {
+  const type = id.slice(0, id.indexOf(':'));
+  return progress.version === undefined || !isPuzzleTypeId(type) || progress.version === adapter(type).version;
+}
+
+export function readCurrentProgress(id: string): Progress | null {
+  const progress = readProgress(id);
+  return progress && isCurrent(id, progress) ? progress : null;
+}
+
 // Puzzles with a board on disk and no solve yet. A solved period keeps its finished board
 // there too (keepFinalBoard), which is why the solve has to rule it out.
 export function startedIds(): Set<string> {
@@ -98,7 +110,7 @@ export function startedIds(): Set<string> {
       const k = localStorage.key(i);
       if (!k?.startsWith(PROGRESS_PREFIX)) continue;
       const id = k.slice(PROGRESS_PREFIX.length);
-      if (!cache[id]) ids.add(id);
+      if (!cache[id] && readCurrentProgress(id)) ids.add(id);
     }
   } catch {
     /* storage unavailable */

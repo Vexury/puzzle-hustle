@@ -93,6 +93,10 @@ export function enqueue(
   writeQueue(queue);
 }
 
+// Only these settle an entry for good. Anything else (throttled, or a retryable status a newer
+// server may add) keeps it queued.
+const FINAL = new Set(['stored', 'duplicate', 'rejected', 'expired']);
+
 let running: Promise<void> | null = null;
 
 // Backoff lives in memory only. A fresh start is always allowed one attempt, which is what
@@ -154,7 +158,7 @@ async function run(): Promise<void> {
       return;
     }
     const answered = new Set(
-      results.filter((r) => r.status !== 'throttled' && batchPuzzles.has(r.puzzle)).map((r) => r.puzzle),
+      results.filter((r) => FINAL.has(r.status) && batchPuzzles.has(r.puzzle)).map((r) => r.puzzle),
     );
     // Re-read the full queue, not just `mine` — another player's entries may sit anywhere in it
     // and must be written back exactly as they were, in their original place, untouched by

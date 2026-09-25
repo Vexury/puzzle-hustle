@@ -61,6 +61,28 @@ it('keeps a throttled entry and stops instead of retrying immediately, while a t
   expect(fetchMock).toHaveBeenCalledTimes(1);
 });
 
+it('keeps an entry whose status it does not know as final and backs off', async () => {
+  enqueue('sudoku:daily:2026-09-21', record);
+  enqueue('crowns:daily:2026-09-21', record);
+  const fetchMock = vi.fn(async () =>
+    new Response(
+      JSON.stringify({
+        results: [
+          { puzzle: 'sudoku:daily:2026-09-21', status: 'expired' },
+          { puzzle: 'crowns:daily:2026-09-21', status: 'retry' },
+        ],
+      }),
+      { status: 200 },
+    ),
+  );
+  vi.stubGlobal('fetch', fetchMock);
+  await flush();
+  expect(readQueue().map((e) => e.puzzle)).toEqual(['crowns:daily:2026-09-21']);
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+  await flush();
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+});
+
 it('keeps everything when the network fails', async () => {
   enqueue('sudoku:daily:2026-09-21', record);
   vi.stubGlobal('fetch', async () => {
