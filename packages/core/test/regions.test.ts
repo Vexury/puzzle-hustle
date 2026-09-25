@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { scheduledRef } from '../src/ref.ts';
+import { starsAdapter } from '../src/registry.ts';
 import {
   CROWNS_PRESETS,
+  REGIONS_BUDGET,
   REGIONS_MARKED_EMPTY,
   REGIONS_VERSION,
   STARS_PRESETS,
@@ -17,6 +20,7 @@ import {
 } from '../src/regions/puzzle.ts';
 import {
   countRegionsSolutions,
+  enumerateRegionsSolutions,
   isRegionsUnique,
   regionsCanonicalKey,
   regionsDifficultyReport,
@@ -211,5 +215,40 @@ describe('canonical key', () => {
     expect(regionsCanonicalKey(flipped)).toBe(regionsCanonicalKey(spec));
     expect(regionsCanonicalKey(generateCrowns(12, 'medium'))).not.toBe(regionsCanonicalKey(spec));
     expect(regionsCanonicalKey(generateRegions(11, { size: n, stars: 1 }))).toBe(regionsCanonicalKey(spec));
+  });
+});
+
+describe('work budget', () => {
+  it('stops the enumeration once it passes the node cap', () => {
+    const full = countRegionsSolutions(stripes(6, 1), 1000);
+    const capped = enumerateRegionsSolutions(stripes(6, 1), 1000, () => {}, 10);
+    expect(capped.nodes).toBe(11);
+    expect(capped.solutions).toBeLessThan(full.solutions);
+  });
+
+  it('never changes a puzzle it lets through', () => {
+    for (const seed of [1, 2, 3]) {
+      const free = generateStars(seed, 'medium');
+      const bounded = generateStars(seed, 'medium', {}, REGIONS_BUDGET);
+      expect(bounded.regions).toEqual(free.regions);
+      expect(bounded.solution).toEqual(free.solution);
+    }
+  });
+
+  it('gives up on a seed that needs more', () => {
+    expect(() => generateStars(1, 'medium', {}, 0)).toThrow(/budget/);
+  });
+
+  it('moves slow monthlies to the next attempt seed and keeps published ones', () => {
+    // 2028-03 took about 18 million nodes, several seconds on a desktop.
+    expect(starsAdapter.accepts(2162830524, 'genius', {})).toBe(false);
+    const march = scheduledRef('stars', 'monthly', '2028-03');
+    expect(march.seed).toBe(1070019089);
+    expect(scheduledRef('stars', 'monthly', '2026-12').seed).toBe(1580581492);
+    // The heaviest weekly through 2028, about 260k nodes.
+    expect(scheduledRef('stars', 'weekly', '2028-W17').seed).toBe(1537297863);
+    const spec = starsAdapter.spec(march.seed, march.difficulty, starsAdapter.options('monthly'));
+    expect(starsAdapter.spec(march.seed, march.difficulty, {})).toBe(spec);
+    expect(spec.regions).toEqual(generateStars(march.seed, march.difficulty).regions);
   });
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { DAILY_TYPES, PERIOD_TYPES, nextPeriodStart, periodKey } from '../src/schedule.ts';
-import { decodeRef, encodeRef, periodRef, scheduledRef } from '../src/ref.ts';
+import { DAILY_TYPES, PERIOD_TYPES, nextPeriodStart, periodKey, periodPuzzleType } from '../src/schedule.ts';
+import { decodeRef, encodeRef, periodRef, refId, scheduledRef } from '../src/ref.ts';
 import { PUZZLE_TYPES } from '../src/types.ts';
 
 describe('DAILY_TYPES', () => {
@@ -48,6 +48,27 @@ describe('refs', () => {
     const b = scheduledRef('nonogram', 'monthly', '2026-09');
     expect(a.seed).toBe(b.seed);
     expect(scheduledRef('shapes', 'weekly', '2026-W38').seed).not.toBe(scheduledRef('shapes', 'weekly', '2026-W39').seed);
+  });
+
+  it('takes seed and difficulty of a period link from the schedule, not the URL', () => {
+    const real = scheduledRef('killer', 'daily', '2026-09-25');
+    const decoded = decodeRef(`t=killer&d=hard&s=${(real.seed + 1).toString(36)}&p=daily&k=2026-09-25`);
+    expect(decoded).toEqual({ ...real, period: 'daily', key: '2026-09-25' });
+    const monthly = periodRef('monthly', new Date('2026-09-18T10:00:00Z'));
+    expect(decodeRef(`t=${monthly.type}&d=easy&s=1&p=monthly&k=${monthly.key}`)).toEqual(monthly);
+  });
+
+  it('treats a period link with a bad key or the wrong type as a random ref', () => {
+    const plain = { type: 'killer', difficulty: 'easy', seed: 1 };
+    expect(decodeRef('t=killer&d=easy&s=1&p=daily&k=2026-02-30')).toEqual(plain);
+    expect(decodeRef('t=killer&d=easy&s=1&p=daily&k=')).toEqual(plain);
+    expect(decodeRef('t=killer&d=easy&s=1&p=yearly&k=2026')).toEqual(plain);
+    expect(decodeRef('t=killer&d=easy&s=1&k=2026-09-25')).toEqual(plain);
+    const owner = periodPuzzleType('weekly', '2026-W39');
+    const other = PERIOD_TYPES.find((t) => t !== owner)!;
+    const foreign = decodeRef(`t=${other}&d=hard&s=1&p=weekly&k=2026-W39`)!;
+    expect(foreign).toEqual({ type: other, difficulty: 'hard', seed: 1 });
+    expect(refId(foreign)).not.toContain('weekly');
   });
 
   it('rejects garbage', () => {

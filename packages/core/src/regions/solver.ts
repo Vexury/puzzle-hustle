@@ -51,7 +51,12 @@ export interface RegionsCount {
 
 const ELIMINATED = 2;
 
-export function enumerateRegionsSolutions(spec: RegionsSpec, limit: number, onSolution: (grid: Uint8Array) => void): RegionsCount {
+export function enumerateRegionsSolutions(
+  spec: RegionsSpec,
+  limit: number,
+  onSolution: (grid: Uint8Array) => void,
+  maxNodes = Number.POSITIVE_INFINITY,
+): RegionsCount {
   const units = regionsUnits(spec);
   const n = units.size;
   const k = units.stars;
@@ -111,7 +116,7 @@ export function enumerateRegionsSolutions(spec: RegionsSpec, limit: number, onSo
   }
 
   function search(): void {
-    if (solutions >= limit) return;
+    if (solutions >= limit || nodes > maxNodes) return;
     const u = pickUnit();
     if (u === undefined) return;
     if (u === null) {
@@ -127,7 +132,7 @@ export function enumerateRegionsSolutions(spec: RegionsSpec, limit: number, onSo
       place(i);
       search();
       undo(mark);
-      if (solutions >= limit) break;
+      if (solutions >= limit || nodes > maxNodes) break;
       eliminate(i);
     }
     undo(start);
