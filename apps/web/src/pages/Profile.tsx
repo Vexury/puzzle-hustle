@@ -5,16 +5,24 @@ import { ACCENTS, ACCENT_NAMES, useAccent } from '../lib/accent.ts';
 import { adsAvailable, onAdsConsent, privacyOptionsAvailable, showPrivacyOptions } from '../lib/ads.ts';
 import { currentUnlocked } from '../lib/achievements.ts';
 import { pushCosmetics } from '../lib/coins.ts';
-import { buyUnlimitedHints, hasUnlimitedHints, onEntitlement } from '../lib/entitlement.ts';
+import { buyUnlimitedHints, hasUnlimitedHints, onEntitlement, restoreUnlimitedHints, type PurchaseOutcome } from '../lib/entitlement.ts';
 import { HAPTICS_KEY, hapticsAvailable, tap } from '../lib/haptics.ts';
 import { href, onLinkClick } from '../lib/router.ts';
 import { readSetting, resetProgress, useSolves, writeSetting } from '../lib/storage.ts';
 import { formatSeconds } from '../lib/share.ts';
 import { dailyStreaks, totalSolved, typeStats } from '../lib/stats.ts';
 import { THEME_PREFS, centerOf, useTheme, type ThemePref } from '../lib/theme.ts';
-import { AccountCard } from '../components/AccountCard.tsx';
+import { AccountCard, PRIVACY_POLICY_URL } from '../components/AccountCard.tsx';
 import { CoinPill } from '../components/CoinPill.tsx';
+import { toast } from '../components/Toast.tsx';
 import { ThemeToggle } from '../components/ThemeToggle.tsx';
+
+const PURCHASE_TOASTS: Record<PurchaseOutcome, string | null> = {
+  owned: 'Unlocked. Every hint is yours.',
+  pending: 'Payment pending. Hints unlock once it goes through.',
+  cancelled: null,
+  failed: 'No purchase was made',
+};
 
 export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) {
   const solves = useSolves();
@@ -189,6 +197,24 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
               <span className="muted small">
                 {unlimited ? 'Bought. Every hint is yours, no ads.' : 'One hint per puzzle is free. Unlock the rest without ads.'}
               </span>
+              {!unlimited && (
+                <span>
+                  <button
+                    type="button"
+                    className="linklike muted small"
+                    disabled={buying}
+                    onClick={() => {
+                      setBuying(true);
+                      void restoreUnlimitedHints()
+                        .then((found) => toast(found ? 'Purchase restored. Every hint is yours.' : 'No purchase found for this store account'))
+                        .catch(() => toast('The store is not reachable right now'))
+                        .finally(() => setBuying(false));
+                    }}
+                  >
+                    Restore purchase
+                  </button>
+                </span>
+              )}
             </span>
             {unlimited ? (
               <span className="muted small">Unlocked</span>
@@ -199,7 +225,12 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
                 disabled={buying}
                 onClick={() => {
                   setBuying(true);
-                  void buyUnlimitedHints().finally(() => setBuying(false));
+                  void buyUnlimitedHints()
+                    .then((outcome) => {
+                      const message = PURCHASE_TOASTS[outcome];
+                      if (message) toast(message);
+                    })
+                    .finally(() => setBuying(false));
                 }}
               >
                 {buying ? 'One moment' : 'Unlock'}
@@ -236,6 +267,10 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
           Progress is stored on this device. ·{' '}
           <a href="https://vexury.dev" target="_blank" rel="noreferrer">
             vexury.dev
+          </a>
+          {' · '}
+          <a href={PRIVACY_POLICY_URL} target="_blank" rel="noreferrer">
+            Privacy policy
           </a>
           {adsAvailable && privacy ? (
             <>

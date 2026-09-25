@@ -5,7 +5,7 @@ import { syncAchievements } from './lib/achievements.ts';
 import { initAccent } from './lib/accent.ts';
 import { initBackButton } from './lib/back.ts';
 import { restoreBackup } from './lib/backup.ts';
-import { refreshEntitlement } from './lib/entitlement.ts';
+import { initEntitlement } from './lib/entitlement.ts';
 import { syncFlairs } from './lib/flairs.ts';
 import { initQueue } from './lib/queue.ts';
 import { rehydrate } from './lib/storage.ts';
@@ -26,7 +26,7 @@ syncFlairs();
 // away; everything announced after this point (in practice, only ever a solve) is "live" and
 // gets the modal's usual delay.
 markUnlocksLive();
-void refreshEntitlement();
+initEntitlement();
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
