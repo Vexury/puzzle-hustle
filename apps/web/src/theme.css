@@ -119,7 +119,7 @@
 }
 html, body { margin: 0; padding: 0; }
 body {
-  background: var(--bg);
+  background: var(--pack-pattern, none), var(--bg);
   color: var(--text);
   --font-num: 'Inconsolata', ui-monospace, monospace;
   --font-text: 'Nunito', system-ui, sans-serif;

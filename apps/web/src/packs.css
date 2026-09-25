@@ -1,0 +1,32 @@
+/* Theme packs. Each block sets every surface, text, board and accent token for one pack, and
+   the pack forces its mode through data-theme. Two attributes in the selector let a pack beat
+   the single-attribute [data-theme="dark"] blocks of every game stylesheet, whatever their
+   load order; data-accent is off under a pack, so no accent rule competes. */
+
+[data-theme][data-pack="paper"] {
+  color-scheme: light;
+  --bg: #f6f1e4;
+  --card-bg: #fbf8f0;
+  --text: #2b2a33;
+  --text-muted: #625d51;
+  --border: #e3dccb;
+  --border-mid: #bfb59f;
+  --board-cell: #fdfaf2;
+  --board-line: #b9cde6;
+  --hover-bg: #2b2a33;
+  --hover-text: #fbf8f0;
+  --accent: #2f5aa8;
+  --accent-text: #2f5aa8;
+  --accent-deep: #1f3f7a;
+  --on-accent: #ffffff;
+  --success: #3d8a52;
+  --success-soft: rgba(61, 138, 82, 0.12);
+  --danger: #c2483a;
+  --shadow: 0 1px 3px rgba(60, 50, 20, 0.08);
+  --shadow-hover: 0 4px 12px rgba(60, 50, 20, 0.12);
+  --radius: 14px;
+  --radius-sm: 10px;
+  --nono-c2: #d9822b;
+  --nono-c3: #b8508a;
+  --pack-pattern: radial-gradient(rgba(120, 100, 60, 0.06) 1px, transparent 1px) 0 0 / 5px 5px;
+}

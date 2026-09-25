@@ -11,7 +11,7 @@ import { href, onLinkClick } from '../lib/router.ts';
 import { readSetting, resetProgress, useSolves, writeSetting } from '../lib/storage.ts';
 import { formatSeconds } from '../lib/share.ts';
 import { dailyStreaks, totalSolved, typeStats } from '../lib/stats.ts';
-import { THEME_PREFS, centerOf, useTheme, type ThemePref } from '../lib/theme.ts';
+import { THEME_PREFS, centerOf, usePack, useTheme, type ThemePref } from '../lib/theme.ts';
 import { AccountCard, PRIVACY_POLICY_URL } from '../components/AccountCard.tsx';
 import { CoinPill } from '../components/CoinPill.tsx';
 import { toast } from '../components/Toast.tsx';
@@ -30,6 +30,7 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
   const stats = typeStats(solves);
   const { pref, setPref } = useTheme();
   const { accent, setAccent } = useAccent();
+  const pack = usePack();
   const [numberHighlight, setNumberHighlight] = useState(readSetting('ph:sudokuHighlight') !== '0');
   const [hapticsOn, setHapticsOn] = useState(readSetting(HAPTICS_KEY) !== '0');
   const [confirmReset, setConfirmReset] = useState(false);
@@ -101,30 +102,41 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
 
         <div className="card-lg">
           <b>Appearance</b>
-          <span className="muted small">System follows your device setting.</span>
-          <div className="segmented three" role="radiogroup" aria-label="Appearance">
-            {THEME_PREFS.map((p: ThemePref) => (
-              <button key={p} type="button" role="radio" aria-checked={pref === p} className={pref === p ? 'seg active' : 'seg'} onClick={(e) => setPref(p, centerOf(e.currentTarget))}>
-                {p === 'system' ? 'System' : p === 'light' ? 'Light' : 'Dark'}
-              </button>
-            ))}
-          </div>
-          <div className="swatches" role="radiogroup" aria-label="Accent color">
-            {ACCENTS.map((a) => (
-              <button
-                key={a}
-                type="button"
-                role="radio"
-                aria-checked={accent === a}
-                aria-label={ACCENT_NAMES[a]}
-                title={ACCENT_NAMES[a]}
-                data-accent={a}
-                className="swatch"
-                onClick={() => setAccent(a)}
-              />
-            ))}
-          </div>
-          <span className="muted small">{ACCENT_NAMES[accent]}</span>
+          {pack ? (
+            <>
+              <span className="muted small">Theme: {pack.title}</span>
+              <a href={href('/shop')} className="pill outline" onClick={onLinkClick}>
+                Change
+              </a>
+            </>
+          ) : (
+            <>
+              <span className="muted small">System follows your device setting.</span>
+              <div className="segmented three" role="radiogroup" aria-label="Appearance">
+                {THEME_PREFS.map((p: ThemePref) => (
+                  <button key={p} type="button" role="radio" aria-checked={pref === p} className={pref === p ? 'seg active' : 'seg'} onClick={(e) => setPref(p, centerOf(e.currentTarget))}>
+                    {p === 'system' ? 'System' : p === 'light' ? 'Light' : 'Dark'}
+                  </button>
+                ))}
+              </div>
+              <div className="swatches" role="radiogroup" aria-label="Accent color">
+                {ACCENTS.map((a) => (
+                  <button
+                    key={a}
+                    type="button"
+                    role="radio"
+                    aria-checked={accent === a}
+                    aria-label={ACCENT_NAMES[a]}
+                    title={ACCENT_NAMES[a]}
+                    data-accent={a}
+                    className="swatch"
+                    onClick={() => setAccent(a)}
+                  />
+                ))}
+              </div>
+              <span className="muted small">{ACCENT_NAMES[accent]}</span>
+            </>
+          )}
         </div>
 
         <div className="card-lg">
