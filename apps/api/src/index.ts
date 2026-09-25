@@ -32,7 +32,12 @@ async function revokeIfApple(request: Request, env: Env, playerId: string): Prom
   const input = await body(request);
   // The bundle ID comes first in APPLE_AUDIENCES; codes from the app are issued to it.
   const clientId = list(env.APPLE_AUDIENCES)[0];
-  if (typeof input.appleCode !== 'string' || !clientId || !env.APPLE_TEAM_ID || !env.APPLE_KEY_ID || !env.APPLE_SIGNIN_KEY) {
+  if (typeof input.appleCode !== 'string') {
+    console.log('apple revoke: skipped, the app sent no authorization code');
+    return;
+  }
+  if (!clientId || !env.APPLE_TEAM_ID || !env.APPLE_KEY_ID || !env.APPLE_SIGNIN_KEY) {
+    console.log('apple revoke: skipped, the Sign in with Apple key is not configured');
     return;
   }
   await revokeAppleAuthorization(input.appleCode, {
