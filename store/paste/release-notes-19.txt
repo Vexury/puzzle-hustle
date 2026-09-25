@@ -1,0 +1,18 @@
+<en-US>
+Groups and fixes.
+
+- Groups: owners can remove members, and you can hide a player from your boards
+- Unlimited Hints: restore an earlier purchase
+- Resetting progress keeps the running daily, weekly and monthly
+- Scores that could not be sent are kept and sent later
+- Smaller fixes for the timer, the back button and hint videos
+</en-US>
+<de-DE>
+Gruppen und Korrekturen.
+
+- Gruppen: Gründer können Mitglieder entfernen, und du kannst Spieler in deinen Bestenlisten ausblenden
+- Unbegrenzte Hints: einen früheren Kauf wiederherstellen
+- Zurücksetzen behält das laufende Daily, Weekly und Monthly
+- Zeiten, die nicht gesendet werden konnten, bleiben erhalten und werden später gesendet
+- Kleinere Korrekturen an Uhr, Zurück-Taste und Hint-Videos
+</de-DE>
