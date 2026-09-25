@@ -785,6 +785,49 @@ button.unlock-row { cursor: pointer; }
 .unlock-single .unlock-mark { font-size: 2.6rem; }
 .unlock-single .unlock-title { font-size: var(--fs-xl); }
 
+/* Achievement badges: a round disc, filled with the accent when earned, muted when locked. A
+   locked counter shows how far along it is as a ring (conic gradient in --share). */
+.ach-disc {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  border-radius: 50%;
+  background: var(--board-cell);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.ach-disc.earned {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 0 2px 8px var(--accent-strong);
+}
+.ach-ring {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: conic-gradient(var(--accent) var(--share), transparent 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+}
+.ach-inner { display: grid; place-items: center; width: 56%; height: 56%; }
+.ach-disc:not(.earned) .ach-inner { opacity: 0.55; }
+.ach-inner .puzzle-icon { background: none; border: none; }
+.ach-glyph { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.ach-corner {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 38%;
+  height: 38%;
+  padding: 3px;
+  border-radius: 50%;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  color: var(--accent-deep);
+}
+
 /* The theme swap grows out of the button that was pressed. Both snapshots hold still, the new
    one is clipped to a circle that opens; the --reveal-* values come from lib/theme.ts. */
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
