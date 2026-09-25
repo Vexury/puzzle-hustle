@@ -6,8 +6,6 @@ import { readSetting, writeSetting } from './storage.ts';
 export const UNLIMITED_HINTS = 'unlimited_hints';
 
 const CACHE_KEY = 'ph:unlimited';
-const MISS_KEY = 'ph:unlimitedMiss';
-const REVOKE_AFTER_MS = 24 * 60 * 60 * 1000;
 const native = Capacitor.isNativePlatform();
 const android = Capacitor.getPlatform() === 'android';
 
@@ -53,25 +51,32 @@ async function check(): Promise<void> {
   const { purchases } = await NativePurchases.getPurchases({ productType: PURCHASE_TYPE.INAPP, onlyCurrentEntitlements: true });
   await acknowledge(purchases);
   if (purchases.some(paid)) {
-    writeSetting(MISS_KEY, '');
     set(true);
     return;
   }
-  // The Android plugin answers a failed query with an empty list, so an empty list only takes
-  // back a paid unlock once it has stayed empty for a day.
-  if (android && owned && purchases.length === 0) {
-    const since = Number(readSetting(MISS_KEY)) || 0;
-    if (!since) writeSetting(MISS_KEY, String(Date.now()));
-    if (!since || Date.now() - since < REVOKE_AFTER_MS) return;
-  }
-  writeSetting(MISS_KEY, '');
+  // The Android plugin answers a failed query with an empty list, and without the network the
+  // player keeps what they paid for, so only a non-empty list takes back an unlock.
+  if (android && purchases.length === 0) return;
   set(false);
 }
 
 let refreshing: Promise<void> | null = null;
+let storeCalls = 0;
+
+// Every Android plugin call replaces the one billing client, and with it the listener a running
+// purchase waits on, so purchases and restores run alone and end with their own check.
+async function exclusive<T>(run: () => Promise<T>): Promise<T> {
+  await refreshing;
+  storeCalls++;
+  try {
+    return await run();
+  } finally {
+    storeCalls--;
+  }
+}
 
 export function refreshEntitlement(): Promise<void> {
-  if (!native) return Promise.resolve();
+  if (!native || storeCalls > 0) return Promise.resolve();
   set(readSetting(CACHE_KEY) === '1');
   refreshing ??= check()
     .catch(() => {
@@ -94,15 +99,21 @@ export function initEntitlement(): void {
 // Throws when the store cannot be reached.
 export async function restoreUnlimitedHints(): Promise<boolean> {
   if (!native) return false;
-  await NativePurchases.restorePurchases();
-  await check();
-  return owned;
+  return exclusive(async () => {
+    await NativePurchases.restorePurchases();
+    await check();
+    return owned;
+  });
 }
 
 export type PurchaseOutcome = 'owned' | 'pending' | 'cancelled' | 'failed';
 
 export async function buyUnlimitedHints(): Promise<PurchaseOutcome> {
   if (!native) return 'failed';
+  return exclusive(purchase);
+}
+
+async function purchase(): Promise<PurchaseOutcome> {
   try {
     await NativePurchases.purchaseProduct({ productIdentifier: UNLIMITED_HINTS, productType: PURCHASE_TYPE.INAPP });
   } catch (err) {

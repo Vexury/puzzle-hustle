@@ -7,16 +7,28 @@ const store = vi.hoisted(() => ({
   purchase: null as Error | null,
   acknowledged: [] as string[],
   restored: 0,
+  queries: 0,
+  purchasing: false,
+  pendingPurchase: null as Promise<void> | null,
+  resume: null as (() => void) | null,
 }));
 
 vi.mock('@capacitor/core', () => ({
   Capacitor: { isNativePlatform: () => true, getPlatform: () => platform.name },
 }));
-vi.mock('@capacitor/app', () => ({ App: { addListener: vi.fn(async () => ({ remove: async () => {} })) } }));
+vi.mock('@capacitor/app', () => ({
+  App: {
+    addListener: vi.fn(async (_event: string, listener: () => void) => {
+      store.resume = listener;
+      return { remove: async () => {} };
+    }),
+  },
+}));
 vi.mock('@capgo/native-purchases', () => ({
   PURCHASE_TYPE: { INAPP: 'inapp' },
   NativePurchases: {
     getPurchases: vi.fn(async () => {
+      store.queries++;
       if (store.queryFails) throw new Error('offline');
       return { purchases: store.purchases };
     }),
@@ -27,6 +39,8 @@ vi.mock('@capgo/native-purchases', () => ({
       store.restored++;
     }),
     purchaseProduct: vi.fn(async () => {
+      store.purchasing = true;
+      if (store.pendingPurchase) await store.pendingPurchase;
       if (store.purchase) throw store.purchase;
       return {};
     }),
@@ -34,7 +48,6 @@ vi.mock('@capgo/native-purchases', () => ({
   },
 }));
 
-const DAY = 24 * 60 * 60 * 1000;
 const bought = (extra: Record<string, unknown> = {}) => ({
   productIdentifier: 'unlimited_hints',
   purchaseState: '1',
@@ -56,7 +69,10 @@ beforeEach(() => {
   store.purchase = null;
   store.acknowledged = [];
   store.restored = 0;
-  vi.useRealTimers();
+  store.queries = 0;
+  store.purchasing = false;
+  store.pendingPurchase = null;
+  store.resume = null;
 });
 
 it('unlocks a completed purchase and acknowledges it when Play has not', async () => {
@@ -85,31 +101,50 @@ it('ignores a refunded iOS purchase', async () => {
   expect(e.hasUnlimitedHints()).toBe(true);
 });
 
-it('keeps a cached unlock through an empty Android answer for a day', async () => {
-  vi.useFakeTimers({ toFake: ['Date'] });
+it('keeps a cached unlock through an empty Android answer', async () => {
   localStorage.setItem('ph:unlimited', '1');
   const e = await load();
   await e.refreshEntitlement();
   expect(e.hasUnlimitedHints()).toBe(true);
-  vi.setSystemTime(Date.now() + DAY / 2);
-  await e.refreshEntitlement();
-  expect(e.hasUnlimitedHints()).toBe(true);
-  vi.setSystemTime(Date.now() + DAY);
+});
+
+it('takes back an Android unlock only when the store lists no paid row', async () => {
+  localStorage.setItem('ph:unlimited', '1');
+  const e = await load();
+  store.purchases = [bought({ purchaseState: '2' })];
   await e.refreshEntitlement();
   expect(e.hasUnlimitedHints()).toBe(false);
 });
 
-it('starts the day over once the purchase shows up again', async () => {
-  vi.useFakeTimers({ toFake: ['Date'] });
+it('takes back an iOS unlock on an empty answer', async () => {
   localStorage.setItem('ph:unlimited', '1');
+  const e = await load('ios');
+  await e.refreshEntitlement();
+  expect(e.hasUnlimitedHints()).toBe(false);
+});
+
+it('does not query the store while a purchase is in flight', async () => {
   const e = await load();
+  e.initEntitlement();
+  await vi.waitFor(() => expect(store.resume).not.toBeNull());
   await e.refreshEntitlement();
-  store.purchases = [bought()];
+  const before = store.queries;
+  let finish = () => {};
+  store.pendingPurchase = new Promise<void>((resolve) => {
+    finish = resolve;
+  });
+  store.purchases = [bought({ isAcknowledged: false })];
+  const outcome = e.buyUnlimitedHints();
+  await vi.waitFor(() => expect(store.purchasing).toBe(true));
+  store.resume!();
   await e.refreshEntitlement();
-  store.purchases = [];
-  vi.setSystemTime(Date.now() + DAY * 2);
+  expect(store.queries).toBe(before);
+  finish();
+  expect(await outcome).toBe('owned');
+  expect(store.queries).toBe(before + 1);
+  store.resume!();
   await e.refreshEntitlement();
-  expect(e.hasUnlimitedHints()).toBe(true);
+  expect(store.queries).toBe(before + 2);
 });
 
 it('keeps the cached answer when the store cannot be asked', async () => {
