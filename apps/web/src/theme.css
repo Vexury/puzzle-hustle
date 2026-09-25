@@ -808,6 +808,18 @@ button.unlock-row { cursor: pointer; }
 .ach-inner { display: grid; place-items: center; width: 56%; height: 56%; }
 .ach-disc:not(.earned) .ach-inner { opacity: 0.55; }
 .ach-inner .puzzle-icon { background: none; border: none; }
+/* On an earned disc the puzzle icon's accent parts would vanish into the accent fill, so its
+   colours flip: ink in --on-accent, cells and cuts in the fill. Captured on the disc first,
+   because redefining --accent inside the icon would otherwise refer to itself. */
+.ach-disc.earned { --ach-fill: var(--accent); --ach-ink: var(--on-accent); }
+.ach-disc.earned .puzzle-icon {
+  --accent: var(--ach-ink);
+  --on-accent: var(--ach-fill);
+  --board-cell: var(--ach-fill);
+  --bg: var(--ach-fill);
+  --text: var(--ach-ink);
+  --board-line: color-mix(in srgb, var(--ach-ink) 35%, transparent);
+}
 .ach-glyph { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .ach-corner {
   position: absolute;
