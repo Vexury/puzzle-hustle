@@ -4,7 +4,7 @@ Quelle ist die WhatsApp-Gruppe "Puzzle Hustle" (seit 18.09.2026) und die Einzelc
 Neue Punkte kommen unter "Offen", erledigte wandern mit Datum nach "Erledigt". Ein Punkt gehoert
 in denselben Commit wie sein Fix.
 
-Stand: 2026-09-23
+Stand: 2026-09-25
 
 ## Offen
 
@@ -19,12 +19,18 @@ Stand: 2026-09-23
   Fragezeichen reichen ihm nicht.
 - [ ] **Michi** Teilen als Grafik statt Textlink (Anzeigename, Zeit, kleines Brett).
 - [ ] **Michi** Anreiz, jeden Typ ein paar Mal zu spielen, bevor die App auf die Dailys schiebt.
-- [ ] **Dani** Fehlendes Wort in einem Satz (Screenshot vom 21.09., 15:59). Stelle nicht gefunden,
-  an den Hint- und Kauftexten hat sich seit dem 20.09. nichts geaendert. Screenshot neu anfragen.
+- [ ] **iOS-Tester, Dani** Manchmal ist alles um die obere Safe Area nach unten verschoben und der
+  untere Bereich eines Raetsels nimmt keine Eingaben an; langes Druecken markiert Texte wie die
+  Schwierigkeit oder "How to play". Fix seit 25.09. (`contentInset: 'never'`, `user-select: none`),
+  am iPhone mit dem naechsten TestFlight-Build pruefen.
 - [ ] **Frieder** Rueckmeldung zur Shapes-Startanordnung auf Genius steht noch aus. Easy bis Hard
   hat er am 20.09. als "perfekt" gegengetestet.
 
 ## Erledigt
+
+- [x] 2026-09-25 **Dani, Vlad** Im Dialog "One more hint?" passten die drei Buttons bei genug Coins
+  nicht auf schmale Bildschirme und zogen die Karte ueber den Rand. Sie stehen jetzt untereinander.
+- [x] 2026-09-25 **Dani** Fehlendes Wort in einem Satz (Screenshot vom 21.09., 15:59) ist behoben.
 
 - [x] 2026-09-23 **Jonas** Mosaik-Frage vom 20.09.: kein Fehler im Zaehler. Eine Zahl gilt erst als
   erfuellt, wenn jedes Feld ihres Blocks entschieden ist, also gefuellt oder mit X; bei der 8 fehlte das

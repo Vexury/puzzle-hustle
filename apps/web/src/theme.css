@@ -129,7 +129,12 @@ body {
   min-height: 100dvh;
   overscroll-behavior: none;
   -webkit-tap-highlight-color: transparent;
+  /* An app, not a page: a long press must not select labels or open the iOS callout. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
+input, textarea { user-select: text; -webkit-user-select: text; }
 a { color: inherit; }
 button { font: inherit; color: inherit; }
 .linklike { background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
