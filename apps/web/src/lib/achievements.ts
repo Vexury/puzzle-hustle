@@ -1,4 +1,10 @@
-import { ACHIEVEMENTS, unlockedAchievements, type SolveEntry } from '@puzzle-hustle/core';
+import {
+  ACHIEVEMENTS,
+  achievementProgress,
+  unlockedAchievements,
+  type AchievementProgress,
+  type SolveEntry,
+} from '@puzzle-hustle/core';
 import { announceUnlock } from '../components/UnlockModal.tsx';
 import { pendingAnnouncements, syncAnnouncements } from './announce.ts';
 import { allSolves } from './storage.ts';
@@ -34,6 +40,29 @@ export function storedSolves(): SolveEntry[] {
 
 export function currentUnlocked(): Set<string> {
   return unlockedAchievements(storedSolves());
+}
+
+export function currentProgress(): AchievementProgress[] {
+  return achievementProgress(storedSolves());
+}
+
+// The "Almost there" strip: unearned counters already started, closest first. Only the lowest
+// locked rung of a ladder counts, so three streak rungs never fill the strip together; progress
+// comes in catalog order, which is lowest rung first and also breaks ties.
+export function almostThere(
+  progress: readonly AchievementProgress[],
+  unlocked: ReadonlySet<string>,
+  limit = 3,
+): AchievementProgress[] {
+  const seen = new Set<string>();
+  const open: { entry: AchievementProgress; order: number }[] = [];
+  progress.forEach((entry, order) => {
+    if (unlocked.has(entry.id) || seen.has(entry.counter)) return;
+    seen.add(entry.counter);
+    if (entry.current > 0) open.push({ entry, order });
+  });
+  open.sort((a, b) => b.entry.current / b.entry.target - a.entry.current / a.entry.target || a.order - b.order);
+  return open.slice(0, limit).map((o) => o.entry);
 }
 
 const CATALOG_ORDER = ACHIEVEMENTS.map((a) => a.id);

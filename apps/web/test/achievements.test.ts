@@ -1,9 +1,9 @@
 import { beforeEach, expect, it, vi } from 'vitest';
-import { ACHIEVEMENTS, ACHIEVEMENTS_EPOCH } from '@puzzle-hustle/core';
+import { ACHIEVEMENTS, ACHIEVEMENTS_EPOCH, type AchievementProgress } from '@puzzle-hustle/core';
 
 vi.mock('../src/components/UnlockModal.tsx', () => ({ announceUnlock: vi.fn() }));
 
-import { currentUnlocked, pendingAnnouncements, syncAchievements } from '../src/lib/achievements.ts';
+import { almostThere, currentProgress, currentUnlocked, pendingAnnouncements, syncAchievements } from '../src/lib/achievements.ts';
 import { announceUnlock } from '../src/components/UnlockModal.tsx';
 import { recordSolve, rehydrate, resetProgress } from '../src/lib/storage.ts';
 
@@ -83,12 +83,13 @@ it('announces once per achievement and not again on a second run', () => {
   );
   rehydrate();
   syncAchievements();
-  expect(announceUnlock).toHaveBeenCalledTimes(1);
+  expect(announceUnlock).toHaveBeenCalledTimes(2);
+  expect(announceUnlock).toHaveBeenCalledWith({ kind: 'achievement', id: 'first-solve' });
   expect(announceUnlock).toHaveBeenCalledWith({ kind: 'achievement', id: 'first-weekly' });
   const stored = JSON.parse(localStorage.getItem('ph:achievements') ?? '[]') as string[];
   expect(stored).toContain('first-weekly');
   syncAchievements();
-  expect(announceUnlock).toHaveBeenCalledTimes(1);
+  expect(announceUnlock).toHaveBeenCalledTimes(2);
   expect(JSON.parse(localStorage.getItem('ph:achievements') ?? '[]')).toEqual(stored);
 });
 
@@ -140,4 +141,32 @@ it('resetProgress also clears the announced-achievements list', () => {
 it('never throws, whatever storage holds', () => {
   localStorage.setItem('ph:achievements', 'not json');
   expect(() => syncAchievements()).not.toThrow();
+});
+
+const p = (id: string, counter: string, current: number, target: number): AchievementProgress => ({ id, counter, current, target });
+
+it('almostThere picks the closest unearned counters, highest share first', () => {
+  const list = [p('a', 'x', 1, 10), p('b', 'y', 8, 10), p('c', 'z', 5, 10), p('d', 'w', 9, 10)];
+  expect(almostThere(list, new Set(['d'])).map((e) => e.id)).toEqual(['b', 'c', 'a']);
+});
+
+it('almostThere leaves out untouched counters and keeps catalog order on ties', () => {
+  const list = [p('a', 'x', 0, 10), p('b', 'y', 5, 10), p('c', 'z', 5, 10)];
+  expect(almostThere(list, new Set()).map((e) => e.id)).toEqual(['b', 'c']);
+});
+
+it('almostThere keeps one rung per ladder', () => {
+  const list = [p('streak-3', 'streak', 3, 3), p('streak-7', 'streak', 6, 7), p('streak-30', 'streak', 6, 30), p('solved-50', 'solved', 20, 50)];
+  expect(almostThere(list, new Set(['streak-3'])).map((e) => e.id)).toEqual(['streak-7', 'solved-50']);
+});
+
+it('currentProgress reads the stored history', () => {
+  localStorage.setItem(
+    'ph:solves',
+    JSON.stringify({ 'zip:weekly:2026-W39': { solvedAt: new Date(after).toISOString(), seconds: 60, hints: 0, moves: 10 } }),
+  );
+  rehydrate();
+  const byId = new Map(currentProgress().map((e) => [e.id, e]));
+  expect(byId.get('solved-50')?.current).toBe(1);
+  expect(byId.get('weekly-10')?.current).toBe(1);
 });
