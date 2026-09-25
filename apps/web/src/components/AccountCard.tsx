@@ -16,6 +16,8 @@ import { readSetting, writeSetting } from '../lib/storage.ts';
 import { useTheme } from '../lib/theme.ts';
 import { toast } from './Toast.tsx';
 
+export const PRIVACY_POLICY_URL = 'https://vexury.dev/puzzle-hustle-privacy/';
+
 // How long the delete button stays armed before it falls back to asking again.
 const DELETE_CONFIRM_MS = 4000;
 
@@ -93,7 +95,10 @@ export function AccountCard() {
           ? 'Signed in. Your name shows in your groups.'
           : SIGN_IN_AVAILABLE
             ? 'Sign in to compare your daily times with friends. Everything else works without an account.'
-            : "Sign-in isn't set up on this build yet. Everything else works without an account."}
+            : "Sign-in isn't set up on this build yet. Everything else works without an account."}{' '}
+        <a href={PRIVACY_POLICY_URL} target="_blank" rel="noreferrer">
+          Privacy policy
+        </a>
       </span>
       {!session && SIGN_IN_AVAILABLE && <SignInButton />}
       <div className="friends-actions">
