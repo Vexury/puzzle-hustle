@@ -547,19 +547,28 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
                 : 'Watch a short video and the next hint is yours. Your first hint on every puzzle is always free.'}
             </span>
             {!askHint.canPay && <span className="muted small">{HINT_PRICE} coins needed, you have {balance()}.</span>}
-            <div className="ad-ask-row">
-              <button type="button" className="pill outline" onClick={() => answerHint(null)}>
-                Not now
-              </button>
-              {askHint.canPay && (
+            {askHint.canPay ? (
+              <div className="ad-ask-row stack">
                 <button type="button" className="pill" onClick={() => answerHint('coins')}>
                   Use {HINT_PRICE} coins
                 </button>
-              )}
-              <button type="button" className={askHint.canPay ? 'pill outline' : 'pill'} onClick={() => answerHint('video')}>
-                Watch video
-              </button>
-            </div>
+                <button type="button" className="pill outline" onClick={() => answerHint('video')}>
+                  Watch video
+                </button>
+                <button type="button" className="pill outline" onClick={() => answerHint(null)}>
+                  Not now
+                </button>
+              </div>
+            ) : (
+              <div className="ad-ask-row">
+                <button type="button" className="pill outline" onClick={() => answerHint(null)}>
+                  Not now
+                </button>
+                <button type="button" className="pill" onClick={() => answerHint('video')}>
+                  Watch video
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
