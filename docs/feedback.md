@@ -28,6 +28,10 @@ Stand: 2026-09-25
 
 ## Erledigt
 
+- [x] 2026-09-25 **Vlad** Ein geloestes Level oder Zufallsraetsel direkt nochmal spielen, um die Zeit
+  zu verbessern: runder "Play again"-Button neben Teilen. Dailys, Weeklys und Monthlys bekommen ihn
+  nicht, dort zaehlt der erste Lauf.
+
 - [x] 2026-09-25 **Dani, Vlad** Im Dialog "One more hint?" passten die drei Buttons bei genug Coins
   nicht auf schmale Bildschirme und zogen die Karte ueber den Rand. Sie stehen jetzt untereinander.
 - [x] 2026-09-25 **Dani** Fehlendes Wort in einem Satz (Screenshot vom 21.09., 15:59) ist behoben.

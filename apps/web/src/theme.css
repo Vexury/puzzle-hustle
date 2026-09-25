@@ -656,6 +656,8 @@ p { margin: 0; }
 .best-note.better { color: var(--success); }
 .solved-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; }
 .solved-actions > :only-child { margin-left: auto; }
+/* Keeps Play again beside Share instead of centred between it and the next-puzzle pill. */
+.solved-actions > .pill { margin-left: auto; }
 .share-icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 .share-icon circle { fill: currentColor; stroke: none; }
 .howto ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }

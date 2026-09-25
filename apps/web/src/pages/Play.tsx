@@ -57,6 +57,8 @@ import { useBoard } from '../components/Board.tsx';
 import { useGroups } from './Friends.tsx';
 
 export function Play({ params }: { params: URLSearchParams }) {
+  // Bumped by a replay, so the same puzzle mounts afresh: new board, clock at zero, best re-read.
+  const [run, setRun] = useState(0);
   const ref = decodeRef(params);
   if (!ref) {
     return (
@@ -69,7 +71,7 @@ export function Play({ params }: { params: URLSearchParams }) {
       </section>
     );
   }
-  return <PlayPuzzle key={refId(ref)} puzzleRef={ref} />;
+  return <PlayPuzzle key={`${refId(ref)}:${run}`} puzzleRef={ref} onReplay={() => setRun((r) => r + 1)} />;
 }
 
 function subtitle(ref: PuzzleRef): string {
@@ -84,7 +86,7 @@ function backTarget(ref: PuzzleRef): { url: string; label: string } {
   return { url: href('/'), label: 'Daily' };
 }
 
-function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
+function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: () => void }) {
   const id = refId(puzzleRef);
   const solves = useSolves();
   const existing = solves[id];
@@ -362,6 +364,10 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   // The next puzzle replaces this one, so the header chevron still steps back to the list.
   const another = () => navigate(href(`/play?${encodeRef(randomRef(puzzleRef.type, puzzleRef.difficulty))}`), true);
   const onNextClick = (event: React.MouseEvent<HTMLAnchorElement>) => onLinkClick(event, true);
+  const replay = () => {
+    onReplay();
+    window.scrollTo({ top: 0 });
+  };
   const nextLevel = puzzleRef.level ? levelRef(puzzleRef.type, puzzleRef.difficulty, puzzleRef.level + 1) : null;
   const nextChallenge = useMemo(() => {
     if (!puzzleRef.period) return null;
@@ -519,6 +525,11 @@ function PlayPuzzle({ puzzleRef }: { puzzleRef: PuzzleRef }) {
           <button type="button" className="icon-round" onClick={doShare} aria-label="Share result" title="Share result">
             <ShareIcon />
           </button>
+          {replayable && (
+            <button type="button" className="icon-round" onClick={replay} aria-label="Play again" title="Play again">
+              <ReplayIcon />
+            </button>
+          )}
           {nextLevel && (
             <a href={href(`/play?${encodeRef(nextLevel)}`)} className="pill" onClick={onNextClick}>
               Level #{nextLevel.level} ›
@@ -640,6 +651,14 @@ function ShareIcon() {
       <circle cx="6" cy="12" r="2.5" />
       <circle cx="18" cy="19" r="2.5" />
       <path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4" />
+    </svg>
+  );
+}
+
+function ReplayIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="share-icon" aria-hidden="true">
+      <path d="M3 12a9 9 0 1 0 2.64-6.36L3 8.3M3 3v5.3h5.3" />
     </svg>
   );
 }
