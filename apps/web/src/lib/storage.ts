@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { parsePuzzleId, periodKey } from '@puzzle-hustle/core';
 import { isBackedUp, scheduleBackup } from './backup.ts';
 
 // Shared by Intro.tsx and UnlockModal.tsx: neither component imports the other, so either can
@@ -143,7 +144,10 @@ export function clearProgress(id: string) {
 // Deliberately leaves ph:queue untouched: those are solves the player genuinely earned, often
 // while offline, and dropping them to honour a local reset would destroy real data to avoid
 // mild surprise. Decided, not an oversight.
+// Solves of the running daily, weekly and monthly survive: the leaderboard already holds their
+// first time, so replaying them could never count.
 export function resetProgress() {
+  const kept = Object.fromEntries(Object.entries(cache).filter(([id]) => isRunningPeriod(id)));
   try {
     const doomed: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
@@ -155,19 +159,25 @@ export function resetProgress() {
           k === 'ph:flairs' ||
           k === 'ph:coins:spent' ||
           k === 'ph:cosmetics' ||
-          k.startsWith(PROGRESS_PREFIX) ||
+          (k.startsWith(PROGRESS_PREFIX) && !kept[k.slice(PROGRESS_PREFIX.length)]) ||
           k.startsWith('ph:howto:') ||
           k.startsWith('ph:difficulty:'))
       )
         doomed.push(k);
     }
     for (const k of doomed) localStorage.removeItem(k);
+    if (Object.keys(kept).length > 0) localStorage.setItem(KEY, JSON.stringify(kept));
     scheduleBackup();
   } catch {
     /* storage unavailable */
   }
-  cache = {};
+  cache = kept;
   for (const l of listeners) l();
+}
+
+function isRunningPeriod(id: string): boolean {
+  const parsed = parsePuzzleId(id);
+  return parsed !== null && parsed.key === periodKey(parsed.period);
 }
 
 export function readSetting(key: string): string | null {

@@ -211,7 +211,7 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
         <div className="card-lg row-between">
           <span>
             <b>Reset progress</b>
-            <span className="muted small">{confirmReset ? 'Deletes all solves and streaks on this device.' : 'Start over from zero.'}</span>
+            <span className="muted small">{confirmReset ? 'Deletes all solves and streaks on this device. Current dailies, weeklies and monthlies stay solved.' : 'Start over from zero.'}</span>
           </span>
           {confirmReset ? (
             <button
