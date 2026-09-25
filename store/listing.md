@@ -19,8 +19,8 @@ sentence.
 
 Never claim the app is ad free in here. The moment AdMob ships, Play puts a "Contains ads" label
 next to the listing and the two would contradict each other. The same goes for "no tracking",
-since ads process the advertising ID. What stays true for good: no account, no sign-up, puzzles
-generated on the device.
+since ads process the advertising ID. Nor "no account": sign-in is optional, but it exists. What
+stays true for good: every puzzle playable without an account, puzzles generated on the device.
 
 ## Languages
 
@@ -33,7 +33,7 @@ sentence so that the player, rather than the next step, sits there waiting to be
 German is therefore written by hand: `store/paste/short-description-de.txt` and
 `store/paste/full-description-de.txt`, submitted 2026-09-20. Rules for any further language:
 
-- Keep the eight puzzle names, the four difficulties and Daily/Weekly/Monthly in English. They are
+- Keep the ten puzzle names, the four difficulties and Daily/Weekly/Monthly in English. They are
   what `PUZZLE_META` shows in the app, so translating them promises words the app never uses.
 - Say that the app itself is English, for as long as that is true.
 - Adding a language needs no extra graphics. Under Store-Einträge, "Übersetzungen verwalten" adds
@@ -72,33 +72,74 @@ TTF, which is not in the repo; take `ofl/nunito/Nunito[wght].ttf` from the googl
 
 ## Play Console answers
 
+State of the app on 2026-09-25. Anything marked TODO verify was not checked against the console
+or against Google's current form wording.
+
 **App or game:** Game, category Puzzle.
 
-**Contains ads:** No. Rewarded ads are planned for a later release; the declaration has to be
-updated in the same release that ships them.
+**Contains ads:** Yes. AdMob rewarded videos in the native builds, only after the player taps
+"Watch video" for a hint. The web build has none.
 
-**In-app purchases:** No. The one-time "Unlimited Hints" purchase is planned for later.
+**Advertising ID:** Yes, single purpose "Advertising or marketing". The Google Mobile Ads SDK merges
+`com.google.android.gms.permission.AD_ID` into the manifest.
+
+**In-app purchases:** Yes. One non-consumable, "Unlimited Hints" (`unlimited_hints`), through Play
+Billing. Coins are earned by solving and are never sold.
 
 **Target audience:** 13 and over. The content suits every age, but declaring under-13 pulls the
 app into the Families policy with extra requirements on ads, content and data handling.
 
-**App access:** All functionality is available without an account or login.
+**App access:** Some functionality is restricted. Every puzzle works without an account; the
+Social tab (groups and standings) needs sign-in. Reviewer note: "Sign-in is optional and only
+unlocks the Social tab. Open Profile, tap Sign in and use any Google account; no account from us
+is needed. Then open Social, create a group and solve a Daily to see the standings." TODO verify
+that Play accepts "any Google account" instead of supplied test credentials.
 
-**Data safety:** No data collected, no data shared. Progress, settings and unfinished boards are
-stored on the device only (WebView local storage plus Android SharedPreferences as a backup).
-There is no backend and no analytics. Sharing a result opens the Android share sheet, so the
-player decides what leaves the device and where it goes.
+**Data safety:** Data is collected, none is shared. Encrypted in transit: yes (HTTPS only). Users
+can request deletion: yes. Collection of the account data is optional (only when signed in).
 
-When leaderboard and cosmetics data-safety updates are entered: "Profile customisation (badge and flair ids, chosen from a fixed list) is stored with the player name when signed in. Collected, not shared."
+| Play data type | What it is | Purpose |
+| --- | --- | --- |
+| Personal info: Name | Display name, chosen or generated ("Player 1234") | App functionality |
+| Personal info: User IDs | Google or Apple subject ID and the internal player ID | App functionality, account management |
+| App activity: Other actions | Daily, Weekly and Monthly times with hints, moves and solve time; group memberships | App functionality |
+| App activity: Other user-generated content | Group names; equipped badge and flair ids from a fixed list; reports on names | App functionality |
+| Device or other IDs | Advertising ID, processed by the AdMob SDK | Advertising or marketing |
+
+Not collected: email address (the server reads only `sub` from the Google token), purchase history
+(Play Billing handles it, the server keeps no record), location, contacts, analytics, crash logs.
+The IP address reaches Cloudflare and the `/session` rate limiter, but is not stored. TODO verify:
+whether AdMob's own disclosure adds further types (app interactions, diagnostics) that Google
+expects the app to declare, and whether the 2026-09-21 answer "advertising ID collected, not
+shared" still matches Google's guidance for AdMob.
+
+Progress, settings, coins, achievements and unfinished boards stay on the device (WebView local
+storage plus a Preferences backup copy) and are not collected.
+
+**Account deletion:** In the app: Profile, Delete account, confirm. The Worker (`DELETE /account`)
+removes the player row, all scores, every report by or about the player and all memberships; owned
+groups pass to the longest member or are deleted when empty. Play also requires a web URL. There is
+no dedicated deletion page; https://vexury.dev/puzzle-hustle-privacy/ explains deletion in the web
+app (Google accounts, puzzles.vexury.dev, Profile) and by email. TODO verify that Play accepts the
+privacy page as the deletion URL, otherwise add a dedicated page.
+
+**User-generated content:** Display names and group names. Both pass `validateName` in the Worker:
+2 to 24 characters, letters, digits, space, `.`, `_`, `-`, no links, a short blocklist. Names are
+only visible to members of a shared group. Every standings row has a report flag (`POST /report`,
+stored in `reports`); reports are reviewed by hand, there is no automatic ban. Group owners can
+remove members, everyone can leave a group. There is no per-player block feature. TODO verify how
+Play's UGC questions treat reporting without blocking.
 
 **Content rating (IARC):** No violence, no sexuality, no profanity, no gambling, no drugs, no
-user-to-user communication, no location sharing, no digital purchases. Expected outcome: PEGI 3 /
-ESRB Everyone.
+location sharing. Digital purchases: yes. Users interact: yes (display names and group names seen
+by other group members, no chat). Outcome after the purchase answer on 2026-09-21: PEGI 3, USK 0,
+ESRB Everyone, Brazil 14 (ClassInd rates in-game purchases stricter). TODO verify the outcome after
+re-answering for user interaction.
 
 **Government app:** No. **Financial features:** none. **Health apps:** no.
 
 **Privacy policy:** https://vexury.dev/puzzle-hustle-privacy/ (source in the vexury.github.io repo
-at `src/puzzle-hustle-privacy.md`). Required as a public URL even though nothing is collected.
+at `src/puzzle-hustle-privacy.md`).
 
 ## Release order
 
