@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { SocialLogin } from '@capgo/capacitor-social-login';
+import { BASE, navigate } from './router.ts';
 import { SESSION_KEY, apiFetch, readSession, subscribeSession, writeSession, type Session } from './api.ts';
 import { pushCosmetics } from './coins.ts';
 import { flush, resetBackoff } from './queue.ts';
@@ -13,13 +14,16 @@ import { toast } from '../components/Toast.tsx';
 export const CLIENT_ID =
   (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) ||
   '455101583494-lfg3kbscmqgubeqrsocg0919269n2a23.apps.googleusercontent.com';
-const GSI_SRC = 'https://accounts.google.com/gsi/client';
+const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
+// Google's redirect sign-in parks its state here: sessionStorage belongs to this tab and
+// outlives the round trip through Google.
+const GOOGLE_PENDING_KEY = 'ph:googleSignIn';
 // The web's Services ID, grouped under the app's App ID, so an Apple ID is the same player in
 // both. Apple only returns to registered URLs, which rules out localhost.
 export const APPLE_WEB_CLIENT_ID = 'dev.vexury.puzzlehustle.web';
 const APPLE_JS_SRC = 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js';
 
-// Android signs in natively with Google, the web through Google's widget, iOS with Apple
+// Android signs in natively with Google, the web through Google's redirect, iOS with Apple
 // alone (decision 2026-09-22).
 export const NATIVE_GOOGLE = Capacitor.getPlatform() === 'android';
 export const NATIVE_APPLE = Capacitor.getPlatform() === 'ios';
@@ -118,8 +122,8 @@ export function useSession(): Session | null {
 
 const loading = new Map<string, Promise<void>>();
 
-// Google's widget and Apple's popup are script tags, not packages. They are loaded on demand
-// so that a player who never signs in never talks to either.
+// Apple's popup is a script tag, not a package. It is loaded on demand so that a player who
+// never signs in never talks to Apple.
 function loadScript(src: string): Promise<void> {
   const pending = loading.get(src);
   if (pending) return pending;
@@ -140,71 +144,78 @@ function loadScript(src: string): Promise<void> {
   return next;
 }
 
-interface GsiCredential {
-  credential: string;
+function redirectUri(): string {
+  return `${location.origin}${BASE}/`;
 }
 
-interface Gsi {
-  accounts: {
-    id: {
-      initialize(options: { client_id: string; callback: (r: GsiCredential) => void }): void;
-      renderButton(target: HTMLElement, options: Record<string, string>): void;
-      disableAutoSelect(): void;
-    };
-  };
+function randomId(): string {
+  return Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-export async function renderSignInButton(
-  target: HTMLElement,
-  onDone: (session: Session) => void,
-  theme: 'light' | 'dark' = 'light',
-): Promise<void> {
-  if (!CLIENT_ID) throw new Error('no client id');
-  await loadScript(GSI_SRC);
-  const gsi = (window as unknown as { google?: Gsi }).google;
-  if (!gsi) throw new Error('gsi unavailable');
-
-  gsi.accounts.id.initialize({
+// Our own button instead of Google's widget, whose iframe turns into a white personalised slab
+// for anyone signed in to Google. A full-page redirect rather than a popup: Google's pages cut
+// a popup off from its opener, and mobile browsers handle popups poorly. The ID token is the
+// same one the widget handed out, so the server sees no difference.
+export function googleWebSignIn(returnTo: string): void {
+  const state = randomId();
+  const nonce = randomId();
+  try {
+    sessionStorage.setItem(GOOGLE_PENDING_KEY, JSON.stringify({ state, nonce, returnTo }));
+  } catch {
+    toast('Sign-in failed. Try again.');
+    return;
+  }
+  const params = new URLSearchParams({
     client_id: CLIENT_ID,
-    // Google invokes this callback itself, outside any promise chain we control, so a rejection
-    // in here would otherwise vanish as an unhandled rejection. Catch it and surface it via toast.
-    callback: (response) => {
-      void (async () => {
-        try {
-          onDone(await startSession('google', response.credential));
-        } catch {
-          toast('Sign-in failed. Try again.');
-        }
-      })();
-    },
+    redirect_uri: redirectUri(),
+    response_type: 'id_token',
+    scope: 'openid',
+    state,
+    nonce,
+    // On a shared device the next player may be someone else; always ask which account.
+    prompt: 'select_account',
   });
-  // Google renders this button itself and its branding rules leave only these knobs, so the
-  // way to make it belong here is to pick the variant that matches the surface it sits on:
-  // the dark fill under the dark theme, the outline under the light one, and the pill shape
-  // the rest of the app's buttons use. Width is measured rather than guessed so the button
-  // spans its card instead of floating at whatever size the account name happens to need.
-  // Re-rendering clears the host first: renderButton appends, it does not replace.
-  // If this button is on screen at all, the player is signed out of Puzzle Hustle. Telling
-  // Google so is simply true, and it stops it replacing the button a moment later with the
-  // personalised variant for whichever account it remembers — a variant that ignores the
-  // theme and shape asked for below, which is why a dark card briefly showed a white slab.
-  // On a shared device the plain button is also the safer one: it opens an account chooser
-  // instead of signing in as whoever Google saw last, which is the same mistake the score
-  // queue had to be taught not to make.
-  gsi.accounts.id.disableAutoSelect();
+  location.assign(`${GOOGLE_AUTH_URL}?${params}`);
+}
 
-  const box = getComputedStyle(target);
-  const width = Math.round(target.clientWidth - parseFloat(box.paddingLeft) - parseFloat(box.paddingRight));
-  target.replaceChildren();
-  gsi.accounts.id.renderButton(target, {
-    type: 'standard',
-    theme: theme === 'dark' ? 'filled_black' : 'outline',
-    size: 'large',
-    shape: 'pill',
-    text: 'signin_with',
-    logo_alignment: 'left',
-    width: String(Math.max(200, Math.min(400, width || 280))),
-  });
+function tokenNonce(idToken: string): string | undefined {
+  try {
+    const payload = idToken.split('.')[1]!.replace(/-/g, '+').replace(/_/g, '/');
+    return (JSON.parse(atob(payload)) as { nonce?: string }).nonce;
+  } catch {
+    return undefined;
+  }
+}
+
+// Runs once at startup. Google comes back with the token in the fragment; it leaves the address
+// bar at once, whatever happens next, and the player lands where they started signing in.
+export async function completeGoogleRedirect(): Promise<void> {
+  if (!location.hash.includes('state=')) return;
+  const fragment = new URLSearchParams(location.hash.slice(1));
+  let pending: { state: string; nonce: string; returnTo: string } | null = null;
+  try {
+    pending = JSON.parse(sessionStorage.getItem(GOOGLE_PENDING_KEY) ?? 'null');
+    sessionStorage.removeItem(GOOGLE_PENDING_KEY);
+  } catch {
+    // Without the pending state the fragment cannot be trusted; it is dropped below.
+  }
+  if (!pending || fragment.get('state') !== pending.state) {
+    history.replaceState(history.state, '', location.pathname + location.search);
+    return;
+  }
+  navigate(pending.returnTo, true);
+  const idToken = fragment.get('id_token');
+  // No token means the player backed out on Google's side, which is a choice, not a failure.
+  if (!idToken) return;
+  if (tokenNonce(idToken) !== pending.nonce) {
+    toast('Sign-in failed. Try again.');
+    return;
+  }
+  try {
+    await startSession('google', idToken);
+  } catch {
+    toast('Sign-in failed. Try again.');
+  }
 }
 
 export function lastProvider(): 'google' | 'apple' | null {
@@ -268,13 +279,6 @@ export function isAppleSession(): boolean {
 }
 
 export function signOut() {
-  try {
-    const gsi = (window as unknown as { google?: Gsi }).google;
-    gsi?.accounts.id.disableAutoSelect();
-  } catch {
-    // Google's auto-select hint is a convenience. If the browser refuses it, that is no
-    // reason to keep the player signed in locally.
-  }
   // The native counterpart: on Android it clears Credential Manager's remembered choice so the
   // next sign-in asks for an account again, on iOS it drops the plugin's stored Apple tokens.
   if (NATIVE_GOOGLE || NATIVE_APPLE) {

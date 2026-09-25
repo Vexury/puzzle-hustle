@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { App } from './App.tsx';
 import { syncAchievements } from './lib/achievements.ts';
 import { initAccent } from './lib/accent.ts';
+import { completeGoogleRedirect } from './lib/auth.ts';
 import { initBackButton } from './lib/back.ts';
 import { restoreBackup } from './lib/backup.ts';
 import { initEntitlement } from './lib/entitlement.ts';
@@ -20,6 +21,7 @@ initTheme();
 initAccent();
 initBackButton();
 initQueue();
+void completeGoogleRedirect();
 syncAchievements();
 syncFlairs();
 // Anything syncAchievements()/syncFlairs() just announced is app-start catch-up and opens right

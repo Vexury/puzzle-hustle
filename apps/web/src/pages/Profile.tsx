@@ -66,7 +66,7 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
             <span className="muted small">Sign in below and you go straight to the group.</span>
           </div>
         )}
-        <AccountCard />
+        <AccountCard joinCode={joinCode} />
 
         <div className="card-lg row-between">
           <span>
