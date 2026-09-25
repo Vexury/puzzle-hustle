@@ -50,6 +50,8 @@ const MESSAGES: Record<string, string> = {
   group_full: 'That group is full',
   group_limit: 'You are in five groups already',
   group_name: 'Pick a different name',
+  group_banned: 'The owner removed you from that group',
+  too_many_requests: 'Too many tries, wait a minute',
   offline: 'No connection',
   unauthorized: 'Please sign in again',
 };
@@ -58,11 +60,24 @@ export function explain(err: unknown): string {
   return err instanceof ApiError ? (MESSAGES[err.code] ?? 'Something went wrong') : 'Something went wrong';
 }
 
+// Crockford decoding, as on the server: a typed O means 0, an I or L means 1.
+export function normalizeCode(raw: string): string {
+  return raw.trim().toUpperCase().replace(/O/g, '0').replace(/[IL]/g, '1');
+}
+
+// The selected group can vanish from the list (left, removed, deleted); fall back to the first.
+export function activeGroup(groups: Group[], selected: string | null): Group | null {
+  return groups.find((g) => g.id === selected) ?? groups[0] ?? null;
+}
+
+// How long an armed Leave stays armed, as for Reset on Profile.
+const CONFIRM_MS = 2000;
+
 export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
   const session = useSession();
   const { groups, reload, loading } = useGroups();
   const [name, setName] = useState('');
-  const [code, setCode] = useState(initialCode.trim().toUpperCase().slice(0, 6));
+  const [code, setCode] = useState(normalizeCode(initialCode).slice(0, 6));
   // Independent per-form flags, not useGroups's loading: that one is about the list refetch.
   // These exist only to stop a double-tap on a pill button from firing a second POST before
   // the first one has come back.
@@ -70,6 +85,13 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
   const [joining, setJoining] = useState(false);
   const [groupId, setGroupId] = useState<string | null>(null);
   const [puzzleIndex, setPuzzleIndex] = useState(0);
+  const [leaving, setLeaving] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!leaving) return;
+    const timer = setTimeout(() => setLeaving(null), CONFIRM_MS);
+    return () => clearTimeout(timer);
+  }, [leaving]);
 
   // App sends a signed-out player to Profile instead; this only covers the render before it does.
   if (!session) return null;
@@ -118,6 +140,7 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
   };
 
   const leave = async (group: Group) => {
+    setLeaving(null);
     try {
       await apiFetch('/groups/leave', { method: 'POST', body: JSON.stringify({ id: group.id }), auth: true });
       reload();
@@ -126,7 +149,8 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
     }
   };
 
-  const active = groupId ?? groups[0]?.id ?? null;
+  const current = activeGroup(groups, groupId);
+  const active = current?.id ?? null;
   const puzzle = puzzles[puzzleIndex]!;
 
   return (
@@ -153,7 +177,7 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
             <div className="friends-actions stacked">
               <input
                 value={code}
-                onChange={(e) => setCode(e.target.value.trim().toUpperCase())}
+                onChange={(e) => setCode(normalizeCode(e.target.value))}
                 maxLength={6}
                 placeholder="CODE"
                 className="num"
@@ -194,7 +218,13 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
                 </button>
               ))}
             </div>
-            <Board groupId={active} puzzle={refId(puzzle)} meId={session.player.id} />
+            <Board
+              groupId={active}
+              puzzle={refId(puzzle)}
+              meId={session.player.id}
+              owner={current?.owner ?? false}
+              onRemoved={reload}
+            />
           </section>
         )}
 
@@ -221,9 +251,15 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
               >
                 Invite
               </button>
-              <button type="button" className="pill outline" onClick={() => void leave(group)}>
-                Leave
-              </button>
+              {leaving === group.id ? (
+                <button type="button" className="pill danger" onClick={() => void leave(group)}>
+                  {group.members === 1 ? 'Delete group' : 'Leave'}
+                </button>
+              ) : (
+                <button type="button" className="pill outline" onClick={() => setLeaving(group.id)}>
+                  Leave
+                </button>
+              )}
             </span>
           </div>
         ))}

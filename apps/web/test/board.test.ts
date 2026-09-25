@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { percentileText, rowCosmetics } from '../src/components/Board.tsx';
+import { percentileText, readHidden, rowCosmetics, splitHidden, writeHidden } from '../src/components/Board.tsx';
 
 it('hides the line when there is no percentile at all', () => {
   expect(percentileText(null, 'daily')).toBeNull();
@@ -37,4 +37,20 @@ it('resolves known cosmetics and hides unknown ones, missing fields and wrong ki
   expect(rowCosmetics({ badge: 'from-the-future', flair: null })).toEqual({ badge: undefined, flair: undefined });
   expect(rowCosmetics({})).toEqual({ badge: undefined, flair: undefined });
   expect(rowCosmetics({ badge: 'puzzler', flair: 'cat' })).toEqual({ badge: undefined, flair: undefined });
+});
+
+it('hides chosen players but never the viewer', () => {
+  const entries = [{ playerId: 'me' }, { playerId: 'a' }, { playerId: 'b' }];
+  const { shown, hidden } = splitHidden(entries, ['a', 'me'], 'me');
+  expect(shown.map((e) => e.playerId)).toEqual(['me', 'b']);
+  expect(hidden.map((e) => e.playerId)).toEqual(['a']);
+});
+
+it('stores hidden players once and survives a corrupt setting', () => {
+  localStorage.setItem('ph:hidden', '{nope');
+  expect(readHidden()).toEqual([]);
+  writeHidden(['a', 'a', 'b']);
+  expect(readHidden()).toEqual(['a', 'b']);
+  localStorage.setItem('ph:hidden', JSON.stringify(['a', 7]));
+  expect(readHidden()).toEqual(['a']);
 });
