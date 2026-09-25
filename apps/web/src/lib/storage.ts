@@ -44,9 +44,10 @@ const PERIOD_ID = /:(daily|weekly|monthly):/;
 export function recordSolve(id: string, record: SolveRecord) {
   const previous = cache[id];
   // Dailies, Weeklies and Monthlies keep their first run, that is the time the leaderboard got.
-  // Everything else is repeatable, so a faster run replaces the old one. The first solve date
+  // Everything else is repeatable, so a faster run replaces the old one, unless it took more
+  // hints: a hinted replay must not take back a hint-free achievement. The first solve date
   // stays, otherwise replaying an old level would drag it past the achievements epoch.
-  if (previous && (PERIOD_ID.test(id) || record.seconds >= previous.seconds)) return;
+  if (previous && (PERIOD_ID.test(id) || record.seconds >= previous.seconds || record.hints > previous.hints)) return;
   cache = { ...cache, [id]: previous ? { ...record, solvedAt: previous.solvedAt } : record };
   try {
     localStorage.setItem(KEY, JSON.stringify(cache));

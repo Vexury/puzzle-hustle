@@ -3,7 +3,7 @@ import { ACHIEVEMENTS, ACHIEVEMENTS_EPOCH, type AchievementProgress } from '@puz
 
 vi.mock('../src/components/UnlockModal.tsx', () => ({ announceUnlock: vi.fn() }));
 
-import { almostThere, currentProgress, currentUnlocked, pendingAnnouncements, syncAchievements } from '../src/lib/achievements.ts';
+import { almostThere, currentProgress, currentUnlocked, pendingAnnouncements, storedSolves, syncAchievements } from '../src/lib/achievements.ts';
 import { announceUnlock } from '../src/components/UnlockModal.tsx';
 import { recordSolve, rehydrate, resetProgress } from '../src/lib/storage.ts';
 
@@ -169,4 +169,19 @@ it('currentProgress reads the stored history', () => {
   const byId = new Map(currentProgress().map((e) => [e.id, e]));
   expect(byId.get('solved-50')?.current).toBe(1);
   expect(byId.get('weekly-10')?.current).toBe(1);
+});
+
+it('a faster hinted replay keeps a hint-free Genius unlock', () => {
+  const at = new Date(after).toISOString();
+  recordSolve('sudoku:level:genius:3', { solvedAt: at, seconds: 300, hints: 0, moves: 40 });
+  expect(currentUnlocked().has('sudoku-genius')).toBe(true);
+  recordSolve('sudoku:level:genius:3', { solvedAt: at, seconds: 200, hints: 1, moves: 35 });
+  expect(currentUnlocked().has('sudoku-genius')).toBe(true);
+});
+
+it('a faster replay with no more hints still replaces the level time', () => {
+  const at = new Date(after).toISOString();
+  recordSolve('zip:level:easy:1', { solvedAt: at, seconds: 60, hints: 1, moves: 10 });
+  recordSolve('zip:level:easy:1', { solvedAt: at, seconds: 40, hints: 1, moves: 10 });
+  expect(storedSolves().find((s) => s.id === 'zip:level:easy:1')?.seconds).toBe(40);
 });
