@@ -132,6 +132,7 @@ export function dismissUnlocks(): void {
     clearTimeout(openTimer);
     openTimer = null;
   }
+  cannon?.reset();
   unlockState = { items: [], open: false };
   notify();
 }
@@ -192,11 +193,18 @@ export function accentTints(rawAccent: string): [string, string, string] {
   return [accent, lighten(accent, 0.35), lighten(accent, 0.65)];
 }
 
+// Own instance without the library's default worker: in the Android WebView the worker's
+// requestAnimationFrame could stall mid-burst while the app stayed in the foreground, leaving the
+// last frame frozen on screen until the app was minimised and resumed. On the main thread the
+// loop follows the page. Created lazily, on the first burst.
+let cannon: confetti.CreateTypes | null = null;
+
 // zIndex one below .unlock-ask (62): the burst sits behind the card, showing through the
 // dimmed backdrop, rather than covering the card's own text.
 function fireConfetti() {
   const colors = accentTints(getComputedStyle(document.documentElement).getPropertyValue('--accent'));
-  void confetti({ particleCount: 90, spread: 70, startVelocity: 42, ticks: 130, origin: { y: 0.35 }, colors, zIndex: 61, disableForReducedMotion: true });
+  cannon ??= confetti.create(undefined, { resize: true, useWorker: false });
+  void cannon({ particleCount: 90, spread: 70, startVelocity: 42, ticks: 130, origin: { y: 0.35 }, colors, zIndex: 61, disableForReducedMotion: true });
 }
 
 // -- Host ------------------------------------------------------------------------------------

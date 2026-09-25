@@ -7,7 +7,8 @@ import { requirementText } from '../src/lib/flairs.ts';
 // No testing-library in this workspace, same approach as the old achievementBanner.test.ts:
 // mount the real host with react-dom/client and drive it with vitest's fake timers.
 
-vi.mock('canvas-confetti', () => ({ default: vi.fn() }));
+const confettiFire = vi.hoisted(() => Object.assign(vi.fn(), { reset: vi.fn() }));
+vi.mock('canvas-confetti', () => ({ default: { create: () => confettiFire } }));
 vi.mock('../src/lib/haptics.ts', () => ({ solved: vi.fn(), tap: vi.fn(), press: vi.fn() }));
 
 // -- buildUnlockRows: pure, no module reset needed -------------------------------------------
@@ -120,6 +121,8 @@ async function freshUnlockModal() {
 beforeEach(() => {
   localStorage.clear();
   vi.useFakeTimers();
+  confettiFire.mockClear();
+  confettiFire.reset.mockClear();
 });
 
 afterEach(() => {
@@ -355,6 +358,17 @@ it('tapping Nice! closes the card and clears the queue', async () => {
   expect(unlockSnapshot()).toEqual({ items: [], open: false });
 });
 
+it('closing the card clears any confetti still on screen', async () => {
+  localStorage.setItem('ph:intro', '1');
+  const { announceUnlock } = await mountHost();
+  act(() => announceUnlock({ kind: 'achievement', id: 'first-weekly' }));
+  act(() => vi.advanceTimersByTime(0));
+  expect(confettiFire).toHaveBeenCalledTimes(1);
+  const nice = Array.from(container.querySelectorAll('button')).find((b) => b.textContent === 'Nice!')!;
+  act(() => nice.click());
+  expect(confettiFire.reset).toHaveBeenCalledTimes(1);
+});
+
 it('the Android back button closes the card instead of navigating', async () => {
   localStorage.setItem('ph:intro', '1');
   const { announceUnlock, back } = await mountHost();
@@ -371,7 +385,7 @@ it('the Android back button closes the card instead of navigating', async () => 
 
 it('fires confetti and a success haptic once the card opens, not on every appended item', async () => {
   localStorage.setItem('ph:intro', '1');
-  const confetti = (await import('canvas-confetti')).default as unknown as ReturnType<typeof vi.fn>;
+  const confetti = confettiFire;
   const haptics = await import('../src/lib/haptics.ts');
   const { announceUnlock } = await mountHost();
   act(() => announceUnlock({ kind: 'achievement', id: 'first-weekly' }));
@@ -389,7 +403,7 @@ it('skips confetti under prefers-reduced-motion but still shows the card', async
   globalThis.matchMedia = ((query: string) => ({ ...original(query), matches: true })) as typeof globalThis.matchMedia;
   try {
     localStorage.setItem('ph:intro', '1');
-    const confetti = (await import('canvas-confetti')).default as unknown as ReturnType<typeof vi.fn>;
+    const confetti = confettiFire;
     const { announceUnlock } = await mountHost();
     act(() => announceUnlock({ kind: 'achievement', id: 'first-weekly' }));
     act(() => vi.advanceTimersByTime(0));
