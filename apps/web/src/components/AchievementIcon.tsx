@@ -53,7 +53,7 @@ export function AchievementIcon({
 }: {
   achievement: Achievement;
   earned: boolean;
-  share?: number;
+  share?: number | undefined;
   size?: number;
 }) {
   const corner = !achievement.type ? null : achievement.id.endsWith('-speed') ? 'speed' : achievement.id.endsWith('-genius') ? 'genius' : null;

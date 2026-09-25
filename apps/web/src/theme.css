@@ -264,12 +264,6 @@ p { margin: 0; }
 .row-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .row-title { font-weight: 700; font-size: var(--fs-md); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .row-sub { color: var(--text-muted); font-size: var(--fs-sm); }
-.achievement { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; padding: 6px 0; }
-.achievement-mark { font-size: var(--fs-lg); color: var(--border-mid); }
-.achievement.earned .achievement-mark { color: var(--accent); }
-.achievement-text { display: flex; flex-direction: column; }
-.achievement-title { font-weight: 700; }
-.achievement:not(.earned) .achievement-title { color: var(--text-muted); }
 .diff { font-weight: 700; }
 .diff.easy { color: var(--success); }
 .diff.medium { color: var(--accent-deep); }
@@ -827,6 +821,34 @@ button.unlock-row { cursor: pointer; }
   border: 1px solid var(--border);
   color: var(--accent-deep);
 }
+
+.ach-total { height: 6px; margin: -4px 0 16px; border-radius: 3px; background: var(--border); overflow: hidden; }
+.ach-total i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+
+.ach-next h2 { margin: 0 0 8px; }
+.ach-next-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 16px; }
+.ach-next-card {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 6px;
+  text-align: center; font: inherit; color: inherit; cursor: pointer; min-width: 0;
+}
+.ach-next-card b { font-size: var(--fs-sm); overflow-wrap: anywhere; }
+
+.ach-chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 12px; scrollbar-width: none; }
+.ach-chips::-webkit-scrollbar { display: none; }
+.ach-chip {
+  flex: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border);
+  background: var(--card-bg); color: var(--text); font: inherit; font-size: var(--fs-sm); cursor: pointer;
+}
+.ach-chip.active { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 700; }
+
+.ach-cabinet { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 14px 8px; }
+.ach-badge {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 4px 0;
+  background: none; border: none; font: inherit; color: inherit; cursor: pointer; min-width: 0;
+}
+.ach-badge-title { font-size: var(--fs-xs); line-height: 1.2; text-align: center; overflow-wrap: anywhere; }
+
+.ach-card { max-width: 20rem; padding: 22px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; }
 
 /* The theme swap grows out of the button that was pressed. Both snapshots hold still, the new
    one is clipped to a circle that opens; the --reveal-* values come from lib/theme.ts. */
