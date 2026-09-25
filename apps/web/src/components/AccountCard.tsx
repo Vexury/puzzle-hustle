@@ -35,14 +35,16 @@ export function AccountCard() {
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  // Follow the signed-in player's name, which sign-in may have replaced. Reading `editing` via
+  // Follow the signed-in player's name, which sign-in may have replaced, and fall back to the
+  // local name on sign-out, which signOut() has already cleared. Reading `editing` via
   // a ref (rather than a dependency) means finishing an edit doesn't re-run this against a
   // session that hasn't caught up yet and clobber what the player just typed.
   const editingRef = useRef(editing);
   editingRef.current = editing;
   useEffect(() => {
-    if (session && !editingRef.current) setName(session.player.name);
-  }, [session?.player.name]);
+    if (editingRef.current) return;
+    setName(session ? session.player.name : readSetting('ph:name') ?? '');
+  }, [session?.player.name, session === null]);
 
   // Mirrors ResetButton.tsx's arm/revert pattern: the timer lives in an effect keyed on the
   // armed state so it is cleared on unmount or re-arm instead of firing into a stale closure.
