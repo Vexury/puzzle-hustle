@@ -265,11 +265,22 @@ function otherRegions(n: number, spec: RegionsSpec, i: number): number[] {
 
 const REFINE_LIMIT = 64;
 
-function altStarFrequency(spec: RegionsSpec, limit: number): { count: number; freq: Uint16Array } {
+interface Work {
+  left: number;
+}
+
+function altStarFrequency(spec: RegionsSpec, limit: number, work: Work): { count: number; freq: Uint16Array } {
   const freq = new Uint16Array(spec.solution.length);
-  const { solutions } = enumerateRegionsSolutions(spec, limit, (grid) => {
-    for (let i = 0; i < grid.length; i++) if (grid[i] === 1 && spec.solution[i] === 0) freq[i]!++;
-  });
+  const { solutions, nodes } = enumerateRegionsSolutions(
+    spec,
+    limit,
+    (grid) => {
+      for (let i = 0; i < grid.length; i++) if (grid[i] === 1 && spec.solution[i] === 0) freq[i]!++;
+    },
+    work.left,
+  );
+  work.left -= nodes;
+  if (work.left < 0) throw new Error('regions generation ran out of budget');
   return { count: solutions, freq };
 }
 
@@ -302,9 +313,9 @@ function randomMove(n: number, spec: RegionsSpec, tabu: readonly number[], rng: 
   return rng.shuffle(moves).find((m) => movable(n, spec, tabu, m));
 }
 
-function refineUnique(spec: RegionsSpec, rng: Rng, maxSteps: number): boolean {
+function refineUnique(spec: RegionsSpec, rng: Rng, maxSteps: number, work: Work): boolean {
   const n = spec.config.size;
-  let { count, freq } = altStarFrequency(spec, REFINE_LIMIT);
+  let { count, freq } = altStarFrequency(spec, REFINE_LIMIT, work);
   const tabu: number[] = [];
   for (let step = 0; step < maxSteps && count !== 1; step++) {
     let best: { move: number; count: number; freq: Uint16Array } | null = null;
@@ -316,7 +327,7 @@ function refineUnique(spec: RegionsSpec, rng: Rng, maxSteps: number): boolean {
       const cell = Math.floor(move / n);
       const from = spec.regions[cell]!;
       spec.regions[cell] = move % n;
-      const next = altStarFrequency(spec, Math.min(REFINE_LIMIT, count + 1));
+      const next = altStarFrequency(spec, Math.min(REFINE_LIMIT, count + 1), work);
       spec.regions[cell] = from;
       if (!best || next.count < best.count) best = { move, count: next.count, freq: next.freq };
       if (next.count <= count) break;
@@ -325,7 +336,7 @@ function refineUnique(spec: RegionsSpec, rng: Rng, maxSteps: number): boolean {
       const move = randomMove(n, spec, tabu, rng);
       if (move === undefined) return false;
       spec.regions[Math.floor(move / n)] = move % n;
-      const next = altStarFrequency(spec, REFINE_LIMIT);
+      const next = altStarFrequency(spec, REFINE_LIMIT, work);
       best = { move, count: next.count, freq: next.freq };
     }
     spec.regions[Math.floor(best.move / n)] = best.move % n;
@@ -336,27 +347,35 @@ function refineUnique(spec: RegionsSpec, rng: Rng, maxSteps: number): boolean {
   return count === 1;
 }
 
-export function generateRegions(seed: number, config: RegionsConfig, difficulty: Difficulty = 'medium'): RegionsSpec {
+// Solver nodes a runtime pick (scheduled or random) may spend on one seed, summed over the
+// generator's internal attempts. Past it the seed is rejected and the caller moves on, so no device stalls on a
+// seed the hill climb struggles with. A node count, not a clock, so every device agrees.
+// Every published daily, weekly and monthly up to 2028-02 stays below it; raising or
+// lowering it changes which seeds later periods get.
+export const REGIONS_BUDGET = 500_000;
+
+export function generateRegions(seed: number, config: RegionsConfig, difficulty: Difficulty = 'medium', budget = Number.POSITIVE_INFINITY): RegionsSpec {
   const { size, stars } = config;
   if (size < stars * 4) throw new Error(`regions grid ${size} too small for ${stars} stars`);
   const rng = new Rng(seed);
+  const work: Work = { left: budget };
   for (let attempt = 0; attempt < 40; attempt++) {
     const solution = randomStars(size, stars, rng);
     if (!solution) continue;
     const regions = buildRegions(size, stars, solution, rng);
     if (!regions) continue;
     const spec: RegionsSpec = { version: REGIONS_VERSION, seed, difficulty, config, regions, solution };
-    if (refineUnique(spec, rng, 200)) return spec;
+    if (refineUnique(spec, rng, 200, work)) return spec;
   }
   throw new Error(`could not generate regions puzzle for seed ${seed} / ${size}x${size} with ${stars} stars`);
 }
 
-export function generateCrowns(seed: number, difficulty: Difficulty, options: RegionsOptions = {}): RegionsSpec {
-  return generateRegions(seed, crownsConfig(difficulty, options), difficulty);
+export function generateCrowns(seed: number, difficulty: Difficulty, options: RegionsOptions = {}, budget?: number): RegionsSpec {
+  return generateRegions(seed, crownsConfig(difficulty, options), difficulty, budget);
 }
 
-export function generateStars(seed: number, difficulty: Difficulty, options: RegionsOptions = {}): RegionsSpec {
-  return generateRegions(seed, starsConfig(difficulty, options), difficulty);
+export function generateStars(seed: number, difficulty: Difficulty, options: RegionsOptions = {}, budget?: number): RegionsSpec {
+  return generateRegions(seed, starsConfig(difficulty, options), difficulty, budget);
 }
 
 export function emptyRegionsState(spec: RegionsSpec): RegionsState {

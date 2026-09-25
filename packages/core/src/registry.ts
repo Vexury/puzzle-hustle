@@ -2,7 +2,7 @@ import { generateMosaic, MOSAIC_VERSION, type MosaicOptions } from './mosaic/puz
 import { mosaicCanonicalKey, mosaicDifficultyReport, mosaicFamilyKey } from './mosaic/solver.ts';
 import { generateNonogram, NONOGRAM_VERSION, type NonogramOptions } from './nonogram/puzzle.ts';
 import { nonogramCanonicalKey, nonogramDifficultyReport, nonogramFamilyKey } from './nonogram/solver.ts';
-import { generateCrowns, generateStars, REGIONS_VERSION, type RegionsOptions } from './regions/puzzle.ts';
+import { generateCrowns, generateStars, REGIONS_BUDGET, REGIONS_VERSION, type RegionsOptions, type RegionsSpec } from './regions/puzzle.ts';
 import { regionsCanonicalKey, regionsDifficultyReport, regionsFamilyKey } from './regions/solver.ts';
 import { generateShapes, SHAPES_VERSION, type ShapesOptions } from './shapes/puzzle.ts';
 import { generateKiller, generateSudoku, KILLER_VERSION, SUDOKU_VERSION, type SudokuOptions, type SudokuSpec } from './sudoku/puzzle.ts';
@@ -32,19 +32,26 @@ export interface PuzzleAdapter<TOptions> {
 
 // accepts, key, score and family each ask the generator for the same puzzle, so one seed
 // used to cost four generator runs. Generators are pure functions of seed, difficulty and
-// options, and these specs never leave the adapter, so remembering the last one is safe.
+// options, so remembering the last few is safe. A budget only decides whether a generator
+// gives up, never what it returns, so it stays out of the key. Callers of spec() share the
+// cached object and must not mutate it.
+const REUSE_SLOTS = 4;
+
 function reuse<TSpec, TOptions>(
-  generate: (seed: number, difficulty: Difficulty, options?: TOptions) => TSpec,
-): (seed: number, difficulty: Difficulty, options?: TOptions) => TSpec {
-  let lastKey: string | null = null;
-  let lastSpec: TSpec;
-  return (seed, difficulty, options) => {
+  generate: (seed: number, difficulty: Difficulty, options?: TOptions, budget?: number) => TSpec,
+): (seed: number, difficulty: Difficulty, options?: TOptions, budget?: number) => TSpec {
+  const recent = new Map<string, TSpec>();
+  return (seed, difficulty, options, budget) => {
     const key = `${seed}|${difficulty}|${JSON.stringify(options ?? {})}`;
-    if (key !== lastKey) {
-      lastSpec = generate(seed, difficulty, options);
-      lastKey = key;
+    let spec = recent.get(key);
+    if (spec === undefined) {
+      spec = generate(seed, difficulty, options, budget);
+      if (recent.size >= REUSE_SLOTS) recent.delete(recent.keys().next().value!);
+    } else {
+      recent.delete(key);
     }
-    return lastSpec;
+    recent.set(key, spec);
+    return spec;
   };
 }
 
@@ -167,14 +174,23 @@ function sudokuLikeAdapter(generate: typeof generateSudoku, version: number, fam
   return puzzle;
 }
 
-function regionsAdapter(generate: typeof generateCrowns, options: PuzzleAdapter<RegionsOptions>['options']): PuzzleAdapter<RegionsOptions> {
+export interface RegionsAdapter extends PuzzleAdapter<RegionsOptions> {
+  // The spec accepts just built for this seed, from the cache when it is still there. Play
+  // uses it so a scheduled or random pick is not generated a second time.
+  spec(seed: number, difficulty: Difficulty, options: RegionsOptions): RegionsSpec;
+}
+
+function regionsAdapter(generate: typeof generateCrowns, options: PuzzleAdapter<RegionsOptions>['options']): RegionsAdapter {
   const build = reuse(generate);
   return {
     version: REGIONS_VERSION,
     options,
+    // Always REGIONS_BUDGET, whatever the caller passes: the budget is part of which seed a
+    // period gets. key, score, family and spec serve seeds already picked, such as level
+    // seeds chosen before the budget existed, so they run without one.
     accepts(seed, difficulty, opts) {
       try {
-        build(seed, difficulty, opts);
+        build(seed, difficulty, opts, REGIONS_BUDGET);
         return true;
       } catch {
         return false;
@@ -188,6 +204,9 @@ function regionsAdapter(generate: typeof generateCrowns, options: PuzzleAdapter<
     },
     family(seed, difficulty) {
       return regionsFamilyKey(build(seed, difficulty));
+    },
+    spec(seed, difficulty, opts) {
+      return build(seed, difficulty, opts);
     },
   };
 }
@@ -296,8 +315,8 @@ export const ADAPTERS: { [K in PuzzleTypeId]: PuzzleAdapter<never> } = {
   shapes: shapesAdapter as PuzzleAdapter<never>,
   nonogram: nonogramAdapter as PuzzleAdapter<never>,
   mosaic: mosaicAdapter as PuzzleAdapter<never>,
-  crowns: crownsAdapter as PuzzleAdapter<never>,
-  stars: starsAdapter as PuzzleAdapter<never>,
+  crowns: crownsAdapter as PuzzleAdapter<RegionsOptions> as PuzzleAdapter<never>,
+  stars: starsAdapter as PuzzleAdapter<RegionsOptions> as PuzzleAdapter<never>,
   sudoku: sudokuAdapter as PuzzleAdapter<never>,
   killer: killerAdapter as PuzzleAdapter<never>,
   zip: zipAdapter as PuzzleAdapter<never>,
