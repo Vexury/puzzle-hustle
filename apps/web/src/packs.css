@@ -59,6 +59,9 @@
   --nono-c3: #3f9a4f;
   --pack-pattern-image: none;
   --pack-pattern-size: auto;
+  /* --on-accent is dark on this pack's fill, so mosaic clue text on filled cells must match it
+     instead of mosaic.css's light default, which reads at ~3.5:1 here. */
+  --mosaic-clue-on-fill: #3a0a1c;
 }
 
 [data-theme][data-pack="midnight"] {
@@ -129,6 +132,9 @@
   --nono-c3: #9a5cc9;
   --pack-pattern-image: none;
   --pack-pattern-size: auto;
+  /* --on-accent is dark on this pack's fill, so mosaic clue text on filled cells must match it
+     instead of mosaic.css's light default, which reads at ~3.5:1 here. */
+  --mosaic-clue-on-fill: #2a1a0e;
 }
 
 [data-theme][data-pack="terminal"] {
