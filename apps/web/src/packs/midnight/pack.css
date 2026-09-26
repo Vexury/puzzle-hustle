@@ -49,3 +49,29 @@
 [data-pack="midnight"] body { --font-display: 'Sniglet', var(--font-text); }
 /* Sniglet's regular weight is round enough on its own; a synthesised bold would thicken it. */
 [data-pack="midnight"] :is(h1, h2, h3, .row-title) { font-weight: 400; }
+
+/* Star dust in the empty cells of every board. The grid boards take it as an image, the SVG ones
+   as the pattern the scene defines; filled cells keep their plain colour. */
+[data-pack="midnight"] :is(.nono-cell, .mosaic-cell, .sudoku-cell):not(.f1, .f2, .f3, .filled) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3Cg fill='%23dbe9ff'%3E%3Ccircle cx='.22' cy='.3' r='.028' fill-opacity='.3'/%3E%3Ccircle cx='.72' cy='.2' r='.02' fill-opacity='.25'/%3E%3Ccircle cx='.62' cy='.76' r='.024' fill-opacity='.28'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 100% 100%;
+}
+[data-pack="midnight"] :is(.zip-cell:not(.filled), .tracks-cell) { fill: url(#midnight-dust); }
+
+/* A solved path becomes a constellation: a fine line of starlight, and in Zip the numbers turn
+   into the bright stars it joins. */
+[data-pack="midnight"] .zip-board.solved .zip-path {
+  stroke: #cfe3ff; stroke-width: 0.05; opacity: 0.9;
+  filter: drop-shadow(0 0 3px rgba(158, 203, 255, 0.8));
+}
+[data-pack="midnight"] .zip-board.solved .zip-number.filled circle {
+  fill: #f2f7ff; stroke: none; filter: drop-shadow(0 0 5px rgba(158, 203, 255, 0.9));
+}
+[data-pack="midnight"] .zip-board.solved .zip-number.filled text { fill: #0d0d0f; }
+[data-pack="midnight"] .board-frame.solved .tracks-piece { stroke: #cfe3ff; filter: drop-shadow(0 0 3px rgba(158, 203, 255, 0.8)); }
+[data-pack="midnight"] .board-frame.solved .tracks-piece .tracks-rails { stroke-width: 0.03; }
+[data-pack="midnight"] .board-frame.solved .tracks-piece .tracks-sleepers { display: none; }
+
+/* The empty-cell glyph from marks.ts, tinted: stars. */
+[data-pack="midnight"] :is(.nono-cell, .mosaic-cell, .regions-cell).x::before { background: #cfe3ff; }
+[data-pack="midnight"] .tracks-cross path { fill: #cfe3ff; }

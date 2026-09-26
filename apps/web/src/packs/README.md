@@ -17,6 +17,15 @@ that is one of these things adds it.
 - `.board-frame`, `.board-frame.solved`: the frame around every puzzle board.
 - `.coin-pill`: the coin balance in the page headers.
 - `h1`, `h2`, `h3`, `.row-title`: through `--font-display`; `h1::after` for a trailing mark.
+- Board cells: `.nono-cell`, `.mosaic-cell`, `.sudoku-cell` (background image; leave `.f1`-`.f3`
+  and `.filled` alone), `.zip-cell`, `.tracks-cell` (SVG fill, through a pattern the scene defines).
+- Drawn paths when solved: `.zip-board.solved .zip-path`, `.board-frame.solved .tracks-piece`.
+
+## Marks
+
+A pack may replace the X on empty-marked cells with its own glyph: one filled path in a 24 box
+in `marks.ts`. Nonogram, Mosaic and Cats/Hearts get it as a CSS mask through `--mark-glyph`
+(`theme.css`), Tracks asks `usePackMark()`. A new game with an X uses one of the two.
 
 The list grows only when a pack needs a new place, and every addition goes here.
 

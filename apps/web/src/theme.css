@@ -965,3 +965,13 @@ button.unlock-row { cursor: pointer; }
   padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
   background: var(--card-bg); border-top: 1px solid var(--border); box-shadow: var(--shadow-hover);
 }
+
+/* A theme pack may draw its own glyph instead of the X on empty-marked cells (packs/marks.ts).
+   It arrives as a mask on the root; the colour and opacity stay each game's own. */
+[data-mark-glyph] :is(.nono-cell, .mosaic-cell, .regions-cell).x::before {
+  top: 50%; left: 50%; width: var(--mark-length); height: var(--mark-length);
+  transform: translate(-50%, -50%);
+  -webkit-mask: var(--mark-glyph) center / contain no-repeat;
+  mask: var(--mark-glyph) center / contain no-repeat;
+}
+[data-mark-glyph] :is(.nono-cell, .mosaic-cell, .regions-cell).x::after { content: none; }

@@ -5,11 +5,23 @@ const STARS = scatter(42, 11);
 const SPARKLES = scatter(5, 23);
 
 // A quiet sky: stars twinkling at their own pace, a few brighter sparkles and a crescent moon,
-// and a shooting star across the screen when a puzzle is solved.
+// and a shooting star across the screen when a puzzle is solved. Boards get star dust in their
+// empty cells, and a solved Zip path turns into a constellation.
 export default function MidnightScene() {
   const solves = useSolveCount();
   return (
     <>
+      {/* A paint server for the boards' SVG, referenced from pack.css: star dust for empty cells. */}
+      <svg className="pack-defs" aria-hidden="true">
+        <defs>
+          <pattern id="midnight-dust" width="1" height="1" patternContentUnits="objectBoundingBox">
+            <rect width="1" height="1" style={{ fill: 'var(--board-cell)' }} />
+            <circle cx="0.22" cy="0.3" r="0.028" fill="#dbe9ff" fillOpacity="0.3" />
+            <circle cx="0.72" cy="0.2" r="0.02" fill="#dbe9ff" fillOpacity="0.25" />
+            <circle cx="0.62" cy="0.76" r="0.024" fill="#dbe9ff" fillOpacity="0.28" />
+          </pattern>
+        </defs>
+      </svg>
       <div className="pack-back">
         {STARS.map((s, i) => (
           <i

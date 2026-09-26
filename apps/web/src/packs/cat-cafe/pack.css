@@ -53,3 +53,7 @@
   40% { opacity: 0.7; }
   100% { opacity: 0; transform: translateY(-4px) scaleY(1.1); }
 }
+
+/* The empty-cell glyph from marks.ts, tinted: paws. */
+[data-pack="cat-cafe"] :is(.nono-cell, .mosaic-cell, .regions-cell).x::before { background: #a0673a; }
+[data-pack="cat-cafe"] .tracks-cross path { fill: #a0673a; }

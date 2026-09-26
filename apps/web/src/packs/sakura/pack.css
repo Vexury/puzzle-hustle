@@ -38,3 +38,7 @@
   src: url('../../../public/fonts/zen-maru-gothic-latin.woff2') format('woff2');
 }
 [data-pack="sakura"] body { --font-display: 'Zen Maru Gothic', var(--font-text); }
+
+/* The empty-cell glyph from marks.ts, tinted: blossoms. */
+[data-pack="sakura"] :is(.nono-cell, .mosaic-cell, .regions-cell).x::before { background: #e27a98; }
+[data-pack="sakura"] .tracks-cross path { fill: #e27a98; }
