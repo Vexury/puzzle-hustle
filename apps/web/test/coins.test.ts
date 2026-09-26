@@ -3,6 +3,9 @@ import { ACHIEVEMENTS_EPOCH, levelList } from '@puzzle-hustle/core';
 import { recordSolve, rehydrate, resetProgress } from '../src/lib/storage.ts';
 import { balance, buyItem, canAffordHint, equip, owned, readEquipped, readSpent, solveCoinLine, spendHint } from '../src/lib/coins.ts';
 
+// The paid path, as it will run after launch; themesFree.test.ts covers the beta switch.
+vi.mock('@puzzle-hustle/core', async (original) => ({ ...(await original<typeof import('@puzzle-hustle/core')>()), THEMES_FREE: false }));
+
 beforeEach(() => {
   localStorage.clear();
   rehydrate();

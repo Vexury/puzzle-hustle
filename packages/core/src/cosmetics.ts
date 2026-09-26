@@ -115,6 +115,10 @@ export const ACTIVITY_FLAIRS: readonly FlairCosmetic[] = [
   { id: 'regular', kind: 'flair', title: 'Regular', requires: { achievement: 'weekly-10' } },
 ];
 
+// Until launch every theme can be worn without buying it, so testers see them all; prices still
+// show. Turn off together with moving ACHIEVEMENTS_EPOCH, and unbought themes fall back to Vexury.
+export const THEMES_FREE = true;
+
 // Whole-app looks, each with one fixed mode. Only this device sees them, the worker never does.
 export const THEMES: readonly ThemeCosmetic[] = [
   { id: 'paper', kind: 'theme', title: 'Paper', price: 400, mode: 'light' },

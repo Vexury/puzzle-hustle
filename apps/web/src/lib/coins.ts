@@ -6,6 +6,7 @@ import {
   findCosmetic,
   HINT_PRICE,
   ownedItems,
+  THEMES_FREE,
   type CoinAward,
   type CosmeticKind,
   type SpendEntry,
@@ -101,13 +102,18 @@ export interface Equipped {
   theme: string | null;
 }
 
+// Owned, or a theme while THEMES_FREE holds before launch.
+function wearable(kind: CosmeticKind, id: string, ownedIds: Set<string>): boolean {
+  return ownedIds.has(id) || (kind === 'theme' && THEMES_FREE);
+}
+
 export function readEquipped(): Equipped {
   try {
     const raw = readSetting(EQUIPPED_KEY);
     const parsed = raw ? (JSON.parse(raw) as unknown) : null;
     const v = parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
     const ownedIds = owned();
-    const pick = (kind: CosmeticKind) => (findCosmetic(v[kind])?.kind === kind && ownedIds.has(v[kind] as string) ? (v[kind] as string) : null);
+    const pick = (kind: CosmeticKind) => (findCosmetic(v[kind])?.kind === kind && wearable(kind, v[kind] as string, ownedIds) ? (v[kind] as string) : null);
     return { badge: pick('badge'), flair: pick('flair'), theme: pick('theme') };
   } catch {
     return { badge: null, flair: null, theme: null };
@@ -122,7 +128,7 @@ export function useEquipped(): Equipped {
 }
 
 export function equip(kind: CosmeticKind, id: string | null): boolean {
-  if (id !== null && (findCosmetic(id)?.kind !== kind || !owned().has(id))) return false;
+  if (id !== null && (findCosmetic(id)?.kind !== kind || !wearable(kind, id, owned()))) return false;
   writeSetting(EQUIPPED_KEY, JSON.stringify({ ...readEquipped(), [kind]: id }));
   changed();
   // The server only ever holds badge and flair (pushCosmetics posts just those), so a theme

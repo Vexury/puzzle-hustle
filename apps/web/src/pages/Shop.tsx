@@ -7,6 +7,7 @@ import {
   PUZZLE_META,
   PUZZLE_TYPES,
   THEMES,
+  THEMES_FREE,
   type BadgeCosmetic,
   type FlairCosmetic,
   type ThemeCosmetic,
@@ -83,7 +84,7 @@ export function Shop() {
 
   const tapTheme = (item: ThemeCosmetic | null, event: React.MouseEvent<HTMLElement>) => {
     const origin = centerOf(event.currentTarget);
-    if (item === null || ownedIds.has(item.id)) {
+    if (item === null || ownedIds.has(item.id) || equipped.theme === item.id) {
       setTrying(null);
       equipPack(item?.id ?? null, origin);
       return;
@@ -93,7 +94,7 @@ export function Shop() {
   };
 
   const buyTheme = () => {
-    if (!trying || !buyItem(trying.id)) return;
+    if (!trying || (!THEMES_FREE && !buyItem(trying.id))) return;
     setTrying(null);
     equipPack(trying.id);
   };
@@ -172,6 +173,7 @@ export function Shop() {
 
         <section className="card-lg">
           <h2>Themes</h2>
+          {THEMES_FREE && <span className="muted small">Free while in beta. Prices apply from launch.</span>}
           <div className="theme-grid">
             <button
               type="button"
@@ -268,9 +270,15 @@ export function Shop() {
           <button type="button" className="pill outline" onClick={endTryOn}>
             Back
           </button>
-          <button type="button" className="pill" onClick={buyTheme} disabled={balance < trying.price}>
-            {balance < trying.price ? `Need ${trying.price - balance} more` : `Buy for ${trying.price}`}
-          </button>
+          {THEMES_FREE ? (
+            <button type="button" className="pill" onClick={buyTheme}>
+              Use free (beta)
+            </button>
+          ) : (
+            <button type="button" className="pill" onClick={buyTheme} disabled={balance < trying.price}>
+              {balance < trying.price ? `Need ${trying.price - balance} more` : `Buy for ${trying.price}`}
+            </button>
+          )}
         </div>
       )}
     </>
