@@ -172,14 +172,17 @@ it('drops an equipped theme once the epoch moves past its purchase', () => {
 });
 
 it('never sends the theme to the server', async () => {
-  earnSome(50);
+  earnSome(70);
   buyItem('paper');
+  buyItem('bolt');
   localStorage.setItem('ph:session', JSON.stringify({ token: 't', player: { id: 'p', name: 'Mo' } }));
   const fetchMock = vi.fn(async () => new Response('{}', { status: 200 }));
   vi.stubGlobal('fetch', fetchMock);
   equip('theme', 'paper');
+  expect(fetchMock).not.toHaveBeenCalled();
+  equip('badge', 'bolt');
   await vi.waitFor(() => expect(fetchMock).toHaveBeenCalled());
   const body = JSON.parse(String((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body));
-  expect(body).toEqual({ badge: null, flair: null });
+  expect(body).toEqual({ badge: 'bolt', flair: null });
   vi.unstubAllGlobals();
 });

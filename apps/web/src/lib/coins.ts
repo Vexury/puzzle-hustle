@@ -125,7 +125,9 @@ export function equip(kind: CosmeticKind, id: string | null): boolean {
   if (id !== null && (findCosmetic(id)?.kind !== kind || !owned().has(id))) return false;
   writeSetting(EQUIPPED_KEY, JSON.stringify({ ...readEquipped(), [kind]: id }));
   changed();
-  void pushCosmetics();
+  // The server only ever holds badge and flair (pushCosmetics posts just those), so a theme
+  // change has nothing to send.
+  if (kind !== 'theme') void pushCosmetics();
   return true;
 }
 
