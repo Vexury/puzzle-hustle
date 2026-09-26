@@ -26,7 +26,7 @@
   position: absolute; left: 0; right: 0; bottom: calc(12px + var(--tabbar-h) - 22px + env(safe-area-inset-bottom)); height: 96px;
 }
 .cc-perch > * { position: absolute; bottom: 0; }
-.cc-lying { margin-bottom: -3px; }
+.cc-lying { margin-bottom: -9px; }
 .cc-sleeper { left: calc(var(--bar-left) + 18px); }
 .cc-washer { left: calc(var(--bar-left) + 118px); }
 
