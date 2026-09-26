@@ -17,31 +17,35 @@
 }
 
 /* On the tab bar: its top edge is 12 px + its height above the bottom, and a sitting kitten's
-   feet are 21 px above the bottom of its box at 3x; a lying one's are 24 px. The bar is at most
-   420 px wide and centred. Left to right: sleeper, washer, and the visitor's spot. */
+   feet are 21 px above the bottom of its box at 3x. The bar is at most 420 px wide and centred,
+   with 6 px padding and 4 px between its three tabs, or four once Social is there. Each kitten
+   sits over a tab: the sleeper over Daily, the washer over Puzzles, the visitor over Profile.
+   The offsets are the middle of each kitten's sprite within its 96 px box. */
 .cc-perch {
   --bar-half: min(50vw - 16px, 210px);
-  --bar-left: calc(50% - var(--bar-half));
-  --bar-right: calc(50% + var(--bar-half));
+  --tabs: 3;
+  --tab-w: calc((2 * var(--bar-half) - 12px - 4px * (var(--tabs) - 1)) / var(--tabs));
+  --tab-0: calc(50vw - var(--bar-half) + 6px + var(--tab-w) * 0.5);
+  --visit-x: calc(var(--tab-0) + 2 * (var(--tab-w) + 4px) - 52px);
   position: absolute; left: 0; right: 0; bottom: calc(12px + var(--tabbar-h) - 22px + env(safe-area-inset-bottom)); height: 96px;
 }
+body:has(.tabbar > :nth-child(4)) .cc-perch { --tabs: 4; }
 .cc-perch > * { position: absolute; bottom: 0; }
 .cc-lying { margin-bottom: -9px; }
-.cc-sleeper { left: calc(var(--bar-left) + 18px); }
-.cc-washer { left: calc(var(--bar-left) + 118px); }
-.cc-bar-cup { left: calc(var(--bar-left) + 100px); bottom: 21px; }
+.cc-sleeper { left: calc(var(--tab-0) - 44px); }
+.cc-washer { left: calc(var(--tab-0) + var(--tab-w) + 4px - 52px); }
 
 /* The visitor walks in from beyond the right edge, sits at its spot looking about, and walks back
    out; the three sprites take turns, all on the same 30 s clock as the walk. */
-.cc-visit { left: calc(var(--bar-right) - 116px); animation: cc-visit 30s linear infinite; }
+.cc-visit { left: var(--visit-x); animation: cc-visit 30s linear infinite; }
 .cc-visit > * { position: absolute; bottom: 0; left: 0; opacity: 0; }
 .cc-visit-in { animation: kitty-play 0.9s steps(8) infinite, cc-visit-in 30s step-end infinite !important; }
 .cc-visit-sit { animation: kitty-pause 6s steps(6) infinite, cc-visit-sit 30s step-end infinite !important; }
 .cc-visit-out { animation: kitty-play 0.9s steps(8) infinite, cc-visit-out 30s step-end infinite !important; }
 @keyframes cc-visit {
-  0% { transform: translateX(calc(50vw - var(--bar-half) + 130px)); }
+  0% { transform: translateX(calc(100vw - var(--visit-x))); }
   12%, 62% { transform: translateX(0); }
-  74%, 100% { transform: translateX(calc(50vw - var(--bar-half) + 130px)); }
+  74%, 100% { transform: translateX(calc(100vw - var(--visit-x))); }
 }
 @keyframes cc-visit-in { 0% { opacity: 1; } 12%, 100% { opacity: 0; } }
 @keyframes cc-visit-sit { 0% { opacity: 0; } 12% { opacity: 1; } 62%, 100% { opacity: 0; } }
@@ -70,8 +74,8 @@ body:not(:has(.app.play-mode)) .cc-play-only { display: none; }
 .cc-cake { position: absolute; left: 70px; bottom: 0; }
 
 /* Cups steam in two wisps taking turns. */
-.cc-bar-cup, .cc-shelf-cup { width: 42px; }
-.cc-bar-cup svg, .cc-shelf-cup svg { display: block; }
+.cc-shelf-cup { width: 42px; }
+.cc-shelf-cup svg { display: block; }
 .cc-steam { position: absolute; bottom: 100%; left: 9px; opacity: 0; animation: cc-steam 2.8s ease-out infinite; }
 .cc-steam-late { left: 18px; animation-delay: 1.4s; }
 @keyframes cc-steam {
