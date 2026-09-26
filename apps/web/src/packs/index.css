@@ -1,0 +1,22 @@
+/* Theme packs, one folder each. Each pack.css sets every surface, text, board and accent token
+   for its pack, and the pack forces its mode through data-theme. Two attributes in the selector
+   let a pack beat the single-attribute [data-theme="dark"] blocks of every game stylesheet,
+   whatever their load order; data-accent is off under a pack, so no accent rule competes.
+   What a pack may style beyond its tokens is listed in README.md. */
+@import './paper/pack.css';
+@import './sakura/pack.css';
+@import './midnight/pack.css';
+@import './cat-cafe/pack.css';
+@import './terminal/pack.css';
+@import './synthwave/pack.css';
+
+/* The two planes a scene draws on. Both are fixed to the viewport and never take input. The back
+   plane sits behind all content, so cards cover it; the front plane is for short moments only
+   and stays below the unlock modal and the intro. */
+.pack-back { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.pack-front { position: fixed; inset: 0; z-index: 45; pointer-events: none; overflow: hidden; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pack-back *, .pack-front *, [data-pack] .board-frame { animation: none !important; }
+  .pack-front { display: none; }
+}

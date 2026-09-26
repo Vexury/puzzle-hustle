@@ -1,0 +1,31 @@
+[data-theme][data-pack="cat-cafe"] {
+  color-scheme: light;
+  --bg: #efe4d6;
+  --card-bg: #f8f1e8;
+  --text: #3b2a1e;
+  --text-muted: #6f5a48;
+  --border: #e2d3c1;
+  --border-mid: #c3ab91;
+  --board-cell: #f6ecdf;
+  --board-line: #d8c4ad;
+  --hover-bg: #3b2a1e;
+  --hover-text: #f8f1e8;
+  --accent: #c07a3a;
+  --accent-text: #8a4f1c;
+  --accent-deep: #8a4f1c;
+  --on-accent: #2a1a0e;
+  --success: #3d8a52;
+  --success-soft: rgba(61, 138, 82, 0.12);
+  --danger: #b8392c;
+  --shadow: 0 1px 4px rgba(80, 50, 20, 0.10);
+  --shadow-hover: 0 4px 14px rgba(80, 50, 20, 0.14);
+  --radius: 18px;
+  --radius-sm: 12px;
+  --nono-c2: #3f7fc4;
+  --nono-c3: #9a5cc9;
+  --pack-pattern-image: none;
+  --pack-pattern-size: auto;
+  /* --on-accent is dark on this pack's fill, so mosaic clue text on filled cells must match it
+     instead of mosaic.css's light default, which reads at ~3.5:1 here. */
+  --mosaic-clue-on-fill: #2a1a0e;
+}

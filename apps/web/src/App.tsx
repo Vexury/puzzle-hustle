@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { PackLayer } from './packs/PackLayer.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import { Intro } from './components/Intro.tsx';
 import { TabBar } from './components/TabBar.tsx';
@@ -89,16 +90,19 @@ export function App() {
   else page = <Daily />;
 
   return (
-    <div className={chrome ? 'app' : 'app play-mode'}>
-      <main>
-        <div key={nav.path} className={`page${nav.slide}`}>
-          <ErrorBoundary resetKey={`${route.path}?${route.params.toString()}`}>{page}</ErrorBoundary>
-        </div>
-      </main>
-      {chrome && <TabBar />}
-      {chrome && <Intro />}
-      <ToastHost />
-      <UnlockModalHost />
-    </div>
+    <>
+      <PackLayer />
+      <div className={chrome ? 'app' : 'app play-mode'}>
+        <main>
+          <div key={nav.path} className={`page${nav.slide}`}>
+            <ErrorBoundary resetKey={`${route.path}?${route.params.toString()}`}>{page}</ErrorBoundary>
+          </div>
+        </main>
+        {chrome && <TabBar />}
+        {chrome && <Intro />}
+        <ToastHost />
+        <UnlockModalHost />
+      </div>
+    </>
   );
 }

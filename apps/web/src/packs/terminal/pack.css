@@ -1,0 +1,48 @@
+[data-theme][data-pack="terminal"] {
+  color-scheme: dark;
+  --bg: #0a0c0a;
+  --card-bg: #101410;
+  --text: #ffd28a;
+  --text-muted: #b08a4a;
+  --border: #2a2412;
+  --border-mid: #5a4a20;
+  --board-cell: #0d100d;
+  --board-line: #3a3016;
+  --hover-bg: #ffb000;
+  --hover-text: #0a0c0a;
+  --accent: #ffb000;
+  --accent-text: #ffb000;
+  --accent-deep: #ffc84a;
+  --on-accent: #1a1200;
+  --success: #7ddc6a;
+  --success-soft: rgba(125, 220, 106, 0.14);
+  --danger: #ff5f4a;
+  --shadow: 0 0 8px rgba(255, 176, 0, 0.10);
+  --shadow-hover: 0 0 14px rgba(255, 176, 0, 0.22);
+  --radius: 4px;
+  --radius-sm: 2px;
+  --nono-c2: #5d9be0;
+  --nono-c3: #d06aa4;
+  --pack-pattern-image: repeating-linear-gradient(to bottom, rgba(255, 176, 0, 0.025) 0 1px, transparent 1px 3px);
+  --pack-pattern-size: auto;
+  --region-0: #2a2310;
+  --region-1: #1c2a14;
+  --region-2: #2e1f0e;
+  --region-3: #1f2616;
+  --region-4: #332a12;
+  --region-5: #162418;
+  --region-6: #2b1c10;
+  --region-7: #24280f;
+  --region-8: #30240e;
+  --region-9: #1a2212;
+  --region-10: #2c200c;
+  --region-11: #202a16;
+}
+
+[data-pack="terminal"] .board-frame:not(.solved) { box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent); }
+/* body redefines --font-text on itself (theme.css), which shadows any value the terminal block
+   above would set at the root for every descendant. Redeclaring the token on the same body
+   element it's shadowed on wins by specificity, so body's own font-family: var(--font-text) and
+   every other consumer of the token (h1/h2/h3, .shop-flair-tile, buttons, timers, ...) resolve to
+   Inconsolata: the whole pack is monospace, body text included. */
+[data-pack="terminal"] body { --font-text: 'Inconsolata', ui-monospace, monospace; }

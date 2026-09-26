@@ -13,7 +13,7 @@ import { rehydrate } from './lib/storage.ts';
 import { initTheme } from './lib/theme.ts';
 import { markUnlocksLive } from './components/UnlockModal.tsx';
 import './theme.css';
-import './packs.css';
+import './packs/index.css';
 
 await restoreBackup();
 rehydrate();

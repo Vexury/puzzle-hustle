@@ -31,6 +31,7 @@ import {
   type PuzzleRef,
 } from '@puzzle-hustle/core';
 import { storedSolves, syncAchievements } from '../lib/achievements.ts';
+import { emitAppEvent } from '../lib/appEvents.ts';
 import { href, leaveTo, navigate, onBackLinkClick, onLinkClick } from '../lib/router.ts';
 import { pushBackGuard } from '../lib/back.ts';
 import { clearProgress, getSolve, keepFinalBoard, readProgress, readSetting, recordSolve, useSolves, writeProgress, writeSetting, type SolveRecord } from '../lib/storage.ts';
@@ -329,6 +330,7 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
     if (result) return;
     setRunning(false);
     haptics.solved();
+    emitAppEvent('solved');
     const elapsed = elapsedNow();
     const record: SolveRecord = { solvedAt: new Date().toISOString(), seconds: elapsed, hints: counters.current.hints, moves: counters.current.moves };
     setSeconds(elapsed);

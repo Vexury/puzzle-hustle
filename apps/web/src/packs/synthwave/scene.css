@@ -1,0 +1,39 @@
+.sw-sun {
+  position: absolute; left: 50%; bottom: 22vh; width: min(48vw, 260px); aspect-ratio: 1;
+  transform: translate(-50%, 50%); border-radius: 50%;
+  background: linear-gradient(to bottom, #ffd36e, #ff7a9c 55%, #ff4fd8);
+  /* Bands cut into the lower half, wider toward the horizon. */
+  mask: linear-gradient(to bottom, #000 50%, transparent 50%),
+    repeating-linear-gradient(to bottom, #000 0 9%, transparent 9% 12%);
+  mask-composite: add;
+  opacity: 0.2;
+}
+.sw-floor {
+  position: absolute; left: -50%; right: -50%; bottom: 0; height: 22vh; overflow: hidden;
+  transform-origin: 50% 0; transform: perspective(18vh) rotateX(58deg);
+  mask: linear-gradient(to bottom, transparent, #000 45%);
+}
+/* One cell taller than the floor and moved by exactly one cell, so the loop has no seam. Only
+   the transform animates, which the compositor does without repainting. */
+.sw-grid {
+  position: absolute; inset: -48px 0 0;
+  background-image:
+    linear-gradient(to bottom, rgba(255, 79, 216, 0.45) 2px, transparent 2px),
+    linear-gradient(to right, rgba(63, 240, 255, 0.35) 2px, transparent 2px);
+  background-size: 48px 48px;
+  animation: sw-roll 2.4s linear infinite;
+}
+@keyframes sw-roll { to { transform: translateY(48px); } }
+
+.sw-glitch {
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(to bottom, rgba(63, 240, 255, 0.14) 0 2px, transparent 2px 5px);
+  mix-blend-mode: screen;
+  animation: sw-glitch 0.7s steps(7) forwards;
+}
+@keyframes sw-glitch {
+  0% { opacity: 1; transform: translateX(0); }
+  30% { opacity: 0.6; transform: translateX(-6px); background-color: rgba(255, 79, 216, 0.08); }
+  60% { opacity: 0.9; transform: translateX(4px); }
+  100% { opacity: 0; transform: none; }
+}

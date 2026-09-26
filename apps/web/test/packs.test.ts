@@ -5,11 +5,11 @@ import { THEMES } from '@puzzle-hustle/core';
 // A string literal directly inside `new URL(...)` gets rewritten by Vite's static asset-URL
 // transform into a dev-server URL (http://localhost:3000/...), which readFileSync can't open.
 // Routing the path through a variable first keeps this a real file:// URL.
-const packsCssPath = '../src/packs.css';
-const css = readFileSync(new URL(packsCssPath, import.meta.url), 'utf8');
+const packsDir = '../src/packs/';
+const read = (path: string) => readFileSync(new URL(packsDir + path, import.meta.url), 'utf8');
 
 function block(id: string): Record<string, string> {
-  const m = css.match(new RegExp(`\\[data-theme\\]\\[data-pack="${id}"\\]\\s*\\{([^}]*)\\}`));
+  const m = read(`${id}/pack.css`).match(new RegExp(`\\[data-theme\\]\\[data-pack="${id}"\\]\\s*\\{([^}]*)\\}`));
   if (!m) return {};
   const out: Record<string, string> = {};
   for (const [, name, value] of (m[1] ?? '').matchAll(/(--[\w-]+|color-scheme):\s*([^;]+);/g)) out[name!] = value!.trim();
@@ -31,6 +31,10 @@ function contrast(a: string, b: string): number {
 const REQUIRED = ['--bg', '--card-bg', '--text', '--text-muted', '--border', '--border-mid', '--board-cell', '--board-line', '--hover-bg', '--hover-text', '--accent', '--accent-text', '--accent-deep', '--on-accent', '--success', '--success-soft', '--danger', '--shadow', '--shadow-hover', '--radius', '--radius-sm', '--nono-c2', '--nono-c3', '--pack-pattern-image', '--pack-pattern-size', 'color-scheme'];
 
 const DONE = THEMES.map((t) => t.id);
+
+it.each(DONE)('%s is imported by packs/index.css', (id) => {
+  expect(read('index.css')).toContain(`@import './${id}/pack.css';`);
+});
 
 it.each(DONE)('%s sets every pack token and the scheme of its mode', (id) => {
   const b = block(id);
