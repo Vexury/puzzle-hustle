@@ -46,16 +46,22 @@
 @keyframes cc-visit-sit { 0% { opacity: 0; } 12% { opacity: 1; } 62%, 100% { opacity: 0; } }
 @keyframes cc-visit-out { 0% { opacity: 0; } 62% { opacity: 1; } 74%, 100% { opacity: 0; } }
 
-/* A puzzle has no tab bar; its kittens sit on two shelves below the board instead. */
+/* A puzzle has no tab bar; its kittens sit on two shelves below the board instead. A shelf is a
+   zero-height anchor at the top of its plank, and kittens are placed against it in sprite pixels
+   times three. The sleeper's body sinks behind the plank and its tail hangs over the left end. */
 body:has(.app.play-mode) .cc-perch { display: none; }
 body:not(:has(.app.play-mode)) .cc-play-only { display: none; }
-.cc-shelf {
-  position: absolute; width: 112px; height: 5px; border-radius: 3px;
+.cc-shelf { position: absolute; width: 112px; height: 0; }
+.cc-shelf-low { left: 24px; bottom: calc(62px + env(safe-area-inset-bottom)); }
+.cc-shelf-high { right: 16px; bottom: calc(156px + env(safe-area-inset-bottom)); }
+.cc-plank {
+  position: absolute; left: 0; right: 0; top: 0; height: 6px; border-radius: 3px; z-index: 1;
   background: #b98b62; box-shadow: 0 3px 0 rgba(90, 60, 30, 0.12);
 }
-.cc-shelf-low { left: 16px; bottom: calc(56px + env(safe-area-inset-bottom)); }
-.cc-shelf-high { right: 16px; bottom: calc(150px + env(safe-area-inset-bottom)); }
-.cc-on-shelf { position: absolute; left: 8px; bottom: calc(100% - 22px); }
-.cc-on-shelf.cc-lying { bottom: calc(100% - 25px); margin: 0; }
-
-.cc-jumper { position: absolute; left: 0; top: 0; opacity: 0; }
+.cc-loafer { position: absolute; left: -27px; top: -66px; }
+.cc-tail {
+  position: absolute; left: -12px; top: -6px; width: 15px; z-index: 2;
+  transform-origin: 50% 0; animation: cc-tail 4s ease-in-out infinite alternate;
+}
+@keyframes cc-tail { from { transform: rotate(-6deg); } to { transform: rotate(8deg); } }
+.cc-shelf-sitter { position: absolute; left: 10px; top: -74px; }

@@ -42,8 +42,10 @@
 @font-face {
   font-family: 'Sniglet';
   font-style: normal;
-  font-weight: 800;
+  font-weight: 400;
   font-display: swap;
   src: url('../../../public/fonts/sniglet-latin.woff2') format('woff2');
 }
 [data-pack="midnight"] body { --font-display: 'Sniglet', var(--font-text); }
+/* Sniglet's regular weight is round enough on its own; a synthesised bold would thicken it. */
+[data-pack="midnight"] :is(h1, h2, h3, .row-title) { font-weight: 400; }
