@@ -4,7 +4,7 @@ Quelle ist die WhatsApp-Gruppe "Puzzle Hustle" (seit 18.09.2026) und die Einzelc
 Neue Punkte kommen unter "Offen", erledigte wandern mit Datum nach "Erledigt". Ein Punkt gehoert
 in denselben Commit wie sein Fix.
 
-Stand: 2026-09-25
+Stand: 2026-09-26
 
 ## Offen
 
@@ -28,6 +28,9 @@ Stand: 2026-09-25
 
 ## Erledigt
 
+- [x] 2026-09-26 **Jonas** Eigene Zeile in der Bestenliste wirkte ab Platz 4 unmarkiert: den Ring gab
+  es nur auf dem Podium, darunter nur eine blasse Akzentflaeche, die im Dark Theme wie Bronze aussah.
+  Der Ring steht jetzt auf jedem Platz.
 - [x] 2026-09-25 **Vlad** Ein geloestes Level oder Zufallsraetsel direkt nochmal spielen, um die Zeit
   zu verbessern: runder "Play again"-Button neben Teilen. Dailys, Weeklys und Monthlys bekommen ihn
   nicht, dort zaehlt der erste Lauf.
