@@ -28,15 +28,13 @@
 }
 
 @font-face {
-  font-family: 'Patrick Hand';
+  font-family: 'Mali';
   font-style: normal;
-  font-weight: 400;
+  font-weight: 700;
   font-display: swap;
-  src: url('../../../public/fonts/patrick-hand-latin.woff2') format('woff2');
+  src: url('../../../public/fonts/mali-latin.woff2') format('woff2');
 }
-[data-pack="paper"] body { --font-display: 'Patrick Hand', var(--font-text); }
-/* The hand has one weight; the bold headings would be faked from it. */
-[data-pack="paper"] :is(h1, h2, h3, .row-title) { font-weight: 400; }
+[data-pack="paper"] body { --font-display: 'Mali', var(--font-text); }
 
 /* The board drawn twice by hand: a second pencil line a little off the first. */
 [data-pack="paper"] .board-frame:not(.solved) {

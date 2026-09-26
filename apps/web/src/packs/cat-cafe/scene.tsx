@@ -3,9 +3,10 @@ import { boardRect, useSolved } from '../shared.ts';
 import { Kitty } from './Kitty.tsx';
 import './scene.css';
 
-// Kittens around the café: two sit on the tab bar, one asleep and one washing, and now and then
-// a third wanders along it. In a puzzle, where there is no tab bar, two keep the player company
-// below the board. A solve brings one hopping up onto the board, meowing.
+// Kittens around the café. On the tab bar one sleeps and one washes now and then, and a third
+// walks in from the right, sits beside them a while and walks off again, never crossing them.
+// In a puzzle, where there is no tab bar, two sit on shelves below the board. A solve brings one
+// hopping up onto the board, meowing.
 export default function CatCafeScene() {
   const jumper = useRef<HTMLDivElement>(null);
   useSolved(() => {
@@ -30,15 +31,21 @@ export default function CatCafeScene() {
   return (
     <>
       <div className="pack-back cc-play-only">
-        <Kitty coat="grey" anim="sleepRight" seconds={1.8} className="cc-lounger" />
-        <Kitty coat="white" anim="yawn" seconds={5} pause className="cc-sitter" />
+        <div className="cc-shelf cc-shelf-low">
+          <Kitty coat="grey" anim="sleepRight" seconds={1.8} className="cc-on-shelf cc-lying" />
+        </div>
+        <div className="cc-shelf cc-shelf-high">
+          <Kitty coat="white" anim="yawn" seconds={5} pause className="cc-on-shelf" />
+        </div>
       </div>
       <div className="pack-front">
         <div className="cc-perch">
-          <Kitty coat="white" anim="sleepLeft" seconds={1.8} className="cc-sleeper" />
+          <Kitty coat="white" anim="sleepLeft" seconds={1.8} className="cc-sleeper cc-lying" />
           <Kitty coat="grey" anim="wash" seconds={4.5} pause className="cc-washer" />
-          <div className="cc-stroll">
-            <Kitty coat="ginger" anim="walkLeft" seconds={0.9} />
+          <div className="cc-visit">
+            <Kitty coat="ginger" anim="walkLeft" seconds={0.9} className="cc-visit-in" />
+            <Kitty coat="ginger" anim="look" seconds={6} pause className="cc-visit-sit" />
+            <Kitty coat="ginger" anim="walkRight" seconds={0.9} className="cc-visit-out" />
           </div>
         </div>
         <div ref={jumper} className="cc-jumper">

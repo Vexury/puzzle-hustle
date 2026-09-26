@@ -8,7 +8,7 @@
 .pp-stamp {
   position: absolute; translate: -50% -50%;
   padding: 6px 18px; border: 4px double #c2483a; border-radius: 8px;
-  color: #c2483a; font-family: 'Patrick Hand', var(--font-text); font-size: 44px; letter-spacing: 0.06em; text-transform: uppercase;
+  color: #c2483a; font-family: var(--font-display); font-size: 40px; letter-spacing: 0.06em; text-transform: uppercase;
   mask: radial-gradient(circle at 30% 40%, #000 60%, rgba(0, 0, 0, 0.75) 61%);
   animation: pp-stamp 2.4s ease-out forwards;
 }

@@ -16,25 +16,46 @@
   100% { background-position-x: calc(var(--kitty-frames) * var(--kitty-cell) * -1); }
 }
 
-/* On the tab bar: its top edge is 12 px + its height above the bottom, and a kitten's feet sit
-   21 px above the bottom of its box at 3x. The bar is at most 420 px wide and centred. */
+/* On the tab bar: its top edge is 12 px + its height above the bottom, and a sitting kitten's
+   feet are 21 px above the bottom of its box at 3x; a lying one's are 24 px. The bar is at most
+   420 px wide and centred. Left to right: sleeper, washer, and the visitor's spot. */
 .cc-perch {
   --bar-half: min(50vw - 16px, 210px);
+  --bar-left: calc(50% - var(--bar-half));
+  --bar-right: calc(50% + var(--bar-half));
   position: absolute; left: 0; right: 0; bottom: calc(12px + var(--tabbar-h) - 22px + env(safe-area-inset-bottom)); height: 96px;
 }
-.cc-sleeper { position: absolute; bottom: 0; left: calc(50% - var(--bar-half) + 34px); }
-.cc-washer { position: absolute; bottom: 0; left: calc(50% + var(--bar-half) - 130px); }
-.cc-stroll { position: absolute; bottom: 0; left: 0; animation: cc-stroll 26s linear infinite; }
-@keyframes cc-stroll {
-  0% { transform: translateX(calc(50vw + var(--bar-half))); opacity: 0; }
-  2% { opacity: 1; }
-  46% { opacity: 1; }
-  48%, 100% { transform: translateX(calc(50vw - var(--bar-half) - 20px)); opacity: 0; }
+.cc-perch > * { position: absolute; bottom: 0; }
+.cc-lying { margin-bottom: -3px; }
+.cc-sleeper { left: calc(var(--bar-left) + 18px); }
+.cc-washer { left: calc(var(--bar-left) + 118px); }
+
+/* The visitor walks in from beyond the right edge, sits at its spot looking about, and walks back
+   out; the three sprites take turns, all on the same 30 s clock as the walk. */
+.cc-visit { left: calc(var(--bar-right) - 116px); animation: cc-visit 30s linear infinite; }
+.cc-visit > * { position: absolute; bottom: 0; left: 0; opacity: 0; }
+.cc-visit-in { animation: kitty-play 0.9s steps(8) infinite, cc-visit-in 30s step-end infinite !important; }
+.cc-visit-sit { animation: kitty-pause 6s steps(6) infinite, cc-visit-sit 30s step-end infinite !important; }
+.cc-visit-out { animation: kitty-play 0.9s steps(8) infinite, cc-visit-out 30s step-end infinite !important; }
+@keyframes cc-visit {
+  0% { transform: translateX(calc(50vw - var(--bar-half) + 130px)); }
+  12%, 62% { transform: translateX(0); }
+  74%, 100% { transform: translateX(calc(50vw - var(--bar-half) + 130px)); }
 }
-/* A puzzle has no tab bar; its kittens sit below the board instead. */
+@keyframes cc-visit-in { 0% { opacity: 1; } 12%, 100% { opacity: 0; } }
+@keyframes cc-visit-sit { 0% { opacity: 0; } 12% { opacity: 1; } 62%, 100% { opacity: 0; } }
+@keyframes cc-visit-out { 0% { opacity: 0; } 62% { opacity: 1; } 74%, 100% { opacity: 0; } }
+
+/* A puzzle has no tab bar; its kittens sit on two shelves below the board instead. */
 body:has(.app.play-mode) .cc-perch { display: none; }
 body:not(:has(.app.play-mode)) .cc-play-only { display: none; }
-.cc-lounger { position: absolute; left: 18px; bottom: calc(40px + env(safe-area-inset-bottom)); }
-.cc-sitter { position: absolute; right: 22px; bottom: calc(46px + env(safe-area-inset-bottom)); }
+.cc-shelf {
+  position: absolute; width: 112px; height: 5px; border-radius: 3px;
+  background: #b98b62; box-shadow: 0 3px 0 rgba(90, 60, 30, 0.12);
+}
+.cc-shelf-low { left: 16px; bottom: calc(56px + env(safe-area-inset-bottom)); }
+.cc-shelf-high { right: 16px; bottom: calc(150px + env(safe-area-inset-bottom)); }
+.cc-on-shelf { position: absolute; left: 8px; bottom: calc(100% - 22px); }
+.cc-on-shelf.cc-lying { bottom: calc(100% - 25px); margin: 0; }
 
 .cc-jumper { position: absolute; left: 0; top: 0; opacity: 0; }

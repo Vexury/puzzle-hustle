@@ -40,10 +40,10 @@
 }
 
 @font-face {
-  font-family: 'Cormorant Garamond';
+  font-family: 'Sniglet';
   font-style: normal;
-  font-weight: 700;
+  font-weight: 800;
   font-display: swap;
-  src: url('../../../public/fonts/cormorant-garamond-latin.woff2') format('woff2');
+  src: url('../../../public/fonts/sniglet-latin.woff2') format('woff2');
 }
-[data-pack="midnight"] body { --font-display: 'Cormorant Garamond', var(--font-text); }
+[data-pack="midnight"] body { --font-display: 'Sniglet', var(--font-text); }
