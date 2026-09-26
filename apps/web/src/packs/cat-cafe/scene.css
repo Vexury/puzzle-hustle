@@ -19,17 +19,18 @@
 /* A shelf row closes every page in the page flow: 72 px high, clipped, never over a control.
    A shelf is a zero-height anchor at the top of its plank, 56 px down the row, and things are
    placed against it in sprite pixels times two. A sitting kitten's feet end 7 sprite pixels above
-   the bottom of its 32 px cell, a lying one's 8; both sink a little behind the plank, and the
-   loafer's tail hangs over the left end. */
+   the bottom of its 32 px cell, a lying one's 8; both sit a little into the plank, in front of
+   it, and the loafer's tail hangs over the left end. */
 .cc-row { position: relative; height: 72px; margin-top: 8px; overflow: hidden; }
 .cc-shelf { position: absolute; top: 56px; height: 0; }
 .cc-left { left: 24px; width: 96px; }
 .cc-right { right: 16px; width: 88px; }
 .cc-mid { left: calc(50% - 40px); width: 80px; }
 .cc-plank {
-  position: absolute; left: 0; right: 0; top: 0; height: 4px; border-radius: 2px; z-index: 1;
+  position: absolute; left: 0; right: 0; top: 0; height: 4px; border-radius: 2px;
   background: #b98b62; box-shadow: 0 2px 0 rgba(90, 60, 30, 0.12);
 }
+.cc-shelf .kitty { z-index: 1; }
 .cc-sitter { position: absolute; left: 27px; top: -47px; }
 .cc-mid .cc-sitter { left: 0; }
 .cc-sleeper { position: absolute; left: 4px; top: -44px; }
