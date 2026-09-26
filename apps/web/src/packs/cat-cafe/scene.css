@@ -33,7 +33,7 @@
 .cc-shelf .kitty { z-index: 1; }
 .cc-sitter { position: absolute; left: 27px; top: -47px; }
 .cc-mid .cc-sitter { left: 0; }
-.cc-sleeper { position: absolute; left: 4px; top: -44px; }
+.cc-sleeper { position: absolute; left: 4px; top: -42px; }
 .cc-loafer { position: absolute; left: -18px; top: -44px; }
 .cc-tail {
   position: absolute; left: -8px; top: -4px; width: 10px; z-index: 2;
