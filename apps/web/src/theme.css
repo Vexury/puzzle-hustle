@@ -917,7 +917,7 @@ button.unlock-row { cursor: pointer; }
 .badge-icon { width: 1em; height: 1em; flex: none; color: var(--accent-text); }
 .leaderboard-flair { font-size: var(--fs-xs); color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.coin-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); font-family: var(--font-num); }
+.coin-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); font-family: var(--font-num); text-decoration: none; }
 .coin-pill svg { width: 1em; height: 1em; }
 .shop-preview { gap: 6px; }
 .shop-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
