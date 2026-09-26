@@ -29,6 +29,7 @@
 .cc-lying { margin-bottom: -9px; }
 .cc-sleeper { left: calc(var(--bar-left) + 18px); }
 .cc-washer { left: calc(var(--bar-left) + 118px); }
+.cc-bar-cup { left: calc(var(--bar-left) + 100px); bottom: 21px; }
 
 /* The visitor walks in from beyond the right edge, sits at its spot looking about, and walks back
    out; the three sprites take turns, all on the same 30 s clock as the walk. */
@@ -53,7 +54,7 @@ body:has(.app.play-mode) .cc-perch { display: none; }
 body:not(:has(.app.play-mode)) .cc-play-only { display: none; }
 .cc-shelf { position: absolute; width: 112px; height: 0; }
 .cc-shelf-low { left: 24px; bottom: calc(62px + env(safe-area-inset-bottom)); }
-.cc-shelf-high { right: 16px; bottom: calc(156px + env(safe-area-inset-bottom)); }
+.cc-shelf-high { right: 16px; bottom: calc(156px + env(safe-area-inset-bottom)); width: 130px; }
 .cc-plank {
   position: absolute; left: 0; right: 0; top: 0; height: 6px; border-radius: 3px; z-index: 1;
   background: #b98b62; box-shadow: 0 3px 0 rgba(90, 60, 30, 0.12);
@@ -64,4 +65,26 @@ body:not(:has(.app.play-mode)) .cc-play-only { display: none; }
   transform-origin: 50% 0; animation: cc-tail 4s ease-in-out infinite alternate;
 }
 @keyframes cc-tail { from { transform: rotate(-6deg); } to { transform: rotate(8deg); } }
-.cc-shelf-sitter { position: absolute; left: 10px; top: -74px; }
+.cc-shelf-sitter { position: absolute; left: 40px; top: -74px; }
+.cc-shelf-cup { position: absolute; left: 4px; bottom: 0; }
+.cc-cake { position: absolute; left: 70px; bottom: 0; }
+
+/* Cups steam in two wisps taking turns. */
+.cc-bar-cup, .cc-shelf-cup { width: 42px; }
+.cc-bar-cup svg, .cc-shelf-cup svg { display: block; }
+.cc-steam { position: absolute; bottom: 100%; left: 9px; opacity: 0; animation: cc-steam 2.8s ease-out infinite; }
+.cc-steam-late { left: 18px; animation-delay: 1.4s; }
+@keyframes cc-steam {
+  0% { opacity: 0; transform: translateY(6px); }
+  30% { opacity: 0.85; }
+  100% { opacity: 0; transform: translateY(-6px); }
+}
+
+/* A striped awning in pixel art over the top of the screen, just below the status bar: red and
+   cream stripes four art pixels wide, each ending in a scallop. */
+.cc-awning {
+  position: absolute; left: 0; right: 0; top: env(safe-area-inset-top); height: 15px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 5' shape-rendering='crispEdges'%3E%3Crect width='4' height='4' fill='%23c8553d'/%3E%3Crect x='4' width='4' height='4' fill='%23f8efe2'/%3E%3Crect x='1' y='4' width='2' height='1' fill='%23c8553d'/%3E%3Crect x='5' y='4' width='2' height='1' fill='%23f8efe2'/%3E%3Crect width='8' height='1' fill='%23000' fill-opacity='.12'/%3E%3C/svg%3E") repeat-x 0 0 / 24px 15px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 2px 0 rgba(90, 60, 30, 0.14));
+}

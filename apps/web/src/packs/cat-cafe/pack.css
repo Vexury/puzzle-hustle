@@ -23,8 +23,9 @@
   --radius-sm: 12px;
   --nono-c2: #3f7fc4;
   --nono-c3: #9a5cc9;
-  --pack-pattern-image: none;
-  --pack-pattern-size: auto;
+  /* Coffee beans scattered on the wall, each with its crease. */
+  --pack-pattern-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72'%3E%3Cg fill='%23784824' fill-opacity='.07'%3E%3Cellipse cx='18' cy='20' rx='5' ry='7.5' transform='rotate(-30 18 20)'/%3E%3Cellipse cx='52' cy='52' rx='5' ry='7.5' transform='rotate(25 52 52)'/%3E%3C/g%3E%3Cg fill='none' stroke='%23784824' stroke-opacity='.09' stroke-width='1.2' stroke-linecap='round'%3E%3Cpath d='M15 14c4 3 3 9 6 12'/%3E%3Cpath d='M55 46c-4 3-3 9-6 12'/%3E%3C/g%3E%3C/svg%3E");
+  --pack-pattern-size: 72px 72px;
   /* --on-accent is dark on this pack's fill, so mosaic clue text on filled cells must match it
      instead of mosaic.css's light default, which reads at ~3.5:1 here. */
   --mosaic-clue-on-fill: #2a1a0e;
