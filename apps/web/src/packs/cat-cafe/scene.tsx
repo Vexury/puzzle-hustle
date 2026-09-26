@@ -13,10 +13,10 @@ function SteamingCup({ className }: { className: string }) {
 }
 
 // A little café with kittens in it: a striped awning over the top of the screen and coffee beans
-// on the wall. On the tab bar one kitten sleeps and one washes now and then, and a third walks in
-// from the right, sits beside them a while and walks off again, never crossing them. In a
-// puzzle, where there is no tab bar, two keep the player company on shelves below the board,
-// with a cup and a slice of cake.
+// on the wall. On the tab bar one kitten sleeps and one washes now and then, and another walks in
+// from the right to the last tab, sits a while and walks off again, never crossing the others;
+// with the Social tab a fourth one sits over Profile. In a puzzle, where there is no tab bar,
+// two keep the player company on shelves below the board, with a cup and a slice of cake.
 export default function CatCafeScene() {
   return (
     <>
@@ -38,6 +38,7 @@ export default function CatCafeScene() {
         <div className="cc-perch">
           <Kitty coat="white" anim="sleepLeft" seconds={1.8} className="cc-sleeper cc-lying" />
           <Kitty coat="grey" anim="wash" seconds={4.5} pause className="cc-washer" />
+          <Kitty coat="white" anim="yawn" seconds={6} pause className="cc-profile" />
           <div className="cc-visit">
             <Kitty coat="ginger" anim="walkLeft" seconds={0.9} className="cc-visit-in" />
             <Kitty coat="ginger" anim="look" seconds={6} pause className="cc-visit-sit" />

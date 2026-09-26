@@ -19,14 +19,15 @@
 /* On the tab bar: its top edge is 12 px + its height above the bottom, and a sitting kitten's
    feet are 21 px above the bottom of its box at 3x. The bar is at most 420 px wide and centred,
    with 6 px padding and 4 px between its three tabs, or four once Social is there. Each kitten
-   sits over a tab: the sleeper over Daily, the washer over Puzzles, the visitor over Profile.
-   The offsets are the middle of each kitten's sprite within its 96 px box. */
+   sits over a tab: the sleeper over Daily, the washer over Puzzles, the visitor over the last
+   tab, and with Social a fourth kitten over Profile. The offsets are the middle of each
+   kitten's sprite within its 96 px box. */
 .cc-perch {
   --bar-half: min(50vw - 16px, 210px);
   --tabs: 3;
   --tab-w: calc((2 * var(--bar-half) - 12px - 4px * (var(--tabs) - 1)) / var(--tabs));
   --tab-0: calc(50vw - var(--bar-half) + 6px + var(--tab-w) * 0.5);
-  --visit-x: calc(var(--tab-0) + 2 * (var(--tab-w) + 4px) - 52px);
+  --visit-x: calc(var(--tab-0) + (var(--tabs) - 1) * (var(--tab-w) + 4px) - 52px);
   position: absolute; left: 0; right: 0; bottom: calc(12px + var(--tabbar-h) - 22px + env(safe-area-inset-bottom)); height: 96px;
 }
 body:has(.tabbar > :nth-child(4)) .cc-perch { --tabs: 4; }
@@ -34,6 +35,8 @@ body:has(.tabbar > :nth-child(4)) .cc-perch { --tabs: 4; }
 .cc-lying { margin-bottom: -9px; }
 .cc-sleeper { left: calc(var(--tab-0) - 44px); }
 .cc-washer { left: calc(var(--tab-0) + var(--tab-w) + 4px - 52px); }
+.cc-profile { left: calc(var(--tab-0) + 2 * (var(--tab-w) + 4px) - 52px); display: none; }
+body:has(.tabbar > :nth-child(4)) .cc-profile { display: block; }
 
 /* The visitor walks in from beyond the right edge, sits at its spot looking about, and walks back
    out; the three sprites take turns, all on the same 30 s clock as the walk. */
