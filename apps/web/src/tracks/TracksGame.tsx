@@ -25,7 +25,7 @@ import {
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import { HintMark } from '../components/HintMark.tsx';
-import { usePackMark } from '../packs/marks.ts';
+import { markVariant, usePackMark } from '../packs/marks.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
 import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 import './tracks.css';
@@ -299,7 +299,7 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
       marks.push(
         <g key={`x${i}`} className="tracks-cross">
           {packMark ? (
-            <path d={packMark} transform={`translate(${c + 0.12} ${r + 0.12}) scale(${0.76 / 24})`} />
+            <path d={markVariant(packMark, i)} transform={`translate(${c + 0.12} ${r + 0.12}) scale(${0.76 / 24})`} />
           ) : (
             <>
               <line x1={c + 0.5 - X_HALF} y1={r + 0.5 - X_HALF} x2={c + 0.5 + X_HALF} y2={r + 0.5 + X_HALF} />

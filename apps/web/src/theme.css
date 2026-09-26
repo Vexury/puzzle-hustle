@@ -975,3 +975,12 @@ button.unlock-row { cursor: pointer; }
   mask: var(--mark-glyph) center / contain no-repeat;
 }
 [data-mark-glyph] :is(.nono-cell, .mosaic-cell, .regions-cell).x::after { content: none; }
+/* Up to three variants take turns, scattered over the grid so a column never repeats one. */
+[data-mark-glyph] :is(.nono-cell, .mosaic-cell, .regions-cell).x:is(:nth-child(7n + 1), :nth-child(7n + 4))::before {
+  -webkit-mask-image: var(--mark-glyph-1, var(--mark-glyph));
+  mask-image: var(--mark-glyph-1, var(--mark-glyph));
+}
+[data-mark-glyph] :is(.nono-cell, .mosaic-cell, .regions-cell).x:is(:nth-child(7n + 2), :nth-child(7n + 6))::before {
+  -webkit-mask-image: var(--mark-glyph-2, var(--mark-glyph));
+  mask-image: var(--mark-glyph-2, var(--mark-glyph));
+}

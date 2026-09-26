@@ -39,6 +39,6 @@
 }
 [data-pack="sakura"] body { --font-display: 'Zen Maru Gothic', var(--font-text); }
 
-/* The empty-cell glyph from marks.ts, tinted: blossoms. */
-[data-pack="sakura"] :is(.nono-cell, .mosaic-cell, .regions-cell).x::before { background: #e27a98; }
-[data-pack="sakura"] .tracks-cross path { fill: #e27a98; }
+/* The empty-cell glyph from marks.ts, tinted: leaves. */
+[data-pack="sakura"] :is(.nono-cell, .mosaic-cell, .regions-cell).x::before { background: #7fa36a; }
+[data-pack="sakura"] .tracks-cross path { fill: #7fa36a; }

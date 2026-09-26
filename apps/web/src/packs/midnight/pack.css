@@ -58,16 +58,17 @@
 }
 [data-pack="midnight"] :is(.zip-cell:not(.filled), .tracks-cell) { fill: url(#midnight-dust); }
 
-/* A solved path becomes a constellation: a fine line of starlight, and in Zip the numbers turn
-   into the bright stars it joins. */
+/* A solved Zip becomes a constellation: a fine line of starlight with a small star on every cell
+   it passes, and the numbers as big stars on top. The game draws the numbers after the path, so
+   the line runs behind them. */
 [data-pack="midnight"] .zip-board.solved .zip-path {
-  stroke: #cfe3ff; stroke-width: 0.05; opacity: 0.9;
-  filter: drop-shadow(0 0 3px rgba(158, 203, 255, 0.8));
+  stroke: #cfe3ff; stroke-width: 0.035; opacity: 0.9; marker: url(#midnight-star);
 }
 [data-pack="midnight"] .zip-board.solved .zip-number.filled circle {
-  fill: #f2f7ff; stroke: none; filter: drop-shadow(0 0 5px rgba(158, 203, 255, 0.9));
+  r: 0.5; fill: #fff4c8; stroke: none;
+  clip-path: polygon(50% 2%, 62% 36%, 98% 37%, 69% 58%, 80% 94%, 50% 73%, 20% 94%, 31% 58%, 2% 37%, 38% 36%) fill-box;
 }
-[data-pack="midnight"] .zip-board.solved .zip-number.filled text { fill: #0d0d0f; }
+[data-pack="midnight"] .zip-board.solved .zip-number.filled text { fill: #0d0d0f; font-size: 0.3px; }
 [data-pack="midnight"] .board-frame.solved .tracks-piece { stroke: #cfe3ff; filter: drop-shadow(0 0 3px rgba(158, 203, 255, 0.8)); }
 [data-pack="midnight"] .board-frame.solved .tracks-piece .tracks-rails { stroke-width: 0.03; }
 [data-pack="midnight"] .board-frame.solved .tracks-piece .tracks-sleepers { display: none; }

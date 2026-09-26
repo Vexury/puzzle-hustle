@@ -11,7 +11,8 @@ export default function MidnightScene() {
   const solves = useSolveCount();
   return (
     <>
-      {/* A paint server for the boards' SVG, referenced from pack.css: star dust for empty cells. */}
+      {/* Paint servers for the boards' SVG, referenced from pack.css: star dust for empty cells, and
+          the small star on every cell a solved Zip path passes through. */}
       <svg className="pack-defs" aria-hidden="true">
         <defs>
           <pattern id="midnight-dust" width="1" height="1" patternContentUnits="objectBoundingBox">
@@ -20,6 +21,9 @@ export default function MidnightScene() {
             <circle cx="0.72" cy="0.2" r="0.02" fill="#dbe9ff" fillOpacity="0.25" />
             <circle cx="0.62" cy="0.76" r="0.024" fill="#dbe9ff" fillOpacity="0.28" />
           </pattern>
+          <marker id="midnight-star" viewBox="0 0 24 24" refX="12" refY="12" markerUnits="userSpaceOnUse" markerWidth="0.34" markerHeight="0.34">
+            <path d="M12 1C13 9 15 11 23 12 15 13 13 15 12 23 11 15 9 13 1 12 9 11 11 9 12 1Z" fill="#fff" />
+          </marker>
         </defs>
       </svg>
       <div className="pack-back">
