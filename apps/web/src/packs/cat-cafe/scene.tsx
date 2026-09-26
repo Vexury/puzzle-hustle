@@ -1,40 +1,48 @@
 import { useRef } from 'react';
 import { boardRect, useSolved } from '../shared.ts';
-import { PeekingCat, SittingCat } from './Cat.tsx';
+import { Kitty } from './Kitty.tsx';
 import './scene.css';
 
-// Two cats keep the player company: one sits in the corner swinging its tail, one peeks in from
-// the side. On a solve a third one jumps up and settles on top of the board for a moment.
+// Kittens around the café: two sit on the tab bar, one asleep and one washing, and now and then
+// a third wanders along it. In a puzzle, where there is no tab bar, two keep the player company
+// below the board. A solve brings one hopping up onto the board, meowing.
 export default function CatCafeScene() {
   const jumper = useRef<HTMLDivElement>(null);
   useSolved(() => {
     const el = jumper.current;
     const rect = boardRect();
     if (!el || !rect) return;
-    const size = 64;
-    const x = rect.left + rect.width * 0.7 - size / 2;
-    const y = rect.top - size + 6;
+    // The kitten's feet are 7 of 32 cells above the bottom of its box, at 3x.
+    const x = rect.left + rect.width * 0.72 - 48;
+    const y = rect.top - 96 + 21 + 2;
     el.animate(
       [
-        { transform: `translate(${-size}px, ${innerHeight}px)`, opacity: 1, offset: 0, easing: 'ease-out' },
-        { transform: `translate(${x - 60}px, ${y - 110}px)`, opacity: 1, offset: 0.28, easing: 'ease-in' },
-        { transform: `translate(${x}px, ${y}px) scale(1.08, 0.9)`, opacity: 1, offset: 0.4 },
-        { transform: `translate(${x}px, ${y}px)`, opacity: 1, offset: 0.46 },
-        { transform: `translate(${x}px, ${y}px)`, opacity: 1, offset: 0.88 },
+        { transform: `translate(${innerWidth}px, ${innerHeight}px)`, opacity: 1, offset: 0, easing: 'ease-out' },
+        { transform: `translate(${x + 50}px, ${y - 90}px)`, opacity: 1, offset: 0.22, easing: 'ease-in' },
+        { transform: `translate(${x}px, ${y}px) scale(1.1, 0.88)`, opacity: 1, offset: 0.32 },
+        { transform: `translate(${x}px, ${y}px)`, opacity: 1, offset: 0.38 },
+        { transform: `translate(${x}px, ${y}px)`, opacity: 1, offset: 0.9 },
         { transform: `translate(${x}px, ${y}px)`, opacity: 0, offset: 1 },
       ],
-      { duration: 3000, fill: 'forwards' },
+      { duration: 3600, fill: 'forwards' },
     );
   });
   return (
     <>
-      <div className="pack-back">
-        <SittingCat className="cc-sitter" />
-        <PeekingCat className="cc-peeker" />
+      <div className="pack-back cc-play-only">
+        <Kitty coat="grey" anim="sleepRight" seconds={1.8} className="cc-lounger" />
+        <Kitty coat="white" anim="yawn" seconds={5} pause className="cc-sitter" />
       </div>
       <div className="pack-front">
+        <div className="cc-perch">
+          <Kitty coat="white" anim="sleepLeft" seconds={1.8} className="cc-sleeper" />
+          <Kitty coat="grey" anim="wash" seconds={4.5} pause className="cc-washer" />
+          <div className="cc-stroll">
+            <Kitty coat="ginger" anim="walkLeft" seconds={0.9} />
+          </div>
+        </div>
         <div ref={jumper} className="cc-jumper">
-          <SittingCat />
+          <Kitty coat="ginger" anim="meow" seconds={0.9} />
         </div>
       </div>
     </>

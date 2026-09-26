@@ -1,21 +1,40 @@
-.cc-body { fill: #8a5a34; }
-.cc-eye { fill: #f8f1e8; }
-.cc-tail { fill: none; stroke: #8a5a34; stroke-width: 5; stroke-linecap: round; transform-origin: 44px 56px; }
-
-.cc-sitter { position: absolute; right: 18px; bottom: calc(96px + env(safe-area-inset-bottom)); width: 72px; opacity: 0.45; }
-.cc-sitter .cc-tail { animation: cc-swing 3.2s ease-in-out infinite alternate; }
-@keyframes cc-swing { from { transform: rotate(-14deg); } to { transform: rotate(22deg); } }
-
-.cc-peeker {
-  position: absolute; left: -10px; top: 74%; width: 60px; opacity: 0.4;
-  transform: rotate(90deg); transform-origin: 50% 50%;
-  animation: cc-peek 9s ease-in-out infinite;
+/* One cell of kittens.png per frame. The strip for the kitten's coat and animation is picked by
+   the row; stepping the x position plays it. Scaled in whole pixels and never smoothed. */
+.kitty {
+  --kitty-cell: calc(32px * var(--kitty-scale));
+  width: var(--kitty-cell); height: var(--kitty-cell);
+  background: url('./kittens.png') no-repeat;
+  background-size: calc(352px * var(--kitty-scale)) auto;
+  background-position: 0 calc(var(--kitty-row) * var(--kitty-cell) * -1);
+  image-rendering: pixelated;
+  animation: kitty-play 1s steps(var(--kitty-frames)) infinite;
 }
-@keyframes cc-peek {
-  0%, 20%, 100% { translate: -34px 0; }
-  35%, 75% { translate: 0 0; }
+@keyframes kitty-play { to { background-position-x: calc(var(--kitty-frames) * var(--kitty-cell) * -1); } }
+.kitty-pause { animation-name: kitty-pause; }
+@keyframes kitty-pause {
+  0%, 65% { background-position-x: 0; }
+  100% { background-position-x: calc(var(--kitty-frames) * var(--kitty-cell) * -1); }
 }
 
-.cc-jumper { position: absolute; left: 0; top: 0; width: 64px; opacity: 0; }
-.cc-jumper .cc-body, .cc-jumper .cc-tail { fill: #c07a3a; stroke: #c07a3a; }
-.cc-jumper .cc-tail { fill: none; }
+/* On the tab bar: its top edge is 12 px + its height above the bottom, and a kitten's feet sit
+   21 px above the bottom of its box at 3x. The bar is at most 420 px wide and centred. */
+.cc-perch {
+  --bar-half: min(50vw - 16px, 210px);
+  position: absolute; left: 0; right: 0; bottom: calc(12px + var(--tabbar-h) - 22px + env(safe-area-inset-bottom)); height: 96px;
+}
+.cc-sleeper { position: absolute; bottom: 0; left: calc(50% - var(--bar-half) + 34px); }
+.cc-washer { position: absolute; bottom: 0; left: calc(50% + var(--bar-half) - 130px); }
+.cc-stroll { position: absolute; bottom: 0; left: 0; animation: cc-stroll 26s linear infinite; }
+@keyframes cc-stroll {
+  0% { transform: translateX(calc(50vw + var(--bar-half))); opacity: 0; }
+  2% { opacity: 1; }
+  46% { opacity: 1; }
+  48%, 100% { transform: translateX(calc(50vw - var(--bar-half) - 20px)); opacity: 0; }
+}
+/* A puzzle has no tab bar; its kittens sit below the board instead. */
+body:has(.app.play-mode) .cc-perch { display: none; }
+body:not(:has(.app.play-mode)) .cc-play-only { display: none; }
+.cc-lounger { position: absolute; left: 18px; bottom: calc(40px + env(safe-area-inset-bottom)); }
+.cc-sitter { position: absolute; right: 22px; bottom: calc(46px + env(safe-area-inset-bottom)); }
+
+.cc-jumper { position: absolute; left: 0; top: 0; opacity: 0; }
