@@ -5,7 +5,7 @@ components know nothing about packs; a pack reaches them only through the layers
 
 | Layer | What | Where |
 |---|---|---|
-| Tokens | Colours, radii, shadows, pattern, fonts | `<id>/pack.css`, block `[data-theme][data-pack="<id>"]` |
+| Tokens | Colours, radii, shadows, pattern, fonts (`--font-display` for headings and card titles, set on `body`) | `<id>/pack.css`, block `[data-theme][data-pack="<id>"]` |
 | Slots | Styling of the shared elements listed below, nothing else | `<id>/pack.css`, selectors under `[data-pack="<id>"]` |
 | Scene | Decoration behind the app, moments in front of it | `<id>/scene.tsx`, registered in `registry.ts`, loaded on first use |
 
@@ -15,6 +15,8 @@ Stable class names a pack may style. A component that carries one keeps it; a ne
 that is one of these things adds it.
 
 - `.board-frame`, `.board-frame.solved`: the frame around every puzzle board.
+- `.coin-pill`: the coin balance in the page headers.
+- `h1`, `h2`, `h3`, `.row-title`: through `--font-display`; `h1::after` for a trailing mark.
 
 The list grows only when a pack needs a new place, and every addition goes here.
 
@@ -31,3 +33,7 @@ The list grows only when a pack needs a new place, and every addition goes here.
 
 Icons and figures are drawn for the app as inline SVG, or copied from libraries under MIT, ISC,
 Apache 2.0, OFL or CC0 with the licence listed in `CREDITS.md`. No GIFs, no Lottie.
+
+Fonts are the Latin subset of one weight, self-hosted in `public/fonts`, declared in the pack's
+own `pack.css` so a browser only fetches them while that pack is on screen. Board numbers keep
+`--font-num`.

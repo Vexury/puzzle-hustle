@@ -1,0 +1,14 @@
+.sk-branch { position: absolute; top: calc(52px + env(safe-area-inset-top)); right: -6px; width: 150px; opacity: 0.55; }
+.sk-wood { fill: none; stroke: #8a5a4a; stroke-width: 3.5; stroke-linecap: round; opacity: 0.7; }
+.sk-bloom { fill: #f7b6c8; }
+.sk-heart { fill: #e0567f; }
+
+/* The outer element falls straight; the petal inside sways and turns on its own, shorter clock,
+   so no two petals move alike. Both only animate transform. */
+.sk-fall { position: absolute; top: -40px; animation: sk-fall linear infinite; }
+@keyframes sk-fall { to { transform: translateY(calc(100vh + 80px)); } }
+.sk-petal { display: block; fill: #f4a3bb; opacity: 0.55; animation: sk-sway ease-in-out infinite alternate; }
+@keyframes sk-sway {
+  from { transform: translateX(-14px) rotate(-30deg); }
+  to { transform: translateX(14px) rotate(40deg); }
+}

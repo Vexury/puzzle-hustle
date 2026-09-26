@@ -1,0 +1,21 @@
+.cc-body { fill: #8a5a34; }
+.cc-eye { fill: #f8f1e8; }
+.cc-tail { fill: none; stroke: #8a5a34; stroke-width: 5; stroke-linecap: round; transform-origin: 44px 56px; }
+
+.cc-sitter { position: absolute; right: 18px; bottom: calc(96px + env(safe-area-inset-bottom)); width: 72px; opacity: 0.45; }
+.cc-sitter .cc-tail { animation: cc-swing 3.2s ease-in-out infinite alternate; }
+@keyframes cc-swing { from { transform: rotate(-14deg); } to { transform: rotate(22deg); } }
+
+.cc-peeker {
+  position: absolute; left: -10px; top: 74%; width: 60px; opacity: 0.4;
+  transform: rotate(90deg); transform-origin: 50% 50%;
+  animation: cc-peek 9s ease-in-out infinite;
+}
+@keyframes cc-peek {
+  0%, 20%, 100% { translate: -34px 0; }
+  35%, 75% { translate: 0 0; }
+}
+
+.cc-jumper { position: absolute; left: 0; top: 0; width: 64px; opacity: 0; }
+.cc-jumper .cc-body, .cc-jumper .cc-tail { fill: #c07a3a; stroke: #c07a3a; }
+.cc-jumper .cc-tail { fill: none; }

@@ -1,0 +1,21 @@
+.pp-doodle { position: absolute; fill: none; stroke: #625d51; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; opacity: 0.28; }
+.pp-star { width: 34px; left: 10px; bottom: calc(150px + env(safe-area-inset-bottom)); transform: rotate(-12deg); }
+.pp-spiral { width: 38px; right: 16px; bottom: calc(210px + env(safe-area-inset-bottom)); }
+.pp-arrow { width: 58px; right: 40px; bottom: calc(110px + env(safe-area-inset-bottom)); transform: rotate(8deg); }
+.pp-smile { width: 30px; left: 46%; bottom: calc(170px + env(safe-area-inset-bottom)); transform: rotate(6deg); }
+
+/* A rubber stamp in red ink: a double frame, slightly uneven, landing with a thud. */
+.pp-stamp {
+  position: absolute; translate: -50% -50%;
+  padding: 6px 18px; border: 4px double #c2483a; border-radius: 8px;
+  color: #c2483a; font-family: 'Patrick Hand', var(--font-text); font-size: 44px; letter-spacing: 0.06em; text-transform: uppercase;
+  mask: radial-gradient(circle at 30% 40%, #000 60%, rgba(0, 0, 0, 0.75) 61%);
+  animation: pp-stamp 2.4s ease-out forwards;
+}
+@keyframes pp-stamp {
+  0% { opacity: 0; transform: rotate(-12deg) scale(1.8); }
+  12% { opacity: 0.9; transform: rotate(-12deg) scale(0.96); }
+  18% { transform: rotate(-12deg) scale(1); }
+  80% { opacity: 0.9; transform: rotate(-12deg) scale(1); }
+  100% { opacity: 0; transform: rotate(-12deg) scale(1); }
+}

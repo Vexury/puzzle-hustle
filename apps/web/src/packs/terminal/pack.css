@@ -46,3 +46,7 @@
    every other consumer of the token (h1/h2/h3, .shop-flair-tile, buttons, timers, ...) resolve to
    Inconsolata: the whole pack is monospace, body text included. */
 [data-pack="terminal"] body { --font-text: 'Inconsolata', ui-monospace, monospace; }
+
+/* A cursor blinks after every page title. */
+[data-pack="terminal"] h1::after { content: '_'; margin-left: -6px; color: var(--accent); animation: terminal-cursor 1.1s steps(1) infinite; }
+@keyframes terminal-cursor { 50% { opacity: 0; } }

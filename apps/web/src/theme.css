@@ -134,6 +134,8 @@ body {
   color: var(--text);
   --font-num: 'Inconsolata', ui-monospace, monospace;
   --font-text: 'Nunito', system-ui, sans-serif;
+  /* Headings and card titles. A pack may give them their own face; text and numbers stay put. */
+  --font-display: var(--font-text);
   font-family: var(--font-text);
   font-size: var(--fs-base);
   line-height: 1.45;
@@ -163,7 +165,7 @@ button { font: inherit; color: inherit; }
 .intro-dots { display: flex; gap: 6px; justify-content: center; margin-top: 4px; }
 .intro-dots .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border-mid); }
 .intro-dots .dot.on { background: var(--accent); }
-h1, h2, h3 { margin: 0; line-height: 1.15; }
+h1, h2, h3 { margin: 0; line-height: 1.15; font-family: var(--font-display); }
 h1 { font-size: var(--fs-xl); font-weight: 800; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 h2 { font-size: var(--fs-lg); }
 p { margin: 0; }
@@ -279,7 +281,7 @@ p { margin: 0; }
 }
 .row-check svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 4.4; stroke-linecap: round; stroke-linejoin: round; }
 .row-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.row-title { font-weight: 700; font-size: var(--fs-md); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row-title { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-md); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .row-sub { color: var(--text-muted); font-size: var(--fs-sm); }
 .diff { font-weight: 700; }
 .diff.easy { color: var(--success); }

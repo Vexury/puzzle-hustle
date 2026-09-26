@@ -1,0 +1,25 @@
+.mn-star { position: absolute; border-radius: 50%; background: #dbe9ff; animation: mn-twinkle ease-in-out infinite alternate; }
+@keyframes mn-twinkle { from { opacity: 0.15; } to { opacity: 0.8; } }
+.mn-sparkle { position: absolute; fill: #cfe3ff; animation: mn-glint 4s ease-in-out infinite; }
+@keyframes mn-glint {
+  0%, 100% { opacity: 0.2; transform: scale(0.7) rotate(0deg); }
+  50% { opacity: 0.9; transform: scale(1) rotate(20deg); }
+}
+.mn-moon {
+  position: absolute; bottom: calc(118px + env(safe-area-inset-bottom)); right: 28px; width: 60px;
+  fill: #e8f1ff; opacity: 0.35; filter: drop-shadow(0 0 10px rgba(158, 203, 255, 0.5));
+}
+
+/* A bright head with a fading tail, flying from the upper left down across the screen. */
+.mn-shooting {
+  position: absolute; top: 12vh; left: -30vw; width: 26vw; height: 2px; border-radius: 2px;
+  background: linear-gradient(to right, transparent, rgba(158, 203, 255, 0.6), #fff);
+  filter: drop-shadow(0 0 6px #9ecbff);
+  transform: rotate(18deg);
+  animation: mn-shoot 1.1s ease-in forwards;
+}
+@keyframes mn-shoot {
+  0% { opacity: 0; transform: rotate(18deg) translateX(0); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(18deg) translateX(150vw); }
+}

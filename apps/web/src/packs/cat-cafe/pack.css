@@ -29,3 +29,26 @@
      instead of mosaic.css's light default, which reads at ~3.5:1 here. */
   --mosaic-clue-on-fill: #2a1a0e;
 }
+
+@font-face {
+  font-family: 'Fredoka';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../../../public/fonts/fredoka-latin.woff2') format('woff2');
+}
+[data-pack="cat-cafe"] body { --font-display: 'Fredoka', var(--font-text); }
+
+/* Steam rises off the coin, as off a cup. */
+[data-pack="cat-cafe"] .coin-pill { position: relative; }
+[data-pack="cat-cafe"] .coin-pill::before {
+  content: ''; position: absolute; left: 8px; bottom: 100%; width: 14px; height: 16px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 16'%3E%3Cpath d='M4 15c-3-3 3-5 0-8s2-5 0-7M10 15c-3-3 3-5 0-8' fill='none' stroke='%23c07a3a' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center / contain;
+  animation: cat-cafe-steam 2.6s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes cat-cafe-steam {
+  0% { opacity: 0; transform: translateY(4px) scaleY(0.8); }
+  40% { opacity: 0.7; }
+  100% { opacity: 0; transform: translateY(-4px) scaleY(1.1); }
+}

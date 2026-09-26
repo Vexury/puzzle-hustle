@@ -1,12 +1,10 @@
-import { useEffect, useState } from 'react';
-import { onAppEvent } from '../../lib/appEvents.ts';
+import { useSolveCount } from '../shared.ts';
 import './scene.css';
 
 // A retro sun and a grid rolling toward the horizon behind everything, and a short scanline
 // glitch over the screen when a puzzle is solved.
 export default function SynthwaveScene() {
-  const [glitch, setGlitch] = useState(0);
-  useEffect(() => onAppEvent((event) => event === 'solved' && setGlitch((n) => n + 1)), []);
+  const glitch = useSolveCount();
   return (
     <>
       <div className="pack-back sw-back">

@@ -330,8 +330,8 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
     if (result) return;
     setRunning(false);
     haptics.solved();
-    emitAppEvent('solved');
     const elapsed = elapsedNow();
+    emitAppEvent({ type: 'solved', seconds: elapsed });
     const record: SolveRecord = { solvedAt: new Date().toISOString(), seconds: elapsed, hints: counters.current.hints, moves: counters.current.moves };
     setSeconds(elapsed);
     setResult(record);

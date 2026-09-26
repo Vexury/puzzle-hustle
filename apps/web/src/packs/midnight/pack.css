@@ -38,3 +38,12 @@
   --region-10: #3a2226;
   --region-11: #28301f;
 }
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../../../public/fonts/cormorant-garamond-latin.woff2') format('woff2');
+}
+[data-pack="midnight"] body { --font-display: 'Cormorant Garamond', var(--font-text); }

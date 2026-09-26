@@ -26,3 +26,19 @@
   --pack-pattern-image: radial-gradient(rgba(120, 100, 60, 0.06) 1px, transparent 1px);
   --pack-pattern-size: 5px 5px;
 }
+
+@font-face {
+  font-family: 'Patrick Hand';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../../../public/fonts/patrick-hand-latin.woff2') format('woff2');
+}
+[data-pack="paper"] body { --font-display: 'Patrick Hand', var(--font-text); }
+/* The hand has one weight; the bold headings would be faked from it. */
+[data-pack="paper"] :is(h1, h2, h3, .row-title) { font-weight: 400; }
+
+/* The board drawn twice by hand: a second pencil line a little off the first. */
+[data-pack="paper"] .board-frame:not(.solved) {
+  box-shadow: 2px 3px 0 -1px color-mix(in srgb, var(--text) 30%, transparent), -2px -1px 0 -1px color-mix(in srgb, var(--text) 20%, transparent);
+}

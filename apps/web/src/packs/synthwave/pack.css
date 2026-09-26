@@ -52,3 +52,12 @@
   box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 45%, transparent);
   animation: synthwave-neon 8s linear infinite;
 }
+
+@font-face {
+  font-family: 'Orbitron';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../../../public/fonts/orbitron-latin.woff2') format('woff2');
+}
+[data-pack="synthwave"] body { --font-display: 'Orbitron', var(--font-text); }

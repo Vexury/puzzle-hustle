@@ -29,3 +29,12 @@
      instead of mosaic.css's light default, which reads at ~3.5:1 here. */
   --mosaic-clue-on-fill: #3a0a1c;
 }
+
+@font-face {
+  font-family: 'Zen Maru Gothic';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../../../public/fonts/zen-maru-gothic-latin.woff2') format('woff2');
+}
+[data-pack="sakura"] body { --font-display: 'Zen Maru Gothic', var(--font-text); }
