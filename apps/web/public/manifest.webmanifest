@@ -4,6 +4,7 @@
   "description": "Daily, weekly and monthly logic puzzles.",
   "start_url": "./",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#faf9f8",
   "theme_color": "#FFA833",
   "icons": [

@@ -28,6 +28,8 @@ Stand: 2026-09-26
 
 ## Erledigt
 
+- [x] 2026-09-26 **Michi** Querformat abschalten: Android, iPhone und PWA nur noch hochkant, iPad hochkant
+  in beiden Richtungen mit `UIRequiresFullScreen`, weil Apple Split View sonst alle vier Ausrichtungen verlangt.
 - [x] 2026-09-26 **Jonas** Eigene Zeile in der Bestenliste wirkte ab Platz 4 unmarkiert: den Ring gab
   es nur auf dem Podium, darunter nur eine blasse Akzentflaeche, die im Dark Theme wie Bronze aussah.
   Der Ring steht jetzt auf jedem Platz.
