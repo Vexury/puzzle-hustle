@@ -4,7 +4,7 @@ import { flushSync } from 'react-dom';
 import { findCosmetic, type ThemeCosmetic } from '@puzzle-hustle/core';
 import { equip, readEquipped } from './coins.ts';
 import { storedAccent } from './accent.ts';
-import { readSetting, writeSetting } from './storage.ts';
+import { readSetting, resetProgress, writeSetting } from './storage.ts';
 
 export interface Origin {
   x: number;
@@ -63,6 +63,14 @@ function apply() {
 
 export function refreshAppearance() {
   apply();
+}
+
+// Lives here, not in storage.ts, so storage.ts never has to import theme.ts: resetProgress()
+// clears the equipped pack and the stored accent lookup stays untouched, but nothing re-applies
+// the root's data-theme/data-pack/data-accent attributes without this.
+export function resetProgressAndAppearance() {
+  resetProgress();
+  refreshAppearance();
 }
 
 export function tryOnPack(id: string | null, origin?: Origin) {

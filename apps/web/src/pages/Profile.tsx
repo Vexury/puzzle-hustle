@@ -8,10 +8,10 @@ import { pushCosmetics } from '../lib/coins.ts';
 import { buyUnlimitedHints, hasUnlimitedHints, onEntitlement, restoreUnlimitedHints, type PurchaseOutcome } from '../lib/entitlement.ts';
 import { HAPTICS_KEY, hapticsAvailable, tap } from '../lib/haptics.ts';
 import { href, onLinkClick } from '../lib/router.ts';
-import { readSetting, resetProgress, useSolves, writeSetting } from '../lib/storage.ts';
+import { readSetting, useSolves, writeSetting } from '../lib/storage.ts';
 import { formatSeconds } from '../lib/share.ts';
 import { dailyStreaks, totalSolved, typeStats } from '../lib/stats.ts';
-import { THEME_PREFS, centerOf, usePack, useTheme, type ThemePref } from '../lib/theme.ts';
+import { THEME_PREFS, centerOf, resetProgressAndAppearance, usePack, useTheme, type ThemePref } from '../lib/theme.ts';
 import { AccountCard, PRIVACY_POLICY_URL } from '../components/AccountCard.tsx';
 import { CoinPill } from '../components/CoinPill.tsx';
 import { toast } from '../components/Toast.tsx';
@@ -261,7 +261,7 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
               type="button"
               className="pill danger"
               onClick={() => {
-                resetProgress();
+                resetProgressAndAppearance();
                 void pushCosmetics();
                 setConfirmReset(false);
               }}

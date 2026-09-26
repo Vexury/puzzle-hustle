@@ -1,7 +1,7 @@
 import { beforeEach, expect, it } from 'vitest';
 import { recordSolve, rehydrate } from '../src/lib/storage.ts';
 import { buyItem } from '../src/lib/coins.ts';
-import { activePack, equipPack, refreshAppearance, tryOnPack } from '../src/lib/theme.ts';
+import { activePack, equipPack, refreshAppearance, resetProgressAndAppearance, tryOnPack } from '../src/lib/theme.ts';
 
 const root = document.documentElement;
 
@@ -67,4 +67,15 @@ it('a try-on shows a pack without owning or saving it, and ends cleanly', () => 
 it('ignores an unknown or non-theme id for a try-on', () => {
   tryOnPack('bolt');
   expect(root.dataset['pack']).toBeUndefined();
+});
+
+it('a progress reset drops the pack from the root and restores the stored accent', () => {
+  localStorage.setItem('ph:accent', 'iris');
+  earnSome(50);
+  buyItem('paper');
+  equipPack('paper');
+  expect(root.dataset['pack']).toBe('paper');
+  resetProgressAndAppearance();
+  expect(root.dataset['pack']).toBeUndefined();
+  expect(root.dataset['accent']).toBe('iris');
 });
