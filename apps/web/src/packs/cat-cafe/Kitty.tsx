@@ -23,7 +23,7 @@ export function Kitty({
   anim,
   seconds,
   pause = false,
-  scale = 3,
+  scale = 2,
   className,
   style,
 }: {

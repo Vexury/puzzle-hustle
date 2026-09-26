@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { PackAnchor } from './packs/anchors.tsx';
 import { PackLayer } from './packs/PackLayer.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import { Intro } from './components/Intro.tsx';
@@ -96,6 +97,7 @@ export function App() {
         <main>
           <div key={nav.path} className={`page${nav.slide}`}>
             <ErrorBoundary resetKey={`${route.path}?${route.params.toString()}`}>{page}</ErrorBoundary>
+            <PackAnchor name="page-end" />
           </div>
         </main>
         {chrome && <TabBar />}

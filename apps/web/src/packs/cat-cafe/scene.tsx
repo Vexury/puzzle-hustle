@@ -1,3 +1,5 @@
+import { useRoute } from '../../lib/router.ts';
+import { InAnchor } from '../anchors.tsx';
 import { Kitty } from './Kitty.tsx';
 import { CAKE, CUP, Pixels, STEAM, TAIL } from './Pixels.tsx';
 import './scene.css';
@@ -12,40 +14,71 @@ function SteamingCup({ className }: { className: string }) {
   );
 }
 
-// A little café with kittens in it: a striped awning over the top of the screen and coffee beans
-// on the wall. On the tab bar one kitten sleeps and one washes now and then, and another walks in
-// from the right to the last tab, sits a while and walks off again, never crossing the others;
-// with the Social tab a fourth one sits over Profile. In a puzzle, where there is no tab bar,
-// two keep the player company on shelves below the board, with a cup and a slice of cake.
-export default function CatCafeScene() {
-  return (
-    <>
-      <div className="pack-back cc-play-only">
-        <div className="cc-shelf cc-shelf-low">
+// One little shelf per page: a kitten asleep by a cup on Daily, one washing on Puzzles, one
+// yawning by a slice of cake everywhere else, and in a puzzle two shelves below the board.
+function Shelves({ path }: { path: string }) {
+  if (path === '/play') {
+    return (
+      <div className="cc-row">
+        <div className="cc-shelf cc-left">
           <Kitty coat="grey" anim="sleepRight" seconds={1.8} className="cc-loafer" />
           <Pixels art={TAIL} className="cc-tail" />
           <Pixels art={CAKE} className="cc-cake" />
           <i className="cc-plank" />
         </div>
-        <div className="cc-shelf cc-shelf-high">
-          <SteamingCup className="cc-shelf-cup" />
-          <Kitty coat="white" anim="yawn" seconds={5} pause className="cc-shelf-sitter" />
+        <div className="cc-shelf cc-right">
+          <SteamingCup className="cc-cup" />
+          <Kitty coat="white" anim="yawn" seconds={5} pause className="cc-sitter" />
           <i className="cc-plank" />
         </div>
       </div>
-      <div className="pack-front">
-        <div className="cc-awning" />
-        <div className="cc-perch">
-          <Kitty coat="white" anim="sleepLeft" seconds={1.8} className="cc-sleeper cc-lying" />
-          <Kitty coat="grey" anim="wash" seconds={4.5} pause className="cc-washer" />
-          <Kitty coat="white" anim="yawn" seconds={6} pause className="cc-profile" />
-          <div className="cc-visit">
-            <Kitty coat="ginger" anim="walkLeft" seconds={0.9} className="cc-visit-in" />
-            <Kitty coat="ginger" anim="look" seconds={6} pause className="cc-visit-sit" />
-            <Kitty coat="ginger" anim="walkRight" seconds={0.9} className="cc-visit-out" />
-          </div>
+    );
+  }
+  if (path === '/') {
+    return (
+      <div className="cc-row">
+        <div className="cc-shelf cc-left">
+          <Kitty coat="white" anim="sleepLeft" seconds={1.8} className="cc-sleeper" />
+          <SteamingCup className="cc-cup cc-cup-end" />
+          <i className="cc-plank" />
         </div>
       </div>
+    );
+  }
+  if (path.startsWith('/levels')) {
+    return (
+      <div className="cc-row">
+        <div className="cc-shelf cc-right">
+          <Kitty coat="grey" anim="wash" seconds={4.5} pause className="cc-sitter" />
+          <i className="cc-plank" />
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="cc-row">
+      <div className="cc-shelf cc-mid">
+        <Kitty coat="ginger" anim="yawn" seconds={6} pause className="cc-sitter" />
+        <Pixels art={CAKE} className="cc-cake" />
+        <i className="cc-plank" />
+      </div>
+    </div>
+  );
+}
+
+// A little café with kittens in it: a striped awning over the top of the screen, coffee beans on
+// the wall, and at the end of every page a shelf with a kitten. The shelves take a row of their
+// own in the page flow, so they never cover a control.
+export default function CatCafeScene() {
+  const route = useRoute();
+  return (
+    <>
+      <div className="pack-front">
+        <div className="cc-awning" />
+      </div>
+      <InAnchor name="page-end">
+        <Shelves path={route.path} />
+      </InAnchor>
     </>
   );
 }

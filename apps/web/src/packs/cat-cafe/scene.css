@@ -16,75 +16,42 @@
   100% { background-position-x: calc(var(--kitty-frames) * var(--kitty-cell) * -1); }
 }
 
-/* On the tab bar: its top edge is 12 px + its height above the bottom, and a sitting kitten's
-   feet are 21 px above the bottom of its box at 3x. The bar is at most 420 px wide and centred,
-   with 6 px padding and 4 px between its three tabs, or four once Social is there. Each kitten
-   sits over a tab: the sleeper over Daily, the washer over Puzzles, the visitor over the last
-   tab, and with Social a fourth kitten over Profile. The offsets are the middle of each
-   kitten's sprite within its 96 px box. */
-.cc-perch {
-  --bar-half: min(50vw - 16px, 210px);
-  --tabs: 3;
-  --tab-w: calc((2 * var(--bar-half) - 12px - 4px * (var(--tabs) - 1)) / var(--tabs));
-  --tab-0: calc(50vw - var(--bar-half) + 6px + var(--tab-w) * 0.5);
-  --visit-x: calc(var(--tab-0) + (var(--tabs) - 1) * (var(--tab-w) + 4px) - 52px);
-  position: absolute; left: 0; right: 0; bottom: calc(12px + var(--tabbar-h) - 22px + env(safe-area-inset-bottom)); height: 96px;
-}
-body:has(.tabbar > :nth-child(4)) .cc-perch { --tabs: 4; }
-.cc-perch > * { position: absolute; bottom: 0; }
-.cc-lying { margin-bottom: -9px; }
-.cc-sleeper { left: calc(var(--tab-0) - 44px); }
-.cc-washer { left: calc(var(--tab-0) + var(--tab-w) + 4px - 52px); }
-.cc-profile { left: calc(var(--tab-0) + 2 * (var(--tab-w) + 4px) - 52px); display: none; }
-body:has(.tabbar > :nth-child(4)) .cc-profile { display: block; }
-
-/* The visitor walks in from beyond the right edge, sits at its spot looking about, and walks back
-   out; the three sprites take turns, all on the same 30 s clock as the walk. */
-.cc-visit { left: var(--visit-x); animation: cc-visit 30s linear infinite; }
-.cc-visit > * { position: absolute; bottom: 0; left: 0; opacity: 0; }
-.cc-visit-in { animation: kitty-play 0.9s steps(8) infinite, cc-visit-in 30s step-end infinite !important; }
-.cc-visit-sit { animation: kitty-pause 6s steps(6) infinite, cc-visit-sit 30s step-end infinite !important; }
-.cc-visit-out { animation: kitty-play 0.9s steps(8) infinite, cc-visit-out 30s step-end infinite !important; }
-@keyframes cc-visit {
-  0% { transform: translateX(calc(100vw - var(--visit-x))); }
-  12%, 62% { transform: translateX(0); }
-  74%, 100% { transform: translateX(calc(100vw - var(--visit-x))); }
-}
-@keyframes cc-visit-in { 0% { opacity: 1; } 12%, 100% { opacity: 0; } }
-@keyframes cc-visit-sit { 0% { opacity: 0; } 12% { opacity: 1; } 62%, 100% { opacity: 0; } }
-@keyframes cc-visit-out { 0% { opacity: 0; } 62% { opacity: 1; } 74%, 100% { opacity: 0; } }
-
-/* A puzzle has no tab bar; its kittens sit on two shelves below the board instead. A shelf is a
-   zero-height anchor at the top of its plank, and kittens are placed against it in sprite pixels
-   times three. The sleeper's body sinks behind the plank and its tail hangs over the left end. */
-body:has(.app.play-mode) .cc-perch { display: none; }
-body:not(:has(.app.play-mode)) .cc-play-only { display: none; }
-.cc-shelf { position: absolute; width: 112px; height: 0; }
-.cc-shelf-low { left: 24px; bottom: calc(62px + env(safe-area-inset-bottom)); }
-.cc-shelf-high { right: 16px; bottom: calc(156px + env(safe-area-inset-bottom)); width: 130px; }
+/* A shelf row closes every page in the page flow: 72 px high, clipped, never over a control.
+   A shelf is a zero-height anchor at the top of its plank, 56 px down the row, and things are
+   placed against it in sprite pixels times two. A sitting kitten's feet are 7 sprite pixels above
+   the bottom of its 32 px cell, a lying one's 3 lower; the loafer's body sinks behind the plank
+   and its tail hangs over the left end. */
+.cc-row { position: relative; height: 72px; margin-top: 8px; overflow: hidden; }
+.cc-shelf { position: absolute; top: 56px; height: 0; }
+.cc-left { left: 24px; width: 96px; }
+.cc-right { right: 16px; width: 88px; }
+.cc-mid { left: calc(50% - 40px); width: 80px; }
 .cc-plank {
-  position: absolute; left: 0; right: 0; top: 0; height: 6px; border-radius: 3px; z-index: 1;
-  background: #b98b62; box-shadow: 0 3px 0 rgba(90, 60, 30, 0.12);
+  position: absolute; left: 0; right: 0; top: 0; height: 4px; border-radius: 2px; z-index: 1;
+  background: #b98b62; box-shadow: 0 2px 0 rgba(90, 60, 30, 0.12);
 }
-.cc-loafer { position: absolute; left: -27px; top: -66px; }
+.cc-sitter { position: absolute; left: 27px; top: -49px; }
+.cc-mid .cc-sitter { left: 0; }
+.cc-sleeper { position: absolute; left: 4px; top: -46px; }
+.cc-loafer { position: absolute; left: -18px; top: -44px; }
 .cc-tail {
-  position: absolute; left: -12px; top: -6px; width: 15px; z-index: 2;
+  position: absolute; left: -8px; top: -4px; width: 10px; z-index: 2;
   transform-origin: 50% 0; animation: cc-tail 4s ease-in-out infinite alternate;
 }
 @keyframes cc-tail { from { transform: rotate(-6deg); } to { transform: rotate(8deg); } }
-.cc-shelf-sitter { position: absolute; left: 40px; top: -74px; }
-.cc-shelf-cup { position: absolute; left: 4px; bottom: 0; }
-.cc-cake { position: absolute; left: 70px; bottom: 0; }
+.cc-cup { position: absolute; left: 4px; bottom: 0; }
+.cc-cup-end { left: 64px; }
+.cc-cake { position: absolute; left: 50px; bottom: 0; }
 
 /* Cups steam in two wisps taking turns. */
-.cc-shelf-cup { width: 42px; }
-.cc-shelf-cup svg { display: block; }
-.cc-steam { position: absolute; bottom: 100%; left: 9px; opacity: 0; animation: cc-steam 2.8s ease-out infinite; }
-.cc-steam-late { left: 18px; animation-delay: 1.4s; }
+.cc-cup { width: 28px; }
+.cc-cup svg { display: block; }
+.cc-steam { position: absolute; bottom: 100%; left: 6px; opacity: 0; animation: cc-steam 2.8s ease-out infinite; }
+.cc-steam-late { left: 12px; animation-delay: 1.4s; }
 @keyframes cc-steam {
-  0% { opacity: 0; transform: translateY(6px); }
+  0% { opacity: 0; transform: translateY(4px); }
   30% { opacity: 0.85; }
-  100% { opacity: 0; transform: translateY(-6px); }
+  100% { opacity: 0; transform: translateY(-4px); }
 }
 
 /* A striped awning in pixel art over the top of the screen, just below the status bar: red and

@@ -8,6 +8,7 @@ components know nothing about packs; a pack reaches them only through the layers
 | Tokens | Colours, radii, shadows, pattern, fonts (`--font-display` for headings and card titles, set on `body`) | `<id>/pack.css`, block `[data-theme][data-pack="<id>"]` |
 | Slots | Styling of the shared elements listed below, nothing else | `<id>/pack.css`, selectors under `[data-pack="<id>"]` |
 | Scene | Decoration behind the app, moments in front of it | `<id>/scene.tsx`, registered in `registry.ts`, loaded on first use |
+| Anchors | Decoration with a place of its own in the page flow | `<InAnchor>` from `anchors.tsx`, inside the scene |
 
 ## Slots
 
@@ -35,8 +36,12 @@ The list grows only when a pack needs a new place, and every addition goes here.
   their own). Neither takes input.
 - React to moments through `onAppEvent` (`lib/appEvents.ts`): `'solved'`.
 - Nothing moves over a board while it is being played, and board numbers keep `--font-num`.
+- Decoration that has to stay with the content goes into an anchor instead of a plane: the app
+  marks the place with `<PackAnchor>`, the scene renders there through `<InAnchor>`, and the
+  decoration takes room of its own, so it can never cover a control. `page-end` closes every
+  page. A new anchor gets a name in `anchors.tsx` and a line here.
 - Animate `transform` and `opacity` where possible. `prefers-reduced-motion` stops every
-  animation on both planes and on the slots, and hides the front plane (`index.css`).
+  animation on both planes, in the anchors and on the slots, and hides the front plane (`index.css`).
 
 ## Assets
 

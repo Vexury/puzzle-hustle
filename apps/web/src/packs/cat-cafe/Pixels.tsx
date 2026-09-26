@@ -1,5 +1,5 @@
 // Pixel art drawn for the café, in the kitten sheet's style: near-black outline, flat fills,
-// shown at three screen pixels per art pixel like the kittens. One string per row, one character
+// shown at two screen pixels per art pixel like the kittens. One string per row, one character
 // per pixel; a space is transparent.
 const COLOURS: Record<string, string> = {
   '1': '#120e14',
@@ -49,8 +49,8 @@ export function Pixels({ art, className }: { art: string[]; className?: string }
   return (
     <svg
       className={className}
-      width={width * 3}
-      height={art.length * 3}
+      width={width * 2}
+      height={art.length * 2}
       viewBox={`0 0 ${width} ${art.length}`}
       shapeRendering="crispEdges"
       aria-hidden="true"

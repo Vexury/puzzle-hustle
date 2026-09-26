@@ -15,9 +15,11 @@
    and stays below the unlock modal and the intro. */
 .pack-back { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
 .pack-front { position: fixed; inset: 0; z-index: 45; pointer-events: none; overflow: hidden; }
+.pack-anchor { pointer-events: none; }
+.pack-anchor:empty { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .pack-back *, .pack-front *, [data-pack] .board-frame, [data-pack] .coin-pill::before, [data-pack] h1::after { animation: none !important; }
+  .pack-back *, .pack-front *, .pack-anchor *, [data-pack] .board-frame, [data-pack] .coin-pill::before, [data-pack] h1::after { animation: none !important; }
   .pack-front { display: none; }
 }
 
