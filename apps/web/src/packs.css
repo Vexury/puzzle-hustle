@@ -133,7 +133,6 @@
 
 [data-theme][data-pack="terminal"] {
   color-scheme: dark;
-  --font-text: 'Inconsolata', ui-monospace, monospace;
   --bg: #0a0c0a;
   --card-bg: #101410;
   --text: #ffd28a;
@@ -216,9 +215,9 @@
 
 [data-pack="synthwave"] .board-frame:not(.solved) { box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 45%, transparent); }
 [data-pack="terminal"] .board-frame:not(.solved) { box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent); }
-/* body redefines --font-text on itself (theme.css), which shadows the pack's own value for
-   every descendant, including headings; setting the token again here can't reach past that, so
-   the pack's monospace heading is applied directly to the elements that need it. */
-[data-pack="terminal"] h1,
-[data-pack="terminal"] h2,
-[data-pack="terminal"] h3 { font-family: 'Inconsolata', ui-monospace, monospace; }
+/* body redefines --font-text on itself (theme.css), which shadows any value the terminal block
+   above would set at the root for every descendant. Redeclaring the token on the same body
+   element it's shadowed on wins by specificity, so body's own font-family: var(--font-text) and
+   every other consumer of the token (h1/h2/h3, .shop-flair-tile, buttons, timers, ...) resolve to
+   Inconsolata: the whole pack is monospace, body text included. */
+[data-pack="terminal"] body { --font-text: 'Inconsolata', ui-monospace, monospace; }
