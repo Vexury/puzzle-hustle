@@ -46,3 +46,14 @@ it.each(DONE)('%s keeps text readable', (id) => {
   expect(contrast(b['--accent-text']!, b['--bg']!)).toBeGreaterThanOrEqual(4.5);
   expect(contrast(b['--on-accent']!, b['--accent']!)).toBeGreaterThanOrEqual(4.5);
 });
+
+const REGION_TOKENS = Array.from({ length: 12 }, (_, i) => `--region-${i}`);
+const DARK_PACKS = ['midnight', 'terminal', 'synthwave'];
+
+it.each(DARK_PACKS)('%s gives every region its own pack-hued, readable colour', (id) => {
+  const b = block(id);
+  for (const name of REGION_TOKENS) {
+    expect(b, name).toHaveProperty(name);
+    expect(contrast(b['--text']!, b[name]!), name).toBeGreaterThanOrEqual(4.5);
+  }
+});

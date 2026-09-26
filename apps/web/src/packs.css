@@ -88,6 +88,18 @@
   --nono-c3: #d06aa4;
   --pack-pattern-image: none;
   --pack-pattern-size: auto;
+  --region-0: #1b2a3a;
+  --region-1: #1f3326;
+  --region-2: #2e2340;
+  --region-3: #3a2a1c;
+  --region-4: #233238;
+  --region-5: #2b1f2c;
+  --region-6: #1f2b3f;
+  --region-7: #33301c;
+  --region-8: #26203a;
+  --region-9: #1c3330;
+  --region-10: #3a2226;
+  --region-11: #28301f;
 }
 
 [data-theme][data-pack="cat-cafe"] {
@@ -147,6 +159,18 @@
   --nono-c3: #d06aa4;
   --pack-pattern-image: repeating-linear-gradient(to bottom, rgba(255, 176, 0, 0.025) 0 1px, transparent 1px 3px);
   --pack-pattern-size: auto;
+  --region-0: #2a2310;
+  --region-1: #1c2a14;
+  --region-2: #2e1f0e;
+  --region-3: #1f2616;
+  --region-4: #332a12;
+  --region-5: #162418;
+  --region-6: #2b1c10;
+  --region-7: #24280f;
+  --region-8: #30240e;
+  --region-9: #1a2212;
+  --region-10: #2c200c;
+  --region-11: #202a16;
 }
 
 [data-theme][data-pack="synthwave"] {
@@ -176,7 +200,25 @@
   --nono-c3: #ffb347;
   --pack-pattern-image: linear-gradient(to bottom, transparent 55%, rgba(255, 79, 216, 0.10));
   --pack-pattern-size: auto;
+  --region-0: #3a1646;
+  --region-1: #123a44;
+  --region-2: #2c1a5a;
+  --region-3: #4a1838;
+  --region-4: #16324e;
+  --region-5: #3a2460;
+  --region-6: #10404a;
+  --region-7: #4a1c52;
+  --region-8: #1e2a5c;
+  --region-9: #401a40;
+  --region-10: #14384a;
+  --region-11: #321e58;
 }
 
 [data-pack="synthwave"] .board-frame:not(.solved) { box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 45%, transparent); }
 [data-pack="terminal"] .board-frame:not(.solved) { box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent); }
+/* body redefines --font-text on itself (theme.css), which shadows the pack's own value for
+   every descendant, including headings; setting the token again here can't reach past that, so
+   the pack's monospace heading is applied directly to the elements that need it. */
+[data-pack="terminal"] h1,
+[data-pack="terminal"] h2,
+[data-pack="terminal"] h3 { font-family: 'Inconsolata', ui-monospace, monospace; }
