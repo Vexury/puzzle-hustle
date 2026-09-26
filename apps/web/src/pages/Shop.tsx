@@ -36,6 +36,9 @@ export function itemState(id: string, ownedIds: Set<string>, equipped: Equipped,
 }
 
 export function Shop() {
+  // Same reason as useBalance()/useEquipped() in coins.ts: owned() and storedAccent() read
+  // external stores directly and take no arguments, so the compiler can't see them as inputs.
+  'use no memo';
   const balance = useBalance();
   const equipped = useEquipped();
   const session = useSession();
