@@ -43,4 +43,8 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- The portrait lock above would otherwise imply this feature as required, and Play would
+         drop every device without a portrait screen (TVs, some Chromebooks, car displays). -->
+    <uses-feature android:name="android.hardware.screen.portrait" android:required="false" />
 </manifest>
