@@ -2,9 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { DAILY_TYPES, PUZZLE_META, dailyRef, periodRef, refId } from '@puzzle-hustle/core';
 import { ApiError, apiFetch, readSession } from '../lib/api.ts';
 import { useSession } from '../lib/auth.ts';
+import { useEquipped } from '../lib/coins.ts';
+import { href, onLinkClick } from '../lib/router.ts';
 import { capitalize, joinUrl, share } from '../lib/share.ts';
 import { toast } from '../components/Toast.tsx';
-import { Board } from '../components/Board.tsx';
+import { Board, NameCell } from '../components/Board.tsx';
 import { CoinPill } from '../components/CoinPill.tsx';
 
 export interface Group {
@@ -98,6 +100,7 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
   const [groupId, setGroupId] = useState<string | null>(null);
   const [puzzleIndex, setPuzzleIndex] = useState(0);
   const [leaving, setLeaving] = useState<string | null>(null);
+  const equipped = useEquipped();
 
   useEffect(() => {
     if (!leaving) return;
@@ -181,6 +184,15 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
             </button>
           </section>
         )}
+        <section className="card-lg row-between">
+          <span className="social-look">
+            <span className="label">You in your groups</span>
+            <NameCell entry={{ name: session.player.name, ...equipped }} />
+          </span>
+          <a href={href('/shop')} className="pill outline" onClick={onLinkClick}>
+            Customize ›
+          </a>
+        </section>
         <div className="card-row">
           <section className="card-lg">
             <h2>New group</h2>

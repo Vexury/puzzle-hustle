@@ -15,8 +15,11 @@ import {
   signOut,
   useSession,
 } from '../lib/auth.ts';
+import { useEquipped } from '../lib/coins.ts';
 import { href, onLinkClick } from '../lib/router.ts';
 import { readSetting, writeSetting } from '../lib/storage.ts';
+import { BadgeIcon } from './BadgeIcon.tsx';
+import { rowCosmetics } from './Board.tsx';
 import { toast } from './Toast.tsx';
 
 export const PRIVACY_POLICY_URL = 'https://vexury.dev/puzzle-hustle-privacy/';
@@ -36,7 +39,7 @@ export function AccountCard({ joinCode = null }: { joinCode?: string | null } = 
   const session = useSession();
   const [name, setName] = useState(readSetting('ph:name') ?? '');
   const [editing, setEditing] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const { badge, flair } = rowCosmetics(useEquipped());
 
   // Follow the signed-in player's name, which sign-in may have replaced, and fall back to the
   // local name on sign-out, which signOut() has already cleared. Reading `editing` via
@@ -48,14 +51,6 @@ export function AccountCard({ joinCode = null }: { joinCode?: string | null } = 
     if (editingRef.current) return;
     setName(session ? session.player.name : readSetting('ph:name') ?? '');
   }, [session?.player.name, session === null]);
-
-  // Mirrors ResetButton.tsx's arm/revert pattern: the timer lives in an effect keyed on the
-  // armed state so it is cleared on unmount or re-arm instead of firing into a stale closure.
-  useEffect(() => {
-    if (!confirmDelete) return;
-    const timer = setTimeout(() => setConfirmDelete(false), DELETE_CONFIRM_MS);
-    return () => clearTimeout(timer);
-  }, [confirmDelete]);
 
   const commitName = () => {
     const v = name.trim().slice(0, 24);
@@ -91,49 +86,75 @@ export function AccountCard({ joinCode = null }: { joinCode?: string | null } = 
       ) : (
         <button type="button" className="name-btn" onClick={() => setEditing(true)}>
           {name || 'Add a name'}
-          {' '}
+          {badge && (
+            <>
+              {' '}
+              <BadgeIcon id={badge.id} />
+            </>
+          )}{' '}
           <span className="muted">✎</span>
         </button>
       )}
+      {flair && <span className="leaderboard-flair">{flair.title}</span>}
       <span className="muted small">
         {session
-          ? 'Signed in. Your name shows in your groups.'
+          ? 'Your name shows in your groups.'
           : SIGN_IN_AVAILABLE
             ? 'Sign in to compare your daily times with friends. Everything else works without an account.'
-            : "Sign-in isn't set up on this build yet. Everything else works without an account."}{' '}
-        <a href={PRIVACY_POLICY_URL} target="_blank" rel="noreferrer">
-          Privacy policy
-        </a>
+            : "Sign-in isn't set up on this build yet. Everything else works without an account."}
       </span>
       {!session && SIGN_IN_AVAILABLE && <SignInButton joinCode={joinCode} />}
       <div className="friends-actions">
         <a href={href('/shop')} className="pill outline" onClick={onLinkClick}>
-          Customize
+          Customize ›
         </a>
-        {session && (
-          <>
-            <button type="button" className="pill outline" onClick={signOut}>
-              Sign out
-            </button>
-            <button
-              type="button"
-              className={confirmDelete ? 'pill danger' : 'pill outline'}
-              onClick={() => {
-                if (!confirmDelete) {
-                  // Apple's popup must open right on the confirming click, with its script ready.
-                  if (isAppleSession() && !NATIVE_APPLE) void prepareAppleWeb().catch(() => undefined);
-                  setConfirmDelete(true);
-                  return;
-                }
-                setConfirmDelete(false);
-                void deleteAccount();
-              }}
-            >
-              {confirmDelete ? 'Sure?' : 'Delete account'}
-            </button>
-          </>
-        )}
       </div>
+    </div>
+  );
+}
+
+// The rare account actions, kept apart from the name so the top card carries one button.
+// Deleting must stay reachable in the app (Apple and Play both require it), just not up front.
+export function AccountActions() {
+  const session = useSession();
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  // Mirrors ResetButton.tsx's arm/revert pattern: the timer lives in an effect keyed on the
+  // armed state so it is cleared on unmount or re-arm instead of firing into a stale closure.
+  useEffect(() => {
+    if (!confirmDelete) return;
+    const timer = setTimeout(() => setConfirmDelete(false), DELETE_CONFIRM_MS);
+    return () => clearTimeout(timer);
+  }, [confirmDelete]);
+
+  if (!session) return null;
+  return (
+    <div className="card-lg">
+      <div className="row-between account-row">
+        <span>
+          <b>Account</b>
+          <span className="muted small">Signed in with {isAppleSession() ? 'Apple' : 'Google'}</span>
+        </span>
+        <button type="button" className="pill outline" onClick={signOut}>
+          Sign out
+        </button>
+      </div>
+      <button
+        type="button"
+        className={`linklike small account-delete${confirmDelete ? ' armed' : ''}`}
+        onClick={() => {
+          if (!confirmDelete) {
+            // Apple's popup must open right on the confirming click, with its script ready.
+            if (isAppleSession() && !NATIVE_APPLE) void prepareAppleWeb().catch(() => undefined);
+            setConfirmDelete(true);
+            return;
+          }
+          setConfirmDelete(false);
+          void deleteAccount();
+        }}
+      >
+        {confirmDelete ? 'Tap again to delete your account' : 'Delete account'}
+      </button>
     </div>
   );
 }

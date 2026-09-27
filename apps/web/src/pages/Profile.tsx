@@ -12,7 +12,7 @@ import { readSetting, useSolves, writeSetting } from '../lib/storage.ts';
 import { formatSeconds } from '../lib/share.ts';
 import { dailyStreaks, totalSolved, typeStats } from '../lib/stats.ts';
 import { THEME_PREFS, centerOf, resetProgressAndAppearance, usePack, useTheme, type ThemePref } from '../lib/theme.ts';
-import { AccountCard, PRIVACY_POLICY_URL } from '../components/AccountCard.tsx';
+import { AccountActions, AccountCard, PRIVACY_POLICY_URL } from '../components/AccountCard.tsx';
 import { CoinPill } from '../components/CoinPill.tsx';
 import { toast } from '../components/Toast.tsx';
 import { ThemeToggle } from '../components/ThemeToggle.tsx';
@@ -250,6 +250,8 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
             )}
           </div>
         ) : null}
+
+        <AccountActions />
 
         <div className="card-lg row-between">
           <span>
