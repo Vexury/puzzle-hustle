@@ -109,13 +109,19 @@ export function rowCosmetics(entry: { badge?: string | null; flair?: string | nu
   return { badge: badge?.kind === 'badge' ? badge : undefined, flair: flair?.kind === 'flair' ? flair : undefined };
 }
 
-export function NameCell({ entry }: { entry: { name: string; badge?: string | null; flair?: string | null } }) {
+export function NameCell({
+  entry,
+  wave = 0,
+}: {
+  entry: { name: string; badge?: string | null; flair?: string | null };
+  wave?: number;
+}) {
   const { badge, flair } = rowCosmetics(entry);
   return (
     <span className="leaderboard-who">
       <span className="leaderboard-name">
         <span className="leaderboard-name-text">{entry.name}</span>
-        {badge && <BadgeIcon id={badge.id} />}
+        {badge && <BadgeIcon id={badge.id} wave={wave} />}
       </span>
       {flair && <span className="leaderboard-flair">{flair.title}</span>}
     </span>
@@ -184,7 +190,7 @@ export function Board({
   return (
     <>
       <ol className="leaderboard">
-        {shown.map((entry) => (
+        {shown.map((entry, i) => (
           <Fragment key={entry.playerId}>
             <li
               className={`leaderboard-row${entry.rank <= 3 ? ` podium ${MEDALS[entry.rank - 1]}` : ''}${entry.playerId === meId ? ' me' : ''}`}
@@ -193,7 +199,7 @@ export function Board({
                 {entry.rank === 1 && <Crown />}
                 {entry.rank}
               </span>
-              <NameCell entry={entry} />
+              <NameCell entry={entry} wave={i * 0.1} />
               {entry.hints > 0 && <span className="muted small">{entry.hints} hint{entry.hints === 1 ? '' : 's'}</span>}
               <span className="leaderboard-time">{formatSeconds(entry.seconds)}</span>
               {entry.playerId !== meId && (

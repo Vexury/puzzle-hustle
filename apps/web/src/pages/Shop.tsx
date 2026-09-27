@@ -12,7 +12,7 @@ import {
   type FlairCosmetic,
   type ThemeCosmetic,
 } from '@puzzle-hustle/core';
-import { BadgeIcon } from '../components/BadgeIcon.tsx';
+import { BadgeIcon, badgeMotion } from '../components/BadgeIcon.tsx';
 import { NameCell } from '../components/Board.tsx';
 import { CoinPill } from '../components/CoinPill.tsx';
 import { toast } from '../components/Toast.tsx';
@@ -28,6 +28,14 @@ import { BackLink } from '../components/BackLink.tsx';
 
 const REVERT_MS = 4000;
 const BADGES: readonly BadgeCosmetic[] = COSMETICS.filter((c): c is BadgeCosmetic => c.kind === 'badge');
+
+// A tap plays the badge's motion once. An attribute rather than a class, so the re-render that
+// follows the tap (armed, owned, equipped) cannot wipe it mid-motion.
+function replayMotion(el: HTMLElement) {
+  el.removeAttribute('data-tap');
+  void el.offsetWidth;
+  el.setAttribute('data-tap', '');
+}
 
 export function itemState(id: string, ownedIds: Set<string>, equipped: Equipped, balance: number): 'equipped' | 'owned' | 'buyable' | 'locked' {
   if (equipped.badge === id || equipped.flair === id || equipped.theme === id) return 'equipped';
@@ -208,15 +216,20 @@ export function Shop() {
         <section className="card-lg">
           <h2>Badges</h2>
           <div className="shop-grid">
-            {BADGES.map((item) => (
+            {BADGES.map((item, i) => (
               <button
                 key={item.id}
                 type="button"
                 className={`shop-tile ${itemState(item.id, ownedIds, equipped, balance)}${armed === item.id ? ' armed' : ''}`}
-                onClick={() => tapBadge(item)}
+                data-motion={badgeMotion(item.id)}
+                onClick={(e) => {
+                  replayMotion(e.currentTarget);
+                  tapBadge(item);
+                }}
+                onAnimationEnd={(e) => e.animationName.startsWith('badge-tap') && e.currentTarget.removeAttribute('data-tap')}
                 aria-label={`${item.title}, ${badgeLabel(item)}`}
               >
-                <BadgeIcon id={item.id} className="shop-badge" />
+                <BadgeIcon id={item.id} className="shop-badge" wave={(Math.floor(i / 4) + (i % 4)) * 0.12} />
                 <span className="small">{badgeLabel(item)}</span>
               </button>
             ))}

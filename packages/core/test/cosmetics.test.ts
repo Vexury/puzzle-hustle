@@ -9,8 +9,18 @@ const badges = COSMETICS.filter(isBadge);
 const flairs = COSMETICS.filter(isFlair);
 const achievementIds = new Set(ACHIEVEMENTS.map((a) => a.id));
 
-it('has eight badges, unchanged, and fifty flairs, all with unique ids', () => {
-  expect(badges).toHaveLength(8);
+it('has thirty-two badges, the first eight unchanged, and fifty flairs, all with unique ids', () => {
+  expect(badges).toHaveLength(32);
+  expect(badges.slice(0, 8).map((b) => [b.id, b.price])).toEqual([
+    ['bolt', 100],
+    ['leaf', 100],
+    ['cat', 150],
+    ['moon', 150],
+    ['sun', 150],
+    ['ghost', 200],
+    ['rocket', 250],
+    ['diamond', 300],
+  ]);
   expect(flairs).toHaveLength(50);
   expect(new Set(COSMETICS.map((c) => c.id)).size).toBe(COSMETICS.length);
 });
