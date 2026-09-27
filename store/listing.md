@@ -110,8 +110,26 @@ can request deletion: yes. Collection of the account data is optional (only when
 Not collected: email address (the server reads only `sub` from the Google token), purchase history
 (Play Billing handles it, the server keeps no record), location, contacts, crash logs.
 The IP address reaches Cloudflare and the `/session` and `/events` rate limiters, but is not stored.
-App Store privacy label for the usage events: Product Interaction, not linked to the user, not
-used for tracking, purpose Analytics (matches `PrivacyInfo.xcprivacy`). TODO verify:
+**App Store privacy label** (published 2026-09-28). Our own types plus those in the Google Mobile
+Ads SDK's privacy manifest (read from the 13.10.0 SPM package). Apple asks per data type for the
+whole app, so a type counts as linked when any collector links it.
+
+| Data type | Source | Purposes | Linked | Tracking |
+| --- | --- | --- | --- | --- |
+| Gameplay Content | leaderboard times | App Functionality | yes | no |
+| Other User Content | display name, group names, badge/flair, reports | App Functionality | yes | no |
+| User ID | Apple subject ID, player ID | App Functionality | yes | no |
+| Product Interaction | usage events (not linked) and AdMob (linked) | Analytics, Third-Party Advertising, Developer's Advertising | yes | no |
+| Coarse Location | AdMob, from the IP | Analytics, Third-Party Advertising, Developer's Advertising | yes | no |
+| Advertising Data | AdMob | Analytics, Third-Party Advertising, Developer's Advertising | yes | no |
+| Device ID | AdMob | Analytics, Third-Party Advertising, Developer's Advertising | yes | no |
+| Crash Data | AdMob | Analytics | no | no |
+| Performance Data | AdMob | Analytics, Third-Party Advertising, Developer's Advertising | no | no |
+| Other Diagnostic Data | AdMob | Analytics, Third-Party Advertising, Developer's Advertising | no | no |
+
+Device ID is declared without tracking although Google's manifest marks it as tracking: the app
+never shows the ATT prompt, so the SDK gets the IDFV but never the IDFA. If review objects under
+5.1.2, add the ATT prompt and flip this answer. Privacy URL: https://vexury.dev/puzzle-hustle-privacy/. TODO verify:
 whether AdMob's own disclosure adds further types (app interactions, diagnostics) that Google
 expects the app to declare, and whether the 2026-09-21 answer "advertising ID collected, not
 shared" still matches Google's guidance for AdMob.
