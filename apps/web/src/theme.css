@@ -199,6 +199,10 @@ p { margin: 0; }
 .page-head .head-actions > .theme-toggle, .page-head .head-actions > .coin-pill { position: static; transform: none; }
 .page-head.compact { margin-top: 4px; }
 .head-back { display: flex; align-items: center; gap: 10px; }
+/* Back link, title and coins share one row, so the title gives way: smaller than a tab's title,
+   and cut short rather than run into the coins. */
+.head-back h1 { flex: 1; min-width: 0; font-size: clamp(1rem, 5.6vw, var(--fs-lg)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.page-head .head-back .coin-pill { position: static; transform: none; flex: none; }
 .friends-failed { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .section-h { margin: 36px 0 2px; font-size: var(--fs-lg); font-weight: 700; }
 .section-sub { margin-bottom: 10px; }

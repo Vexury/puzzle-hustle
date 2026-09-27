@@ -48,11 +48,11 @@ export function Achievements() {
         <div className="head-back">
           <BackLink fallback="/profile" />
           <h1>Achievements</h1>
+          <CoinPill />
         </div>
         <p className="muted small">
           {unlocked.size} of {ACHIEVEMENTS.length} earned
         </p>
-        <CoinPill />
       </section>
       <div className="ach-total" aria-hidden="true">
         <i style={{ width: `${(unlocked.size / ACHIEVEMENTS.length) * 100}%` }} />

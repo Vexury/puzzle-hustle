@@ -165,8 +165,8 @@ export function Shop() {
         <div className="head-back">
           <BackLink fallback="/profile" />
           <h1>Customize</h1>
+          <CoinPill />
         </div>
-        <CoinPill />
       </section>
 
       <div className="stack">
