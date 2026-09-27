@@ -75,8 +75,6 @@
 }
 
 .sudoku-value { position: relative; z-index: 1; line-height: 1; }
-/* The cage sum sits in the top left corner; a digit in its cell moves down and right out of it. */
-.sudoku-cell:has(.sudoku-cage-sum) .sudoku-value { top: 0.16em; left: 0.1em; }
 
 /* Eine Kontur je Kaefig statt vier Kanten je Zelle: nur so laeuft das Strichmuster
    ohne Naht um die Ecke. Die Pfade kommen aus cages.ts, in Zelleinheiten. */
@@ -90,11 +88,10 @@
 }
 .sudoku-cages path {
   fill: none;
-  stroke-width: 1.8;
+  /* In cell units, like the dashes cages.ts fits to each outline: about 1.8 px on a phone. */
+  stroke-width: 0.04;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-dasharray: 4.5 3.5;
-  vector-effect: non-scaling-stroke;
 }
 .sudoku-cages .k0 { stroke: var(--cage-0); }
 .sudoku-cages .k1 { stroke: var(--cage-1); }
@@ -104,12 +101,12 @@
 
 .sudoku-cage-sum {
   position: absolute;
-  top: calc(1.6cqw + 1px);
-  left: calc(2.3cqw + 1px);
   z-index: 2;
-  font-size: clamp(0.5rem, 2.7cqw, 0.8rem);
-  font-weight: 700;
+  transform: translateY(-50%);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
   line-height: 1;
+  text-align: center;
   color: var(--text-muted);
 }
 .sudoku-cage-sum.k0 { color: var(--cage-0); }
@@ -117,12 +114,6 @@
 .sudoku-cage-sum.k2 { color: var(--cage-2); }
 .sudoku-cage-sum.k3 { color: var(--cage-3); }
 .sudoku-cage-sum.k4 { color: var(--cage-4); }
-/* Sharing the cell with nine pencil marks: the sum pulls into the corner and gives up a little
-   size, so the marks below it keep a readable row height. */
-.sudoku-cell:has(.sudoku-notes) .sudoku-cage-sum {
-  top: calc(1.2cqw + 1px);
-  font-size: clamp(0.42rem, 2.2cqw, 0.62rem);
-}
 
 /* Positioned in percent of the cell, not in padding: the cage outline runs 11 % in from the
    cell edge (INSET in cages.ts) plus half its stroke, so the marks have to start inside that
@@ -142,12 +133,8 @@
   line-height: 1;
   color: var(--sudoku-note);
 }
-/* The cage sum owns the top-left corner. The marks start below it and shrink to fit what is
-   left, rather than growing out of the cell. */
-.sudoku-notes.with-sum {
-  top: 36%;
-  font-size: clamp(0.3rem, 1.7cqw, 0.5rem);
-}
+/* The cage sum sits in the outline above the marks and reaches a little below it. */
+.sudoku-notes.with-sum { top: 22%; }
 .sudoku-notes i {
   display: flex;
   align-items: center;

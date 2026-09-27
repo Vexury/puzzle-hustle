@@ -1,16 +1,39 @@
 import type { SudokuSpec } from '@puzzle-hustle/core';
 
-// One outline per cage, in cell units, so the board can draw it as a single SVG path: a dashed
-// line only runs around a corner without a seam if the corner belongs to the same path.
+// One outline per cage loop, in cell units, so the board can draw it as a single SVG path: a
+// dashed line only runs around a corner without a seam if the corner belongs to the same path.
 export interface CageShape {
-  path: string;
+  outlines: Outline[];
   colour: number;
+  sum: CageSum;
+}
+
+export interface Outline {
+  d: string;
+  dash: string;
+}
+
+// The sum stands in a gap of the outline on the top edge of the cage's first cell, so it takes
+// almost nothing from the digit or the marks below it. All values in cell units.
+export interface CageSum {
+  cell: number;
+  value: number;
+  left: number;
+  top: number;
+  width: number;
 }
 
 const N = 9;
 const INSET = 0.11;
 const RADIUS = 0.13;
 const COLOURS = 5;
+export const SUM_FONT = 0.27;
+// Nunito's digits are a little under 0.6 em wide; the pad keeps the dashes off the number.
+const DIGIT_WIDTH = 0.6 * SUM_FONT;
+const SUM_PAD = 0.04;
+// About 4.5 and 3.5 px on a phone-sized board; each outline stretches them slightly to fit.
+const DASH = 0.1;
+const GAP = 0.078;
 
 type Pt = [number, number];
 
@@ -104,16 +127,60 @@ function between(from: Pt, to: Pt, distance: number): Pt {
 const fmt = (p: Pt) => `${round(p[0])} ${round(p[1])}`;
 const round = (v: number) => Math.round(v * 1000) / 1000;
 
-function path(loop: Pt[], radius: number): string {
+// A quadratic corner from p0 over the cell corner c to p1, measured in a few straight steps.
+function curveLength(p0: Pt, c: Pt, p1: Pt): number {
+  let length = 0;
+  let prev = p0;
+  for (let k = 1; k <= 8; k++) {
+    const t = k / 8;
+    const u = 1 - t;
+    const p: Pt = [u * u * p0[0] + 2 * u * t * c[0] + t * t * p1[0], u * u * p0[1] + 2 * u * t * c[1] + t * t * p1[1]];
+    length += Math.hypot(p[0] - prev[0], p[1] - prev[1]);
+    prev = p;
+  }
+  return length;
+}
+
+// With a gap, the outline stays open between x = a and x = b on the edge from loop[0] to
+// loop[1] and starts at the far side of it, so both of its ends sit next to the number.
+function outline(loop: Pt[], radius: number, gap?: [number, number]): Outline {
   const n = loop.length;
   let d = '';
-  for (let i = 0; i < n; i++) {
+  let length = 0;
+  let at: Pt | undefined;
+  const lineTo = (p: Pt) => {
+    d += `${at ? 'L' : 'M'}${fmt(p)}`;
+    if (at) length += Math.hypot(p[0] - at[0], p[1] - at[1]);
+    at = p;
+  };
+  if (gap) lineTo([gap[1], loop[0]![1]]);
+  const first = gap ? 1 : 0;
+  for (let k = first; k < first + n; k++) {
+    const i = k % n;
     const cur = loop[i]!;
     const from = between(cur, loop[(i - 1 + n) % n]!, radius);
     const to = between(cur, loop[(i + 1) % n]!, radius);
-    d += `${i === 0 ? 'M' : 'L'}${fmt(from)}Q${fmt(cur)} ${fmt(to)}`;
+    lineTo(from);
+    d += `Q${fmt(cur)} ${fmt(to)}`;
+    length += curveLength(from, cur, to);
+    at = to;
   }
-  return `${d}Z`;
+  if (gap) {
+    lineTo([gap[0], loop[0]![1]]);
+    return { d, dash: dashes(length, false) };
+  }
+  const start = between(loop[0]!, loop[n - 1]!, radius);
+  length += Math.hypot(start[0] - at![0], start[1] - at![1]);
+  return { d: `${d}Z`, dash: dashes(length, true) };
+}
+
+// Stretch the pattern so a whole number of dashes fits: a closed outline meets itself without a
+// seam, an open one starts and ends on a full dash at the number.
+function dashes(length: number, closed: boolean): string {
+  const period = DASH + GAP;
+  const count = Math.max(1, Math.round((closed ? length : length + GAP) / period));
+  const scale = (closed ? length : length + GAP) / (count * period);
+  return `${round(DASH * scale)} ${round(GAP * scale)}`;
 }
 
 // Neighbouring cages never share a colour, otherwise the line would read as one cage.
@@ -155,12 +222,26 @@ export function cageLayout(spec: SudokuSpec): CageLayout {
   });
   const colour = colours(cageOf, spec.cages.length);
   return {
-    shapes: spec.cages.map((cage, k) => ({
-      colour: colour[k]!,
-      path: loops(new Set(cage.cells))
-        .map((loop) => path(inset(corners(loop), INSET), RADIUS))
-        .join(''),
-    })),
+    shapes: spec.cages.map((cage, k) => {
+      // The lowest index is the leftmost cell of the cage's top row, so its top left corner is
+      // always a corner of the outline with the top edge running right from it.
+      const cell = Math.min(...cage.cells);
+      const x = (cell % N) + INSET;
+      const y = Math.floor(cell / N) + INSET;
+      const width = String(cage.sum).length * DIGIT_WIDTH + 2 * SUM_PAD;
+      const outlines = loops(new Set(cage.cells)).map((loop) => {
+        const pts = inset(corners(loop), INSET);
+        const at = pts.findIndex((p) => Math.abs(p[0] - x) < 1e-9 && Math.abs(p[1] - y) < 1e-9);
+        if (at < 0) return outline(pts, RADIUS);
+        const rotated = [...pts.slice(at), ...pts.slice(0, at)];
+        return outline(rotated, RADIUS, [x + RADIUS, Math.min(x + RADIUS + width, rotated[1]![0] - RADIUS)]);
+      });
+      return {
+        colour: colour[k]!,
+        outlines,
+        sum: { cell, value: cage.sum, left: INSET + RADIUS, top: INSET, width },
+      };
+    }),
     colourOfCell: Array.from(cageOf, (k) => (k < 0 ? 0 : colour[k]!)),
   };
 }

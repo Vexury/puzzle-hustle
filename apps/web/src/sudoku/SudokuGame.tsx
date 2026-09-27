@@ -16,7 +16,7 @@ import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import { readSetting } from '../lib/storage.ts';
 import { showMistakes } from '../lib/mistakes.ts';
-import { cageLayout } from './cages.ts';
+import { cageLayout, SUM_FONT, type CageSum } from './cages.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
 import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 
@@ -35,13 +35,6 @@ export interface SudokuGameProps {
 }
 
 
-
-// The sum sits in the cell with the lowest index, the top left one of its cage.
-function cageSums(spec: SudokuSpec): (number | null)[] {
-  const sums = Array.from({ length: 81 }, () => null as number | null);
-  for (const cage of spec.cages) sums[Math.min(...cage.cells)] = cage.sum;
-  return sums;
-}
 
 function cloneState(state: SudokuState): SudokuState {
   return { values: Uint8Array.from(state.values), notes: Uint16Array.from(state.notes) };
@@ -75,7 +68,11 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
   const history = useHistory<SudokuState>();
   const stateRef = useRef(state);
   const cages = useMemo(() => cageLayout(spec), [spec]);
-  const sums = useMemo(() => cageSums(spec), [spec]);
+  const sums = useMemo(() => {
+    const out: (CageSum | undefined)[] = [];
+    for (const shape of cages.shapes) out[shape.sum.cell] = shape.sum;
+    return out;
+  }, [cages]);
   const values = useMemo(() => sudokuCellValues(spec, state), [spec, state]);
   const conflicts = useMemo(() => sudokuConflicts(spec, state), [spec, state]);
   const solved = isSudokuSolved(spec, state);
@@ -205,16 +202,23 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     <div className="sudoku-wrap">
       <div className={solved ? 'sudoku-board board-frame solved' : 'sudoku-board board-frame'} role="grid" aria-label="Sudoku board">
         {Array.from({ length: 81 }, (_, i) => {
-          const sum = sums[i]!;
+          const sum = sums[i];
           const v = values[i]!;
           const notes = state.notes[i]!;
           return (
             <div key={i} className={cellClass(i)} role="gridcell" aria-selected={i === selected} style={{ '--r': Math.floor(i / 9) } as React.CSSProperties} onPointerDown={() => !solved && setSelected(i)}>
-              {sum !== null && <span className={`sudoku-cage-sum k${cages.colourOfCell[i]}`}>{sum}</span>}
+              {sum && (
+                <span
+                  className={`sudoku-cage-sum k${cages.colourOfCell[i]}`}
+                  style={{ left: `${sum.left * 100}%`, top: `${sum.top * 100}%`, width: `${sum.width * 100}%`, fontSize: `${(SUM_FONT * 100) / 9}cqw` }}
+                >
+                  {sum.value}
+                </span>
+              )}
               {v ? (
                 <span className="sudoku-value">{v}</span>
               ) : notes ? (
-                <span className={sum !== null ? 'sudoku-notes with-sum' : 'sudoku-notes'}>
+                <span className={sum ? 'sudoku-notes with-sum' : 'sudoku-notes'}>
                   {DIGITS.map((d) => (
                     <i key={d} className={highlightEnabled && marked === d && notes & (1 << (d - 1)) ? 'on' : undefined}>
                       {notes & (1 << (d - 1)) ? d : ''}
@@ -227,9 +231,9 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
         })}
         {cages.shapes.length > 0 && (
           <svg className="sudoku-cages" viewBox="0 0 9 9" preserveAspectRatio="none" aria-hidden="true">
-            {cages.shapes.map((shape, k) => (
-              <path key={k} d={shape.path} className={`k${shape.colour}`} />
-            ))}
+            {cages.shapes.map((shape, k) =>
+              shape.outlines.map((o, j) => <path key={`${k}.${j}`} d={o.d} strokeDasharray={o.dash} className={`k${shape.colour}`} />),
+            )}
           </svg>
         )}
       </div>
