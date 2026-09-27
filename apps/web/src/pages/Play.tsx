@@ -432,7 +432,11 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
           <Clock /> {formatSeconds(result ? result.seconds : seconds)}
         </span>
         <span className="muted small">{sizeLabel}</span>
-        {result ? <span className="diff-pill solved">Solved</span> : <span className={`diff-pill ${puzzleRef.difficulty}`}>{puzzleRef.difficulty}</span>}
+        {result ? (
+          <span className="diff-pill solved">Solved</span>
+        ) : (
+          !puzzleRef.period && <span className={`diff-pill ${puzzleRef.difficulty}`}>{puzzleRef.difficulty}</span>
+        )}
       </div>
 
       {!showBoard ? null : 'slabs' in spec ? (

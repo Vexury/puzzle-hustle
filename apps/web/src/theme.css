@@ -296,11 +296,6 @@ p { margin: 0; }
 .row-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .row-title { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-md); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .row-sub { color: var(--text-muted); font-size: var(--fs-sm); }
-.diff { font-weight: 700; }
-.diff.easy { color: var(--success); }
-.diff.medium { color: var(--accent-deep); }
-.diff.hard { color: var(--danger); }
-.diff.genius { color: #7c5cbf; }
 
 .puzzle-icon {
   display: inline-grid;

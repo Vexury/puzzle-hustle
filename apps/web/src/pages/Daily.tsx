@@ -3,7 +3,7 @@ import { CLEAN_SWEEP_COINS, DAILY_TYPES, PUZZLE_META, dailyRef, encodeRef, nextP
 import { PuzzleIcon } from '../components/PuzzleIcon.tsx';
 import { href, onLinkClick } from '../lib/router.ts';
 import { readCurrentProgress, useSolves } from '../lib/storage.ts';
-import { capitalize, formatSeconds } from '../lib/share.ts';
+import { formatSeconds } from '../lib/share.ts';
 import { ThemeToggle } from '../components/ThemeToggle.tsx';
 import { CoinPill } from '../components/CoinPill.tsx';
 import { STREAK_MIN, dailyNumber, dailyStreaks, formatDateLong, monthlyNumber, weeklyNumber } from '../lib/stats.ts';
@@ -44,9 +44,7 @@ function ChallengeCard({ puzzleRef, label }: { puzzleRef: PuzzleRef; label: stri
       </span>
       <span className="row-text">
         <span className="row-title">{PUZZLE_META[puzzleRef.type].name}</span>
-        <span className="row-sub">
-          {label} <span className={`diff ${puzzleRef.difficulty}`}>{capitalize(puzzleRef.difficulty)}</span>
-        </span>
+        <span className="row-sub">{label}</span>
       </span>
       <span className={solve ? 'pill outline' : 'pill'}>{solve ? formatSeconds(solve.seconds) : started ? 'Continue' : 'Play'}</span>
     </a>
