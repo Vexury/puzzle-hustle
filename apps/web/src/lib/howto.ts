@@ -22,6 +22,7 @@ export const CONTROLS: Record<PuzzleTypeId, [string, string][]> = {
   shapes: [
     ['Drag', 'Move'],
     ['Tap, tap', 'Shape, then spot'],
+    ['Drag off', 'Back to the tray'],
   ],
   nonogram: GRID,
   mosaic: GRID,
@@ -47,9 +48,9 @@ export const CONTROLS: Record<PuzzleTypeId, [string, string][]> = {
 
 export const HOW_TO: Record<PuzzleTypeId, string[]> = {
   shapes: [
-    'Move every shape into the framed area so the lit pattern matches the faint target.',
+    'Drag every shape from the tray onto the board so the lit pattern matches the faint target.',
     'Where two shapes overlap, the overlap goes dark. A third shape on top lights it again.',
-    'The ring around the frame is free space to park shapes in.',
+    'The tray shows every shape at the same scale, one faint square per board cell.',
     'All shapes must be used. There is exactly one arrangement that works.',
   ],
   nonogram: [

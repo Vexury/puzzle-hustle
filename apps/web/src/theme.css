@@ -713,7 +713,6 @@ p { margin: 0; }
 .atom { fill: transparent; stroke: none; transition: fill 0.12s; }
 .atom.ghost { fill: var(--accent); opacity: 0.22; }
 .inner-area { fill: var(--board-cell); }
-.inner-frame { fill: none; stroke: var(--border-mid); stroke-width: 0.05; pointer-events: none; }
 .atom.lit { fill: var(--accent); stroke: var(--accent); stroke-width: 0.012; opacity: 0.42; }
 .atom.lit.match { opacity: 1; }
 .atom.lit:not(.match) { stroke: var(--accent-deep); }
@@ -727,6 +726,28 @@ p { margin: 0; }
 .piece-outline.selected { stroke: var(--accent-text); stroke-width: 0.07; }
 .piece-hit { fill: transparent; cursor: grab; stroke: transparent; stroke-width: 0.12; }
 .piece-hit:active { cursor: grabbing; }
+/* One scale for every slot, so a large piece reads twice the size of a small one; the faint
+   cells show how many board cells it covers. */
+.shapes-wrap { --tray-cell: clamp(16px, calc(min(100cqw, 520px) / var(--inner) * 0.4), 30px); }
+.shapes-tray { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; max-width: 520px; width: 100%; margin: 0 auto; touch-action: none; }
+.shapes-slot {
+  width: calc((var(--w) + 0.3) * var(--tray-cell));
+  height: calc((var(--h) + 0.3) * var(--tray-cell));
+  padding: 4px;
+  box-sizing: content-box;
+  border-radius: var(--radius-sm);
+  background: var(--board-cell);
+  border: 2px solid transparent;
+  touch-action: none;
+  cursor: grab;
+}
+.shapes-slot svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.shapes-slot.selected { border-color: var(--accent-text); }
+.shapes-slot.empty { cursor: default; }
+.shapes-slot.empty svg { opacity: 0.15; }
+.tray-cell { fill: none; stroke: var(--board-line); stroke-width: 0.04; }
+.tray-piece { fill: color-mix(in srgb, var(--accent) 35%, transparent); stroke: var(--piece-line); stroke-width: 0.06; stroke-linejoin: round; }
+.shapes-ghost { position: fixed; pointer-events: none; z-index: 50; overflow: visible; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.18)); }
 .hint-flash { fill: none; stroke: var(--success); stroke-width: 0.13; animation: flash 0.75s ease-out 4; pointer-events: none; }
 @keyframes flash { 0%, 45% { opacity: 1; } 100% { opacity: 0.15; } }
 .hint-mark {

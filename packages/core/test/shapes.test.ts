@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DIFFICULTIES } from '../src/types.ts';
 import { SHAPES, SHAPE_KINDS, atomIndex } from '../src/shapes/shapes.ts';
-import { coverage, fitsBoard, generateShapes, hint, inInner, isSolved, litMask, progress, type ShapesState } from '../src/shapes/puzzle.ts';
+import { coverage, generateShapes, hint, inInner, isSolved, litMask, progress, type ShapesState } from '../src/shapes/puzzle.ts';
 
 describe('shapes', () => {
   it('atoms stay within the declared bounding box and are unique', () => {
@@ -76,8 +76,6 @@ describe('generateShapes', () => {
           expect(inInner(spec.config, Math.floor(cell / spec.config.size), cell % spec.config.size)).toBe(true);
         }
         expect(isSolved(spec, spec.solution)).toBe(true);
-        expect(isSolved(spec, spec.start)).toBe(false);
-        spec.pieces.forEach((p, i) => expect(fitsBoard(spec.config.size, p.kind, spec.start[i]!)).toBe(true));
       }
     }
   });
@@ -92,9 +90,9 @@ describe('generateShapes', () => {
 });
 
 describe('hint', () => {
-  it('walks the start layout to the solution', () => {
+  it('walks a full tray to the solution', () => {
     const spec = generateShapes(99, 'hard');
-    const state: ShapesState = [...spec.start];
+    const state: ShapesState = spec.pieces.map(() => null);
     for (let i = 0; i < spec.pieces.length; i++) {
       const h = hint(spec, state);
       expect(h).not.toBeNull();
@@ -104,9 +102,16 @@ describe('hint', () => {
     expect(hint(spec, state)).toBeNull();
   });
 
+  it('is not solved while a piece lies in the tray', () => {
+    const spec = generateShapes(12, 'easy');
+    const state: ShapesState = [...spec.solution];
+    state[state.length - 1] = null;
+    expect(isSolved(spec, state)).toBe(false);
+  });
+
   it('leaves correctly placed pieces alone', () => {
     const spec = generateShapes(5, 'medium');
-    const state: ShapesState = [...spec.start];
+    const state: ShapesState = spec.pieces.map(() => null);
     state[0] = spec.solution[0]!;
     const h = hint(spec, state);
     expect(h).not.toBeNull();
@@ -115,8 +120,9 @@ describe('hint', () => {
 
   it('reports progress as matched target atoms', () => {
     const spec = generateShapes(3, 'easy');
-    const started = progress(spec, spec.start);
+    const started = progress(spec, spec.pieces.map(() => null));
     expect(started.total).toBeGreaterThan(0);
+    expect(started.matching).toBe(0);
     const done = progress(spec, spec.solution);
     expect(done.matching).toBe(done.total);
   });

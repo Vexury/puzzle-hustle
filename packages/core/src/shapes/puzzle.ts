@@ -1,6 +1,6 @@
 import { Rng } from '../rng.ts';
 import type { Difficulty } from '../types.ts';
-import { SHAPES, atomIndex, type AtomOffset, type ShapeKind } from './shapes.ts';
+import { SHAPES, atomIndex, type ShapeKind } from './shapes.ts';
 
 export const SHAPES_VERSION = 3;
 
@@ -35,10 +35,10 @@ export interface ShapesSpec {
   pieces: ShapesPiece[];
   target: Uint8Array;
   solution: Placement[];
-  start: Placement[];
 }
 
-export type ShapesState = Placement[];
+// null: the piece still lies in the tray below the board.
+export type ShapesState = (Placement | null)[];
 
 const SMALL: ShapeKind[] = ['sq1', 'tri-nw', 'tri-ne', 'tri-se', 'tri-sw', 'dia1'];
 const MEDIUM: ShapeKind[] = [...SMALL, 'sq2', 'tri2-nw', 'tri2-ne', 'tri2-se', 'tri2-sw'];
@@ -112,60 +112,13 @@ export function generateShapes(seed: number, difficulty: Difficulty, options: Sh
     }
     if (!validCandidate(config, pieces, solution)) continue;
     const target = litMask(coverage(config.size, pieces, solution));
-    const start = startLayout(config, pieces, target, rng);
-    return { version: SHAPES_VERSION, seed, difficulty, config, pieces, target, solution, start };
+    return { version: SHAPES_VERSION, seed, difficulty, config, pieces, target, solution };
   }
   throw new Error(`could not generate shapes for seed ${seed} / ${difficulty}`);
 }
 
 export function inInner(config: ShapesConfig, r: number, c: number): boolean {
   return r >= config.margin && c >= config.margin && r < config.margin + config.inner && c < config.margin + config.inner;
-}
-
-function startLayout(config: ShapesConfig, pieces: ShapesPiece[], target: Uint8Array, rng: Rng): Placement[] {
-  const size = config.size;
-  const order = rng.shuffle(pieces.map((_, i) => i));
-  const occupied = new Uint8Array(size * size * 4);
-  const start: Placement[] = pieces.map(() => ({ r: 0, c: 0 }));
-  for (const i of order) {
-    const s = SHAPES[pieces[i]!.kind];
-    const ring: Placement[] = [];
-    const clear: Placement[] = [];
-    const free: Placement[] = [];
-    for (let r = 0; r + s.height <= size; r++) {
-      for (let c = 0; c + s.width <= size; c++) {
-        if (!s.atoms.every(([dr, dc, dir]) => occupied[atomIndex(size, r + dr, c + dc, dir)] === 0)) continue;
-        free.push({ r, c });
-        if (s.atoms.every(([dr, dc]) => !inInner(config, r + dr, c + dc))) ring.push({ r, c });
-        else if (s.atoms.every(([dr, dc, dir]) => target[atomIndex(size, r + dr, c + dc, dir)] === 0)) clear.push({ r, c });
-      }
-    }
-    const p =
-      ring.length > 0 ? rng.pick(ring)
-      : clear.length > 0 ? rng.pick(clear)
-      : free.length > 0 ? rng.pick(leastCovering(size, s.atoms, target, free))
-      : { r: rng.int(size - s.height + 1), c: rng.int(size - s.width + 1) };
-    start[i] = p;
-    for (const [dr, dc, dir] of s.atoms) occupied[atomIndex(size, p.r + dr, p.c + dc, dir)] = 1;
-  }
-  const lit = litMask(coverage(size, pieces, start));
-  if (lit.every((v, i) => v === target[i])) {
-    const i = order[0]!;
-    const s = SHAPES[pieces[i]!.kind];
-    const p = start[i]!;
-    start[i] = p.c + s.width < size ? { r: p.r, c: p.c + 1 } : p.r + s.height < size ? { r: p.r + 1, c: p.c } : { r: 0, c: 0 };
-  }
-  return start;
-}
-
-function leastCovering(size: number, atoms: readonly AtomOffset[], target: Uint8Array, places: Placement[]): Placement[] {
-  let best = Infinity;
-  let out: Placement[] = [];
-  for (const p of places) {
-    const n = atoms.reduce((k, [dr, dc, dir]) => k + target[atomIndex(size, p.r + dr, p.c + dc, dir)]!, 0);
-    if (n < best) { best = n; out = [p]; } else if (n === best) out.push(p);
-  }
-  return out;
 }
 
 function validCandidate(config: ShapesConfig, pieces: ShapesPiece[], solution: Placement[]): boolean {
@@ -193,6 +146,7 @@ function validCandidate(config: ShapesConfig, pieces: ShapesPiece[], solution: P
 }
 
 export function isSolved(spec: ShapesSpec, state: ShapesState): boolean {
+  if (state.some((p) => !p)) return false;
   const lit = litMask(coverage(spec.config.size, spec.pieces, state));
   return lit.every((v, i) => v === spec.target[i]);
 }
@@ -219,9 +173,9 @@ export function hint(spec: ShapesSpec, state: ShapesState): Hint | null {
   const unmatched = new Set<number>(spec.solution.map((_, i) => i));
   const wrong: number[] = [];
   for (let i = 0; i < spec.pieces.length; i++) {
-    const p = state[i]!;
+    const p = state[i];
     const kind = spec.pieces[i]!.kind;
-    const match = [...unmatched].find((j) => spec.pieces[j]!.kind === kind && spec.solution[j]!.r === p.r && spec.solution[j]!.c === p.c);
+    const match = p ? [...unmatched].find((j) => spec.pieces[j]!.kind === kind && spec.solution[j]!.r === p.r && spec.solution[j]!.c === p.c) : undefined;
     if (match === undefined) wrong.push(i);
     else unmatched.delete(match);
   }
