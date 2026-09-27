@@ -84,7 +84,7 @@ export function Daily() {
         </div>
       </header>
 
-      <DailyProgress solved={streaks.today} total={dailies.length} />
+      <DailyProgress solved={streaks.today} total={dailies.length} streak={streaks.current} />
 
       <div className="stack">
         {dailies.map((ref) => (
@@ -111,7 +111,7 @@ export function Daily() {
   );
 }
 
-function DailyProgress({ solved, total }: { solved: number; total: number }) {
+function DailyProgress({ solved, total, streak }: { solved: number; total: number; streak: number }) {
   const safe = solved >= STREAK_MIN;
   const full = solved >= total;
   const missing = STREAK_MIN - solved;
@@ -131,7 +131,15 @@ function DailyProgress({ solved, total }: { solved: number; total: number }) {
       </div>
       <span className="small">
         {solved}/{total} solved ·{' '}
-        {full ? `clean sweep · +${CLEAN_SWEEP_COINS} coins` : safe ? 'streak safe' : missing === 1 ? 'one more for your streak' : `${missing} more for your streak`}
+        {full
+          ? `clean sweep · +${CLEAN_SWEEP_COINS} coins`
+          : safe
+            ? 'streak safe'
+            : streak === 0
+              ? `${missing} more ${missing === 1 ? 'daily' : 'dailies'} to start a streak`
+              : missing === 1
+                ? 'one more for your streak'
+                : `${missing} more for your streak`}
       </span>
     </div>
   );

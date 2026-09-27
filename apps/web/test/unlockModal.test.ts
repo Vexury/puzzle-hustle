@@ -18,6 +18,12 @@ import { buildUnlockRows } from '../src/components/UnlockModal.tsx';
 const weekly = ACHIEVEMENTS.find((a) => a.id === 'first-weekly')!;
 const genius = ACHIEVEMENTS.find((a) => a.id === 'first-genius')!;
 
+it('builds a streak row that explains the rule, without coins', () => {
+  const [row] = buildUnlockRows([{ kind: 'streak', id: '1' }], null);
+  expect(row).toMatchObject({ kind: 'streak', title: 'Streak started', coinsText: null });
+  expect(row!.description).toMatch(/every day/);
+});
+
 it('builds an achievement row from the catalogue, with the coin award text', () => {
   const rows = buildUnlockRows([{ kind: 'achievement', id: 'first-weekly' }], null);
   expect(rows).toEqual([

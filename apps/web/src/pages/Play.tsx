@@ -41,7 +41,7 @@ import { syncFlairs } from '../lib/flairs.ts';
 import { currentHintProvider, freeHints, type HintChoice } from '../lib/hints.ts';
 import { enqueue, flush } from '../lib/queue.ts';
 import { CONTROLS, HOW_TO } from '../lib/howto.ts';
-import { dailyNumber } from '../lib/stats.ts';
+import { dailyNumber, streakNews } from '../lib/stats.ts';
 import { useSession } from '../lib/auth.ts';
 import { ShapesGame } from '../shapes/ShapesGame.tsx';
 import { NonogramGame } from '../nonogram/NonogramGame.tsx';
@@ -53,6 +53,7 @@ import { SudokuGame } from '../sudoku/SudokuGame.tsx';
 import { RegionsGame } from '../regions/RegionsGame.tsx';
 import { Chevron } from '../components/Chevron.tsx';
 import { toast } from '../components/Toast.tsx';
+import { announceUnlock } from '../components/UnlockModal.tsx';
 import * as haptics from '../lib/haptics.ts';
 import { useBoard } from '../components/Board.tsx';
 import { useGroups } from './Friends.tsx';
@@ -372,6 +373,15 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
     if (scheduled && scheduled.seed === puzzleRef.seed && scheduled.difficulty === puzzleRef.difficulty) {
       enqueue(id, record);
       void flush().finally(() => setScoreSettled(true));
+    }
+    if (firstSolve) {
+      try {
+        const news = streakNews(storedSolves().map((s) => s.id), id);
+        if (news?.started) announceUnlock({ kind: 'streak', id: '1' });
+        else if (news) toast(`Streak safe · day ${news.days}`);
+      } catch {
+        /* the streak note never costs a player the solved screen */
+      }
     }
     syncAchievements();
     syncFlairs();

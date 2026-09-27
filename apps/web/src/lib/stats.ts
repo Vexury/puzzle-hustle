@@ -1,6 +1,7 @@
 import {
   LAUNCH_DAY,
   PUZZLE_TYPES,
+  STREAK_MIN,
   dailyStreaks as coreDailyStreaks,
   dayIndex,
   isoWeek,
@@ -39,6 +40,15 @@ export function monthlyNumber(key: string): number {
 // The record's values were never read here — only its keys, which are refIds.
 export function dailyStreaks(solves: Record<string, SolveRecord>, now: Date = new Date()): DailyStreaks {
   return coreDailyStreaks(Object.keys(solves), now);
+}
+
+// Non-null only for the solve that lifted today to STREAK_MIN dailies, which happens once a day:
+// `started` when that begins a new streak, otherwise the streak's length including today.
+export function streakNews(solvedIds: readonly string[], id: string, now: Date = new Date()): { started: boolean; days: number } | null {
+  const before = coreDailyStreaks(solvedIds.filter((s) => s !== id), now);
+  const after = coreDailyStreaks([...solvedIds.filter((s) => s !== id), id], now);
+  if (before.today >= STREAK_MIN || after.today < STREAK_MIN) return null;
+  return { started: after.current === 1, days: after.current };
 }
 
 export interface TypeStats {

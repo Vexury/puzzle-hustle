@@ -1,23 +1,24 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import confetti from 'canvas-confetti';
-import { ACHIEVEMENTS, ACHIEVEMENT_COINS, findCosmetic } from '@puzzle-hustle/core';
+import { ACHIEVEMENTS, ACHIEVEMENT_COINS, STREAK_MIN, findCosmetic } from '@puzzle-hustle/core';
 import { pushBackGuard } from '../lib/back.ts';
 import { equip, useEquipped } from '../lib/coins.ts';
 import { requirementText } from '../lib/flairs.ts';
 import * as haptics from '../lib/haptics.ts';
 import { INTRO_SEEN_KEY, readSetting } from '../lib/storage.ts';
+import { Flame } from '../pages/Daily.tsx';
 
-export type UnlockItem = { kind: 'achievement'; id: string } | { kind: 'flair'; id: string };
+export type UnlockItem = { kind: 'achievement'; id: string } | { kind: 'flair'; id: string } | { kind: 'streak'; id: string };
 
 function isUnlockItem(value: unknown): value is UnlockItem {
   if (!value || typeof value !== 'object') return false;
   const v = value as Record<string, unknown>;
-  return (v.kind === 'achievement' || v.kind === 'flair') && typeof v.id === 'string';
+  return (v.kind === 'achievement' || v.kind === 'flair' || v.kind === 'streak') && typeof v.id === 'string';
 }
 
 export interface UnlockRow {
   key: string;
-  kind: 'achievement' | 'flair';
+  kind: 'achievement' | 'flair' | 'streak';
   id: string;
   title: string;
   description: string;
@@ -32,7 +33,17 @@ export interface UnlockRow {
 export function buildUnlockRows(items: readonly UnlockItem[], equippedFlairId: string | null): UnlockRow[] {
   const rows: UnlockRow[] = [];
   for (const item of items) {
-    if (item.kind === 'achievement') {
+    if (item.kind === 'streak') {
+      rows.push({
+        key: `streak:${item.id}`,
+        kind: 'streak',
+        id: item.id,
+        title: 'Streak started',
+        description: `Solve ${STREAK_MIN} dailies every day to keep it going. Skip a day and it starts over.`,
+        coinsText: null,
+        equipped: false,
+      });
+    } else if (item.kind === 'achievement') {
       const achievement = ACHIEVEMENTS.find((a) => a.id === item.id);
       if (!achievement) continue;
       rows.push({
@@ -243,7 +254,7 @@ export function UnlockModalHost() {
       <div className={rows.length === 1 ? 'card-lg unlock-card unlock-single' : 'card-lg unlock-card'}>
         <ul className="unlock-list">
           {rows.map((row) =>
-            row.kind === 'achievement' ? (
+            row.kind !== 'flair' ? (
               <li key={row.key} className="unlock-row">
                 <UnlockRowBody row={row} />
               </li>
@@ -271,16 +282,24 @@ export function UnlockModalHost() {
   );
 }
 
+const EYEBROW: Record<UnlockRow['kind'], string> = {
+  streak: 'Daily streak',
+  achievement: 'Achievement unlocked',
+  flair: 'Flair unlocked',
+};
+
 function UnlockRowBody({ row }: { row: UnlockRow }) {
   return (
     <>
       <span className="unlock-mark" aria-hidden="true">
-        {row.kind === 'achievement' ? '★' : '♦'}
+        {row.kind === 'streak' ? <Flame /> : row.kind === 'achievement' ? '★' : '♦'}
       </span>
       <span className="unlock-text">
-        <span className="unlock-eyebrow">{row.kind === 'achievement' ? 'Achievement unlocked' : 'Flair unlocked'}</span>
+        <span className="unlock-eyebrow">{EYEBROW[row.kind]}</span>
         <b className={row.kind === 'flair' ? 'unlock-title unlock-flair-title' : 'unlock-title'}>{row.title}</b>
-        {row.kind === 'achievement' ? (
+        {row.kind === 'streak' ? (
+          <span className="muted unlock-desc">{row.description}</span>
+        ) : row.kind === 'achievement' ? (
           <>
             <span className="muted unlock-desc">{row.description}</span>
             <span className="coin-line">{row.coinsText}</span>
