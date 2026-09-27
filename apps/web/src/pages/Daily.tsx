@@ -86,7 +86,7 @@ export function Daily() {
 
       <div className="stack">
         {dailies.map((ref) => (
-          <ChallengeCard key={refId(ref)} puzzleRef={ref} label={`Daily #${number} ·`} />
+          <ChallengeCard key={refId(ref)} puzzleRef={ref} label={`Daily #${number}`} />
         ))}
       </div>
 
@@ -95,7 +95,7 @@ export function Daily() {
         {weekly.key} · {weekLeft}
       </p>
       <div className="stack">
-        <ChallengeCard puzzleRef={weekly} label={`Weekly #${weeklyNumber(weekly.key!)} ·`} />
+        <ChallengeCard puzzleRef={weekly} label={`Weekly #${weeklyNumber(weekly.key!)}`} />
       </div>
 
       <h2 className="section-h">Monthly</h2>
@@ -103,7 +103,7 @@ export function Daily() {
         {monthly.key} · {monthLeft}
       </p>
       <div className="stack">
-        <ChallengeCard puzzleRef={monthly} label={`Monthly #${monthlyNumber(monthly.key!)} ·`} />
+        <ChallengeCard puzzleRef={monthly} label={`Monthly #${monthlyNumber(monthly.key!)}`} />
       </div>
     </>
   );
