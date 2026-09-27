@@ -1,54 +1,47 @@
 import type { PuzzleTypeId } from '@puzzle-hustle/core';
 
-// The controls in brief, shown above the rules: each gesture and what it does. A swipe is a
-// stroke across cells; it only changes cells that look like the one it started on.
-const GRID_SWIPE: [string, string] = ['Swipe', "Repeats the first cell's change along the stroke, skipping cells that looked different"];
-const SUDOKU_CONTROLS: [string, string][] = [
-  ['Tap', 'Pick a cell, then tap a number'],
-  ['Notes', 'Numbers go in as small pencil marks'],
-  ['Erase', 'Clears the picked cell'],
-  ['Keys', '1 to 9, Delete, N for notes, arrows'],
+// The controls in brief, shown above the rules: each gesture and what it does. A swipe only
+// changes cells that look like the one it started on.
+const GRID: [string, string][] = [
+  ['Tap', 'Fill · X · clear'],
+  ['Hold', 'X'],
+  ['Swipe', 'Repeat along'],
+  ['Pinch', 'Zoom'],
 ];
-const SYMBOL_CONTROLS = (symbol: string): [string, string][] => [
-  ['Tap', `Place a ${symbol}, tap again to clear`],
-  ['Hold', 'Mark an X (right-click too)'],
-  ['Swipe', 'Marks X in empty cells; from an X it clears X'],
+const SYMBOL = (symbol: string): [string, string][] => [
+  ['Tap', `${symbol} · clear`],
+  ['Hold', 'X'],
+  ['Swipe', 'X · from X: clear'],
+];
+const SUDOKU: [string, string][] = [
+  ['Tap', 'Cell, then number'],
+  ['Notes', 'Pencil marks'],
 ];
 
 export const CONTROLS: Record<PuzzleTypeId, [string, string][]> = {
   shapes: [
-    ['Drag', 'Move a shape'],
-    ['Tap, tap', 'Tap a shape, then the spot it should go to'],
+    ['Drag', 'Move'],
+    ['Tap, tap', 'Shape, then spot'],
   ],
-  nonogram: [
-    ['Tap', 'Fill, then X, then clear'],
-    ['Hold', 'Mark an X (right-click too)'],
-    GRID_SWIPE,
-    ['Pinch', 'Zoom big boards, two fingers pan'],
-  ],
-  mosaic: [
-    ['Tap', 'Fill, then X, then clear'],
-    ['Hold', 'Mark an X (right-click too)'],
-    GRID_SWIPE,
-    ['Pinch', 'Zoom big boards, two fingers pan'],
-  ],
-  crowns: SYMBOL_CONTROLS('cat'),
-  stars: SYMBOL_CONTROLS('heart'),
-  sudoku: SUDOKU_CONTROLS,
-  killer: SUDOKU_CONTROLS,
+  nonogram: GRID,
+  mosaic: GRID,
+  crowns: SYMBOL('Cat'),
+  stars: SYMBOL('Heart'),
+  sudoku: SUDOKU,
+  killer: SUDOKU,
   zip: [
-    ['Swipe', 'Draw from 1 on, swipe back to erase'],
-    ['Tap', 'On the path: cut it back to there. In line with its end: extend it'],
+    ['Swipe', 'Draw · back: erase'],
+    ['Tap', 'On path: cut back'],
   ],
   tracks: [
-    ['Tap', 'X, then track mark, then clear'],
-    ['Swipe', 'Marks X in empty cells; from an X it clears X'],
-    ['Hold, swipe', 'Puts track marks (track goes here, way open); from a mark it clears marks'],
-    ['From track', 'A swipe lays track, also from A, B and given pieces; back along it lifts it'],
+    ['Tap', 'X · mark · clear'],
+    ['Swipe', 'X · from X: clear'],
+    ['Hold, swipe', 'Mark · from mark: clear'],
+    ['From track', 'Lay · back: lift'],
   ],
   slabs: [
-    ['Drag', 'Move a slab; off the board it goes back to the tray'],
-    ['Tap', 'Turn it around the half you touched'],
+    ['Drag', 'Move'],
+    ['Tap', 'Turn'],
   ],
 };
 
