@@ -40,7 +40,7 @@ import { balance, solveCoinLine } from '../lib/coins.ts';
 import { syncFlairs } from '../lib/flairs.ts';
 import { currentHintProvider, freeHints, type HintChoice } from '../lib/hints.ts';
 import { enqueue, flush } from '../lib/queue.ts';
-import { HOW_TO } from '../lib/howto.ts';
+import { CONTROLS, HOW_TO } from '../lib/howto.ts';
 import { dailyNumber } from '../lib/stats.ts';
 import { useSession } from '../lib/auth.ts';
 import { ShapesGame } from '../shapes/ShapesGame.tsx';
@@ -637,6 +637,14 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
       {showHelp && (
         <div className="card-lg howto">
           <h2>How to play</h2>
+          <dl className="howto-controls">
+            {CONTROLS[puzzleRef.type].map(([gesture, effect]) => (
+              <div key={gesture}>
+                <dt>{gesture}</dt>
+                <dd>{effect}</dd>
+              </div>
+            ))}
+          </dl>
           <ol>
             {HOW_TO[puzzleRef.type].map((line) => (
               <li key={line}>{line}</li>
