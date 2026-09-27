@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { pushBackGuard } from '../lib/back.ts';
 import { href, navigate } from '../lib/router.ts';
 import { INTRO_SEEN_KEY as SEEN_KEY, readSetting, writeSetting } from '../lib/storage.ts';
+import { track } from '../lib/telemetry.ts';
 import { introDismissed } from './UnlockModal.tsx';
 
 const CARDS = [
@@ -41,6 +42,7 @@ export function Intro() {
 
   const dismiss = (toLevels: boolean) => {
     writeSetting(SEEN_KEY, '1');
+    track({ kind: 'intro', step: card, outcome: toLevels ? 'done' : 'skipped' });
     setDone(true);
     introDismissed();
     if (toLevels) navigate(href('/levels'));

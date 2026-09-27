@@ -7,7 +7,8 @@ const native = Capacitor.isNativePlatform();
 
 export function isBackedUp(key: string): boolean {
   if (key === 'theme') return true;
-  return key.startsWith('ph:') && !key.startsWith('ph:view:');
+  // The usage event queue is not worth restoring: it would only send the same events twice.
+  return key.startsWith('ph:') && !key.startsWith('ph:view:') && key !== 'ph:events';
 }
 
 function snapshot(): Record<string, string> {

@@ -8,6 +8,7 @@ import { pushCosmetics } from '../lib/coins.ts';
 import { buyUnlimitedHints, hasUnlimitedHints, onEntitlement, restoreUnlimitedHints, type PurchaseOutcome } from '../lib/entitlement.ts';
 import { HAPTICS_KEY, hapticsAvailable, tap } from '../lib/haptics.ts';
 import { MISTAKES_KEY, showMistakes } from '../lib/mistakes.ts';
+import { setTelemetryEnabled, telemetryEnabled } from '../lib/telemetry.ts';
 import { href, onLinkClick } from '../lib/router.ts';
 import { readSetting, useSolves, writeSetting } from '../lib/storage.ts';
 import { formatSeconds } from '../lib/share.ts';
@@ -35,6 +36,7 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
   const [numberHighlight, setNumberHighlight] = useState(readSetting('ph:sudokuHighlight') !== '0');
   const [hapticsOn, setHapticsOn] = useState(readSetting(HAPTICS_KEY) !== '0');
   const [mistakes, setMistakes] = useState(showMistakes);
+  const [statsOn, setStatsOn] = useState(telemetryEnabled);
   const [confirmReset, setConfirmReset] = useState(false);
   const [unlimited, setUnlimited] = useState(hasUnlimitedHints);
   const [buying, setBuying] = useState(false);
@@ -209,6 +211,28 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
             </div>
           </div>
         )}
+
+        <div className="card-lg">
+          <b>Anonymous stats</b>
+          <span className="muted small">Sends puzzle times, hints and where you stop, with no account or device ID. Helps us tune the puzzles.</span>
+          <div className="segmented two" role="radiogroup" aria-label="Anonymous stats">
+            {[true, false].map((on) => (
+              <button
+                key={String(on)}
+                type="button"
+                role="radio"
+                aria-checked={statsOn === on}
+                className={statsOn === on ? 'seg active' : 'seg'}
+                onClick={() => {
+                  setStatsOn(on);
+                  setTelemetryEnabled(on);
+                }}
+              >
+                {on ? 'On' : 'Off'}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="card-lg">
           <h2>By puzzle</h2>

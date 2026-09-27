@@ -2,6 +2,7 @@ import { isCosmeticOf } from '@puzzle-hustle/core';
 import { readBoard } from './board.ts';
 import { revokeAppleAuthorization, verifyAppleIdToken } from './apple.ts';
 import { verifyGoogleIdToken } from './google.ts';
+import { MAX_EVENTS, pruneEvents, storeEvents } from './events.ts';
 import { createGroup, joinGroup, leaveGroup, listGroups, removeMember } from './groups.ts';
 import { cors, error, json, type Env } from './http.ts';
 import { JwksUnavailable } from './idtoken.ts';
@@ -102,6 +103,20 @@ async function postCosmetics(request: Request, env: Env, playerId: string): Prom
   return json({ badge, flair });
 }
 
+// Anonymous by design: no token, and the IP only keys the rate limiter, it is never stored.
+async function postEvents(request: Request, env: Env): Promise<Response> {
+  if (env.EVENTS_LIMIT) {
+    const key = request.headers.get('CF-Connecting-IP') ?? 'unknown';
+    const { success } = await env.EVENTS_LIMIT.limit({ key });
+    if (!success) return error(429, 'too_many_requests');
+  }
+  const input = await body(request);
+  const events = input.events;
+  if (!Array.isArray(events) || events.length === 0) return error(400, 'missing_events');
+  if (events.length > MAX_EVENTS) return error(400, 'batch_too_large');
+  return json({ stored: await storeEvents(env.DB, events) });
+}
+
 async function route(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   const path = url.pathname;
@@ -109,6 +124,7 @@ async function route(request: Request, env: Env): Promise<Response> {
 
   if (method === 'GET' && path === '/health') return json({ ok: true });
   if (method === 'POST' && path === '/session') return postSession(request, env);
+  if (method === 'POST' && path === '/events') return postEvents(request, env);
 
   const playerId = await requirePlayer(request, env);
   if (!playerId) return error(401, 'unauthorized');
@@ -224,6 +240,9 @@ async function withRenewal(request: Request, env: Env, response: Response): Prom
 }
 
 export default {
+  async scheduled(_controller: ScheduledController, env: Env): Promise<void> {
+    await pruneEvents(env.DB);
+  },
   async fetch(request: Request, env: Env): Promise<Response> {
     if (request.method === 'OPTIONS') return cors(request, new Response(null, { status: 204 }));
     try {

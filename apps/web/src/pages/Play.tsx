@@ -55,6 +55,7 @@ import { Chevron } from '../components/Chevron.tsx';
 import { toast } from '../components/Toast.tsx';
 import { announceUnlock } from '../components/UnlockModal.tsx';
 import * as haptics from '../lib/haptics.ts';
+import { track } from '../lib/telemetry.ts';
 import { useBoard } from '../components/Board.tsx';
 import { useGroups } from './Friends.tsx';
 
@@ -313,6 +314,27 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
   const resultRef = useRef(result);
   resultRef.current = result;
 
+  // One usage event per visit to a puzzle, sent on solve or on leaving it unsolved.
+  const firstOfType = useRef(!helpSeen.current).current;
+  const reported = useRef(false);
+  const report = (outcome: 'solved' | 'left', elapsed: number) => {
+    if (reported.current) return;
+    reported.current = true;
+    track({
+      kind: 'attempt',
+      type: puzzleRef.type,
+      difficulty: puzzleRef.difficulty,
+      mode: puzzleRef.period ?? (puzzleRef.level ? 'level' : 'random'),
+      level: puzzleRef.level ?? null,
+      outcome,
+      seconds: elapsed,
+      moves: counters.current.moves,
+      hints: counters.current.hints,
+      resumed: saved !== null,
+      first: firstOfType,
+    });
+  };
+
   // A period is saved even before the first move, with an empty board, or leaving and
   // reopening it would start its clock at 0 again.
   const persist = () => {
@@ -342,6 +364,7 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
     window.addEventListener('pagehide', persist);
     return () => {
       persist();
+      if (!resultRef.current && startedAt.current !== null) report('left', elapsedNow());
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('appBlur', stop);
       window.removeEventListener('appFocus', resumeClock);
@@ -355,6 +378,7 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
     haptics.solved();
     const elapsed = elapsedNow();
     emitAppEvent({ type: 'solved', seconds: elapsed });
+    report('solved', elapsed);
     const record: SolveRecord = { solvedAt: new Date().toISOString(), seconds: elapsed, hints: counters.current.hints, moves: counters.current.moves };
     setSeconds(elapsed);
     setResult(record);

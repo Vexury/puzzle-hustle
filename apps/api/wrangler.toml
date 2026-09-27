@@ -22,6 +22,16 @@ name = "JOIN_LIMIT"
 namespace_id = "1002"
 simple = { limit = 10, period = 60 }
 
+# Anonymous usage events, per IP. A client sends a batch every few minutes at most.
+[[ratelimits]]
+name = "EVENTS_LIMIT"
+namespace_id = "1003"
+simple = { limit = 20, period = 60 }
+
+# Daily cleanup of old usage events, 03:30 UTC.
+[triggers]
+crons = ["30 3 * * *"]
+
 [vars]
 GOOGLE_CLIENT_IDS = "455101583494-lfg3kbscmqgubeqrsocg0919269n2a23.apps.googleusercontent.com"
 # The iOS bundle ID first, then the Services ID the web signs in with.

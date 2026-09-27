@@ -104,11 +104,14 @@ can request deletion: yes. Collection of the account data is optional (only when
 | Personal info: User IDs | Google or Apple subject ID and the internal player ID | App functionality, account management |
 | App activity: Other actions | Daily, Weekly and Monthly times with hints, moves and solve time; group memberships | App functionality |
 | App activity: Other user-generated content | Group names; equipped badge and flair ids from a fixed list; reports on names | App functionality |
+| App activity: App interactions | Anonymous usage events (`POST /events`): app opened on a day, intro finished or skipped, puzzle solved or left with type, difficulty, time, moves, hints. No ID, day granularity, deleted after about 13 months. Optional: "Anonymous stats" switch in Profile | Analytics |
 | Device or other IDs | Advertising ID, processed by the AdMob SDK | Advertising or marketing |
 
 Not collected: email address (the server reads only `sub` from the Google token), purchase history
-(Play Billing handles it, the server keeps no record), location, contacts, analytics, crash logs.
-The IP address reaches Cloudflare and the `/session` rate limiter, but is not stored. TODO verify:
+(Play Billing handles it, the server keeps no record), location, contacts, crash logs.
+The IP address reaches Cloudflare and the `/session` and `/events` rate limiters, but is not stored.
+App Store privacy label for the usage events: Product Interaction, not linked to the user, not
+used for tracking, purpose Analytics (matches `PrivacyInfo.xcprivacy`). TODO verify:
 whether AdMob's own disclosure adds further types (app interactions, diagnostics) that Google
 expects the app to declare, and whether the 2026-09-21 answer "advertising ID collected, not
 shared" still matches Google's guidance for AdMob.

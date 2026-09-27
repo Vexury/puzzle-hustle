@@ -13,6 +13,7 @@ export interface Env {
   APPLE_SIGNIN_KEY?: string;
   SESSION_LIMIT?: RateLimiter;
   JOIN_LIMIT?: RateLimiter;
+  EVENTS_LIMIT?: RateLimiter;
 }
 
 // The app runs on its own domain in the browser, on https://localhost inside Android's
