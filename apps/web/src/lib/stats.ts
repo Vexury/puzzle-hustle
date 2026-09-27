@@ -79,6 +79,13 @@ export function typeStats(solves: Record<string, SolveRecord>): TypeStats[] {
   });
 }
 
+export function dailyAverageSeconds(solves: Record<string, SolveRecord>, type: PuzzleTypeId): number | null {
+  const secs = Object.entries(solves)
+    .filter(([id]) => id.startsWith(`${type}:daily:`))
+    .map(([, r]) => r.seconds);
+  return secs.length ? Math.round(secs.reduce((a, b) => a + b, 0) / secs.length) : null;
+}
+
 export function totalSolved(solves: Record<string, SolveRecord>): number {
   return Object.keys(solves).length;
 }

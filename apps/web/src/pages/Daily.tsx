@@ -6,7 +6,7 @@ import { readCurrentProgress, useSolves } from '../lib/storage.ts';
 import { formatSeconds } from '../lib/share.ts';
 import { ThemeToggle } from '../components/ThemeToggle.tsx';
 import { CoinPill } from '../components/CoinPill.tsx';
-import { STREAK_MIN, dailyNumber, dailyStreaks, formatDateLong, monthlyNumber, weeklyNumber } from '../lib/stats.ts';
+import { STREAK_MIN, dailyAverageSeconds, dailyNumber, dailyStreaks, formatDateLong, monthlyNumber, weeklyNumber } from '../lib/stats.ts';
 
 export function useCountdown(period: Period): string {
   const [text, setText] = useState('');
@@ -30,6 +30,7 @@ function ChallengeCard({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const solve = solves[refId(puzzleRef)];
   const started = !solve && readCurrentProgress(refId(puzzleRef)) !== null;
   const url = href(`/play?${encodeRef(puzzleRef)}`);
+  const average = puzzleRef.period === 'daily' ? dailyAverageSeconds(solves, puzzleRef.type) : null;
   return (
     <a href={url} onClick={onLinkClick} className={solve ? 'row-card solved' : 'row-card'}>
       <span className="row-icon">
@@ -44,6 +45,7 @@ function ChallengeCard({ puzzleRef }: { puzzleRef: PuzzleRef }) {
       </span>
       <span className="row-text">
         <span className="row-title">{PUZZLE_META[puzzleRef.type].name}</span>
+        {average !== null && <span className="row-sub">Your avg {formatSeconds(average)}</span>}
       </span>
       <span className={solve ? 'pill outline' : 'pill'}>{solve ? formatSeconds(solve.seconds) : started ? 'Continue' : 'Play'}</span>
     </a>
