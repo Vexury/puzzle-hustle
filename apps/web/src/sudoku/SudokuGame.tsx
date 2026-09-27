@@ -15,6 +15,7 @@ import './sudoku.css';
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import { readSetting } from '../lib/storage.ts';
+import { showMistakes } from '../lib/mistakes.ts';
 import { cageLayout } from './cages.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
 import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
@@ -68,6 +69,7 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
   // Read once per puzzle: the switch lives on the Profile tab, which cannot be open while a
   // board is.
   const highlightEnabled = useRef(readSetting('ph:sudokuHighlight') !== '0').current;
+  const mistakes = useRef(showMistakes()).current;
   const [flash, setFlash] = useFlash<number>();
   const [hintBusy, setHintBusy] = useState(false);
   const history = useHistory<SudokuState>();
@@ -193,7 +195,7 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
       if (i === selected) cls.push('selected');
       else if (marked && values[i] === marked) cls.push('same');
       else if (peers.has(i)) cls.push('peer');
-      if (conflicts[i]) cls.push('conflict');
+      if (mistakes && conflicts[i]) cls.push('conflict');
     }
     if (flash === i) cls.push('flash');
     return cls.join(' ');

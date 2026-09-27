@@ -17,6 +17,7 @@ import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import { press } from '../lib/haptics.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
+import { showMistakes } from '../lib/mistakes.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
 import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 
@@ -81,6 +82,7 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
   const [flash, setFlash] = useFlash<number>();
   const [hintBusy, setHintBusy] = useState(false);
   const history = useHistory<NonogramState>();
+  const mistakes = useRef(showMistakes()).current;
   const stateRef = useRef(state);
   const drag = useRef<Drag | null>(null);
   const solved = isNonogramSolved(spec, state);
@@ -251,10 +253,10 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
         <div className="nono-board" style={{ '--rows': rows, '--cols': cols, '--cell': `${cellPx}px` } as React.CSSProperties}>
         <div className="nono-corner" />
         {spec.colClues.map((clues, c) => (
-          <ClueList key={`c${c}`} clues={clues} axis="col" index={c} done={lineSatisfied(spec, state, 'col', c)} broken={lineBroken(spec, state, 'col', c)} />
+          <ClueList key={`c${c}`} clues={clues} axis="col" index={c} done={lineSatisfied(spec, state, 'col', c)} broken={mistakes && lineBroken(spec, state, 'col', c)} />
         ))}
         {spec.rowClues.map((clues, r) => (
-          <ClueList key={`r${r}`} clues={clues} axis="row" index={r} done={lineSatisfied(spec, state, 'row', r)} broken={lineBroken(spec, state, 'row', r)} />
+          <ClueList key={`r${r}`} clues={clues} axis="row" index={r} done={lineSatisfied(spec, state, 'row', r)} broken={mistakes && lineBroken(spec, state, 'row', r)} />
         ))}
         {Array.from({ length: rows * cols }, (_, i) => {
           const r = Math.floor(i / cols);

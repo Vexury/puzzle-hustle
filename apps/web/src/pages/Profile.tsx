@@ -7,6 +7,7 @@ import { currentUnlocked } from '../lib/achievements.ts';
 import { pushCosmetics } from '../lib/coins.ts';
 import { buyUnlimitedHints, hasUnlimitedHints, onEntitlement, restoreUnlimitedHints, type PurchaseOutcome } from '../lib/entitlement.ts';
 import { HAPTICS_KEY, hapticsAvailable, tap } from '../lib/haptics.ts';
+import { MISTAKES_KEY, showMistakes } from '../lib/mistakes.ts';
 import { href, onLinkClick } from '../lib/router.ts';
 import { readSetting, useSolves, writeSetting } from '../lib/storage.ts';
 import { formatSeconds } from '../lib/share.ts';
@@ -33,6 +34,7 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
   const pack = usePack();
   const [numberHighlight, setNumberHighlight] = useState(readSetting('ph:sudokuHighlight') !== '0');
   const [hapticsOn, setHapticsOn] = useState(readSetting(HAPTICS_KEY) !== '0');
+  const [mistakes, setMistakes] = useState(showMistakes);
   const [confirmReset, setConfirmReset] = useState(false);
   const [unlimited, setUnlimited] = useState(hasUnlimitedHints);
   const [buying, setBuying] = useState(false);
@@ -153,6 +155,28 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
                 onClick={() => {
                   setNumberHighlight(on);
                   writeSetting('ph:sudokuHighlight', on ? '1' : '0');
+                }}
+              >
+                {on ? 'On' : 'Off'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="card-lg">
+          <b>Show mistakes</b>
+          <span className="muted small">Marks an entry in red when it breaks a rule. Off for hardcore: you find out only when the puzzle does not solve.</span>
+          <div className="segmented two" role="radiogroup" aria-label="Show mistakes">
+            {[true, false].map((on) => (
+              <button
+                key={String(on)}
+                type="button"
+                role="radio"
+                aria-checked={mistakes === on}
+                className={mistakes === on ? 'seg active' : 'seg'}
+                onClick={() => {
+                  setMistakes(on);
+                  writeSetting(MISTAKES_KEY, on ? '1' : '0');
                 }}
               >
                 {on ? 'On' : 'Off'}

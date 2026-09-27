@@ -16,6 +16,7 @@ import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import { press } from '../lib/haptics.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
+import { showMistakes } from '../lib/mistakes.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
 import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 
@@ -66,6 +67,7 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
   const [flash, setFlash] = useFlash<number>();
   const [hintBusy, setHintBusy] = useState(false);
   const history = useHistory<MosaicState>();
+  const mistakes = useRef(showMistakes()).current;
   const stateRef = useRef(state);
   const drag = useRef<Drag | null>(null);
   const solved = isMosaicSolved(spec, state);
@@ -206,7 +208,7 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     if (v === MOSAIC_MARKED_EMPTY && !solved) cls.push('x');
     else if (v === 1) cls.push('filled');
     if (clue >= 0 && mosaicClueSatisfied(spec, state, r, c)) cls.push('done');
-    else if (clue >= 0 && !solved && mosaicClueBroken(spec, state, r, c)) cls.push('broken');
+    else if (mistakes && clue >= 0 && !solved && mosaicClueBroken(spec, state, r, c)) cls.push('broken');
     cls.push(...gridLineClasses(r, c, rows, cols, false));
     if (flash === r * cols + c) cls.push('flash');
     return cls.join(' ');

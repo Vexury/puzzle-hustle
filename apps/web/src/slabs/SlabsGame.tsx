@@ -26,6 +26,7 @@ import { HintMark } from '../components/HintMark.tsx';
 import { ResetButton } from '../components/ResetButton.tsx';
 import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 import * as haptics from '../lib/haptics.ts';
+import { showMistakes } from '../lib/mistakes.ts';
 import './slabs.css';
 
 export interface SlabsGameProps {
@@ -168,6 +169,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
   const svgRef = useRef<SVGSVGElement>(null);
   const trayRef = useRef<HTMLDivElement>(null);
   const history = useHistory<SlabsState>();
+  const mistakes = useRef(showMistakes()).current;
   const solved = isSlabsSolved(spec, state);
 
   useEffect(() => {
@@ -470,7 +472,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     // The badge rides on the cell's top edge and reaches only 0.15 into any cell; pips keep 0.2
     // clear of every edge, so no badge ever covers a pip.
     return (
-      <g key={reg} className={`slabs-badge ${status[reg]}`}>
+      <g key={reg} className={`slabs-badge ${status[reg] === 'broken' && !mistakes ? '' : status[reg]}`}>
         <rect x={c + 0.06} y={r - 0.15} width={w} height={0.3} rx={0.1} />
         <text x={c + 0.06 + w / 2} y={r} dy="0.33em">
           {label}

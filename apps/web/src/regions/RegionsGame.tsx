@@ -17,6 +17,7 @@ import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import { press } from '../lib/haptics.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
+import { showMistakes } from '../lib/mistakes.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
 import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 
@@ -76,6 +77,7 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
   const [flash, setFlash] = useFlash<number>();
   const [hintBusy, setHintBusy] = useState(false);
   const history = useHistory<RegionsState>();
+  const mistakes = useRef(showMistakes()).current;
   const stateRef = useRef(state);
   const drag = useRef<Drag | null>(null);
   const solved = isRegionsSolved(spec, state);
@@ -211,7 +213,7 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
     if (b.bottom && r < n - 1) cls.push('bb');
     if (b.left && c > 0) cls.push('bl');
     if (v === REGIONS_MARKED_EMPTY && !solved) cls.push('x');
-    if (v === 1 && conflicts[i]) cls.push('conflict');
+    if (mistakes && v === 1 && conflicts[i]) cls.push('conflict');
     if (regionsUnitComplete(spec, counts, i)) cls.push('done');
     if (flash === i) cls.push('flash');
     return cls.join(' ');

@@ -27,6 +27,7 @@ import { press } from '../lib/haptics.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
+import { showMistakes } from '../lib/mistakes.ts';
 import { HintMark } from '../components/HintMark.tsx';
 import { markVariant, usePackMark } from '../packs/marks.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
@@ -152,6 +153,7 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
   const drag = useRef<Drag | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const history = useHistory<TracksState>();
+  const mistakes = useRef(showMistakes()).current;
   const solved = isTracksSolved(spec, state);
   const packMark = usePackMark();
 
@@ -385,7 +387,7 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
       );
     }
   }
-  const lineClass = (have: number, want: number) => (have === want ? 'tracks-count done' : have > want ? 'tracks-count over' : 'tracks-count');
+  const lineClass = (have: number, want: number) => (have === want ? 'tracks-count done' : mistakes && have > want ? 'tracks-count over' : 'tracks-count');
   const entryY = spec.entryRow + 0.5;
   const exitX = spec.exitCol + 0.5;
 
