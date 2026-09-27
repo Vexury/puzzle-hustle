@@ -25,7 +25,7 @@ export function useCountdown(period: Period): string {
   return text;
 }
 
-function ChallengeCard({ puzzleRef, label }: { puzzleRef: PuzzleRef; label: string }) {
+function ChallengeCard({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const solves = useSolves();
   const solve = solves[refId(puzzleRef)];
   const started = !solve && readCurrentProgress(refId(puzzleRef)) !== null;
@@ -44,7 +44,6 @@ function ChallengeCard({ puzzleRef, label }: { puzzleRef: PuzzleRef; label: stri
       </span>
       <span className="row-text">
         <span className="row-title">{PUZZLE_META[puzzleRef.type].name}</span>
-        <span className="row-sub">{label}</span>
       </span>
       <span className={solve ? 'pill outline' : 'pill'}>{solve ? formatSeconds(solve.seconds) : started ? 'Continue' : 'Play'}</span>
     </a>
@@ -74,7 +73,7 @@ export function Daily() {
           )}
         </h1>
         <p className="muted">
-          {formatDateLong()} · {dayLeft}
+          {formatDateLong()} · Daily #{number} · {dayLeft}
         </p>
         <div className="head-actions">
           <CoinPill />
@@ -86,24 +85,24 @@ export function Daily() {
 
       <div className="stack">
         {dailies.map((ref) => (
-          <ChallengeCard key={refId(ref)} puzzleRef={ref} label={`Daily #${number}`} />
+          <ChallengeCard key={refId(ref)} puzzleRef={ref} />
         ))}
       </div>
 
       <h2 className="section-h">Weekly</h2>
       <p className="muted small section-sub">
-        {weekly.key} · {weekLeft}
+        {weekly.key} · #{weeklyNumber(weekly.key!)} · {weekLeft}
       </p>
       <div className="stack">
-        <ChallengeCard puzzleRef={weekly} label={`Weekly #${weeklyNumber(weekly.key!)}`} />
+        <ChallengeCard puzzleRef={weekly} />
       </div>
 
       <h2 className="section-h">Monthly</h2>
       <p className="muted small section-sub">
-        {monthly.key} · {monthLeft}
+        {monthly.key} · #{monthlyNumber(monthly.key!)} · {monthLeft}
       </p>
       <div className="stack">
-        <ChallengeCard puzzleRef={monthly} label={`Monthly #${monthlyNumber(monthly.key!)}`} />
+        <ChallengeCard puzzleRef={monthly} />
       </div>
     </>
   );
