@@ -16,12 +16,15 @@ import {
   tracksHint,
   tracksLineCounts,
   tracksMask,
+  tracksPaintMark,
   tracksSetEdge,
   tracksStepToward,
   validTracksState,
   type TracksSpec,
   type TracksState,
 } from '@puzzle-hustle/core';
+import { press } from '../lib/haptics.ts';
+import { LONG_PRESS_MS } from '../lib/input.ts';
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import { HintMark } from '../components/HintMark.tsx';
@@ -42,11 +45,18 @@ export interface TracksGameProps {
   onStateChange?(state: number[]): void;
 }
 
+// A drag that starts on track lays or lifts track, also from the given pieces at A and B. Any
+// other drag paints crosses, or track marks once the finger has been held first; a stroke that
+// starts on its own mark takes that mark off again.
 interface Drag {
   pointerId: number;
   start: number;
   last: number;
+  track: boolean;
   mode: 'lay' | 'lift' | null;
+  paint: { mark: number; on: boolean };
+  held: boolean;
+  timer: ReturnType<typeof setTimeout> | null;
   moved: boolean;
   remembered: boolean;
 }
@@ -180,7 +190,47 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     if (cell === null) return;
     e.preventDefault();
     e.currentTarget.setPointerCapture(e.pointerId);
-    drag.current = { pointerId: e.pointerId, start: cell, last: cell, mode: null, moved: false, remembered: false };
+    const cur = stateRef.current;
+    const v = cur[cell]!;
+    const d: Drag = {
+      pointerId: e.pointerId,
+      start: cell,
+      last: cell,
+      track: tracksMask(spec, cur, cell) !== 0,
+      mode: null,
+      paint: { mark: TRACKS_STATE_X, on: (v & TRACKS_STATE_X) === 0 },
+      held: false,
+      timer: null,
+      moved: false,
+      remembered: false,
+    };
+    drag.current = d;
+    if (d.track) return;
+    // Holding, or the right mouse button, switches the stroke to track marks.
+    const hold = () => {
+      d.timer = null;
+      d.held = true;
+      d.paint = { mark: TRACKS_STATE_T, on: (v & TRACKS_STATE_T) === 0 };
+      paint(d, [cell]);
+    };
+    if (e.button === 2) hold();
+    else if (e.pointerType !== 'mouse')
+      d.timer = setTimeout(() => {
+        hold();
+        press();
+      }, LONG_PRESS_MS);
+  }
+
+  function clearTimer(d: Drag) {
+    if (d.timer) clearTimeout(d.timer);
+    d.timer = null;
+  }
+
+  function paint(d: Drag, cells: number[]) {
+    const next = tracksPaintMark(spec, stateRef.current, cells, d.paint.mark, d.paint.on);
+    if (!next) return;
+    rememberOnce(d);
+    commit(next);
   }
 
   function moveDrag(e: React.PointerEvent<SVGSVGElement>) {
@@ -191,6 +241,17 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     // The drag that completed the track must not keep going and lift a piece of it again.
     if (isTracksSolved(spec, stateRef.current)) {
       drag.current = null;
+      return;
+    }
+    clearTimer(d);
+    if (!d.track) {
+      const cells = d.moved ? [] : [d.start];
+      while (d.last !== cell) {
+        d.last = tracksStepToward(cols, d.last, cell);
+        cells.push(d.last);
+      }
+      d.moved = true;
+      paint(d, cells);
       return;
     }
     const empty = emptyTracksState(spec);
@@ -220,7 +281,8 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     const d = drag.current;
     if (!d || d.pointerId !== e.pointerId) return;
     drag.current = null;
-    if (d.moved) return;
+    clearTimer(d);
+    if (d.moved || d.held) return;
     const next = tracksCycleMark(spec, stateRef.current, d.start);
     if (!next) return;
     rememberOnce(d);
@@ -231,6 +293,7 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     const d = drag.current;
     if (!d || d.pointerId !== e.pointerId) return;
     drag.current = null;
+    clearTimer(d);
   }
 
   async function useHint() {

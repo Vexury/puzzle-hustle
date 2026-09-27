@@ -24,6 +24,7 @@ import { buyItem, equip, owned, useBalance, useEquipped, type Equipped } from '.
 import { requirementText } from '../lib/flairs.ts';
 import { readSetting } from '../lib/storage.ts';
 import { centerOf, equipPack, tryOnPack, usePack, useTheme } from '../lib/theme.ts';
+import { BackLink } from '../components/BackLink.tsx';
 
 const REVERT_MS = 4000;
 const BADGES: readonly BadgeCosmetic[] = COSMETICS.filter((c): c is BadgeCosmetic => c.kind === 'badge');
@@ -161,7 +162,10 @@ export function Shop() {
   return (
     <>
       <section className="page-head">
-        <h1>Customize</h1>
+        <div className="head-back">
+          <BackLink fallback="/profile" />
+          <h1>Customize</h1>
+        </div>
         <CoinPill />
       </section>
 

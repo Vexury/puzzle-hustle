@@ -4,7 +4,7 @@ import { href, onLinkClick, useRoute } from '../lib/router.ts';
 const TABS = [
   { path: '/', label: 'Daily', match: (p: string) => p === '/' },
   { path: '/levels', label: 'Puzzles', match: (p: string) => p.startsWith('/levels') },
-  { path: '/profile', label: 'Profile', match: (p: string) => p === '/profile' },
+  { path: '/profile', label: 'Profile', match: (p: string) => p === '/profile' || p === '/shop' || p === '/achievements' },
   { path: '/friends', label: 'Social', match: (p: string) => p === '/friends' || p === '/join' },
 ] as const;
 

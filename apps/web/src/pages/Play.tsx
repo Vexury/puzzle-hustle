@@ -272,10 +272,32 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
     leaveTo(back.url);
   };
 
+  // A move is one gesture of the player's: a tap, a stroke, a drop or a key, however many
+  // times the board changes during it. Games report every change; each touch or key opens a new
+  // gesture here and only its first change counts. One that starts on reset, undo, redo, hint or
+  // the hint dialog never counts.
+  const gesture = useRef({ counted: false, notAMove: false });
+  useEffect(() => {
+    const open = (e: Event) => {
+      const target = e.target instanceof Element ? e.target : null;
+      gesture.current = { counted: false, notAMove: Boolean(target?.closest('[data-not-a-move], .ad-ask')) };
+    };
+    window.addEventListener('pointerdown', open, true);
+    window.addEventListener('keydown', open, true);
+    return () => {
+      window.removeEventListener('pointerdown', open, true);
+      window.removeEventListener('keydown', open, true);
+    };
+  }, []);
+
   const onMove = () => {
-    haptics.tap();
-    counters.current.moves++;
-    setMoves(counters.current.moves);
+    const g = gesture.current;
+    if (!g.counted && !g.notAMove) {
+      g.counted = true;
+      haptics.tap();
+      counters.current.moves++;
+      setMoves(counters.current.moves);
+    }
     if (helpSeen.current) return;
     helpSeen.current = true;
     writeSetting(seenKey, '1');

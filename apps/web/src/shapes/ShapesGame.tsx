@@ -105,7 +105,9 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     if (locked || solved) return;
     e.preventDefault();
     e.stopPropagation();
-    (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
+    // Captured on the board, not the piece: raise() moves the piece's node, which would drop a
+    // capture held there, and every later event of the gesture then reaches one handler only.
+    boardRef.current?.setPointerCapture?.(e.pointerId);
     const pos = boardCell(e.clientX, e.clientY);
     const p = state[pieceId]!;
     raise(pieceId);
@@ -135,6 +137,11 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     }
     setSelected(null);
     place(d.pieceId, dropTarget(d));
+  }
+
+  function releaseOnBoard(e: React.PointerEvent<SVGSVGElement>) {
+    if (drag) endDrag(e);
+    else tapBoard(e);
   }
 
   function tapBoard(e: React.PointerEvent<SVGSVGElement>) {
@@ -201,9 +208,9 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
             className={solved ? 'board board-frame solved' : 'board board-frame'}
             viewBox={`0 0 ${size} ${size}`}
             onPointerMove={moveDrag}
-            onPointerUp={endDrag}
+            onPointerUp={releaseOnBoard}
             onPointerCancel={() => setDrag(null)}
-            onClick={tapBoard as unknown as React.MouseEventHandler<SVGSVGElement>}
+            onLostPointerCapture={() => setDrag(null)}
             role="application"
             aria-label="Shapes board"
           >
@@ -242,9 +249,6 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
                       className="piece-hit"
                       points={outlinePoints(piece.kind, p.r, p.c)}
                       onPointerDown={(e) => startDrag(e, i)}
-                      onPointerMove={moveDrag}
-                      onPointerUp={endDrag}
-                      onPointerCancel={() => setDrag(null)}
                       aria-label={SHAPES[piece.kind].label}
                     />
                   )}

@@ -70,6 +70,16 @@ it('reports no change when the drag stays on the head', () => {
   expect(zipDragPath(spec(), [0, 1, 2], 2)).toBeNull();
 });
 
-it('ignores a diagonal jump', () => {
-  expect(zipDragPath(spec(), [0, 1], 6)).toBeNull();
+// A fast corner lands diagonally from the head; the line goes round it instead of stopping.
+it('walks round a corner taken fast, along the line first', () => {
+  expect(zipDragPath(spec(), [0, 1], 6)).toEqual([0, 1, 2, 6]);
+  expect(zipDragPath(spec(), [0, 4], 9)).toEqual([0, 4, 8, 9]);
+});
+
+it('takes the other side of the corner when the first is blocked', () => {
+  expect(zipDragPath(spec([1, 2]), [0, 1], 6)).toEqual([0, 1, 5, 6]);
+});
+
+it('never rubs out on a diagonal jump', () => {
+  expect(zipDragPath(spec(), [0, 1, 2, 3, 7, 6, 5], 2)).toBeNull();
 });

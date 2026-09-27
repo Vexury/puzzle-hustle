@@ -47,7 +47,9 @@ export const HOW_TO: Record<PuzzleTypeId, string[]> = {
     'Lay one track from A on the left edge to B on the bottom edge.',
     'The numbers count the track cells in each row and column. A number turns green when its line is right.',
     'Pieces are straight or curved. The track never branches, never crosses itself and forms no separate loops. Given pieces stay put.',
-    'Drag across cells to lay track, drag along it again to lift it. Tap an empty cell to cycle an X, a track mark (track goes here, direction open), and empty.',
+    'Drag from track to lay more, starting at A, B or any piece; drag along it again to lift it.',
+    'Drag across empty cells to cross them out. Hold first, then drag, to put track marks (track goes here, direction open). A stroke that starts on its own mark takes it off again.',
+    'Tap an empty cell to cycle an X, a track mark and empty.',
   ],
   slabs: [
     'Place every slab from the tray on the board. Together they cover every open cell.',

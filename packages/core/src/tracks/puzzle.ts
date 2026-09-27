@@ -304,6 +304,21 @@ export function tracksSetEdge(spec: TracksSpec, state: TracksState, a: number, b
   return next;
 }
 
+// A stroke of marks, `mark` being TRACKS_STATE_X or TRACKS_STATE_T: on, it goes into cells with
+// nothing in them; off, it comes out of cells that carry it. Cells with track or the other mark
+// stay as they are, so a stroke never overwrites what is already there.
+export function tracksPaintMark(spec: TracksSpec, state: TracksState, cells: readonly number[], mark: number, on: boolean): TracksState | null {
+  let next: TracksState | null = null;
+  for (const cell of cells) {
+    if (cell < 0 || cell >= state.length || tracksMask(spec, state, cell) !== 0) continue;
+    const v = (next ?? state)[cell]!;
+    if (on ? (v & (TRACKS_STATE_X | TRACKS_STATE_T)) !== 0 : (v & mark) === 0) continue;
+    next ??= [...state];
+    next[cell] = on ? v | mark : v & ~mark;
+  }
+  return next;
+}
+
 // A cell with no track connection cycles empty -> cross -> track-mark (direction still unknown)
 // -> empty. A cell the track must enter (A/B, or a single given edge) but whose way on is still
 // open toggles only the track mark, since a cross there could never be right. Tapping drawn

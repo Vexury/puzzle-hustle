@@ -12,6 +12,7 @@ import {
   generateTracks,
   isTracksSolved,
   tracksCycleMark,
+  tracksPaintMark,
   tracksHasEdge,
   tracksHint,
   tracksLineCounts,
@@ -342,6 +343,21 @@ describe('tracks state', () => {
     expect(s[free]! & TRACKS_STATE_T).toBe(TRACKS_STATE_T);
     s = tracksCycleMark(spec, s, free)!;
     expect(s[free]! & (TRACKS_STATE_X | TRACKS_STATE_T)).toBe(0);
+  });
+
+  it('paints marks only into empty cells and takes off only its own mark', () => {
+    let s = tracksCycleMark(spec, emptyTracksState(spec), free + 1)!; // X in the middle
+    s = tracksCycleMark(spec, s, free + 1)!; // now a track mark
+    const t = tracksPaintMark(spec, s, [free, free + 1, free + 2], TRACKS_STATE_X, true)!;
+    expect(t[free]! & TRACKS_STATE_X).toBe(TRACKS_STATE_X);
+    expect(t[free + 1]! & (TRACKS_STATE_X | TRACKS_STATE_T)).toBe(TRACKS_STATE_T);
+    expect(t[free + 2]! & TRACKS_STATE_X).toBe(TRACKS_STATE_X);
+    const off = tracksPaintMark(spec, t, [free, free + 1, free + 2], TRACKS_STATE_X, false)!;
+    expect(off[free]! & TRACKS_STATE_X).toBe(0);
+    expect(off[free + 1]! & TRACKS_STATE_T).toBe(TRACKS_STATE_T);
+    expect(tracksPaintMark(spec, off, [free + 1], TRACKS_STATE_X, true)).toBeNull();
+    const laid = tracksSetEdge(spec, emptyTracksState(spec), free, free + 1, true)!;
+    expect(tracksPaintMark(spec, laid, [free, free + 1], TRACKS_STATE_T, true)).toBeNull();
   });
 
   it('clears both marks when track is laid through the cell', () => {

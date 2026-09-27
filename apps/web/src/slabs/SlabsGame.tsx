@@ -4,7 +4,6 @@ import {
   SLAB_DR,
   applySlabsHint,
   emptySlabsState,
-  isSlabsJerk,
   isSlabsSolved,
   slabCells,
   slabNeighbour,
@@ -18,7 +17,6 @@ import {
   slabsToTray,
   validSlabsState,
   type SlabsRule,
-  type SlabsSample,
   type SlabsSpec,
   type SlabsState,
 } from '@puzzle-hustle/core';
@@ -54,12 +52,9 @@ interface Drag {
   grabX: number;
   grabY: number;
   cell: number;
-  // The pose the slab will drop in; a jerk while held turns it.
+  // The pose the slab will drop in.
   dir: number;
-  turned: boolean;
-  lastTurn: number;
   moved: boolean;
-  samples: SlabsSample[];
 }
 
 interface Ghost {
@@ -283,10 +278,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
       grabY,
       cell: cellPx(),
       dir: stateRef.current[slab * 2 + 1]!,
-      turned: false,
-      lastTurn: 0,
       moved: false,
-      samples: [{ x: e.clientX, y: e.clientY, t: t0 }],
     };
   }
 
@@ -315,18 +307,6 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
   function pointerMove(e: React.PointerEvent) {
     const d = drag.current;
     if (!d || d.pointerId !== e.pointerId) return;
-    const t = performance.now();
-    d.samples.push({ x: e.clientX, y: e.clientY, t });
-    while (d.samples.length > 1 && t - d.samples[1]!.t >= 300) d.samples.shift();
-    if (t - d.lastTurn > 250 && isSlabsJerk(d.samples, d.cell)) {
-      d.dir = (d.dir + 1) % 4;
-      d.turned = true;
-      d.lastTurn = t;
-      d.samples = [{ x: e.clientX, y: e.clientY, t }];
-      haptics.tap();
-      // The ghost turns around its pivot half, which sits at (1.5, 1.5) in its own box.
-      if (!reducedMotion()) setTurn({ slab: d.slab, px: 1.5, py: 1.5, from: -90, start: t, angle: -90 });
-    }
     if (!d.moved && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) < d.cell * 0.2) return;
     d.moved = true;
     setGhost({ slab: d.slab, pivot: d.pivot, dir: d.dir, x: e.clientX, y: e.clientY, grabX: d.grabX, grabY: d.grabY, cell: d.cell });
@@ -348,11 +328,9 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     drag.current = null;
     setGhost(null);
     const cur = stateRef.current;
-    if (d.turned) setTurn(null);
-    // Only a finger that never left its spot turns the slab; any real movement moves it. After a
-    // turn in hand the release is always a drop, even if the finger ended where it began.
+    // Only a finger that never left its spot turns the slab; any real movement moves it.
     const still = !d.moved && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) < d.cell * 0.2;
-    if (still && !d.turned) {
+    if (still) {
       if (d.from === 'tray') {
         const next = slabsRotate(spec, cur, d.slab, d.pivot)!;
         history.remember(cur);
@@ -384,7 +362,6 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     if (!d || d.pointerId !== e.pointerId) return;
     drag.current = null;
     setGhost(null);
-    if (d.turned) setTurn(null);
   }
 
   async function useHint() {

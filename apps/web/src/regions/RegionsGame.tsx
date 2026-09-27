@@ -135,10 +135,15 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
 
   function moveDrag(e: React.PointerEvent<HTMLDivElement>) {
     const d = drag.current;
-    if (!d || d.pointerId !== e.pointerId || d.paint === null) return;
+    if (!d || d.pointerId !== e.pointerId) return;
     const idx = cellAt(e.clientX, e.clientY);
     if (idx === null || idx === d.idx) return;
     clearTimer(d);
+    // A stroke that starts on a symbol paints nothing, and having moved it is no tap either.
+    if (d.paint === null) {
+      d.applied = true;
+      return;
+    }
     if (!d.applied) {
       d.applied = true;
       setCell(d.idx, d.paint);

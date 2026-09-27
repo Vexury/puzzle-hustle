@@ -15,14 +15,16 @@ export interface Group {
   owner: boolean;
 }
 
-export function useGroups(): { groups: Group[]; reload: () => void; loading: boolean } {
+export function useGroups(): { groups: Group[]; reload: () => void; loading: boolean; failed: boolean } {
   const session = useSession();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   const reload = useCallback(() => {
     if (!session) {
       setGroups([]);
+      setFailed(false);
       return;
     }
     setLoading(true);
@@ -34,14 +36,24 @@ export function useGroups(): { groups: Group[]; reload: () => void; loading: boo
         // exactly like any other failed request rather than handing a non-array to setGroups
         // and blanking the Daily tab's FriendsRow, or anything else that maps over it.
         if (!Array.isArray(data.groups)) throw new Error('malformed /groups response');
-        if (readSession()?.token === session.token) setGroups(data.groups);
+        if (readSession()?.token !== session.token) return;
+        setGroups(data.groups);
+        setFailed(false);
       })
-      .catch(() => undefined)
+      // The last list stays; the page says it could not be loaded instead of going quiet.
+      .catch(() => {
+        if (readSession()?.token === session.token) setFailed(true);
+      })
       .finally(() => setLoading(false));
   }, [session]);
 
   useEffect(reload, [reload]);
-  return { groups, reload, loading };
+  // Coming back online is the moment a failed load can work.
+  useEffect(() => {
+    window.addEventListener('online', reload);
+    return () => window.removeEventListener('online', reload);
+  }, [reload]);
+  return { groups, reload, loading, failed };
 }
 
 const MESSAGES: Record<string, string> = {
@@ -75,7 +87,7 @@ const CONFIRM_MS = 2000;
 
 export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
   const session = useSession();
-  const { groups, reload, loading } = useGroups();
+  const { groups, reload, loading, failed } = useGroups();
   const [name, setName] = useState('');
   const [code, setCode] = useState(normalizeCode(initialCode).slice(0, 6));
   // Independent per-form flags, not useGroups's loading: that one is about the list refetch.
@@ -161,6 +173,14 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
       </section>
 
       <div className="stack">
+        {failed && (
+          <section className="card-lg friends-failed" role="alert">
+            <span className="muted small">Your groups could not be loaded. Check your connection.</span>
+            <button type="button" className="pill" onClick={reload} disabled={loading}>
+              Retry
+            </button>
+          </section>
+        )}
         <div className="card-row">
           <section className="card-lg">
             <h2>New group</h2>

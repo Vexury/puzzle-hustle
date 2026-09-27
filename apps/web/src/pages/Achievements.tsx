@@ -13,6 +13,7 @@ import { almostThere, currentProgress, currentUnlocked } from '../lib/achievemen
 import { pushBackGuard } from '../lib/back.ts';
 import { AchievementIcon } from '../components/AchievementIcon.tsx';
 import { CoinPill } from '../components/CoinPill.tsx';
+import { BackLink } from '../components/BackLink.tsx';
 
 type Filter = 'all' | 'general' | PuzzleTypeId;
 
@@ -44,7 +45,10 @@ export function Achievements() {
   return (
     <>
       <section className="page-head">
-        <h1>Achievements</h1>
+        <div className="head-back">
+          <BackLink fallback="/profile" />
+          <h1>Achievements</h1>
+        </div>
         <p className="muted small">
           {unlocked.size} of {ACHIEVEMENTS.length} earned
         </p>

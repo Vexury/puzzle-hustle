@@ -31,9 +31,20 @@ interface ToolButtonProps {
   badge?: ReactNode;
 }
 
+// Reset, undo, redo and hints change the board but are not moves of the player's own; Play
+// leaves any change that starts on one of these out of the move count.
+const NOT_A_MOVE: ReadonlySet<ToolIcon> = new Set(['reset', 'undo', 'redo', 'hint']);
+
 export function ToolButton({ icon, label, onClick, disabled, className, pressed, badge }: ToolButtonProps) {
   return (
-    <button type="button" className={className ? `tool ${className}` : 'tool'} onClick={onClick} disabled={disabled} aria-pressed={pressed}>
+    <button
+      type="button"
+      className={className ? `tool ${className}` : 'tool'}
+      onClick={onClick}
+      disabled={disabled}
+      aria-pressed={pressed}
+      data-not-a-move={NOT_A_MOVE.has(icon) || undefined}
+    >
       <span className="tool-glyph">
         <ToolGlyph icon={icon} />
         {badge}

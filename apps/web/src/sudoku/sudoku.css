@@ -75,6 +75,8 @@
 }
 
 .sudoku-value { position: relative; z-index: 1; line-height: 1; }
+/* The cage sum sits in the top left corner; a digit in its cell moves down and right out of it. */
+.sudoku-cell:has(.sudoku-cage-sum) .sudoku-value { top: 0.16em; left: 0.1em; }
 
 /* Eine Kontur je Kaefig statt vier Kanten je Zelle: nur so laeuft das Strichmuster
    ohne Naht um die Ecke. Die Pfade kommen aus cages.ts, in Zelleinheiten. */

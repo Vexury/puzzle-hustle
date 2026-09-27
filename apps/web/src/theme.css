@@ -37,8 +37,8 @@
   --mark-length: 76%;
   --mark-opacity: 0.55;
   --accent: #FFA833;
-  --accent-text: #FFA833;
-  --accent-deep: #d98a12;
+  --accent-text: #9e5e00;
+  --accent-deep: #9e5e00;
   --on-accent: #2d2d2d;
   --accent-soft: color-mix(in srgb, var(--accent) 10%, transparent);
   --accent-strong: color-mix(in srgb, var(--accent) 35%, transparent);
@@ -74,6 +74,7 @@
   --text-muted: #8a8580;
   --border: #272421;
   --border-mid: #6f685c;
+  --accent-text: #FFA833;
   --accent-deep: #FFA833;
   --flame: #ff6a3d;
   --gold: #f2c233;
@@ -96,19 +97,21 @@
 }
 
 /* Accent themes. Every theme sets the fill, the text-on-background variant and the ink that sits on the fill;
-   the soft and strong tints derive from the fill. The second block per theme is the dark-mode text variant. */
-[data-accent="amber"]  { --accent: #ffa833; --accent-text: #ffa833; --accent-deep: #d98a12; --on-accent: #2d2d2d; }
-[data-accent="lagoon"] { --accent: #23cbb6; --accent-text: #23cbb6; --accent-deep: #0a8477; --on-accent: #06302b; }
-[data-accent="cobalt"] { --accent: #4faef7; --accent-text: #4faef7; --accent-deep: #1668b8; --on-accent: #062440; }
-[data-accent="iris"]   { --accent: #9b7bff; --accent-text: #9b7bff; --accent-deep: #5b3fcc; --on-accent: #180f38; }
-[data-accent="rose"]   { --accent: #ff7ba6; --accent-text: #ff7ba6; --accent-deep: #bc2c66; --on-accent: #3d0c22; }
-[data-accent="slate"]  { --accent: #8aa0bc; --accent-text: #8aa0bc; --accent-deep: #445a76; --on-accent: #131a24; }
-[data-theme="dark"][data-accent="amber"]  { --accent-deep: #ffa833; }
-[data-theme="dark"][data-accent="lagoon"] { --accent-deep: #35dcc6; }
-[data-theme="dark"][data-accent="cobalt"] { --accent-deep: #79c0ff; }
-[data-theme="dark"][data-accent="iris"]   { --accent-deep: #b79cff; }
-[data-theme="dark"][data-accent="rose"]   { --accent-deep: #ff9dbe; }
-[data-theme="dark"][data-accent="slate"]  { --accent-deep: #a8bcd6; }
+   the soft and strong tints derive from the fill. The second block per theme is the dark-mode text variant.
+   In light mode text in the accent is the deep shade, at least 4.5:1 on the card; the bright fill
+   is too pale to read there. */
+[data-accent="amber"]  { --accent: #ffa833; --accent-text: #9e5e00; --accent-deep: #9e5e00; --on-accent: #2d2d2d; }
+[data-accent="lagoon"] { --accent: #23cbb6; --accent-text: #087d70; --accent-deep: #087d70; --on-accent: #06302b; }
+[data-accent="cobalt"] { --accent: #4faef7; --accent-text: #1668b8; --accent-deep: #1668b8; --on-accent: #062440; }
+[data-accent="iris"]   { --accent: #9b7bff; --accent-text: #5b3fcc; --accent-deep: #5b3fcc; --on-accent: #180f38; }
+[data-accent="rose"]   { --accent: #ff7ba6; --accent-text: #bc2c66; --accent-deep: #bc2c66; --on-accent: #3d0c22; }
+[data-accent="slate"]  { --accent: #8aa0bc; --accent-text: #445a76; --accent-deep: #445a76; --on-accent: #131a24; }
+[data-theme="dark"][data-accent="amber"]  { --accent-text: #ffa833; --accent-deep: #ffa833; }
+[data-theme="dark"][data-accent="lagoon"] { --accent-text: #23cbb6; --accent-deep: #35dcc6; }
+[data-theme="dark"][data-accent="cobalt"] { --accent-text: #4faef7; --accent-deep: #79c0ff; }
+[data-theme="dark"][data-accent="iris"]   { --accent-text: #9b7bff; --accent-deep: #b79cff; }
+[data-theme="dark"][data-accent="rose"]   { --accent-text: #ff7ba6; --accent-deep: #ff9dbe; }
+[data-theme="dark"][data-accent="slate"]  { --accent-text: #8aa0bc; --accent-deep: #a8bcd6; }
 
 *, *::before, *::after { box-sizing: border-box; }
 @font-face {
@@ -195,6 +198,8 @@ p { margin: 0; }
 .page-head .head-actions { position: absolute; top: 0; right: 0; display: flex; align-items: center; gap: 8px; }
 .page-head .head-actions > .theme-toggle, .page-head .head-actions > .coin-pill { position: static; transform: none; }
 .page-head.compact { margin-top: 4px; }
+.head-back { display: flex; align-items: center; gap: 10px; }
+.friends-failed { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .section-h { margin: 36px 0 2px; font-size: var(--fs-lg); font-weight: 700; }
 .section-sub { margin-bottom: 10px; }
 .stack { display: flex; flex-direction: column; gap: 12px; }

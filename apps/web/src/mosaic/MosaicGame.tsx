@@ -22,6 +22,10 @@ import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 interface Drag {
   pointerId: number;
   value: number;
+  // A stroke only changes cells that looked like its first cell when it began, so a stroke
+  // never wipes out finished cells on its way.
+  from: number;
+  base: Uint8Array;
   r: number;
   c: number;
   lastR: number;
@@ -104,7 +108,7 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     const idx = pos.r * cols + pos.c;
     const current = stateRef.current[idx]!;
     const mark = e.button === 2;
-    const d: Drag = { pointerId: e.pointerId, value: nextValue(current, mark), r: pos.r, c: pos.c, lastR: pos.r, lastC: pos.c, applied: false, timer: null };
+    const d: Drag = { pointerId: e.pointerId, from: current, base: stateRef.current, value: nextValue(current, mark), r: pos.r, c: pos.c, lastR: pos.r, lastC: pos.c, applied: false, timer: null };
     if (!mark && e.pointerType !== 'mouse') {
       d.timer = setTimeout(() => {
         if (d.applied) return;
@@ -140,7 +144,7 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     d.lastR = pos.r;
     d.lastC = pos.c;
     d.applied = true;
-    setCells(cells, d.value);
+    setCells(cells.filter((i) => d.base[i] === d.from), d.value);
   }
 
   function endDrag(e: React.PointerEvent<HTMLDivElement>) {

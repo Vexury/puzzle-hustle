@@ -70,7 +70,8 @@
 .nono-clues .clue { display: inline-block; min-width: 1.25em; text-align: center; }
 .nono-clues .clue.c2 { color: var(--nono-c2); }
 .nono-clues .clue.c3 { color: var(--nono-c3); }
-.nono-clues .clue.c1 { color: var(--nono-c1); }
+/* Colour 1 is the accent fill, too pale as text on a light card; its clues use the accent's text shade. */
+.nono-clues .clue.c1 { color: var(--accent-text); }
 .nono-clues.done .clue { color: inherit; }
 .nono-clues .clue.zero { color: var(--text-muted); }
 .nono-clues.broken { background: color-mix(in srgb, var(--danger) 14%, transparent); border-radius: 6px; }

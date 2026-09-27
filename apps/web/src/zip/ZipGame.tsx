@@ -32,20 +32,26 @@ const KEY_DIRS: Record<string, [number, number]> = {
   ArrowLeft: [0, -1],
 };
 
-function stepToward(n: number, from: number, to: number): number {
-  const fr = Math.floor(from / n);
-  const fc = from % n;
-  const tr = Math.floor(to / n);
-  const tc = to % n;
-  if (fr === tr) return from + Math.sign(tc - fc);
-  if (fc === tc) return from + n * Math.sign(tr - fr);
-  return -1;
+// The straight steps from `from` toward `to`, best first. A finger that rounds a corner fast
+// can land diagonally from the head between two pointer events; then both axes are candidates,
+// the longer one first, and on a tie the one the line was already running along.
+function stepsToward(n: number, from: number, to: number, prev: number | undefined): number[] {
+  const dr = Math.floor(to / n) - Math.floor(from / n);
+  const dc = (to % n) - (from % n);
+  if (dr === 0) return [from + Math.sign(dc)];
+  if (dc === 0) return [from + n * Math.sign(dr)];
+  const row = from + n * Math.sign(dr);
+  const col = from + Math.sign(dc);
+  const ranRow = prev !== undefined && Math.abs(from - prev) === n;
+  const rowFirst = Math.abs(dr) > Math.abs(dc) || (Math.abs(dr) === Math.abs(dc) && ranRow);
+  return rowFirst ? [row, col] : [col, row];
 }
 
 // A drag walks the board cell by cell: it draws forward into free cells and rubs the line
 // out backwards, but only from the head. Landing on any other collected cell does nothing,
 // so brushing over an earlier part of the line mid-drag no longer cuts it back to there.
-// Tapping such a cell still jumps back, that goes through moveTo.
+// Tapping such a cell still jumps back, that goes through moveTo. A diagonal jump only ever
+// draws forward, so a corner taken fast never rubs anything out.
 export function zipDragPath(spec: ZipSpec, cur: ZipState, cell: number): ZipState | null {
   const n = spec.config.size;
   if (cur.length === 0) return cell === zipStart(spec) ? [cell] : null;
@@ -53,12 +59,18 @@ export function zipDragPath(spec: ZipSpec, cur: ZipState, cell: number): ZipStat
   let at = next[next.length - 1]!;
   let changed = false;
   while (at !== cell) {
-    const step = stepToward(n, at, cell);
-    if (step < 0) break;
-    if (next.length >= 2 && next[next.length - 2] === step) next.pop();
-    else if (!next.includes(step) && zipStepAllowed(spec, at, step)) next.push(step);
-    else break;
-    at = step;
+    const steps = stepsToward(n, at, cell, next[next.length - 2]);
+    const straight = steps.length === 1;
+    let moved = false;
+    for (const step of steps) {
+      if (straight && next.length >= 2 && next[next.length - 2] === step) next.pop();
+      else if (!next.includes(step) && zipStepAllowed(spec, at, step)) next.push(step);
+      else continue;
+      at = step;
+      moved = true;
+      break;
+    }
+    if (!moved) break;
     changed = true;
   }
   return changed ? next : null;
@@ -129,7 +141,9 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintA
     let at = next[next.length - 1]!;
     let changed = false;
     while (at !== cell) {
-      const step = stepToward(n, at, cell);
+      // A tap only reaches along a straight line from the head.
+      const steps = stepsToward(n, at, cell, undefined);
+      const step = steps.length === 1 ? steps[0]! : -1;
       if (step < 0 || next.includes(step) || !zipStepAllowed(spec, at, step)) break;
       next.push(step);
       at = step;
