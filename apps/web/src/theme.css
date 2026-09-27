@@ -63,6 +63,7 @@
   --radius: 18px;
   --radius-sm: 12px;
   --tabbar-h: 64px;
+  --frame-border: 2px;
   color-scheme: light;
 }
 
@@ -679,7 +680,7 @@ p { margin: 0; }
 .board-panel { display: flex; flex-direction: column; gap: 12px; }
 .board-frame {
   background: var(--card-bg);
-  border: 2px solid var(--border-mid);
+  border: var(--frame-border) solid var(--border-mid);
   border-radius: 8px;
   box-shadow: var(--shadow);
   overflow: hidden;

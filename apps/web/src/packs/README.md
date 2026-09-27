@@ -15,7 +15,9 @@ components know nothing about packs; a pack reaches them only through the layers
 Stable class names a pack may style. A component that carries one keeps it; a new component
 that is one of these things adds it.
 
-- `.board-frame`, `.board-frame.solved`: the frame around every puzzle board.
+- `.board-frame`, `.board-frame.solved`: the frame around every puzzle board. A wider frame sets
+  `--frame-border` in the token block rather than `border-width`, because the games size their
+  cells against it; decoration goes into `border-image`, since the frame clips its overflow.
 - `.coin-pill`: the coin balance in the page headers.
 - `h1`, `h2`, `h3`, `.row-title`: through `--font-display`; `h1::after` for a trailing mark.
 - Board cells: `.nono-cell`, `.mosaic-cell`, `.sudoku-cell` (background image; leave `.f1`-`.f3`

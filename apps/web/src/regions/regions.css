@@ -39,7 +39,7 @@
 }
 
 .regions-wrap {
-  --cell: min(calc(180px / var(--size) + 22px), calc((100cqw - 4px) / var(--size)));
+  --cell: min(calc(180px / var(--size) + 22px), calc((100cqw - 2 * var(--frame-border)) / var(--size)));
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -57,7 +57,7 @@
   max-width: 100%;
   touch-action: none;
 }
-.regions-wrap .tools { width: calc(var(--size) * var(--cell) + 4px); max-width: 100%; }
+.regions-wrap .tools { width: calc(var(--size) * var(--cell) + 2 * var(--frame-border)); max-width: 100%; }
 
 .regions-cell {
   position: relative;

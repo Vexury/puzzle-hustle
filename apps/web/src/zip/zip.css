@@ -1,5 +1,5 @@
 .zip-wrap {
-  --cell: min(calc(180px / var(--size) + 22px), calc((100cqw - 4px) / var(--size)));
+  --cell: min(calc(180px / var(--size) + 22px), calc((100cqw - 2 * var(--frame-border)) / var(--size)));
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -15,7 +15,7 @@
   touch-action: none;
   line-height: 0;
 }
-.zip-wrap .tools { width: calc(var(--size) * var(--cell) + 4px); max-width: 100%; }
+.zip-wrap .tools { width: calc(var(--size) * var(--cell) + 2 * var(--frame-border)); max-width: 100%; }
 
 .zip-svg {
   width: calc(var(--size) * var(--cell));

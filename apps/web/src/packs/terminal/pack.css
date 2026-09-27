@@ -1,4 +1,5 @@
 [data-theme][data-pack="terminal"] {
+  --frame-border: 10px;
   color-scheme: dark;
   --bg: #0a0c0a;
   --card-bg: #101410;
@@ -40,6 +41,11 @@
 }
 
 [data-pack="terminal"] .board-frame:not(.solved) { box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent); }
+/* A double box-drawing line round the board, like ╔═╗ in a text UI. */
+[data-pack="terminal"] .board-frame {
+  border-radius: 0; background-clip: padding-box;
+  border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cg fill='none' stroke='%23ffb000' stroke-width='1.2'%3E%3Crect x='2.6' y='2.6' width='24.8' height='24.8'/%3E%3Crect x='6.4' y='6.4' width='17.2' height='17.2'/%3E%3C/g%3E%3C/svg%3E") 10 / 10px / 0px stretch;
+}
 /* body redefines --font-text on itself (theme.css), which shadows any value the terminal block
    above would set at the root for every descendant. Redeclaring the token on the same body
    element it's shadowed on wins by specificity, so body's own font-family: var(--font-text) and

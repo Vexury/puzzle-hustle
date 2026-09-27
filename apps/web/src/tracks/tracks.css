@@ -2,7 +2,7 @@
    the A and B stubs. Width decides the cell size; at ten columns on a phone that leaves the
    15 rows of genius room below, so no zoom is needed. */
 .tracks-wrap {
-  --cell: min(calc(180px / var(--cols) + 22px), calc((100cqw - 4px) / (var(--cols) + 1.6)));
+  --cell: min(calc(180px / var(--cols) + 22px), calc((100cqw - 2 * var(--frame-border)) / (var(--cols) + 1.6)));
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -13,7 +13,7 @@
   -webkit-user-select: none;
 }
 .tracks-board { max-width: 100%; touch-action: none; line-height: 0; }
-.tracks-wrap .tools { width: calc((var(--cols) + 1.6) * var(--cell) + 4px); max-width: 100%; }
+.tracks-wrap .tools { width: calc((var(--cols) + 1.6) * var(--cell) + 2 * var(--frame-border)); max-width: 100%; }
 .tracks-svg {
   width: calc((var(--cols) + 1.6) * var(--cell));
   height: calc((var(--rows) + 1.6) * var(--cell));
