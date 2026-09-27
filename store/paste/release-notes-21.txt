@@ -1,0 +1,20 @@
+<en-US>
+Theme packs and a lot more badges.
+
+- Six theme packs, from Paper to Synthwave, each with its own look and scene. Free to wear during the beta
+- 24 new badges, 32 in all, with a shine
+- Your badge and flair show on Profile and Social
+- Play again on solved levels and random puzzles
+- Every how-to opens with the controls in brief
+- Steadier input in every puzzle, your own row stands out in the standings
+</en-US>
+<de-DE>
+Theme-Pakete und viel mehr Badges.
+
+- Sechs Theme-Pakete von Paper bis Synthwave, jedes mit eigenem Look und eigener Szene. In der Beta gratis
+- 24 neue Badges, 32 insgesamt, mit Schimmer
+- Dein Badge und Flair im Profil und unter Social
+- Nochmal spielen bei gelösten Leveln und Zufallsrätseln
+- Jede Anleitung beginnt mit der Steuerung in Kurzform
+- Ruhigere Eingabe in allen Rätseln, deine eigene Zeile hebt sich in der Bestenliste ab
+</de-DE>
