@@ -27,7 +27,8 @@ import { centerOf, equipPack, tryOnPack, usePack, useTheme } from '../lib/theme.
 import { BackLink } from '../components/BackLink.tsx';
 
 const REVERT_MS = 4000;
-const BADGES: readonly BadgeCosmetic[] = COSMETICS.filter((c): c is BadgeCosmetic => c.kind === 'badge');
+// Cheapest first; sort is stable, so equal prices keep their catalogue order.
+const BADGES: readonly BadgeCosmetic[] = COSMETICS.filter((c): c is BadgeCosmetic => c.kind === 'badge').sort((a, b) => a.price - b.price);
 
 // A tap plays the badge's motion once. An attribute rather than a class, so the re-render that
 // follows the tap (armed, owned, equipped) cannot wipe it mid-motion.
