@@ -1,17 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   SHAPES,
-  atomFromIndex,
-  atomPolygon,
-  coverage,
   hint as computeHint,
   isSolved,
-  litMask,
   type Placement,
   type ShapesSpec,
   type ShapesState,
 } from '@puzzle-hustle/core';
 import { outlinePoints } from './PieceShape.tsx';
+import { ShapesBoard, ShapesTray } from './ShapesBoard.tsx';
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
@@ -64,7 +61,6 @@ export interface ShapesGameProps {
 }
 
 export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintAd, locked, initialState, onStateChange }: ShapesGameProps) {
-  const size = spec.config.size;
   const [state, setState] = useState<ShapesState>(() => readState(spec, initialState));
   const [order, setOrder] = useState<number[]>(() => spec.pieces.map((_, i) => i));
   const [drag, setDrag] = useState<Drag | null>(null);
@@ -80,7 +76,6 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     if (solved) onSolved();
   }, [solved, onSolved]);
 
-  const lit = litMask(coverage(size, spec.pieces, state));
   const m = spec.config.margin;
   const inner = spec.config.inner;
 
@@ -250,83 +245,31 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
         onLostPointerCapture={() => setDrag(null)}
       >
         <div className="board-panel">
-          <svg
+          <ShapesBoard
             ref={boardRef}
-            className={solved ? 'board board-frame solved' : 'board board-frame'}
-            viewBox={`${m} ${m} ${inner} ${inner}`}
+            spec={spec}
+            state={state}
+            order={order}
+            held={dragging?.pieceId ?? null}
+            preview={preview}
+            selected={selected}
+            flash={flash}
+            onPieceDown={(e, i) => startDrag(e, i, 'board')}
             onPointerUp={(e) => {
               if (!drag) tapBoard(e);
             }}
             role="application"
             aria-label="Shapes board"
-          >
-            <rect className="inner-area" x={m} y={m} width={inner} height={inner} />
-            {[...lit].map((v, i) => {
-              if (v && spec.target[i]) return null;
-              const { r, c, dir } = atomFromIndex(size, i);
-              const cls = v ? 'atom lit' : spec.target[i] ? 'atom ghost' : 'atom';
-              return <polygon key={i} className={cls} points={atomPolygon(r, c, dir).map((p) => p.join(',')).join(' ')} />;
-            })}
-            <g className="match-pulse">
-              {[...lit].map((v, i) => {
-                if (!v || !spec.target[i]) return null;
-                const { r, c, dir } = atomFromIndex(size, i);
-                return <polygon key={i} className="atom lit match" points={atomPolygon(r, c, dir).map((p) => p.join(',')).join(' ')} />;
-              })}
-            </g>
-            {Array.from({ length: inner + 1 }, (_, i) => (
-              <g key={i}>
-                <line className="grid-line" x1={m} y1={m + i} x2={m + inner} y2={m + i} />
-                <line className="grid-line" x1={m + i} y1={m} x2={m + i} y2={m + inner} />
-              </g>
-            ))}
-            {order.map((i) => {
-              const piece = spec.pieces[i]!;
-              const held = dragging?.pieceId === i;
-              const p = held ? preview : state[i];
-              if (!p) return null;
-              const cls = ['piece-outline', held ? 'dragging' : '', selected === i ? 'selected' : ''].join(' ');
-              return (
-                <g key={piece.id}>
-                  <polygon className={cls} points={outlinePoints(piece.kind, p.r, p.c)} />
-                  {flash === i && <polygon className="hint-flash" points={outlinePoints(piece.kind, p.r, p.c)} />}
-                  {!solved && (
-                    <polygon
-                      className="piece-hit"
-                      points={outlinePoints(piece.kind, p.r, p.c)}
-                      onPointerDown={(e) => startDrag(e, i, 'board')}
-                      aria-label={SHAPES[piece.kind].label}
-                    />
-                  )}
-                </g>
-              );
-            })}
-          </svg>
+          />
 
           {!solved && (
-            <div className="shapes-tray" aria-label="Shapes to place">
-              {spec.pieces.map((piece, i) => {
-                const s = SHAPES[piece.kind];
-                const away = !!state[i] || dragging?.pieceId === i;
-                const cls = ['shapes-slot', away ? 'empty' : '', selected === i && !state[i] ? 'selected' : ''].join(' ');
-                return (
-                  <div
-                    key={piece.id}
-                    className={cls}
-                    style={{ '--w': s.width, '--h': s.height } as React.CSSProperties}
-                    onPointerDown={away || locked ? undefined : (e) => startDrag(e, i, 'tray')}
-                    aria-label={s.label}
-                  >
-                    <svg viewBox={`-0.15 -0.15 ${s.width + 0.3} ${s.height + 0.3}`} aria-hidden="true">
-                      {Array.from({ length: s.width * s.height }, (_, k) => (
-                        <rect key={k} className="tray-cell" x={k % s.width} y={Math.floor(k / s.width)} width={1} height={1} />
-                      ))}
-                      <polygon className="tray-piece" points={outlinePoints(piece.kind)} />
-                    </svg>
-                  </div>
-                );
-              })}
-            </div>
+            <ShapesTray
+              spec={spec}
+              state={state}
+              held={dragging?.pieceId ?? null}
+              selected={selected}
+              slotProps={(i, away) => ({ onPointerDown: away || locked ? undefined : (e) => startDrag(e, i, 'tray') })}
+            />
           )}
 
           {ghost}

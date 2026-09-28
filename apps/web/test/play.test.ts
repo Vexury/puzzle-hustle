@@ -75,3 +75,31 @@ it('takes a scheduled stars puzzle from the adapter instead of generating it aga
   expect(generateStars).not.toHaveBeenCalled();
   expect(container.querySelector('.play')).not.toBeNull();
 });
+
+it('holds the clock while the first how-to is up and starts it on Got it', () => {
+  localStorage.removeItem('ph:howto:tracks');
+  mount(encodeRef(dailyRef('tracks')));
+  expect(container.querySelector('.help')).not.toBeNull();
+  act(() => vi.advanceTimersByTime(10_000));
+  expect(container.querySelector('.timer')?.textContent).toContain('0s');
+  const gotIt = [...container.querySelectorAll('button')].find((b) => b.textContent === 'Got it')!;
+  act(() => gotIt.click());
+  expect(container.querySelector('.help')).toBeNull();
+  act(() => vi.advanceTimersByTime(3_000));
+  expect(container.querySelector('.timer')?.textContent).toContain('3s');
+});
+
+it('a back press closes the how-to instead of asking to leave', () => {
+  mount(encodeRef(dailyRef('tracks')));
+  act(() => (container.querySelector('[aria-label="How to play"]') as HTMLButtonElement).click());
+  expect(container.querySelector('.help')).not.toBeNull();
+  act(() => void handleBackPress(true));
+  expect(container.querySelector('.help')).toBeNull();
+  expect(container.textContent).not.toContain('Leave this puzzle?');
+});
+
+it('shows the cats how-to as a demo', () => {
+  mount(encodeRef(dailyRef('crowns')));
+  expect(container.querySelector('.help .demo')).not.toBeNull();
+  act(() => vi.advanceTimersByTime(5_000));
+});

@@ -68,6 +68,7 @@
 .sudoku-cell.same { background: var(--sudoku-same); }
 .sudoku-cell.selected { background: var(--sudoku-selected); box-shadow: inset 0 0 0 2px var(--accent); }
 .sudoku-cell.conflict .sudoku-value { color: var(--danger); }
+.sudoku-cell.hl { box-shadow: inset 0 0 0 2px var(--accent); }
 .sudoku-cell.flash { animation: sudoku-flash 0.75s ease-out 4; }
 @keyframes sudoku-flash {
   0%, 45% { box-shadow: inset 0 0 0 3px var(--success), inset 0 0 0 100px color-mix(in srgb, var(--success) 22%, transparent); }
@@ -179,3 +180,12 @@
 
 .sudoku-wrap .tools { max-width: var(--sudoku-max); }
 .sudoku-board.solved .sudoku-value { display: inline-block; animation: solve-text 0.8s ease-out both; animation-delay: calc(var(--r, 0) * 60ms); }
+
+/* The how-to demo: the real board and keys, sized to the help card. */
+.sudoku-demo { width: 260px; gap: 8px; }
+.sudoku-demo .sudoku-pad { gap: 3px; }
+.sudoku-demo .sudoku-key { min-height: 34px; padding: 2px 0; font-size: 1rem; }
+.sudoku-demo .sudoku-key small { font-size: 0.55rem; }
+.sudoku-demo .tools { width: 60%; margin-top: 0; }
+.sudoku-demo .tools > span { display: grid; }
+.sudoku-demo .tool { min-height: 44px; padding: 4px 2px; }

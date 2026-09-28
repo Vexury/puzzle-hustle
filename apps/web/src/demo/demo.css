@@ -1,0 +1,28 @@
+.demo { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.demo-stage { position: relative; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.demo-stage > * { pointer-events: none; }
+.demo-say { margin: 0; min-height: 2.8em; text-align: center; font-size: var(--fs-sm); font-weight: 600; animation: demo-say 0.35s ease-out both; }
+@keyframes demo-say { from { opacity: 0; transform: translateY(4px); } }
+
+.demo-finger { position: absolute; left: 0; top: 0; width: 0; height: 0; transition-property: transform; transition-timing-function: ease-in-out; }
+.demo-finger::before,
+.demo-finger::after { content: ''; position: absolute; left: -17px; top: -17px; width: 34px; height: 34px; border-radius: 50%; }
+.demo-finger::before { background: color-mix(in srgb, var(--text) 30%, transparent); border: 2px solid color-mix(in srgb, var(--card-bg) 85%, transparent); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25); transition: transform 0.12s, background 0.12s; }
+.demo-finger.down::before { transform: scale(0.78); background: color-mix(in srgb, var(--text) 45%, transparent); }
+.demo-finger::after { border: 3px solid var(--accent); opacity: 0; transform: scale(0.6); }
+.demo-finger.hold::after { animation: demo-hold 0.65s linear forwards; }
+@keyframes demo-hold { from { opacity: 0.9; transform: scale(0.6); } to { opacity: 0.9; transform: scale(1.35); } }
+
+.demo-paused { position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; background: color-mix(in srgb, var(--card-bg) 85%, transparent); box-shadow: var(--shadow); }
+.demo-paused::before,
+.demo-paused::after { content: ''; position: absolute; top: 18px; width: 6px; height: 20px; border-radius: 2px; background: var(--text); }
+.demo-paused::before { left: 19px; }
+.demo-paused::after { right: 19px; }
+
+.demo-dots { display: flex; gap: 2px; justify-content: center; margin-top: -4px; }
+.demo-dots button { width: 22px; height: 22px; padding: 0; border: 0; background: none; cursor: pointer; display: grid; place-items: center; }
+.demo-dots button::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--border-mid); transition: background 0.2s, transform 0.2s; }
+.demo-dots button.on::before { background: var(--accent); transform: scale(1.25); }
+
+.demo-list { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-sm); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }

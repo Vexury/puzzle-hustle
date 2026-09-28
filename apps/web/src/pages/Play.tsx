@@ -40,7 +40,8 @@ import { balance, solveCoinLine } from '../lib/coins.ts';
 import { syncFlairs } from '../lib/flairs.ts';
 import { currentHintProvider, freeHints, type HintChoice } from '../lib/hints.ts';
 import { enqueue, flush } from '../lib/queue.ts';
-import { CONTROLS, HOW_TO } from '../lib/howto.ts';
+import { DEMOS } from '../demo/index.ts';
+import { DemoPlayer } from '../demo/DemoPlayer.tsx';
 import { dailyNumber, streakNews } from '../lib/stats.ts';
 import { useSession } from '../lib/auth.ts';
 import { ShapesGame } from '../shapes/ShapesGame.tsx';
@@ -165,6 +166,8 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
   const seenKey = `ph:howto:${puzzleRef.type}`;
   const [showHelp, setShowHelp] = useState(() => readSetting(seenKey) !== '1');
   const helpSeen = useRef(readSetting(seenKey) === '1');
+  const showHelpRef = useRef(showHelp);
+  showHelpRef.current = showHelp;
   const [askHint, setAskHint] = useState<{ canPay: boolean } | null>(null);
   const [adWait, setAdWait] = useState(false);
   const adWaitRef = useRef(false);
@@ -207,6 +210,7 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
     if (result) return;
     startedAt.current = Date.now() - seconds * 1000;
     setRunning(true);
+    if (showHelpRef.current) pauseClock();
   }, []);
 
   useEffect(() => {
@@ -230,7 +234,7 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
   };
 
   const resumeClock = () => {
-    if (pausedSince.current === null || askLeaveRef.current || adWaitRef.current) return;
+    if (pausedSince.current === null || askLeaveRef.current || adWaitRef.current || showHelpRef.current) return;
     if (startedAt.current !== null) {
       startedAt.current += Date.now() - pausedSince.current;
       setRunning(true);
@@ -246,6 +250,10 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
   // jump back above a guard something else (the unlock modal) had since pushed on top of it.
   const backGuard = useRef<() => boolean>(() => false);
   backGuard.current = () => {
+    if (showHelp) {
+      closeHelp();
+      return true;
+    }
     if (result) return false;
     if (adWaitRef.current) return true;
     if (askHint) {
@@ -300,9 +308,6 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
       counters.current.moves++;
       setMoves(counters.current.moves);
     }
-    if (helpSeen.current) return;
-    helpSeen.current = true;
-    writeSetting(seenKey, '1');
   };
 
   const onHintUsed = () => {
@@ -432,10 +437,20 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
     const candidates = [...DAILY_TYPES.map((type) => dailyRef(type)), periodRef('weekly'), periodRef('monthly')];
     return candidates.find((c) => refId(c) !== id && !solves[refId(c)]) ?? null;
   }, [puzzleRef, id, solves]);
-  const toggleHelp = () => {
-    setShowHelp((v) => !v);
-    writeSetting(seenKey, '1');
+  // The how-to covers the board, so like the other dialogs it stops the clock while it is up.
+  const openHelp = () => {
+    showHelpRef.current = true;
+    setShowHelp(true);
+    pauseClock();
   };
+  const closeHelp = () => {
+    showHelpRef.current = false;
+    setShowHelp(false);
+    helpSeen.current = true;
+    writeSetting(seenKey, '1');
+    resumeClock();
+  };
+  const demo = DEMOS[puzzleRef.type];
 
   return (
     <section className="play">
@@ -446,7 +461,7 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
         <h1>
           {PUZZLE_META[puzzleRef.type].name} <span className="muted">· {subtitle(puzzleRef)}</span>
         </h1>
-        <button type="button" className={showHelp ? 'icon-round active' : 'icon-round'} onClick={toggleHelp} aria-label="How to play" aria-pressed={showHelp}>
+        <button type="button" className={showHelp ? 'icon-round active' : 'icon-round'} onClick={showHelp ? closeHelp : openHelp} aria-label="How to play" aria-pressed={showHelp}>
           ?
         </button>
       </div>
@@ -673,21 +688,14 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
       )}
 
       {showHelp && (
-        <div className="card-lg howto">
-          <h2>How to play</h2>
-          <dl className="howto-controls">
-            {CONTROLS[puzzleRef.type].map(([gesture, effect]) => (
-              <div key={gesture}>
-                <dt>{gesture}</dt>
-                <dd>{effect}</dd>
-              </div>
-            ))}
-          </dl>
-          <ol>
-            {HOW_TO[puzzleRef.type].map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ol>
+        <div className="ad-ask help" role="dialog" aria-modal="true" aria-label="How to play" onClick={(e) => e.target === e.currentTarget && closeHelp()}>
+          <div className="card-lg howto">
+            <h2>How to play</h2>
+            <DemoPlayer script={demo.script} render={demo.render} />
+            <button type="button" className="pill" onClick={closeHelp}>
+              Got it
+            </button>
+          </div>
         </div>
       )}
     </section>

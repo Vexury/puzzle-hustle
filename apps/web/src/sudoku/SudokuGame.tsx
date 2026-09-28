@@ -3,7 +3,6 @@ import {
   emptySudokuState,
   isSudokuSolved,
   sudokuCellValues,
-  sudokuConflicts,
   sudokuHint,
   sudokuPeers,
   sudokuStateFromArray,
@@ -11,16 +10,13 @@ import {
   type SudokuSpec,
   type SudokuState,
 } from '@puzzle-hustle/core';
-import './sudoku.css';
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import { readSetting } from '../lib/storage.ts';
 import { showMistakes } from '../lib/mistakes.ts';
-import { cageLayout, SUM_FONT, type CageSum } from './cages.ts';
+import { DIGITS, SudokuBoard, SudokuPad } from './SudokuBoard.tsx';
 import { ResetButton } from '../components/ResetButton.tsx';
 import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
-
-const DIGITS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 export interface SudokuGameProps {
   spec: SudokuSpec;
@@ -67,14 +63,7 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
   const [hintBusy, setHintBusy] = useState(false);
   const history = useHistory<SudokuState>();
   const stateRef = useRef(state);
-  const cages = useMemo(() => cageLayout(spec), [spec]);
-  const sums = useMemo(() => {
-    const out: (CageSum | undefined)[] = [];
-    for (const shape of cages.shapes) out[shape.sum.cell] = shape.sum;
-    return out;
-  }, [cages]);
   const values = useMemo(() => sudokuCellValues(spec, state), [spec, state]);
-  const conflicts = useMemo(() => sudokuConflicts(spec, state), [spec, state]);
   const solved = isSudokuSolved(spec, state);
   const frozen = locked || solved;
 
@@ -177,85 +166,14 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     }
     if (highlightEnabled) setHighlight((h) => (h === d ? 0 : d));
   };
-  const peers = useMemo(() => (selected === null ? new Set<number>() : new Set(sudokuPeers(selected))), [selected]);
-
-  const cellClass = (i: number) => {
-    const cls = ['sudoku-cell'];
-    const c = i % 9;
-    const r = Math.floor(i / 9);
-    if (c % 3 === 2 && c < 8) cls.push('box-r');
-    if (r % 3 === 2 && r < 8) cls.push('box-b');
-    if (c === 8) cls.push('last-c');
-    if (r === 8) cls.push('last-r');
-    if (spec.givens[i]) cls.push('given');
-    if (!solved) {
-      if (i === selected) cls.push('selected');
-      else if (marked && values[i] === marked) cls.push('same');
-      else if (peers.has(i)) cls.push('peer');
-      if (mistakes && conflicts[i]) cls.push('conflict');
-    }
-    if (flash === i) cls.push('flash');
-    return cls.join(' ');
-  };
 
   return (
     <div className="sudoku-wrap">
-      <div className={solved ? 'sudoku-board board-frame solved' : 'sudoku-board board-frame'} role="grid" aria-label="Sudoku board">
-        {Array.from({ length: 81 }, (_, i) => {
-          const sum = sums[i];
-          const v = values[i]!;
-          const notes = state.notes[i]!;
-          return (
-            <div key={i} className={cellClass(i)} role="gridcell" aria-selected={i === selected} style={{ '--r': Math.floor(i / 9) } as React.CSSProperties} onPointerDown={() => !solved && setSelected(i)}>
-              {sum && (
-                <span
-                  className={`sudoku-cage-sum k${cages.colourOfCell[i]}`}
-                  style={{ left: `${sum.left * 100}%`, top: `${sum.top * 100}%`, width: `${sum.width * 100}%`, fontSize: `${(SUM_FONT * 100) / 9}cqw` }}
-                >
-                  {sum.value}
-                </span>
-              )}
-              {v ? (
-                <span className="sudoku-value">{v}</span>
-              ) : notes ? (
-                <span className={sum ? 'sudoku-notes with-sum' : 'sudoku-notes'}>
-                  {DIGITS.map((d) => (
-                    <i key={d} className={highlightEnabled && marked === d && notes & (1 << (d - 1)) ? 'on' : undefined}>
-                      {notes & (1 << (d - 1)) ? d : ''}
-                    </i>
-                  ))}
-                </span>
-              ) : null}
-            </div>
-          );
-        })}
-        {cages.shapes.length > 0 && (
-          <svg className="sudoku-cages" viewBox="0 0 9 9" preserveAspectRatio="none" aria-hidden="true">
-            {cages.shapes.map((shape, k) =>
-              shape.outlines.map((o, j) => <path key={`${k}.${j}`} d={o.d} strokeDasharray={o.dash} className={`k${shape.colour}`} />),
-            )}
-          </svg>
-        )}
-      </div>
+      <SudokuBoard spec={spec} state={state} selected={selected} marked={marked} markNotes={highlightEnabled} mistakes={mistakes} flash={flash} onCell={setSelected} />
 
       {!solved && (
         <>
-          <div className="sudoku-pad">
-            {DIGITS.map((d, k) => (
-              <button
-                type="button"
-                key={d}
-                className={`sudoku-key${remaining[k]! <= 0 ? ' done' : ''}${highlight === d ? ' lit' : ''}`}
-                onClick={() => tapDigit(d)}
-                disabled={locked || (!highlightEnabled && remaining[k]! <= 0)}
-                aria-pressed={highlight === d}
-                aria-label={`Enter ${d}`}
-              >
-                {d}
-                <small>{remaining[k]}</small>
-              </button>
-            ))}
-          </div>
+          <SudokuPad remaining={remaining} lit={highlight} locked={locked} markDigits={highlightEnabled} onDigit={tapDigit} />
           <div className="tools">
             <ToolButton icon="notes" label="Notes" className={notesMode ? 'active' : ''} onClick={() => setNotesMode((v) => !v)} disabled={locked} pressed={notesMode} />
             <ToolButton icon="erase" label="Erase" onClick={erase} disabled={locked} />

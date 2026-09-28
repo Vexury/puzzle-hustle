@@ -1,17 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  MOSAIC_MARKED_EMPTY,
-  emptyMosaicState,
-  isMosaicSolved,
-  mosaicClueBroken,
-  mosaicClueSatisfied,
-  mosaicHint,
-  type MosaicSpec,
-  type MosaicState,
-} from '@puzzle-hustle/core';
+import { MOSAIC_MARKED_EMPTY, emptyMosaicState, isMosaicSolved, mosaicHint, type MosaicSpec, type MosaicState } from '@puzzle-hustle/core';
 import { useZoomViewport } from '../lib/useZoomViewport.ts';
-import './mosaic.css';
-import { gridLineClasses } from '../lib/gridLines.ts';
+import { MosaicBoard } from './MosaicBoard.tsx';
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import { press } from '../lib/haptics.ts';
@@ -203,22 +193,15 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     if (next) commit(next);
   }
 
-  const cellClass = (r: number, c: number, v: number, clue: number) => {
-    const cls = ['mosaic-cell'];
-    if (v === MOSAIC_MARKED_EMPTY && !solved) cls.push('x');
-    else if (v === 1) cls.push('filled');
-    if (clue >= 0 && mosaicClueSatisfied(spec, state, r, c)) cls.push('done');
-    else if (mistakes && clue >= 0 && !solved && mosaicClueBroken(spec, state, r, c)) cls.push('broken');
-    cls.push(...gridLineClasses(r, c, rows, cols, false));
-    if (flash === r * cols + c) cls.push('flash');
-    return cls.join(' ');
-  };
-
   return (
     <div className="mosaic-wrap">
-      <div
+      <MosaicBoard
         ref={viewport}
-        className={solved ? 'mosaic-viewport board-frame solved' : 'mosaic-viewport board-frame'}
+        spec={spec}
+        state={state}
+        cell={cellPx}
+        mistakes={mistakes}
+        flash={flash}
         onPointerDown={startDrag}
         onPointerMove={moveDrag}
         onPointerUp={endDrag}
@@ -226,20 +209,7 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
         onContextMenu={(e) => e.preventDefault()}
         role="application"
         aria-label="Mosaic board"
-      >
-        <div className="mosaic-board" style={{ '--rows': rows, '--cols': cols, '--cell': `${cellPx}px` } as React.CSSProperties}>
-        {Array.from({ length: rows * cols }, (_, i) => {
-          const r = Math.floor(i / cols);
-          const c = i % cols;
-          const clue = spec.clues[i]!;
-          return (
-            <div key={i} className={cellClass(r, c, state[i]!, clue)} data-r={r} data-c={c} style={{ '--r': r } as React.CSSProperties}>
-              {clue >= 0 && <span className="mosaic-clue">{clue}</span>}
-            </div>
-          );
-        })}
-        </div>
-      </div>
+      />
 
       {!solved && (
         <div className="tools">

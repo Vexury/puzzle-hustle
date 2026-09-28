@@ -298,15 +298,31 @@ p { margin: 0; }
   .daily-progress.safe .fill::after, .daily-progress.ignite .goal-badge::after { display: none; }
 }
 
-.streak {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: var(--fs-lg);
-  color: var(--flame);
-}
 .flame { width: 1em; height: 1em; fill: var(--flame); vertical-align: -0.1em; }
-.streak .flame { width: 1.35em; height: 1.35em; }
+.nowrap { white-space: nowrap; }
+
+/* The day's streak is the focus of Daily: count and countdown in one card with the progress bar.
+   The card glows in the accent once the streak is safe and in the flame colour on a clean sweep. */
+.streak-hero {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 16px 10px;
+  margin-bottom: 16px;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+.streak-hero.safe { border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 22%, transparent); }
+.streak-hero.full { border-color: color-mix(in srgb, var(--flame) 60%, var(--border)); box-shadow: 0 0 20px color-mix(in srgb, var(--flame) 28%, transparent); }
+.streak-hero-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.streak-count { display: flex; align-items: center; gap: 2px; }
+.streak-count .flame { width: 54px; height: 54px; margin: -6px -8px -6px -12px; fill: var(--border-mid); transition: fill 0.25s; }
+.streak-hero.has-streak .streak-count .flame { fill: var(--flame); }
+.streak-count b { display: block; font-family: var(--font-num); font-size: 2.3rem; font-weight: 800; line-height: 1; }
+.streak-count span { font-size: var(--fs-sm); color: var(--text-muted); }
+.streak-timer { font-size: var(--fs-sm); color: var(--text-muted); text-align: right; line-height: 1.3; }
+.streak-timer b { display: block; font-family: var(--font-num); font-size: var(--fs-md); color: var(--text); white-space: nowrap; }
+.streak-hero .daily-progress { margin: 4px 0 0; }
 
 .row-card {
   display: grid;
@@ -730,11 +746,6 @@ p { margin: 0; }
 .solved-actions > .pill { margin-left: auto; }
 .share-icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 .share-icon circle { fill: currentColor; stroke: none; }
-.howto ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
-.howto-controls { margin: 0 0 10px; padding: 8px 12px; border-radius: var(--radius-sm); background: var(--accent-soft); display: grid; grid-template-columns: max-content 1fr; gap: 2px 12px; font-size: var(--fs-sm); }
-.howto-controls > div { display: contents; }
-.howto-controls dt { font-weight: 700; color: var(--accent-text); }
-.howto-controls dd { margin: 0; }
 
 .shapes-wrap { container-type: inline-size; }
 .shapes { display: grid; gap: 12px; touch-action: none; user-select: none; -webkit-user-select: none; }
@@ -1108,3 +1119,6 @@ button.unlock-row { cursor: pointer; }
   -webkit-mask-image: var(--mark-glyph-2, var(--mark-glyph));
   mask-image: var(--mark-glyph-2, var(--mark-glyph));
 }
+.ad-ask.help { place-items: safe center; background: color-mix(in srgb, var(--bg) 70%, transparent); backdrop-filter: blur(14px); overflow-y: auto; }
+.help > .howto { width: 100%; max-width: 22rem; gap: 12px; }
+.help > .howto > .pill { align-self: stretch; justify-content: center; }

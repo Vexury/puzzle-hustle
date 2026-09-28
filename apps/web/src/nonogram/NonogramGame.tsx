@@ -1,18 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  MARKED_EMPTY,
-  emptyState,
-  isNonogramSolved,
-  lineBroken,
-  lineSatisfied,
-  nonogramHint,
-  type Clue,
-  type NonogramSpec,
-  type NonogramState,
-} from '@puzzle-hustle/core';
+import { MARKED_EMPTY, emptyState, isNonogramSolved, nonogramHint, type NonogramSpec, type NonogramState } from '@puzzle-hustle/core';
 import { useZoomViewport } from '../lib/useZoomViewport.ts';
-import './nonogram.css';
-import { gridLineClasses } from '../lib/gridLines.ts';
+import { NonogramBoard } from './NonogramBoard.tsx';
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import { press } from '../lib/haptics.ts';
@@ -59,20 +48,6 @@ function nextValue(current: number, color: number, mark: boolean): number {
   if (current === 0) return color;
   if (current === MARKED_EMPTY) return 0;
   return current === color ? MARKED_EMPTY : color;
-}
-
-function ClueList({ clues, done, broken, axis, index }: { clues: Clue[]; done: boolean; broken: boolean; axis: 'row' | 'col'; index: number }) {
-  const style = axis === 'row' ? { gridRow: index + 2, gridColumn: 1 } : { gridRow: 1, gridColumn: index + 2 };
-  return (
-    <div className={['nono-clues', axis, done ? 'done' : '', broken ? 'broken' : ''].join(' ')} style={style}>
-      {clues.length === 0 && <span className="clue zero">0</span>}
-      {clues.map((k, i) => (
-        <span key={i} className={`clue c${k.color}`}>
-          {k.len}
-        </span>
-      ))}
-    </div>
-  );
 }
 
 export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintAd, locked, initialState, onStateChange, viewKey }: NonogramGameProps) {
@@ -228,20 +203,15 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
     if (next) commit(next);
   }
 
-  const cellClass = (r: number, c: number, v: number) => {
-    const cls = ['nono-cell'];
-    if (v === MARKED_EMPTY && !solved) cls.push('x');
-    else if (v !== 0 && v !== MARKED_EMPTY) cls.push(`f${v}`);
-    cls.push(...gridLineClasses(r, c, rows, cols));
-    if (flash === r * cols + c) cls.push('flash');
-    return cls.join(' ');
-  };
-
   return (
     <div className="nono-wrap">
-      <div
+      <NonogramBoard
         ref={viewport}
-        className={solved ? 'nono-viewport board-frame solved' : 'nono-viewport board-frame'}
+        spec={spec}
+        state={state}
+        cell={cellPx}
+        mistakes={mistakes}
+        flash={flash}
         onPointerDown={startDrag}
         onPointerMove={moveDrag}
         onPointerUp={endDrag}
@@ -249,22 +219,7 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
         onContextMenu={(e) => e.preventDefault()}
         role="application"
         aria-label="Nonogram board"
-      >
-        <div className="nono-board" style={{ '--rows': rows, '--cols': cols, '--cell': `${cellPx}px` } as React.CSSProperties}>
-        <div className="nono-corner" />
-        {spec.colClues.map((clues, c) => (
-          <ClueList key={`c${c}`} clues={clues} axis="col" index={c} done={lineSatisfied(spec, state, 'col', c)} broken={mistakes && lineBroken(spec, state, 'col', c)} />
-        ))}
-        {spec.rowClues.map((clues, r) => (
-          <ClueList key={`r${r}`} clues={clues} axis="row" index={r} done={lineSatisfied(spec, state, 'row', r)} broken={mistakes && lineBroken(spec, state, 'row', r)} />
-        ))}
-        {Array.from({ length: rows * cols }, (_, i) => {
-          const r = Math.floor(i / cols);
-          const c = i % cols;
-          return <div key={i} className={cellClass(r, c, state[i]!)} style={{ gridRow: r + 2, gridColumn: c + 2, '--r': r } as React.CSSProperties} data-r={r} data-c={c} />;
-        })}
-        </div>
-      </div>
+      />
 
       {colors > 1 && (
         <div className="nono-palette" role="radiogroup" aria-label="Color">

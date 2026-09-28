@@ -51,6 +51,7 @@
 .slabs-badge.broken rect { fill: var(--danger); opacity: 1; }
 
 .slabs-preview { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 0.06; }
+.slabs-hl { fill: none; stroke: var(--accent-text); stroke-width: 0.05; }
 
 .slabs-tray {
   display: flex;

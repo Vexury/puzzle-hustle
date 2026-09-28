@@ -33,6 +33,7 @@
   transition: fill 0.1s;
 }
 .zip-cell.filled { fill: var(--accent-soft); }
+.zip-hl { fill: none; stroke: var(--accent); stroke-width: 0.08; pointer-events: none; }
 
 .zip-path {
   fill: none;

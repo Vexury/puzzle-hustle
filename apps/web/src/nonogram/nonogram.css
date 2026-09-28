@@ -130,3 +130,6 @@
 .nono-viewport.solved .nono-cell.f1,
 .nono-viewport.solved .nono-cell.f2,
 .nono-viewport.solved .nono-cell.f3 { animation: solve-wave 0.7s ease-out both; animation-delay: calc(var(--r, 0) * 40ms); }
+.nono-cell.hl { box-shadow: inset 0 0 0 3px var(--accent); }
+.nono-cell.hl:not(.f1, .f2, .f3) { background: color-mix(in srgb, var(--accent) 18%, var(--board-cell)); }
+.nono-clues.hl:not(.broken) { background: color-mix(in srgb, var(--accent) 22%, transparent); border-radius: 6px; }

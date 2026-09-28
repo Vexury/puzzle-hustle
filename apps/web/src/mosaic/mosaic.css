@@ -89,3 +89,5 @@
 .mosaic-cell.filled.broken .mosaic-clue { color: var(--mosaic-clue-on-fill); }
 .mosaic-viewport.solved .mosaic-cell.done .mosaic-clue { opacity: 0.25; }
 .mosaic-viewport.solved .mosaic-cell.filled { animation: solve-wave 0.7s ease-out both; animation-delay: calc(var(--r, 0) * 40ms); }
+.mosaic-cell.hl { box-shadow: inset 0 0 0 3px var(--accent); }
+.mosaic-cell.hl:not(.filled) { background: color-mix(in srgb, var(--accent) 18%, var(--board-cell)); }
