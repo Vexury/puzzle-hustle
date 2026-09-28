@@ -222,10 +222,18 @@ p { margin: 0; }
   margin: -6px 0 16px;
   color: var(--text-muted);
 }
-.daily-progress.safe { color: var(--success); }
+.daily-progress.safe { color: var(--accent-text); }
 .daily-progress .track { position: relative; height: 12px; border-radius: 999px; background: var(--board-cell); margin: 10px 0; }
-.daily-progress .fill { display: block; height: 100%; border-radius: 999px; background: var(--accent); transition: width 0.3s, background 0.25s; }
-.daily-progress.safe .fill { background: var(--success); }
+.daily-progress .fill {
+  position: relative;
+  display: block;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 60%, var(--board-cell));
+  transition: width 0.3s, background 0.25s, box-shadow 0.25s;
+}
+.daily-progress.safe .fill { background: var(--accent); box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 50%, transparent); }
 .daily-progress .goal-badge {
   position: absolute;
   top: 50%;
@@ -237,10 +245,10 @@ p { margin: 0; }
   border: 2px solid var(--border-mid);
   display: grid;
   place-items: center;
-  transition: border-color 0.25s;
+  transition: border-color 0.25s, box-shadow 0.25s;
 }
 .daily-progress .goal-badge .flame { width: 18px; height: 18px; fill: var(--border-mid); transition: fill 0.25s; }
-.daily-progress.safe .goal-badge { border-color: var(--success); }
+.daily-progress.safe .goal-badge { border-color: var(--flame); box-shadow: 0 0 10px color-mix(in srgb, var(--flame) 45%, transparent); }
 .daily-progress.safe .goal-badge .flame { fill: var(--flame); }
 /* Every daily of the day is done. The bar turns to the flame colour and the badge fills, so
    the full set is its own reward on the day itself instead of a streak to keep up. */
@@ -248,6 +256,47 @@ p { margin: 0; }
 .daily-progress.full .fill { background: var(--flame); box-shadow: 0 0 12px color-mix(in srgb, var(--flame) 55%, transparent); }
 .daily-progress.full .goal-badge { border-color: var(--flame); background: var(--flame); }
 .daily-progress.full .goal-badge .flame { fill: var(--on-accent); }
+/* While the streak is safe, a light sweep and a small badge pulse repeat every 4s. The full
+   ignite plays once per stage and day, the first time Daily shows the streak safe or the clean
+   sweep; the idle loop then takes over after its first cycle. */
+.daily-progress.safe .fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.55) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: streak-idle-sweep 4s ease-out 1s infinite;
+}
+.daily-progress.safe .goal-badge { animation: streak-idle-pulse 4s ease-out 1.15s infinite; }
+.daily-progress.ignite .fill { animation: streak-flare 0.9s ease-out 0.2s; }
+.daily-progress.ignite .fill::after { animation: streak-sweep 0.9s ease-out 0.2s, streak-idle-sweep 4s ease-out 4.2s infinite; }
+.daily-progress.ignite .goal-badge { animation: streak-ignite 0.7s cubic-bezier(0.3, 1.6, 0.5, 1) 0.35s, streak-idle-pulse 4s ease-out 4.35s infinite; }
+.daily-progress.ignite .goal-badge::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 2px solid var(--flame);
+  opacity: 0;
+  animation: streak-ring 0.8s ease-out 0.35s;
+}
+@keyframes streak-flare { 0% { filter: brightness(1); } 35% { filter: brightness(1.45); } 100% { filter: brightness(1); } }
+@keyframes streak-sweep { to { transform: translateX(100%); } }
+@keyframes streak-ignite {
+  0% { transform: translate(-50%, -50%) scale(1); }
+  40% { transform: translate(-50%, -50%) scale(1.35) rotate(-8deg); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes streak-ring { 0% { opacity: 0.8; transform: scale(1); } 100% { opacity: 0; transform: scale(2.2); } }
+@keyframes streak-idle-sweep { 0% { transform: translateX(-100%); } 20%, 100% { transform: translateX(100%); } }
+@keyframes streak-idle-pulse {
+  0%, 20%, 100% { transform: translate(-50%, -50%) scale(1); }
+  10% { transform: translate(-50%, -50%) scale(1.12); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .daily-progress.safe .fill, .daily-progress.safe .goal-badge { animation: none; }
+  .daily-progress.safe .fill::after, .daily-progress.ignite .goal-badge::after { display: none; }
+}
 
 .streak {
   display: inline-flex;

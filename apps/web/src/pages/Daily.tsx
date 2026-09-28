@@ -83,7 +83,7 @@ export function Daily() {
         </div>
       </header>
 
-      <DailyProgress solved={streaks.today} total={dailies.length} streak={streaks.current} />
+      <DailyProgress solved={streaks.today} total={dailies.length} streak={streaks.current} day={dailies[0]!.key!} />
 
       <div className="stack">
         {dailies.map((ref) => (
@@ -110,13 +110,31 @@ export function Daily() {
   );
 }
 
-function DailyProgress({ solved, total, streak }: { solved: number; total: number; streak: number }) {
+const IGNITE_KEY = 'ph:view:streak-ignite';
+
+function DailyProgress({ solved, total, streak, day }: { solved: number; total: number; streak: number; day: string }) {
   const safe = solved >= STREAK_MIN;
   const full = solved >= total;
   const missing = STREAK_MIN - solved;
+  const stage = full ? `${day}:full` : safe ? `${day}:safe` : null;
+  const [ignite] = useState(() => {
+    try {
+      return stage !== null && localStorage.getItem(IGNITE_KEY) !== stage;
+    } catch {
+      return false;
+    }
+  });
+  useEffect(() => {
+    if (!stage) return;
+    try {
+      localStorage.setItem(IGNITE_KEY, stage);
+    } catch {
+      /* storage unavailable */
+    }
+  }, [stage]);
   return (
     <div
-      className={full ? 'daily-progress safe full' : safe ? 'daily-progress safe' : 'daily-progress'}
+      className={`daily-progress${safe ? ' safe' : ''}${full ? ' full' : ''}${ignite ? ' ignite' : ''}`}
       role="progressbar"
       aria-valuemin={0}
       aria-valuemax={total}
