@@ -4,7 +4,7 @@ Quelle ist die WhatsApp-Gruppe "Puzzle Hustle" (seit 18.09.2026) und die Einzelc
 Neue Punkte kommen unter "Offen", erledigte wandern mit Datum nach "Erledigt". Ein Punkt gehoert
 in denselben Commit wie sein Fix.
 
-Stand: 2026-09-26
+Stand: 2026-09-29
 
 ## Offen
 
@@ -15,19 +15,23 @@ Stand: 2026-09-26
   Bauchgefuehl.
 - [ ] **Michi** Anzeigename direkt beim Erststart setzen. Die drei Intro-Karten gibt es seit dem
   21.09., ein Namensfeld hat `apps/web/src/components/Intro.tsx` nicht.
-- [ ] **Michi** Gefuehrtes Tutorial oder Video je Raetseltyp. Die acht Textanleitungen hinter dem
-  Fragezeichen reichen ihm nicht.
 - [ ] **Michi** Teilen als Grafik statt Textlink (Anzeigename, Zeit, kleines Brett).
 - [ ] **Michi** Anreiz, jeden Typ ein paar Mal zu spielen, bevor die App auf die Dailys schiebt.
 - [ ] **iOS-Tester, Dani** Manchmal ist alles um die obere Safe Area nach unten verschoben und der
   untere Bereich eines Raetsels nimmt keine Eingaben an; langes Druecken markiert Texte wie die
   Schwierigkeit oder "How to play". Fix seit 25.09. (`contentInset: 'never'`, `user-select: none`),
-  am iPhone mit dem naechsten TestFlight-Build pruefen.
+  Dani sah die Markierung am 28.09. trotzdem noch beim Kreuzeziehen; seit 29.09. sperrt die Regel
+  jedes Element und `selectstart` zusaetzlich. Am iPhone mit TestFlight Build 17 pruefen.
 - [ ] **Frieder** Rueckmeldung zur Shapes-Startanordnung auf Genius steht noch aus. Easy bis Hard
   hat er am 20.09. als "perfekt" gegengetestet.
 
 ## Erledigt
 
+- [x] 2026-09-28 **Tester** Die Demo-Anleitung lief von selbst weiter, und zwischen den Schritten ging
+  es nur ueber die kleinen Punkte. Sie wartet jetzt bei jedem Schritt: "Continue" (im letzten "Got it")
+  oder Wischen nach links und rechts; Tippen zum Pausieren ist entfallen.
+- [x] 2026-09-28 **Michi** Gefuehrtes Tutorial je Raetseltyp statt der Textanleitungen: animierte Demo
+  an einem Mini-Raetsel, beim ersten Besuch eines Typs automatisch offen.
 - [x] 2026-09-26 **Michi** Querformat abschalten: Android, iPhone und PWA nur noch hochkant, iPad hochkant
   in beiden Richtungen mit `UIRequiresFullScreen`, weil Apple Split View sonst alle vier Ausrichtungen verlangt.
 - [x] 2026-09-26 **Jonas** Eigene Zeile in der Bestenliste wirkte ab Platz 4 unmarkiert: den Ring gab
