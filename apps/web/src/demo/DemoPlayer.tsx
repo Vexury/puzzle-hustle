@@ -74,17 +74,14 @@ export function DemoPlayer({ script, render, onDone }: { script: DemoScript; ren
   const [state, setState] = useState(() => (still ? finalState(script) : [...script.start]));
   const [step, setStep] = useState(0);
   const [finger, setFinger] = useState<Finger | null>(null);
-  const [paused, setPaused] = useState(false);
-  const pausedRef = useRef(false);
   const jump = useRef<number | null>(null);
   const stage = useRef<HTMLDivElement>(null);
   const press = useRef<{ x: number; y: number } | null>(null);
-  const swiped = useRef(false);
 
   useEffect(() => {
     if (still) return;
     let alive = true;
-    // Waits `ms` of unpaused time; a jump or unmount breaks out of the step being played.
+    // Waits `ms`; a jump or unmount breaks out of the step being played.
     const sleep = async (ms: number) => {
       let left = ms;
       let last = performance.now();
@@ -92,7 +89,7 @@ export function DemoPlayer({ script, render, onDone }: { script: DemoScript; ren
         await new Promise((r) => setTimeout(r, Math.min(TICK_MS, left)));
         if (!alive || jump.current !== null) throw new Stop();
         const now = performance.now();
-        if (!pausedRef.current) left -= now - last;
+        left -= now - last;
         last = now;
       }
     };
@@ -175,26 +172,14 @@ export function DemoPlayer({ script, render, onDone }: { script: DemoScript; ren
     };
   }, [script, still]);
 
-  const togglePause = () => {
-    if (swiped.current) {
-      swiped.current = false;
-      return;
-    }
-    pausedRef.current = !pausedRef.current;
-    setPaused(pausedRef.current);
-  };
-
   const goTo = (s: number) => {
     if (s < 0 || s >= script.steps.length) return;
     jump.current = s;
     setStep(s);
-    pausedRef.current = false;
-    setPaused(false);
   };
 
   const onPointerDown = (e: PointerEvent) => {
     press.current = { x: e.clientX, y: e.clientY };
-    swiped.current = false;
   };
   const onPointerUp = (e: PointerEvent) => {
     const p = press.current;
@@ -202,7 +187,6 @@ export function DemoPlayer({ script, render, onDone }: { script: DemoScript; ren
     if (!p) return;
     const dx = e.clientX - p.x;
     if (Math.abs(dx) < SWIPE_PX || Math.abs(dx) < Math.abs(e.clientY - p.y)) return;
-    swiped.current = true;
     goTo(step + (dx < 0 ? 1 : -1));
   };
 
@@ -234,10 +218,9 @@ export function DemoPlayer({ script, render, onDone }: { script: DemoScript; ren
   const last = step === script.steps.length - 1;
   return (
     <div className="demo" onPointerDown={onPointerDown} onPointerUp={onPointerUp} onPointerCancel={() => (press.current = null)}>
-      <div className={paused ? 'demo-stage paused' : 'demo-stage'} ref={stage} onClick={togglePause} aria-hidden="true">
+      <div className="demo-stage" ref={stage} aria-hidden="true">
         {render(state, current.hl)}
         {finger && <span className={['demo-finger', finger.down && 'down', finger.hold && 'hold'].filter(Boolean).join(' ')} style={{ transform: `translate(${finger.x}px, ${finger.y}px)`, transitionDuration: `${finger.ms}ms` }} />}
-        {paused && <span className="demo-paused" />}
       </div>
       <p className="demo-say" key={step} aria-hidden="true">
         {current.say}
