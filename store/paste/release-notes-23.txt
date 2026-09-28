@@ -1,0 +1,20 @@
+<en-US>
+Every puzzle now shows you how it's played.
+
+- Animated how-to for all ten puzzles: a short demo plays the rules and every gesture on a mini puzzle
+- Your daily streak gets its own card and lights up once it's safe for the day
+- Each daily card shows your average time
+- Shapes start in a tray below the board
+- New Profile switch to hide mistake marks
+- Anonymous usage stats help tune the puzzles, switch them off in Profile
+</en-US>
+<de-DE>
+Jedes Rätsel zeigt dir jetzt selbst, wie es geht.
+
+- Animierte Anleitung für alle zehn Rätsel: eine kurze Demo spielt Regeln und Gesten an einem Mini-Rätsel vor
+- Deine Tagesserie hat eine eigene Karte und leuchtet auf, sobald sie für heute sicher ist
+- Jede Daily-Karte zeigt deine Durchschnittszeit
+- Shapes starten in einer Ablage unter dem Brett
+- Neuer Schalter im Profil, um Fehlermarkierungen auszublenden
+- Anonyme Nutzungsstatistik hilft beim Feinschliff, abschaltbar im Profil
+</de-DE>
