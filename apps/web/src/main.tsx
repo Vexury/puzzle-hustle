@@ -19,6 +19,12 @@ import './packs/index.css';
 await restoreBackup();
 rehydrate();
 
+// Backs up the user-select rule in theme.css, which iOS WebKit does not always honour.
+document.addEventListener('selectstart', (e) => {
+  const at = e.target instanceof Element ? e.target : e.target instanceof Node ? e.target.parentElement : null;
+  if (!at?.closest('input, textarea')) e.preventDefault();
+});
+
 initTheme();
 initAccent();
 initBackButton();

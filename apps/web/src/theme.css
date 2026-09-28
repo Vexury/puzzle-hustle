@@ -146,11 +146,11 @@ body {
   min-height: 100dvh;
   overscroll-behavior: none;
   -webkit-tap-highlight-color: transparent;
-  /* An app, not a page: a long press must not select labels or open the iOS callout. */
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
 }
+/* An app, not a page: a long press must not select labels or open the iOS callout. On every
+   element, not just body: iOS WebKit still selected text (the difficulty pill) under an
+   inherited none. */
+*, *::before, *::after { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 input, textarea { user-select: text; -webkit-user-select: text; }
 a { color: inherit; }
 button { font: inherit; color: inherit; }
