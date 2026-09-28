@@ -90,12 +90,12 @@ export function totalSolved(solves: Record<string, SolveRecord>): number {
   return Object.keys(solves).length;
 }
 
-export function formatDateLong(now: Date = new Date()): string {
+export function formatDateShort(now: Date = new Date()): string {
   const p = localDateParts(now);
   return new Date(Date.UTC(p.year, p.month - 1, p.day)).toLocaleDateString('en-GB', {
-    weekday: 'long',
+    weekday: 'short',
     day: 'numeric',
-    month: 'long',
+    month: 'short',
     timeZone: 'UTC',
   });
 }

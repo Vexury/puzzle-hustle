@@ -6,7 +6,7 @@ import { readCurrentProgress, useSolves } from '../lib/storage.ts';
 import { formatSeconds } from '../lib/share.ts';
 import { ThemeToggle } from '../components/ThemeToggle.tsx';
 import { CoinPill } from '../components/CoinPill.tsx';
-import { STREAK_MIN, dailyAverageSeconds, dailyNumber, dailyStreaks, formatDateLong, monthlyNumber, weeklyNumber } from '../lib/stats.ts';
+import { STREAK_MIN, dailyAverageSeconds, dailyNumber, dailyStreaks, formatDateShort, monthlyNumber, weeklyNumber } from '../lib/stats.ts';
 
 export function useCountdown(period: Period): string {
   const [text, setText] = useState('');
@@ -16,7 +16,7 @@ export function useCountdown(period: Period): string {
       const h = Math.floor(ms / 3600000);
       const m = Math.floor((ms % 3600000) / 60000);
       const d = Math.floor(h / 24);
-      setText(d >= 1 ? `${d}d ${h % 24}h left` : `${h}h ${String(m).padStart(2, '0')}m left`);
+      setText(d >= 1 ? `${d}d ${h % 24}h` : `${h}h ${String(m).padStart(2, '0')}m`);
     };
     tick();
     const id = setInterval(tick, 30000);
@@ -66,16 +66,9 @@ export function Daily() {
   return (
     <>
       <header className="page-head">
-        <h1>
-          Daily
-          {streaks.current > 0 && (
-            <span className="streak" title="Days in a row">
-              <Flame /> {streaks.current}
-            </span>
-          )}
-        </h1>
+        <h1>Daily</h1>
         <p className="muted">
-          {formatDateLong()} · Daily #{number} · {dayLeft}
+          <span className="nowrap">{formatDateShort()}</span> · <span className="nowrap">#{number}</span>
         </p>
         <div className="head-actions">
           <CoinPill />
@@ -83,7 +76,24 @@ export function Daily() {
         </div>
       </header>
 
-      <DailyProgress solved={streaks.today} total={dailies.length} streak={streaks.current} day={dailies[0]!.key!} />
+      <section
+        className={`streak-hero${streaks.current > 0 ? ' has-streak' : ''}${streaks.today >= STREAK_MIN ? ' safe' : ''}${streaks.today >= dailies.length ? ' full' : ''}`}
+      >
+        <div className="streak-hero-top">
+          <div className="streak-count" title="Days in a row">
+            <Flame />
+            <div>
+              <b>{streaks.current}</b>
+              <span>day streak</span>
+            </div>
+          </div>
+          <div className="streak-timer">
+            <b>{dayLeft}</b>
+            left today
+          </div>
+        </div>
+        <DailyProgress solved={streaks.today} total={dailies.length} streak={streaks.current} day={dailies[0]!.key!} />
+      </section>
 
       <div className="stack">
         {dailies.map((ref) => (
@@ -93,7 +103,7 @@ export function Daily() {
 
       <h2 className="section-h">Weekly</h2>
       <p className="muted small section-sub">
-        {weekly.key} · #{weeklyNumber(weekly.key!)} · {weekLeft}
+        {weekly.key} · #{weeklyNumber(weekly.key!)} · {weekLeft} left
       </p>
       <div className="stack">
         <ChallengeCard puzzleRef={weekly} />
@@ -101,7 +111,7 @@ export function Daily() {
 
       <h2 className="section-h">Monthly</h2>
       <p className="muted small section-sub">
-        {monthly.key} · #{monthlyNumber(monthly.key!)} · {monthLeft}
+        {monthly.key} · #{monthlyNumber(monthly.key!)} · {monthLeft} left
       </p>
       <div className="stack">
         <ChallengeCard puzzleRef={monthly} />
