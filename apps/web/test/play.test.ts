@@ -82,11 +82,41 @@ it('holds the clock while the first how-to is up and starts it on Got it', () =>
   expect(container.querySelector('.help')).not.toBeNull();
   act(() => vi.advanceTimersByTime(10_000));
   expect(container.querySelector('.timer')?.textContent).toContain('0s');
-  const gotIt = [...container.querySelectorAll('button')].find((b) => b.textContent === 'Got it')!;
-  act(() => gotIt.click());
+  const next = () => container.querySelector<HTMLButtonElement>('.demo > .pill')!;
+  const dots = container.querySelectorAll('.demo-dots button').length;
+  for (let k = 1; k < dots; k++) {
+    expect(next().textContent).toBe('Continue');
+    act(() => next().click());
+    expect(container.querySelector('.demo-dots .on')).toBe(container.querySelectorAll('.demo-dots button')[k]);
+  }
+  expect(container.querySelector('.timer')?.textContent).toContain('0s');
+  expect(next().textContent).toBe('Got it');
+  act(() => next().click());
   expect(container.querySelector('.help')).toBeNull();
   act(() => vi.advanceTimersByTime(3_000));
   expect(container.querySelector('.timer')?.textContent).toContain('3s');
+});
+
+it('stays on a how-to step until the reader swipes to the next or back', () => {
+  localStorage.removeItem('ph:howto:tracks');
+  mount(encodeRef(dailyRef('tracks')));
+  const on = () => [...container.querySelectorAll('.demo-dots button')].indexOf(container.querySelector('.demo-dots .on')!);
+  act(() => vi.advanceTimersByTime(30_000));
+  expect(on()).toBe(0);
+  const demo = container.querySelector('.demo')!;
+  const swipe = (dx: number) =>
+    act(() => {
+      demo.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, clientX: 200, clientY: 100 }));
+      demo.dispatchEvent(new MouseEvent('pointerup', { bubbles: true, clientX: 200 + dx, clientY: 110 }));
+    });
+  swipe(-80);
+  expect(on()).toBe(1);
+  swipe(80);
+  expect(on()).toBe(0);
+  swipe(80);
+  expect(on()).toBe(0);
+  swipe(-20);
+  expect(on()).toBe(0);
 });
 
 it('a back press closes the how-to instead of asking to leave', () => {

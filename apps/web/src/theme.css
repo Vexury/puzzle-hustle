@@ -1121,4 +1121,3 @@ button.unlock-row { cursor: pointer; }
 }
 .ad-ask.help { place-items: safe center; background: color-mix(in srgb, var(--bg) 70%, transparent); backdrop-filter: blur(14px); overflow-y: auto; }
 .help > .howto { width: 100%; max-width: 22rem; gap: 12px; }
-.help > .howto > .pill { align-self: stretch; justify-content: center; }

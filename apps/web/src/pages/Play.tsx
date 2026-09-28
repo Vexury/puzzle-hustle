@@ -691,10 +691,7 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
         <div className="ad-ask help" role="dialog" aria-modal="true" aria-label="How to play" onClick={(e) => e.target === e.currentTarget && closeHelp()}>
           <div className="card-lg howto">
             <h2>How to play</h2>
-            <DemoPlayer script={demo.script} render={demo.render} />
-            <button type="button" className="pill" onClick={closeHelp}>
-              Got it
-            </button>
+            <DemoPlayer script={demo.script} render={demo.render} onDone={closeHelp} />
           </div>
         </div>
       )}

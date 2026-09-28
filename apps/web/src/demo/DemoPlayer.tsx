@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import './demo.css';
 
 // Targets are indices the render marks with data-demo (or data-i, which the boards already
@@ -65,7 +65,11 @@ function reducedMotion(): boolean {
 
 class Stop extends Error {}
 
-export function DemoPlayer({ script, render }: { script: DemoScript; render(state: number[], highlight: number[] | undefined): ReactNode }) {
+const SWIPE_PX = 40;
+
+// Plays one step at a time and replays it until the reader moves on, by the button, a swipe
+// or a dot; the last step's button closes the how-to.
+export function DemoPlayer({ script, render, onDone }: { script: DemoScript; render(state: number[], highlight: number[] | undefined): ReactNode; onDone(): void }) {
   const still = useRef(reducedMotion()).current;
   const [state, setState] = useState(() => (still ? finalState(script) : [...script.start]));
   const [step, setStep] = useState(0);
@@ -74,6 +78,8 @@ export function DemoPlayer({ script, render }: { script: DemoScript; render(stat
   const pausedRef = useRef(false);
   const jump = useRef<number | null>(null);
   const stage = useRef<HTMLDivElement>(null);
+  const press = useRef<{ x: number; y: number } | null>(null);
+  const swiped = useRef(false);
 
   useEffect(() => {
     if (still) return;
@@ -110,57 +116,54 @@ export function DemoPlayer({ script, render }: { script: DemoScript; render(stat
       await sleep(ms);
     };
 
-    async function playFrom(from: number) {
-      current = finalState(script, from);
+    async function playStep(s: number) {
+      current = finalState(script, s);
       setState(current);
-      for (let s = from; s < script.steps.length; s++) {
-        const st = script.steps[s]!;
-        setStep(s);
-        await sleep(500);
-        for (const g of st.do ?? []) {
-          if ('swipe' in g) {
-            await moveTo(g.swipe[0]!, MOVE_MS);
-            setFinger((f) => f && { ...f, down: true, hold: Boolean(g.hold) });
-            await sleep(g.hold ? HOLD_MS : 160);
-            for (let k = 0; k < g.swipe.length; k++) {
-              if (k > 0) await moveTo(g.swipe[k]!, g.ms ?? SWIPE_MS, true);
-              write(writesAt(g, k));
-            }
-            await sleep(160);
-            setFinger((f) => f && { ...f, down: false });
-            await sleep(450);
-          } else if ('tap' in g) {
-            await moveTo(g.tap, g.quick ? QUICK_MS : MOVE_MS);
-            setFinger((f) => f && { ...f, down: true });
-            await sleep(140);
-            write(writesAt(g));
-            setFinger((f) => f && { ...f, down: false });
-            await sleep(g.quick ? 120 : 450);
-          } else {
-            await moveTo(g.hold, MOVE_MS);
-            setFinger((f) => f && { ...f, down: true, hold: true });
-            await sleep(HOLD_MS);
-            write(writesAt(g));
-            await sleep(250);
-            setFinger((f) => f && { ...f, down: false, hold: false });
-            await sleep(450);
+      setStep(s);
+      const st = script.steps[s]!;
+      await sleep(500);
+      for (const g of st.do ?? []) {
+        if ('swipe' in g) {
+          await moveTo(g.swipe[0]!, MOVE_MS);
+          setFinger((f) => f && { ...f, down: true, hold: Boolean(g.hold) });
+          await sleep(g.hold ? HOLD_MS : 160);
+          for (let k = 0; k < g.swipe.length; k++) {
+            if (k > 0) await moveTo(g.swipe[k]!, g.ms ?? SWIPE_MS, true);
+            write(writesAt(g, k));
           }
+          await sleep(160);
+          setFinger((f) => f && { ...f, down: false });
+          await sleep(450);
+        } else if ('tap' in g) {
+          await moveTo(g.tap, g.quick ? QUICK_MS : MOVE_MS);
+          setFinger((f) => f && { ...f, down: true });
+          await sleep(140);
+          write(writesAt(g));
+          setFinger((f) => f && { ...f, down: false });
+          await sleep(g.quick ? 120 : 450);
+        } else {
+          await moveTo(g.hold, MOVE_MS);
+          setFinger((f) => f && { ...f, down: true, hold: true });
+          await sleep(HOLD_MS);
+          write(writesAt(g));
+          await sleep(250);
+          setFinger((f) => f && { ...f, down: false, hold: false });
+          await sleep(450);
         }
-        await sleep(st.wait ?? DWELL_MS);
       }
+      await sleep(st.wait ?? DWELL_MS);
       setFinger(null);
       await sleep(LOOP_MS);
     }
 
     async function run() {
-      let from = 0;
+      let shown = 0;
       while (alive) {
         try {
-          await playFrom(from);
-          from = 0;
+          await playStep(shown);
         } catch (e) {
           if (!(e instanceof Stop) || !alive) return;
-          from = jump.current ?? 0;
+          shown = jump.current ?? 0;
           jump.current = null;
           setFinger(null);
         }
@@ -173,14 +176,34 @@ export function DemoPlayer({ script, render }: { script: DemoScript; render(stat
   }, [script, still]);
 
   const togglePause = () => {
+    if (swiped.current) {
+      swiped.current = false;
+      return;
+    }
     pausedRef.current = !pausedRef.current;
     setPaused(pausedRef.current);
   };
 
   const goTo = (s: number) => {
+    if (s < 0 || s >= script.steps.length) return;
     jump.current = s;
+    setStep(s);
     pausedRef.current = false;
     setPaused(false);
+  };
+
+  const onPointerDown = (e: PointerEvent) => {
+    press.current = { x: e.clientX, y: e.clientY };
+    swiped.current = false;
+  };
+  const onPointerUp = (e: PointerEvent) => {
+    const p = press.current;
+    press.current = null;
+    if (!p) return;
+    const dx = e.clientX - p.x;
+    if (Math.abs(dx) < SWIPE_PX || Math.abs(dx) < Math.abs(e.clientY - p.y)) return;
+    swiped.current = true;
+    goTo(step + (dx < 0 ? 1 : -1));
   };
 
   // Screen readers and reduced motion get the captions as a list; the animation adds nothing
@@ -200,13 +223,17 @@ export function DemoPlayer({ script, render }: { script: DemoScript; render(stat
           {render(state, undefined)}
         </div>
         {captions}
+        <button type="button" className="pill" onClick={onDone}>
+          Got it
+        </button>
       </div>
     );
   }
 
   const current = script.steps[step]!;
+  const last = step === script.steps.length - 1;
   return (
-    <div className="demo">
+    <div className="demo" onPointerDown={onPointerDown} onPointerUp={onPointerUp} onPointerCancel={() => (press.current = null)}>
       <div className={paused ? 'demo-stage paused' : 'demo-stage'} ref={stage} onClick={togglePause} aria-hidden="true">
         {render(state, current.hl)}
         {finger && <span className={['demo-finger', finger.down && 'down', finger.hold && 'hold'].filter(Boolean).join(' ')} style={{ transform: `translate(${finger.x}px, ${finger.y}px)`, transitionDuration: `${finger.ms}ms` }} />}
@@ -221,6 +248,9 @@ export function DemoPlayer({ script, render }: { script: DemoScript; render(stat
         ))}
       </div>
       {captions}
+      <button type="button" className="pill" onClick={last ? onDone : () => goTo(step + 1)}>
+        {last ? 'Got it' : 'Continue'}
+      </button>
     </div>
   );
 }
