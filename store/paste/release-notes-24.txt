@@ -1,0 +1,12 @@
+<en-US>
+How-tos now go at your pace.
+
+- The how-to waits on each step: tap Continue or swipe left and right to move through it, Got it on the last step closes it
+- Text in the app can no longer be selected by accident
+</en-US>
+<de-DE>
+Anleitungen laufen jetzt in deinem Tempo.
+
+- Die Anleitung wartet bei jedem Schritt: Continue tippen oder nach links und rechts wischen, Got it im letzten Schritt schließt sie
+- Texte in der App lassen sich nicht mehr versehentlich markieren
+</de-DE>
