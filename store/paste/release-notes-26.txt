@@ -1,0 +1,22 @@
+<en-US>
+Clearer colours and fewer dead ends.
+
+- Cats, Hearts and Slabs: new region colours, neighbouring regions look clearly different
+- Tracks: once your marks cover the whole route, the track lays itself
+- Tracks: leftover marks vanish when the puzzle is solved, no more red numbers
+- Zip: the path turns red from the last number you reached in order
+- Nonogram how-to explains why a row fills or stays empty
+- Customize: badges and flairs fold away
+- Smaller app icon on Android
+</en-US>
+<de-DE>
+Klarere Farben, weniger Sackgassen.
+
+- Cats, Hearts und Slabs: neue Bereichsfarben, Nachbarn sind klar zu unterscheiden
+- Tracks: decken die Markierungen die ganze Strecke ab, legt sich das Gleis selbst
+- Tracks: übrige Markierungen verschwinden beim Lösen
+- Zip: der Pfad wird ab der letzten richtigen Zahl rot
+- Die Nonogramm-Anleitung erklärt, warum eine Zeile voll wird oder leer bleibt
+- Customize: Badges und Flairs einklappbar
+- Kleineres App-Symbol auf Android
+</de-DE>
