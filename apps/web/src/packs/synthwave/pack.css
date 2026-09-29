@@ -26,18 +26,6 @@
   --nono-c3: #ffb347;
   --pack-pattern-image: linear-gradient(to bottom, transparent 55%, rgba(255, 79, 216, 0.10));
   --pack-pattern-size: auto;
-  --region-0: #3a1646;
-  --region-1: #123a44;
-  --region-2: #2c1a5a;
-  --region-3: #4a1838;
-  --region-4: #16324e;
-  --region-5: #3a2460;
-  --region-6: #10404a;
-  --region-7: #4a1c52;
-  --region-8: #1e2a5c;
-  --region-9: #401a40;
-  --region-10: #14384a;
-  --region-11: #321e58;
 }
 
 /* A neon band runs around the board: the border is transparent and a turning conic gradient

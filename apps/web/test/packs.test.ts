@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, it } from 'vitest';
 import { THEMES } from '@puzzle-hustle/core';
+import { REGION_PALETTES, regionPaletteId } from '../src/lib/regionColors.ts';
 
 // A string literal directly inside `new URL(...)` gets rewritten by Vite's static asset-URL
 // transform into a dev-server URL (http://localhost:3000/...), which readFileSync can't open.
@@ -51,13 +52,15 @@ it.each(DONE)('%s keeps text readable', (id) => {
   expect(contrast(b['--on-accent']!, b['--accent']!)).toBeGreaterThanOrEqual(4.5);
 });
 
-const REGION_TOKENS = Array.from({ length: 12 }, (_, i) => `--region-${i}`);
-const DARK_PACKS = ['midnight', 'terminal', 'synthwave'];
-
-it.each(DARK_PACKS)('%s gives every region its own pack-hued, readable colour', (id) => {
+it.each(DONE)('%s keeps text readable on every region colour', (id) => {
   const b = block(id);
-  for (const name of REGION_TOKENS) {
-    expect(b, name).toHaveProperty(name);
-    expect(contrast(b['--text']!, b[name]!), name).toBeGreaterThanOrEqual(4.5);
-  }
+  const colors = REGION_PALETTES[regionPaletteId(id, THEMES.find((t) => t.id === id)!.mode)];
+  for (const color of colors) expect(contrast(b['--text']!, color), color).toBeGreaterThanOrEqual(4.5);
+});
+
+it.each([
+  ['light', '#2d2d2d'],
+  ['dark', '#e8e4de'],
+] as const)('the %s region palette keeps the default text readable', (theme, text) => {
+  for (const color of REGION_PALETTES[theme]) expect(contrast(text, color), color).toBeGreaterThanOrEqual(4.5);
 });

@@ -33,9 +33,6 @@ Stand: 2026-09-29
 - [ ] **Frieder** Rueckmeldung zur Shapes-Startanordnung auf Genius steht noch aus. Easy bis Hard
   hat er am 20.09. als "perfekt" gegengetestet.
 - [ ] **Saskia** Tracks: ein Zug, der als Loesungsanimation von A nach B faehrt.
-- [ ] **Saskia** Cats: Tuerkis `#c8e4e2`, Hellblau `#c9dcef` und Lavendel `#d5d5ef` liegen
-  nebeneinander und sind kaum zu unterscheiden. Palette in hell und dunkel nach Farbton spreizen,
-  aehnliche Paare in `regionsPalette` nicht benachbart vergeben.
 - [ ] **Saskia** Nonogramm-Demo: "A 5 fills its whole row" und "The outer columns have their 2
   already" sind fuer Neulinge unklar. Ausformulieren (fuenf gefuellte Felder, zwei gefuellte Felder).
 - [ ] **Saskia** Nonogramm 10x10: Zellen auf dem iPhone zu klein (etwa 28 pt). Raender, Rahmen und
@@ -46,6 +43,10 @@ Stand: 2026-09-29
 
 ## Erledigt
 
+- [x] 2026-09-29 **Saskia** Cats: Tuerkis, Hellblau und Lavendel lagen nebeneinander und waren kaum
+  zu unterscheiden. Neue Paletten fuer hell, dunkel, Midnight, Synthwave und Terminal, und die Farben
+  werden nach gemessenem Abstand vergeben, sodass Nachbarn moeglichst verschieden aussehen (siehe
+  decisions.md). Gilt auch fuer Hearts und Slabs.
 - [x] 2026-09-29 **Saskia** Zip: der Pfad blieb orange, auch wenn er eine Zahl ausser der Reihe
   erreichte. Ab der letzten richtig erreichten Zahl ist er jetzt rot, die falsch erreichte Zahl
   ebenso (`zipOrderBreak`); gilt auch fuer die hoechste Zahl, solange noch Zellen frei sind.

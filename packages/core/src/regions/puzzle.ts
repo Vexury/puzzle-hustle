@@ -449,33 +449,76 @@ export function regionsBorders(spec: RegionsSpec, i: number): { top: boolean; ri
   return { top: other(r - 1, c), right: other(r, c + 1), bottom: other(r + 1, c), left: other(r, c - 1) };
 }
 
-export function regionsPalette(spec: RegionsSpec, colors: number): Uint8Array {
+// Picks a palette colour per region so that touching regions look as different as the palette
+// allows. `distance[a][b]` is how far apart colours a and b look; the caller measures its own
+// palette, so the core never needs to know the colours. Every region gets its own colour while
+// the palette has enough. Greedy first (most neighbours first, each taking the colour furthest
+// from its coloured neighbours), then single moves and swaps while they improve the closest
+// touching pair, then the next closest, and so on. Deterministic, so every device agrees.
+export function regionsPalette(spec: RegionsSpec, distance: readonly (readonly number[])[]): Uint8Array {
   const n = spec.config.size;
-  const out = new Uint8Array(n);
-  if (n <= colors) {
-    for (let reg = 0; reg < n; reg++) out[reg] = reg;
-    return out;
-  }
-  const units = regionsUnits(spec);
+  const colors = distance.length;
+  const unique = n <= colors;
+  // Regions that share an edge; touching only at a corner does not make two colours read as one.
   const adjacent: Set<number>[] = Array.from({ length: n }, () => new Set<number>());
   for (let i = 0; i < n * n; i++) {
-    for (const j of regionsNeighbors(n, i)) {
+    for (const j of [i % n < n - 1 ? i + 1 : -1, i + n < n * n ? i + n : -1]) {
       const a = spec.regions[i]!;
-      const b = spec.regions[j]!;
-      if (a !== b) adjacent[a]!.add(b);
+      const b = j >= 0 ? spec.regions[j]! : a;
+      if (a === b) continue;
+      adjacent[a]!.add(b);
+      adjacent[b]!.add(a);
     }
   }
-  const order = Array.from({ length: n }, (_, reg) => reg).sort((a, b) => units.regions[b]!.length - units.regions[a]!.length);
-  const assigned = new Int16Array(n).fill(-1);
+  const out = new Array<number>(n).fill(-1);
+  const order = Array.from({ length: n }, (_, reg) => reg).sort((a, b) => adjacent[b]!.size - adjacent[a]!.size || a - b);
   for (const reg of order) {
-    const used = new Set<number>();
-    for (const other of adjacent[reg]!) if (assigned[other]! >= 0) used.add(assigned[other]!);
-    let color = 0;
-    while (used.has(color) && color < colors) color++;
-    assigned[reg] = color % colors;
+    let best = 0;
+    let bestGap = -1;
+    for (let c = 0; c < colors; c++) {
+      if (unique && out.includes(c)) continue;
+      let gap = Infinity;
+      for (const other of adjacent[reg]!) if (out[other]! >= 0) gap = Math.min(gap, distance[c]![out[other]!]!);
+      if (gap > bestGap) {
+        best = c;
+        bestGap = gap;
+      }
+    }
+    out[reg] = best;
   }
-  for (let reg = 0; reg < n; reg++) out[reg] = assigned[reg]!;
-  return out;
+  // The touching pairs' distances, closest first; one assignment beats another on the first
+  // pair where they differ.
+  const gaps = () => {
+    const d: number[] = [];
+    for (let a = 0; a < n; a++) for (const b of adjacent[a]!) if (b > a) d.push(distance[out[a]!]![out[b]!]!);
+    return d.sort((x, y) => x - y);
+  };
+  const better = (x: number[], y: number[]) => {
+    for (let i = 0; i < x.length; i++) if (x[i] !== y[i]) return x[i]! > y[i]!;
+    return false;
+  };
+  let current = gaps();
+  for (let improved = true; improved; ) {
+    improved = false;
+    for (let a = 0; a < n; a++) {
+      for (let c = 0; c < colors; c++) {
+        const old = out[a]!;
+        if (c === old) continue;
+        const b = unique ? out.indexOf(c) : -1;
+        out[a] = c;
+        if (b >= 0) out[b] = old;
+        const next = gaps();
+        if (better(next, current)) {
+          current = next;
+          improved = true;
+        } else {
+          out[a] = old;
+          if (b >= 0) out[b] = c;
+        }
+      }
+    }
+  }
+  return Uint8Array.from(out);
 }
 
 export interface RegionsHint {

@@ -1,5 +1,6 @@
 import { SLAB_DC, SLAB_DR, isSlabsSolved, slabCells, slabNeighbour, slabsPivotCell, slabsRegionStatus, slabsRegions, type SlabsRule, type SlabsSpec, type SlabsState } from '@puzzle-hustle/core';
 import { HintMark } from '../components/HintMark.tsx';
+import { useRegionPalette } from '../lib/regionColors.ts';
 import './slabs.css';
 
 const PIPS: Record<number, [number, number][]> = {
@@ -93,6 +94,7 @@ export function SlabsBoard({ spec, state, mistakes, held = null, pending = null,
   const solved = isSlabsSolved(spec, state);
   const regions = slabsRegions(spec);
   const status = slabsRegionStatus(spec, state);
+  const palette = useRegionPalette().colors;
   const center = (cell: number): [number, number] => [(cell % cols) + 0.5, Math.floor(cell / cols) + 0.5];
   const free = (cell: number) => cell >= 0 && !spec.blocked[cell];
 
@@ -111,7 +113,7 @@ export function SlabsBoard({ spec, state, mistakes, held = null, pending = null,
         y={r}
         width={1}
         height={1}
-        style={reg >= 0 ? { fill: `var(--region-${reg % 12})` } : undefined}
+        style={reg >= 0 ? { fill: palette[reg % palette.length] } : undefined}
       />,
     );
     // Each edge once: east and south, plus the north and west rim of the playable area.

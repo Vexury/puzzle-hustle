@@ -10,9 +10,8 @@ import {
   type RegionsSpec,
   type RegionsState,
 } from '@puzzle-hustle/core';
+import { useRegionPalette } from '../lib/regionColors.ts';
 import './regions.css';
-
-const REGION_COLORS = 12;
 
 export interface RegionsBoardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'className'> {
   spec: RegionsSpec;
@@ -34,7 +33,8 @@ function Glyph({ symbol }: { symbol: 'cat' | 'heart' }) {
 export function RegionsBoard({ spec, state, symbol, mistakes, flash = null, highlight, ...rest }: RegionsBoardProps) {
   const n = spec.config.size;
   const solved = isRegionsSolved(spec, state);
-  const palette = useMemo(() => regionsPalette(spec, REGION_COLORS), [spec]);
+  const colors = useRegionPalette();
+  const palette = useMemo(() => regionsPalette(spec, colors.distance), [spec, colors]);
   const borders = useMemo(() => Array.from({ length: n * n }, (_, i) => regionsBorders(spec, i)), [spec, n]);
   const conflicts = regionsConflicts(spec, state);
   const counts = regionsLineCounts(spec, state);
@@ -62,7 +62,7 @@ export function RegionsBoard({ spec, state, symbol, mistakes, flash = null, high
         const v = state[i]!;
         const color = palette[spec.regions[i]!]!;
         return (
-          <div key={i} className={cellClass(i, v)} data-i={i} style={{ '--region-bg': `var(--region-${color})`, '--r': Math.floor(i / n) } as React.CSSProperties}>
+          <div key={i} className={cellClass(i, v)} data-i={i} style={{ '--region-bg': colors.colors[color], '--r': Math.floor(i / n) } as React.CSSProperties}>
             {v === 1 && <Glyph symbol={symbol} />}
           </div>
         );

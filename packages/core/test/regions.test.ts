@@ -15,6 +15,7 @@ import {
   regionsConflicts,
   regionsHint,
   regionsLineCounts,
+  regionsPalette,
   regionsProgress,
   type RegionsSpec,
 } from '../src/regions/puzzle.ts';
@@ -168,6 +169,39 @@ describe('state helpers', () => {
     expect(isRegionsSolved(spec, state)).toBe(true);
     expect(regionsProgress(spec, emptyRegionsState(spec))).toEqual({ matching: 0, total: spec.config.size });
     expect(regionsProgress(spec, state).matching).toBe(spec.config.size);
+  });
+});
+
+describe('palette', () => {
+  // Colours on a ring: the further apart around it, the more different they look.
+  const ring = (k: number) => Array.from({ length: k }, (_, a) => Array.from({ length: k }, (_, b) => Math.min(Math.abs(a - b), k - Math.abs(a - b))));
+  const touching = (spec: RegionsSpec): [number, number][] => {
+    const n = spec.config.size;
+    const out: [number, number][] = [];
+    for (let i = 0; i < n * n; i++) {
+      if (i % n < n - 1 && spec.regions[i] !== spec.regions[i + 1]) out.push([spec.regions[i]!, spec.regions[i + 1]!]);
+      if (i + n < n * n && spec.regions[i] !== spec.regions[i + n]) out.push([spec.regions[i]!, spec.regions[i + n]!]);
+    }
+    return out;
+  };
+
+  it('gives every region its own colour and keeps touching regions apart', () => {
+    for (const spec of [generateCrowns(1, 'medium'), generateStars(2, 'genius')]) {
+      const pal = regionsPalette(spec, ring(12));
+      expect(new Set(pal).size).toBe(spec.config.size);
+      for (const [a, b] of touching(spec)) expect(ring(12)[pal[a]!]![pal[b]!]!, `${a}-${b}`).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('reuses colours when there are more regions than colours, still never on touching regions', () => {
+    const spec = generateCrowns(3, 'hard');
+    const pal = regionsPalette(spec, ring(5));
+    for (const [a, b] of touching(spec)) expect(pal[a]).not.toBe(pal[b]);
+  });
+
+  it('is deterministic', () => {
+    const spec = generateCrowns(4, 'medium');
+    expect([...regionsPalette(spec, ring(12))]).toEqual([...regionsPalette(spec, ring(12))]);
   });
 });
 

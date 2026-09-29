@@ -27,18 +27,6 @@
   --nono-c3: #d06aa4;
   --pack-pattern-image: repeating-linear-gradient(to bottom, rgba(255, 176, 0, 0.025) 0 1px, transparent 1px 3px);
   --pack-pattern-size: auto;
-  --region-0: #2a2310;
-  --region-1: #1c2a14;
-  --region-2: #2e1f0e;
-  --region-3: #1f2616;
-  --region-4: #332a12;
-  --region-5: #162418;
-  --region-6: #2b1c10;
-  --region-7: #24280f;
-  --region-8: #30240e;
-  --region-9: #1a2212;
-  --region-10: #2c200c;
-  --region-11: #202a16;
 }
 
 [data-pack="terminal"] .board-frame:not(.solved) { box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent); }
