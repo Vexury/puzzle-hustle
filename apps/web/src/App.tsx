@@ -82,8 +82,9 @@ export function App() {
   if (route.path === '/play') {
     page = <Play params={route.params} />;
     chrome = false;
-  } else if (route.path === '/delete-account') {
+  } else if (route.path === '/delete-account' || route.path === '/delete-account/') {
     // Opened from the Play listing by people who may never have used the app: no tab bar, no intro.
+    // Pages serves it from delete-account/index.html and redirects the bare path to the slash.
     page = <DeleteAccount />;
     chrome = false;
   } else if (route.path === '/levels') page = <LevelsIndex />;

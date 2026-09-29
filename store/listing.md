@@ -146,7 +146,7 @@ storage plus a Preferences backup copy) and are not collected.
 **Account deletion:** In the app: Profile, Delete account, confirm. The Worker (`DELETE /account`)
 removes the player row, all scores, every report by or about the player and all memberships; owned
 groups pass to the longest member or are deleted when empty. Play also requires a web URL:
-https://puzzles.vexury.dev/delete-account (since 2026-09-29), a page of the web app that names the
+https://puzzles.vexury.dev/delete-account/ (since 2026-09-29), a page of the web app that names the
 app and developer, lists what is deleted and what stays on the device, signs in with Google or Apple
 and deletes the account, and offers deletion by email. It is the account and data deletion URL in
 the data safety form.
