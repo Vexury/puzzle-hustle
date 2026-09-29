@@ -40,8 +40,13 @@ for (const type of ONLY ? [ONLY] : PUZZLE_TYPES) {
     }
     (pack.pool ??= {})[difficulty] = pool;
   }
-  const out = fileURLToPath(new URL(`../src/boards/${type}.json`, import.meta.url));
-  const text = JSON.stringify(pack) + '\n';
+  // A module rather than a .json file: a JSON import needs an import attribute, which Vite's dev
+  // server does not honour, and JSON.parse on one string literal parses faster than an object
+  // literal. Base64, keys and numbers carry no quote or backslash, so the literal needs no escaping.
+  const json = JSON.stringify(pack);
+  if (/['\\\n]/.test(json)) throw new Error(`${type}: board data would need escaping`);
+  const out = fileURLToPath(new URL(`../src/boards/${type}.ts`, import.meta.url));
+  const text = `// Written by \`pnpm boards\`, do not edit.\nimport type { BoardPack } from '../boards.ts';\n\nconst pack: BoardPack = JSON.parse('${json}');\nexport default pack;\n`;
   writeFileSync(out, text);
   console.log(`${type}: ${Object.keys(pack.boards).length} boards, ${(text.length / 1024).toFixed(0)} KB, ${((performance.now() - t0) / 1000).toFixed(1)} s`);
 }

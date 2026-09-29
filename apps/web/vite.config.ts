@@ -13,7 +13,9 @@ function build(): string {
 
 export default defineConfig(({ mode }) => ({
   base: loadEnv(mode, process.cwd(), 'VITE_')['VITE_BASE'] ?? '/',
-  plugins: [react({ compiler: true })],
+  // The core holds no React, and the refresh wrapper around its modules broke the board worker
+  // in dev, which has no refresh runtime ($RefreshReg$ is not defined).
+  plugins: [react({ compiler: true, exclude: [/[\\/]packages[\\/]core[\\/]/, /boardWorker\.ts$/] })],
   define: { __BUILD__: JSON.stringify(build()) },
   server: { port: 5173 },
   build: { target: 'es2023' },

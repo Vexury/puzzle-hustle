@@ -10,10 +10,25 @@ export async function randomBoardRef(type: PuzzleTypeId, difficulty: Difficulty)
 
 // Some generators need seconds on a phone (Zip Genius took minutes), and on the main thread that
 // froze the whole app with no sign of life. Boards not in the pack are built in this worker.
-// Without worker support (tests, very old web views) they are built here as before.
+// Without worker support (tests, very old web views), or once the worker has failed, they are
+// built here as before, so a board always arrives.
+interface Job {
+  ref: BoardRef;
+  resolve(spec: PuzzleSpec): void;
+  reject(error: unknown): void;
+}
+
 let worker: Worker | null | undefined;
 let nextId = 0;
-const waiting = new Map<number, { resolve(spec: PuzzleSpec): void; reject(error: Error): void }>();
+const waiting = new Map<number, Job>();
+
+function buildHere(job: Job) {
+  try {
+    job.resolve(generateBoard(job.ref));
+  } catch (error) {
+    job.reject(error);
+  }
+}
 
 function generator(): Worker | null {
   if (worker !== undefined) return worker;
@@ -22,8 +37,16 @@ function generator(): Worker | null {
     worker.onmessage = (e: MessageEvent<{ id: number; spec?: PuzzleSpec; error?: string }>) => {
       const job = waiting.get(e.data.id);
       waiting.delete(e.data.id);
-      if (e.data.spec) job?.resolve(e.data.spec);
-      else job?.reject(new Error(e.data.error ?? 'board failed'));
+      if (!job) return;
+      if (e.data.spec) job.resolve(e.data.spec);
+      else job.reject(new Error(e.data.error ?? 'board failed'));
+    };
+    worker.onerror = () => {
+      worker?.terminate();
+      worker = null;
+      const jobs = [...waiting.values()];
+      waiting.clear();
+      jobs.forEach(buildHere);
     };
   } catch {
     worker = null;
@@ -34,11 +57,13 @@ function generator(): Worker | null {
 export async function loadBoard(ref: BoardRef): Promise<PuzzleSpec> {
   const stored = await storedBoard(ref);
   if (stored) return stored;
+  // Only the fields the generator reads: the rest of a PuzzleRef does not survive postMessage usefully.
+  const board: BoardRef = { type: ref.type, seed: ref.seed, difficulty: ref.difficulty, ...(ref.period ? { period: ref.period } : {}) };
   const w = generator();
-  if (!w) return generateBoard(ref);
+  if (!w) return generateBoard(board);
   const id = nextId++;
   return new Promise((resolve, reject) => {
-    waiting.set(id, { resolve, reject });
-    w.postMessage({ id, ref: { type: ref.type, seed: ref.seed, difficulty: ref.difficulty, period: ref.period } });
+    waiting.set(id, { ref: board, resolve, reject });
+    w.postMessage({ id, ref: board });
   });
 }

@@ -106,17 +106,17 @@ export function boardKey(difficulty: Difficulty, seed: number): string {
   return `${difficulty}:${seed.toString(36)}`;
 }
 
-const PACK_LOADERS: Record<PuzzleTypeId, () => Promise<{ default: unknown }>> = {
-  shapes: () => import('./boards/shapes.json', { with: { type: 'json' } }),
-  nonogram: () => import('./boards/nonogram.json', { with: { type: 'json' } }),
-  mosaic: () => import('./boards/mosaic.json', { with: { type: 'json' } }),
-  crowns: () => import('./boards/crowns.json', { with: { type: 'json' } }),
-  stars: () => import('./boards/stars.json', { with: { type: 'json' } }),
-  sudoku: () => import('./boards/sudoku.json', { with: { type: 'json' } }),
-  killer: () => import('./boards/killer.json', { with: { type: 'json' } }),
-  zip: () => import('./boards/zip.json', { with: { type: 'json' } }),
-  tracks: () => import('./boards/tracks.json', { with: { type: 'json' } }),
-  slabs: () => import('./boards/slabs.json', { with: { type: 'json' } }),
+const PACK_LOADERS: Record<PuzzleTypeId, () => Promise<{ default: BoardPack }>> = {
+  shapes: () => import('./boards/shapes.ts'),
+  nonogram: () => import('./boards/nonogram.ts'),
+  mosaic: () => import('./boards/mosaic.ts'),
+  crowns: () => import('./boards/crowns.ts'),
+  stars: () => import('./boards/stars.ts'),
+  sudoku: () => import('./boards/sudoku.ts'),
+  killer: () => import('./boards/killer.ts'),
+  zip: () => import('./boards/zip.ts'),
+  tracks: () => import('./boards/tracks.ts'),
+  slabs: () => import('./boards/slabs.ts'),
 };
 
 const packs = new Map<PuzzleTypeId, Promise<BoardPack | null>>();
@@ -127,7 +127,7 @@ export function loadBoardPack(type: PuzzleTypeId): Promise<BoardPack | null> {
   let pack = packs.get(type);
   if (!pack) {
     pack = PACK_LOADERS[type]()
-      .then((m) => m.default as BoardPack)
+      .then((m) => m.default)
       .then((p) => (p.version === adapter(type).version ? p : null))
       .catch(() => null);
     packs.set(type, pack);

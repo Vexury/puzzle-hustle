@@ -1,11 +1,13 @@
-import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { boardKey, decodeBoard, encodeBoard, generateBoard, storedBoard, type BoardPack } from '../src/boards.ts';
 import { levelList } from '../src/levels.ts';
 import { adapter } from '../src/registry.ts';
 import { DIFFICULTIES, PUZZLE_TYPES, type Difficulty, type PuzzleTypeId } from '../src/types.ts';
 
-const read = (type: PuzzleTypeId): BoardPack => JSON.parse(readFileSync(new URL(`../src/boards/${type}.json`, import.meta.url), 'utf8'));
+const packs = Object.fromEntries(
+  await Promise.all(PUZZLE_TYPES.map(async (type) => [type, (await import(`../src/boards/${type}.ts`)).default as BoardPack])),
+) as Record<PuzzleTypeId, BoardPack>;
+const read = (type: PuzzleTypeId): BoardPack => packs[type];
 
 // Rebuilding these from their seeds takes seconds each, minutes for the whole set; the first
 // level stands in for the rest, the way levels.test.ts treats them.
