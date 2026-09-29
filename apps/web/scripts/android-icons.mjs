@@ -7,8 +7,10 @@ const RES = fileURLToPath(new URL('../android/app/src/main/res/', import.meta.ur
 
 const LEGACY = icon({ rounded: true });
 
+// Launchers like One UI show nearly the whole 72 dp visible area, so the piece is sized against
+// that: 34 units of motif at 1.235 give 42 dp, about 58 % of the visible height.
 const FOREGROUND = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108">
-  <g transform="translate(-1.04,-1.04) scale(1.72)">${motif()}</g>
+  <g transform="translate(14.48,14.48) scale(1.235)">${motif()}</g>
 </svg>`;
 
 const DENSITIES = [
