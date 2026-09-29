@@ -18,7 +18,8 @@
   --success: #3d9a5c;
   --success-soft: rgba(61, 154, 92, 0.12);
   --flame: #ef7d3c;
-  --danger: #b8322a;
+  /* Warmer than a plain red: next to the raspberry accent, a red reads as the same colour. */
+  --danger: #c2410c;
   --shadow: 0 2px 10px rgba(180, 80, 110, 0.10);
   --shadow-hover: 0 6px 18px rgba(180, 80, 110, 0.16);
   --radius: 22px;

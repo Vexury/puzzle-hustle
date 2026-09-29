@@ -112,6 +112,8 @@
 [data-theme="dark"][data-accent="iris"]   { --accent-text: #9b7bff; --accent-deep: #b79cff; }
 [data-theme="dark"][data-accent="rose"]   { --accent-text: #ff7ba6; --accent-deep: #ff9dbe; }
 [data-theme="dark"][data-accent="slate"]  { --accent-text: #8aa0bc; --accent-deep: #a8bcd6; }
+/* Light rose's deep shade sits too close to the default red, so mistakes there turn warmer. */
+[data-theme="light"][data-accent="rose"] { --danger: #c2410c; }
 
 *, *::before, *::after { box-sizing: border-box; }
 @font-face {
