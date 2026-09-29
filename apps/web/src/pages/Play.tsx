@@ -28,6 +28,7 @@ import {
   starsAdapter,
   zipAdapter,
   zipNumberCount,
+  type CoinAward,
   type PuzzleRef,
 } from '@puzzle-hustle/core';
 import { storedSolves, syncAchievements } from '../lib/achievements.ts';
@@ -36,7 +37,7 @@ import { href, leaveTo, navigate, onBackLinkClick, onLinkClick } from '../lib/ro
 import { pushBackGuard } from '../lib/back.ts';
 import { clearProgress, getSolve, keepFinalBoard, readProgress, readSetting, recordSolve, useSolves, writeProgress, writeSetting, type SolveRecord } from '../lib/storage.ts';
 import { capitalize, formatSeconds, share, shareText } from '../lib/share.ts';
-import { balance, solveCoinLine } from '../lib/coins.ts';
+import { balance } from '../lib/coins.ts';
 import { syncFlairs } from '../lib/flairs.ts';
 import { currentHintProvider, freeHints, type HintChoice } from '../lib/hints.ts';
 import { enqueue, flush } from '../lib/queue.ts';
@@ -53,6 +54,7 @@ import { MosaicGame } from '../mosaic/MosaicGame.tsx';
 import { SudokuGame } from '../sudoku/SudokuGame.tsx';
 import { RegionsGame } from '../regions/RegionsGame.tsx';
 import { Chevron } from '../components/Chevron.tsx';
+import { PlacementChip, SolvedCard } from '../components/SolvedCard.tsx';
 import { toast } from '../components/Toast.tsx';
 import { announceUnlock } from '../components/UnlockModal.tsx';
 import * as haptics from '../lib/haptics.ts';
@@ -158,7 +160,8 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
   const counters = useRef({ moves: saved?.moves ?? 0, hints: saved?.hints ?? 0 });
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<SolveRecord | undefined>(replayable ? undefined : existing);
-  const [coinLine, setCoinLine] = useState<string | null>(null);
+  const [awards, setAwards] = useState<CoinAward[] | null>(null);
+  const [freshSolve, setFreshSolve] = useState(false);
   // Gates Placement below: it must mount only once the solve just submitted has actually had
   // its round trip, not the instant it is enqueued. A puzzle that was already solved in an
   // earlier session has nothing racing it, so it starts settled.
@@ -387,10 +390,12 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
     const record: SolveRecord = { solvedAt: new Date().toISOString(), seconds: elapsed, hints: counters.current.hints, moves: counters.current.moves };
     setSeconds(elapsed);
     setResult(record);
+    setFreshSolve(true);
     const firstSolve = getSolve(id) === undefined;
     recordSolve(id, record);
     try {
-      setCoinLine(solveCoinLine(coinsForSolve(id, storedSolves()), firstSolve));
+      const earned = firstSolve ? coinsForSolve(id, storedSolves()) : [];
+      setAwards(earned.length ? earned : null);
     } catch {
       /* coins never cost a player the solved screen */
     }
@@ -581,20 +586,15 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
       )}
 
       {result && (
-        <div className="solved-head">
-          <h2>Solved!</h2>
-          <b className="big-time">{formatSeconds(result.seconds)}</b>
-          <span className="muted small">
-            {result.moves} moves · {result.hints === 0 ? 'no hints' : `${result.hints} hint${result.hints === 1 ? '' : 's'}`}
-          </span>
-          {coinLine && <span className="coin-line">{coinLine}</span>}
-          {replayable && bestBefore !== null && (
-            <span className={result.seconds < bestBefore ? 'best-note better' : 'best-note'}>
-              {result.seconds < bestBefore ? `New best, ${formatSeconds(bestBefore)} before` : `Your best stays ${formatSeconds(bestBefore)}`}
-            </span>
-          )}
-          {puzzleRef.period && scoreSettled && <Placement puzzle={id} />}
-        </div>
+        <SolvedCard
+          seconds={result.seconds}
+          moves={result.moves}
+          hints={result.hints}
+          bestBefore={replayable ? bestBefore : null}
+          awards={awards}
+          animate={freshSolve}
+          placement={puzzleRef.period && scoreSettled ? <Placement puzzle={id} /> : null}
+        />
       )}
 
       {result && (
@@ -710,13 +710,7 @@ function Placement({ puzzle }: { puzzle: string }) {
   const group = groups[0] ?? null;
   const { board } = useBoard(group?.id ?? null, puzzle);
   if (!session || !group || !board?.me) return null;
-  const suffix = board.me === 1 ? 'st' : board.me === 2 ? 'nd' : board.me === 3 ? 'rd' : 'th';
-  return (
-    <span className="muted small">
-      {board.me}
-      {suffix} of {board.entries.length} in {group.name}
-    </span>
-  );
+  return <PlacementChip rank={board.me} of={board.entries.length} group={group.name} />;
 }
 
 function ShareIcon() {

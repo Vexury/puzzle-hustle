@@ -1,7 +1,7 @@
 import { beforeEach, expect, it, vi } from 'vitest';
 import { ACHIEVEMENTS_EPOCH, levelList } from '@puzzle-hustle/core';
 import { recordSolve, rehydrate, resetProgress } from '../src/lib/storage.ts';
-import { balance, buyItem, canAffordHint, equip, owned, readEquipped, readSpent, solveCoinLine, spendHint } from '../src/lib/coins.ts';
+import { balance, buyItem, canAffordHint, equip, owned, readEquipped, readSpent, spendHint } from '../src/lib/coins.ts';
 
 // The paid path, as it will run after launch; themesFree.test.ts covers the beta switch.
 vi.mock('@puzzle-hustle/core', async (original) => ({ ...(await original<typeof import('@puzzle-hustle/core')>()), THEMES_FREE: false }));
@@ -132,19 +132,6 @@ it('forgets spending and equipped items on a progress reset', () => {
   expect(readSpent()).toEqual([]);
   expect(readEquipped()).toEqual({ badge: null, flair: null, theme: null });
   expect(balance()).toBe(0);
-});
-
-it('writes the solve line from the awards', () => {
-  expect(solveCoinLine([{ reason: 'daily', coins: 10 }, { reason: 'no-hints', coins: 5 }], true)).toBe('+10 coins · +5 no hints');
-  expect(solveCoinLine([{ reason: 'level', coins: 3 }], true)).toBe('+3 coins');
-  expect(
-    solveCoinLine([{ reason: 'daily', coins: 10 }, { reason: 'clean-sweep', coins: 20 }], true),
-  ).toBe('+10 coins · +20 clean sweep');
-});
-
-it('writes no line for nothing earned or a replay', () => {
-  expect(solveCoinLine([], true)).toBeNull();
-  expect(solveCoinLine([{ reason: 'level', coins: 3 }], false)).toBeNull();
 });
 
 it('buys a theme for its price and equips it', () => {

@@ -7,7 +7,6 @@ import {
   HINT_PRICE,
   ownedItems,
   THEMES_FREE,
-  type CoinAward,
   type CosmeticKind,
   type SpendEntry,
 } from '@puzzle-hustle/core';
@@ -135,17 +134,6 @@ export function equip(kind: CosmeticKind, id: string | null): boolean {
   // change has nothing to send.
   if (kind !== 'theme') void pushCosmetics();
   return true;
-}
-
-const EXTRA_LABEL: Partial<Record<CoinAward['reason'], string>> = { 'no-hints': 'no hints', 'clean-sweep': 'clean sweep' };
-
-// A replay keeps its one entry in ph:solves, so the core still lists its awards; only the
-// caller knows whether this run was the first.
-export function solveCoinLine(awards: CoinAward[], firstSolve: boolean): string | null {
-  if (!firstSolve || awards.length === 0) return null;
-  const base = awards.filter((a) => !EXTRA_LABEL[a.reason]).reduce((n, a) => n + a.coins, 0);
-  const extras = awards.filter((a) => EXTRA_LABEL[a.reason]).map((a) => `+${a.coins} ${EXTRA_LABEL[a.reason]}`);
-  return [`+${base} coins`, ...extras].join(' · ');
 }
 
 // Same path as the name: no queue. A failed push is simply repeated after the next sign-in.
