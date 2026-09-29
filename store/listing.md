@@ -83,7 +83,7 @@ or against Google's current form wording.
 **Advertising ID:** Yes, single purpose "Advertising or marketing". The Google Mobile Ads SDK merges
 `com.google.android.gms.permission.AD_ID` into the manifest.
 
-**In-app purchases:** Yes. One non-consumable, "Unlimited Hints" (`unlimited_hints`), through Play
+**In-app purchases:** Yes. One non-consumable, "No Ads · Free Hints" (product id `unlimited_hints`, kept from before the rename), through Play
 Billing. Coins are earned by solving and are never sold.
 
 **Target audience:** 13 and over. The content suits every age, but declaring under-13 pulls the

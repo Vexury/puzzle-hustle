@@ -12,7 +12,7 @@ const CARDS = [
   },
   {
     title: 'Stuck? Take a hint',
-    body: 'The first hint in every puzzle is free. Every hint after that costs a short video, or you unlock unlimited hints once and keep them.',
+    body: 'The first hint in every puzzle is free. Every hint after that costs a short video, or you remove ads once and every hint is free for good.',
   },
   {
     title: 'Start easy',

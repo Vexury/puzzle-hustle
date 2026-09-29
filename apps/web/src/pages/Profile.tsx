@@ -20,8 +20,8 @@ import { toast } from '../components/Toast.tsx';
 import { ThemeToggle } from '../components/ThemeToggle.tsx';
 
 const PURCHASE_TOASTS: Record<PurchaseOutcome, string | null> = {
-  owned: 'Unlocked. Every hint is yours.',
-  pending: 'Payment pending. Hints unlock once it goes through.',
+  owned: 'Unlocked. No ads, every hint free.',
+  pending: 'Payment pending. It unlocks once it goes through.',
   cancelled: null,
   failed: 'No purchase was made',
 };
@@ -253,9 +253,9 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
         {adsAvailable ? (
           <div className="card-lg row-between">
             <span>
-              <b>Unlimited hints</b>
+              <b>No ads · Free hints</b>
               <span className="muted small">
-                {unlimited ? 'Bought. Every hint is yours, no ads.' : 'One hint per puzzle is free. Unlock the rest without ads.'}
+                {unlimited ? 'Bought. No ads, every hint free.' : 'No videos, every hint free. Pay once, keep it for good.'}
               </span>
               {!unlimited && (
                 <span>
@@ -266,7 +266,7 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
                     onClick={() => {
                       setBuying(true);
                       void restoreUnlimitedHints()
-                        .then((found) => toast(found ? 'Purchase restored. Every hint is yours.' : 'No purchase found for this store account'))
+                        .then((found) => toast(found ? 'Purchase restored. No ads, every hint free.' : 'No purchase found for this store account'))
                         .catch(() => toast('The store is not reachable right now'))
                         .finally(() => setBuying(false));
                     }}
