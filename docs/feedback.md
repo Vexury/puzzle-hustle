@@ -33,8 +33,6 @@ Stand: 2026-09-29
 - [ ] **Frieder** Rueckmeldung zur Shapes-Startanordnung auf Genius steht noch aus. Easy bis Hard
   hat er am 20.09. als "perfekt" gegengetestet.
 - [ ] **Saskia** Tracks: ein Zug, der als Loesungsanimation von A nach B faehrt.
-- [ ] **Saskia** Nonogramm-Demo: "A 5 fills its whole row" und "The outer columns have their 2
-  already" sind fuer Neulinge unklar. Ausformulieren (fuenf gefuellte Felder, zwei gefuellte Felder).
 - [ ] **Saskia** Nonogramm 10x10: Zellen auf dem iPhone zu klein (etwa 28 pt). Raender, Rahmen und
   Hinweisabstaende enger, danach nachfragen, ob es reicht.
 - [ ] **Jonas, Dani** Customize-Seite zu lang: Badges und Flairs aufklappbar mit Zaehler, Themes offen,
@@ -43,6 +41,10 @@ Stand: 2026-09-29
 
 ## Erledigt
 
+- [x] 2026-09-29 **Saskia** Nonogramm-Demo: "A 5 fills its whole row" und "The outer columns have
+  their 2 already" waren fuer Neulinge unklar. Beide Schritte nennen jetzt die Schlussfolgerung:
+  "These rows need 5 filled cells and have only 5, so all of them are filled" und "The outer columns
+  need 2 filled cells and already have them, so the rest stay empty".
 - [x] 2026-09-29 **Saskia** Cats: Tuerkis, Hellblau und Lavendel lagen nebeneinander und waren kaum
   zu unterscheiden. Neue Paletten fuer hell, dunkel, Midnight, Synthwave und Terminal, und die Farben
   werden nach gemessenem Abstand vergeben, sodass Nachbarn moeglichst verschieden aussehen (siehe

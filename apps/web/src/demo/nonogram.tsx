@@ -23,7 +23,7 @@ export const NONOGRAM_DEMO: DemoScript = {
   steps: [
     { say: 'The numbers count the filled cells in each row and column, in that order.', hl: [25, 26, 27, 28, 29, 30, 31, 32, 33, 34], wait: 2200 },
     {
-      say: 'A 5 fills its whole row. Swipe to fill along a line.',
+      say: 'These rows need 5 filled cells and have only 5, so all of them are filled. Swipe to fill along a line.',
       hl: [26, 27, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
       do: [
         { swipe: [5, 6, 7, 8, 9], to: 1 },
@@ -31,7 +31,7 @@ export const NONOGRAM_DEMO: DemoScript = {
       ],
     },
     {
-      say: 'The outer columns have their 2 already. Hold a cell to cross it out.',
+      say: 'The outer columns need 2 filled cells and already have them, so the rest stay empty. Hold a cell to cross it out.',
       hl: [30, 34, 0, 15, 20, 4, 19, 24],
       do: [
         { hold: 0, to: X },
