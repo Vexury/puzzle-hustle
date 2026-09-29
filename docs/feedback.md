@@ -33,8 +33,6 @@ Stand: 2026-09-29
 - [ ] **Frieder** Rueckmeldung zur Shapes-Startanordnung auf Genius steht noch aus. Easy bis Hard
   hat er am 20.09. als "perfekt" gegengetestet.
 - [ ] **Saskia** Tracks: ein Zug, der als Loesungsanimation von A nach B faehrt.
-- [ ] **Saskia** Zip: der Pfad bleibt orange, auch wenn er eine Zahl ausser der Reihe erreicht. Ab
-  dort rot zeichnen (nur mit eingeschalteten Fehlermarkierungen), auch in der Demo.
 - [ ] **Saskia** Cats: Tuerkis `#c8e4e2`, Hellblau `#c9dcef` und Lavendel `#d5d5ef` liegen
   nebeneinander und sind kaum zu unterscheiden. Palette in hell und dunkel nach Farbton spreizen,
   aehnliche Paare in `regionsPalette` nicht benachbart vergeben.
