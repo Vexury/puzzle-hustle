@@ -1103,7 +1103,11 @@ button.unlock-row { cursor: pointer; }
 .coin-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); font-family: var(--font-num); text-decoration: none; }
 .coin-pill svg { width: 1em; height: 1em; }
 .shop-preview { gap: 6px; }
-.shop-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.shop-section-head { display: flex; align-items: center; gap: 8px; width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.shop-section-title { flex: 1; }
+.shop-section-count { font-family: var(--font-num); font-weight: 400; color: var(--text-muted); }
+.shop-section-head .chevron { color: var(--text-muted); transform: rotate(180deg); transition: transform 0.2s ease; }
+.shop-section-head[aria-expanded='true'] .chevron { transform: rotate(270deg); }.shop-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .shop-tile { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 4px; border-radius: 12px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); font-family: var(--font-num); }
 .shop-badge { width: 28px; height: 28px; color: var(--accent-text); }
 .shop-tile.locked, .shop-row.locked { opacity: 0.5; }

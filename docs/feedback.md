@@ -35,12 +35,15 @@ Stand: 2026-09-29
 - [ ] **Saskia** Tracks: ein Zug, der als Loesungsanimation von A nach B faehrt.
 - [ ] **Saskia** Nonogramm 10x10: Zellen auf dem iPhone zu klein (etwa 28 pt). Raender, Rahmen und
   Hinweisabstaende enger, danach nachfragen, ob es reicht.
-- [ ] **Jonas, Dani** Customize-Seite zu lang: Badges und Flairs aufklappbar mit Zaehler, Themes offen,
-  Zustand merken. "Nicht nach Kosten sortiert" klaeren: Badges sind seit 27.09. sortiert, Flairs
-  haben keinen Preis.
+- [ ] **Jonas** "Icons nicht nach Kosten sortiert" klaeren: Badges sind seit 27.09. nach Preis
+  sortiert, Themes ebenso, Flairs haben keinen Preis. Nachfragen, welche Icons er meint.
 
 ## Erledigt
 
+- [x] 2026-09-29 **Jonas, Dani** Customize-Seite zu lang: Badges und Flairs sind jetzt aufklappbar,
+  anfangs zu, mit Zaehler im Kopf (besessen/gesamt); Themes bleiben offen. Jeder Abschnitt merkt
+  sich seinen Zustand (`ph:shop:badges`, `ph:shop:flairs`). Zugeklappt ist die Seite rund 1000 px
+  hoch statt rund 4000 px.
 - [x] 2026-09-29 **Saskia** Nonogramm-Demo: "A 5 fills its whole row" und "The outer columns have
   their 2 already" waren fuer Neulinge unklar. Beide Schritte nennen jetzt die Schlussfolgerung:
   "These rows need 5 filled cells and have only 5, so all of them are filled" und "The outer columns

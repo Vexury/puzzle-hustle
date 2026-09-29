@@ -22,13 +22,38 @@ import { storedSolves } from '../lib/achievements.ts';
 import { pushBackGuard } from '../lib/back.ts';
 import { buyItem, equip, owned, useBalance, useEquipped, type Equipped } from '../lib/coins.ts';
 import { requirementText } from '../lib/flairs.ts';
-import { readSetting } from '../lib/storage.ts';
+import { readSetting, writeSetting } from '../lib/storage.ts';
 import { centerOf, equipPack, tryOnPack, usePack, useTheme } from '../lib/theme.ts';
 import { BackLink } from '../components/BackLink.tsx';
+import { Chevron } from '../components/Chevron.tsx';
 
 const REVERT_MS = 4000;
 // Cheapest first; sort is stable, so equal prices keep their catalogue order.
 const BADGES: readonly BadgeCosmetic[] = COSMETICS.filter((c): c is BadgeCosmetic => c.kind === 'badge').sort((a, b) => a.price - b.price);
+const FLAIRS: readonly FlairCosmetic[] = COSMETICS.filter((c): c is FlairCosmetic => c.kind === 'flair');
+
+// Badges and flairs fold away so the page stays short; themes stay open, the try-on is the point
+// of the page. Closed by default, and each section remembers how it was left.
+function ShopSection({ id, title, count, children }: { id: string; title: string; count: string; children: React.ReactNode }) {
+  const key = `ph:shop:${id}`;
+  const [open, setOpen] = useState(() => readSetting(key) === '1');
+  const toggle = () => {
+    writeSetting(key, open ? '0' : '1');
+    setOpen(!open);
+  };
+  return (
+    <section className="card-lg">
+      <h2>
+        <button type="button" className="shop-section-head" aria-expanded={open} aria-controls={`shop-${id}`} onClick={toggle}>
+          <span className="shop-section-title">{title}</span>
+          <span className="shop-section-count">{count}</span>
+          <Chevron size={18} />
+        </button>
+      </h2>
+      {open && <div id={`shop-${id}`}>{children}</div>}
+    </section>
+  );
+}
 
 // A tap plays the badge's motion once. An attribute rather than a class, so the re-render that
 // follows the tap (armed, owned, equipped) cannot wipe it mid-motion.
@@ -214,8 +239,7 @@ export function Shop() {
           </div>
         </section>
 
-        <section className="card-lg">
-          <h2>Badges</h2>
+        <ShopSection id="badges" title="Badges" count={`${BADGES.filter((b) => ownedIds.has(b.id)).length}/${BADGES.length}`}>
           <div className="shop-grid">
             {BADGES.map((item, i) => (
               <button
@@ -235,10 +259,9 @@ export function Shop() {
               </button>
             ))}
           </div>
-        </section>
+        </ShopSection>
 
-        <section className="card-lg">
-          <h2>Flairs</h2>
+        <ShopSection id="flairs" title="Flairs" count={`${FLAIRS.filter((f) => ownedIds.has(f.id)).length}/${FLAIRS.length}`}>
           <div className="stack">
             {PUZZLE_TYPES.map((type) => (
               <div key={type} className="shop-flair-group">
@@ -280,7 +303,7 @@ export function Shop() {
               </div>
             </div>
           </div>
-        </section>
+        </ShopSection>
       </div>
 
       {trying && (
