@@ -19,6 +19,8 @@ import { SLABS_PRESETS, SLABS_VERSION, generateSlabs } from '../src/slabs/puzzle
 import { slabsCanonicalKey, solveSlabs } from '../src/slabs/solver.ts';
 import { decodeRef, encodeRef, levelRef, refId } from '../src/ref.ts';
 
+const PER = 30;
+
 describe('level pack', () => {
   it('matches the current generator version', () => {
     expect(LEVEL_PACK.versions.shapes).toBe(SHAPES_VERSION);
@@ -35,11 +37,11 @@ describe('level pack', () => {
 
   // Every type and difficulty, without generating anything: a short or unsorted pack is
   // caught here even for the types whose generators are too slow to re-verify in CI.
-  it('ships 50 levels per type and difficulty, ascending by score', () => {
+  it('ships 30 levels per type and difficulty, ascending by score', () => {
     for (const type of PUZZLE_TYPES) {
       for (const difficulty of DIFFICULTIES) {
         const list = levelList(type, difficulty);
-        expect(`${type}/${difficulty}: ${list.length}`).toBe(`${type}/${difficulty}: 50`);
+        expect(`${type}/${difficulty}: ${list.length}`).toBe(`${type}/${difficulty}: ${PER}`);
         list.forEach((entry, i) => {
           if (i > 0) expect(entry.score).toBeGreaterThanOrEqual(list[i - 1]!.score);
         });
@@ -47,13 +49,13 @@ describe('level pack', () => {
     }
   });
 
-  // Zip hard and genius cost 1.4 s and 4.3 s per puzzle, so re-verifying their 100 levels
-  // would add six minutes to every CI run. The generator only ever returns unique zip
+  // Zip hard and genius cost 1.4 s and 4.3 s per puzzle, so re-verifying their 60 levels
+  // would add minutes to every CI run. The generator only ever returns unique zip
   // puzzles, and `pnpm levels` checks each one as it writes it.
-  it('has 50 distinct, unique zip levels for easy and medium', () => {
+  it('has 30 distinct, unique zip levels for easy and medium', () => {
     for (const difficulty of ['easy', 'medium'] as const) {
       const list = levelList('zip', difficulty);
-      expect(list.length).toBe(50);
+      expect(list.length).toBe(PER);
       const keys = new Set<string>();
       list.forEach((entry, i) => {
         const spec = generateZip(entry.seed, difficulty);
@@ -66,10 +68,10 @@ describe('level pack', () => {
   }, 180_000);
 
   // Hard and genius probe with lookahead and are too slow to re-verify in CI, like zip.
-  it('has 50 distinct slabs levels per difficulty that the solver finishes', () => {
+  it('has 30 distinct slabs levels per difficulty that the solver finishes', () => {
     for (const difficulty of DIFFICULTIES) {
       const list = levelList('slabs', difficulty);
-      expect(list.length).toBe(50);
+      expect(list.length).toBe(PER);
       const keys = new Set<string>();
       for (const entry of list) {
         const spec = generateSlabs(entry.seed, difficulty);
@@ -80,10 +82,10 @@ describe('level pack', () => {
     }
   }, 180_000);
 
-  it('has 50 distinct tracks levels for easy and medium that the solver finishes', () => {
+  it('has 30 distinct tracks levels for easy and medium that the solver finishes', () => {
     for (const difficulty of ['easy', 'medium'] as const) {
       const list = levelList('tracks', difficulty);
-      expect(list.length).toBe(50);
+      expect(list.length).toBe(PER);
       const keys = new Set<string>();
       for (const entry of list) {
         const spec = generateTracks(entry.seed, difficulty);
@@ -94,10 +96,10 @@ describe('level pack', () => {
     }
   }, 120_000);
 
-  it('has 50 distinct, line-solvable, ascending nonogram levels per difficulty', () => {
+  it('has 30 distinct, line-solvable, ascending nonogram levels per difficulty', () => {
     for (const difficulty of DIFFICULTIES) {
       const list = levelList('nonogram', difficulty);
-      expect(list.length).toBe(50);
+      expect(list.length).toBe(PER);
       const keys = new Set<string>();
       list.forEach((entry, i) => {
         const spec = generateNonogram(entry.seed, difficulty);
@@ -109,10 +111,10 @@ describe('level pack', () => {
     }
   });
 
-  it('has 50 unique, distinct shapes levels per difficulty', () => {
+  it('has 30 unique, distinct shapes levels per difficulty', () => {
     for (const difficulty of DIFFICULTIES) {
       const list = levelList('shapes', difficulty);
-      expect(list.length).toBe(50);
+      expect(list.length).toBe(PER);
       const keys = new Set<string>();
       for (let i = 0; i < list.length; i++) {
         const entry = list[i]!;

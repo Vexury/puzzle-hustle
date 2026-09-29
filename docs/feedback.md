@@ -41,6 +41,9 @@ Stand: 2026-09-29
 
 ## Erledigt
 
+- [x] 2026-09-29 **Tester** Zip laedt lange, vor allem auf Genius. Level-Bretter liegen jetzt fertig im
+  Bundle und oeffnen sofort, Random Zip Hard und Genius zieht aus einem Vorrat, und alles, was
+  noch erzeugt wird, laeuft im Worker hinter "Building puzzle…" statt die App einzufrieren.
 - [x] 2026-09-29 **Jonas** "Icons nicht nach Kosten sortiert" meinte die Badges; die sind seit
   27.09. nach Preis sortiert, er hatte noch einen aelteren Build.
 - [x] 2026-09-29 **Jonas, Dani** Customize-Seite zu lang: Badges und Flairs sind jetzt aufklappbar,

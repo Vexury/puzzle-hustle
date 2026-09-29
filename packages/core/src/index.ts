@@ -16,6 +16,7 @@ export * from './shapes/puzzle.ts';
 export * from './shapes/solver.ts';
 export * from './levels.ts';
 export * from './registry.ts';
+export * from './boards.ts';
 export * from './nonogram/puzzle.ts';
 export * from './nonogram/solver.ts';
 export * from './mosaic/puzzle.ts';

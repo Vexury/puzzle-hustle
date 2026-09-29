@@ -9,7 +9,8 @@
   "scripts": {
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "levels": "node --experimental-strip-types scripts/generate-levels.ts"
+    "levels": "node --experimental-strip-types scripts/generate-levels.ts",
+    "boards": "node --experimental-strip-types scripts/generate-boards.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.1"

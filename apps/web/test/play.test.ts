@@ -33,33 +33,36 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-function mount(query: string) {
-  act(() => root.render(createElement(Play, { params: new URLSearchParams(query) })));
+// The board arrives asynchronously now (board pack or generator), behind a loading view.
+async function mount(query: string) {
+  await act(async () => root.render(createElement(Play, { params: new URLSearchParams(query) })));
+  await vi.waitFor(() => expect(container.querySelector('.board-loading')).toBeNull());
+  await act(async () => {});
 }
 
-it('keeps the clock of a daily left before the first move', () => {
+it('keeps the clock of a daily left before the first move', async () => {
   const ref = dailyRef('tracks');
-  mount(encodeRef(ref));
+  await mount(encodeRef(ref));
   act(() => vi.advanceTimersByTime(42_000));
   act(() => root.unmount());
   expect(readProgress(refId(ref))).toMatchObject({ state: [], seconds: 42, moves: 0 });
 
   root = createRoot(container);
-  mount(encodeRef(ref));
+  await mount(encodeRef(ref));
   act(() => vi.advanceTimersByTime(1_000));
   expect(container.querySelector('.timer')?.textContent).toContain('43s');
 });
 
-it('saves nothing for a level left before the first move', () => {
+it('saves nothing for a level left before the first move', async () => {
   const ref = levelRef('tracks', 'easy', 1)!;
-  mount(encodeRef(ref));
+  await mount(encodeRef(ref));
   act(() => vi.advanceTimersByTime(5_000));
   act(() => root.unmount());
   expect(readProgress(refId(ref))).toBeNull();
 });
 
-it('a back press opens the leave question and a second one dismisses it', () => {
-  mount(encodeRef(dailyRef('tracks')));
+it('a back press opens the leave question and a second one dismisses it', async () => {
+  await mount(encodeRef(dailyRef('tracks')));
   act(() => void handleBackPress(true));
   expect(container.textContent).toContain('Leave this puzzle?');
   let outcome = '';
@@ -68,17 +71,17 @@ it('a back press opens the leave question and a second one dismisses it', () => 
   expect(container.textContent).not.toContain('Leave this puzzle?');
 });
 
-it('takes a scheduled stars puzzle from the adapter instead of generating it again', () => {
+it('takes a scheduled stars puzzle from the adapter instead of generating it again', async () => {
   writeSetting('ph:howto:stars', '1');
   vi.mocked(generateStars).mockClear();
-  mount(encodeRef(dailyRef('stars')));
+  await mount(encodeRef(dailyRef('stars')));
   expect(generateStars).not.toHaveBeenCalled();
   expect(container.querySelector('.play')).not.toBeNull();
 });
 
-it('holds the clock while the first how-to is up and starts it on Got it', () => {
+it('holds the clock while the first how-to is up and starts it on Got it', async () => {
   localStorage.removeItem('ph:howto:tracks');
-  mount(encodeRef(dailyRef('tracks')));
+  await mount(encodeRef(dailyRef('tracks')));
   expect(container.querySelector('.help')).not.toBeNull();
   act(() => vi.advanceTimersByTime(10_000));
   expect(container.querySelector('.timer')?.textContent).toContain('0s');
@@ -97,9 +100,9 @@ it('holds the clock while the first how-to is up and starts it on Got it', () =>
   expect(container.querySelector('.timer')?.textContent).toContain('3s');
 });
 
-it('stays on a how-to step until the reader swipes to the next or back', () => {
+it('stays on a how-to step until the reader swipes to the next or back', async () => {
   localStorage.removeItem('ph:howto:tracks');
-  mount(encodeRef(dailyRef('tracks')));
+  await mount(encodeRef(dailyRef('tracks')));
   const on = () => [...container.querySelectorAll('.demo-dots button')].indexOf(container.querySelector('.demo-dots .on')!);
   act(() => vi.advanceTimersByTime(30_000));
   expect(on()).toBe(0);
@@ -119,8 +122,8 @@ it('stays on a how-to step until the reader swipes to the next or back', () => {
   expect(on()).toBe(0);
 });
 
-it('a back press closes the how-to instead of asking to leave', () => {
-  mount(encodeRef(dailyRef('tracks')));
+it('a back press closes the how-to instead of asking to leave', async () => {
+  await mount(encodeRef(dailyRef('tracks')));
   act(() => (container.querySelector('[aria-label="How to play"]') as HTMLButtonElement).click());
   expect(container.querySelector('.help')).not.toBeNull();
   act(() => void handleBackPress(true));
@@ -128,8 +131,8 @@ it('a back press closes the how-to instead of asking to leave', () => {
   expect(container.textContent).not.toContain('Leave this puzzle?');
 });
 
-it('shows the cats how-to as a demo', () => {
-  mount(encodeRef(dailyRef('crowns')));
+it('shows the cats how-to as a demo', async () => {
+  await mount(encodeRef(dailyRef('crowns')));
   expect(container.querySelector('.help .demo')).not.toBeNull();
   act(() => vi.advanceTimersByTime(5_000));
 });

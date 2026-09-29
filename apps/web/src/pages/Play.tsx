@@ -5,29 +5,15 @@ import {
   decodeRef,
   encodeRef,
   coinsForSolve,
-  crownsAdapter,
-  generateKiller,
-  generateMosaic,
-  generateNonogram,
-  generateShapes,
-  generateSlabs,
-  generateSudoku,
-  generateTracks,
-  generateZip,
   adapter,
   levelRef,
-  mosaicAdapter,
-  nonogramAdapter,
   dailyRef,
   periodRef,
-  randomRef,
   refId,
   scheduledRef,
-  shapesAdapter,
-  starsAdapter,
-  zipAdapter,
   zipNumberCount,
   type CoinAward,
+  type PuzzleSpec,
   type PuzzleRef,
 } from '@puzzle-hustle/core';
 import { storedSolves, syncAchievements } from '../lib/achievements.ts';
@@ -37,6 +23,7 @@ import { pushBackGuard } from '../lib/back.ts';
 import { clearProgress, getSolve, keepFinalBoard, readProgress, readSetting, recordSolve, useSolves, writeProgress, writeSetting, type SolveRecord } from '../lib/storage.ts';
 import { capitalize, formatSeconds, share, shareText } from '../lib/share.ts';
 import { HintCard } from '../components/HintCard.tsx';
+import { loadBoard, randomBoardRef } from '../lib/boards.ts';
 import { syncFlairs } from '../lib/flairs.ts';
 import { requestHint, useHintBadge, type HintChoice, type HintOffer } from '../lib/hints.ts';
 import { enqueue, flush } from '../lib/queue.ts';
@@ -91,7 +78,47 @@ function backTarget(ref: PuzzleRef): { url: string; label: string } {
   return { url: href('/'), label: 'Daily' };
 }
 
+// Levels come ready-made from the board pack; anything else is built in the generator worker.
+// Either way the app stays responsive, and a slow build shows as such instead of a frozen screen.
+// Mounted afresh per puzzle (Play keys it), so the board loads once.
 function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: () => void }) {
+  const [spec, setSpec] = useState<PuzzleSpec | null>(null);
+  const [failed, setFailed] = useState<unknown>(null);
+  useEffect(() => {
+    let live = true;
+    loadBoard(puzzleRef).then(
+      (s) => live && setSpec(s),
+      (e: unknown) => live && setFailed(e ?? new Error('board failed')),
+    );
+    return () => {
+      live = false;
+    };
+  }, []);
+  if (failed) throw failed;
+  if (!spec) {
+    const back = backTarget(puzzleRef);
+    return (
+      <section className="play">
+        <div className="play-bar">
+          <a href={back.url} onClick={onBackLinkClick} className="icon-round" aria-label={`Back to ${back.label}`}>
+            <Chevron />
+          </a>
+          <h1>
+            {PUZZLE_META[puzzleRef.type].name} <span className="muted">· {subtitle(puzzleRef)}</span>
+          </h1>
+          <span className="icon-round placeholder" aria-hidden="true" />
+        </div>
+        <div className="board-loading" role="status" aria-live="polite">
+          <span className="spinner" aria-hidden="true" />
+          <span className="muted">Building puzzle…</span>
+        </div>
+      </section>
+    );
+  }
+  return <PlayBoard puzzleRef={puzzleRef} spec={spec} onReplay={onReplay} />;
+}
+
+function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: PuzzleSpec; onReplay: () => void }) {
   const id = refId(puzzleRef);
   const solves = useSolves();
   const existing = solves[id];
@@ -99,29 +126,6 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
   // starts a fresh run. A period keeps its first run, that is the time the leaderboard got.
   const replayable = !puzzleRef.period;
   const bestBefore = useRef(existing?.seconds ?? null).current;
-  const spec = useMemo(
-    () =>
-      puzzleRef.type === 'slabs'
-        ? generateSlabs(puzzleRef.seed, puzzleRef.difficulty)
-        : puzzleRef.type === 'tracks'
-        ? generateTracks(puzzleRef.seed, puzzleRef.difficulty)
-        : puzzleRef.type === 'zip'
-        ? generateZip(puzzleRef.seed, puzzleRef.difficulty, zipAdapter.options(puzzleRef.period))
-        : puzzleRef.type === 'crowns'
-        ? crownsAdapter.spec(puzzleRef.seed, puzzleRef.difficulty, crownsAdapter.options(puzzleRef.period))
-        : puzzleRef.type === 'stars'
-          ? starsAdapter.spec(puzzleRef.seed, puzzleRef.difficulty, starsAdapter.options(puzzleRef.period))
-          : puzzleRef.type === 'sudoku'
-        ? generateSudoku(puzzleRef.seed, puzzleRef.difficulty)
-        : puzzleRef.type === 'killer'
-          ? generateKiller(puzzleRef.seed, puzzleRef.difficulty)
-          : puzzleRef.type === 'nonogram'
-        ? generateNonogram(puzzleRef.seed, puzzleRef.difficulty, nonogramAdapter.options(puzzleRef.period))
-        : puzzleRef.type === 'mosaic'
-          ? generateMosaic(puzzleRef.seed, puzzleRef.difficulty, mosaicAdapter.options(puzzleRef.period))
-          : generateShapes(puzzleRef.seed, puzzleRef.difficulty, shapesAdapter.options(puzzleRef.period)),
-    [puzzleRef],
-  );
   const sizeLabel =
     'slabs' in spec
       ? `${spec.config.cols}×${spec.config.rows}, ${spec.slabs.length} slabs`
@@ -429,7 +433,7 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
   };
 
   // The next puzzle replaces this one, so the header chevron still steps back to the list.
-  const another = () => navigate(href(`/play?${encodeRef(randomRef(puzzleRef.type, puzzleRef.difficulty))}`), true);
+  const another = () => void randomBoardRef(puzzleRef.type, puzzleRef.difficulty).then((r) => navigate(href(`/play?${encodeRef(r)}`), true));
   const onNextClick = (event: React.MouseEvent<HTMLAnchorElement>) => onLinkClick(event, true);
   const replay = () => {
     onReplay();

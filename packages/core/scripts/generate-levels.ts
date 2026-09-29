@@ -27,15 +27,26 @@ for (const type of types) {
   levels[type] = { ...(keepOld ? levels[type] : {}) } as Record<Difficulty, LevelEntry[]>;
   for (const difficulty of difficulties) {
     const kept = keepOld ? (levels[type][difficulty] ?? []) : [];
-    if (kept.length >= PER_DIFFICULTY) {
+    if (kept.length === PER_DIFFICULTY) {
       console.log(`${type}/${difficulty}: ${kept.length} levels, nothing to add`);
+      continue;
+    }
+    const family = (seed: number): string => a.family?.(seed, difficulty) ?? String(seed);
+    // A pack that shrinks is picked again from its own levels by the same walk, so it still
+    // spans the whole score range instead of losing its hardest end. Numbers change.
+    if (kept.length > PER_DIFFICULTY) {
+      const picked = selectLevels(
+        kept.map((entry) => ({ seed: entry.seed, score: entry.score, family: family(entry.seed) })),
+        PER_DIFFICULTY,
+      );
+      levels[type][difficulty] = picked.map(({ seed: s, score }) => ({ seed: s, score }));
+      console.log(`${type}/${difficulty}: ${kept.length} -> ${picked.length} levels, score ${picked[0]!.score} .. ${picked.at(-1)!.score}, ${adjacentTwins(picked)} adjacent twins`);
       continue;
     }
     // Levels already in the pack join the candidate pool instead of being pinned to the
     // front: a pack that grows has to be re-sorted by score anyway, and pinning them
     // would put the variety rule out of reach for exactly the levels players see first.
     // Their numbers change as a result, which the caller is told about below.
-    const family = (seed: number): string => a.family?.(seed, difficulty) ?? String(seed);
     const pool: Candidate[] = kept.map((entry) => ({ seed: entry.seed, score: entry.score, family: family(entry.seed) }));
     const seen = new Set<string>();
     for (const entry of kept) seen.add(a.key(entry.seed, difficulty));

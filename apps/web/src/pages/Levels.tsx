@@ -8,12 +8,12 @@ import {
   isPuzzleTypeId,
   levelList,
   levelRef,
-  randomRef,
   refId,
   type Difficulty,
   type PuzzleTypeId,
 } from '@puzzle-hustle/core';
 import { PuzzleIcon } from '../components/PuzzleIcon.tsx';
+import { randomBoardRef } from '../lib/boards.ts';
 import { href, navigate, onLinkClick } from '../lib/router.ts';
 import { readSetting, startedIds, useSolves, writeSetting, type SolveRecord } from '../lib/storage.ts';
 import { toast } from '../components/Toast.tsx';
@@ -162,7 +162,7 @@ function LevelGrid({ type }: { type: PuzzleTypeId }) {
 
       {open > list.length ? (
         <div className="actions">
-          <button type="button" className="pill outline" onClick={() => navigate(href(`/play?${encodeRef(randomRef(type, difficulty))}`))}>
+          <button type="button" className="pill outline" onClick={() => void randomBoardRef(type, difficulty).then((r) => navigate(href(`/play?${encodeRef(r)}`)))}>
             Random {capitalize(difficulty)}
           </button>
         </div>

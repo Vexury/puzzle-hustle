@@ -700,6 +700,8 @@ p { margin: 0; }
 .play { display: flex; flex-direction: column; gap: 12px; }
 .play-bar { display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; gap: 8px; }
 .play-bar h1 { font-size: var(--fs-lg); justify-content: center; text-align: center; gap: 4px; }
+.play-bar .placeholder { visibility: hidden; }
+.board-loading { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 40vh; }
 .icon-round {
   width: 40px;
   height: 40px;
