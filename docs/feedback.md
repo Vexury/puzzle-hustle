@@ -35,11 +35,11 @@ Stand: 2026-09-29
 - [ ] **Saskia** Tracks: ein Zug, der als Loesungsanimation von A nach B faehrt.
 - [ ] **Saskia** Nonogramm 10x10: Zellen auf dem iPhone zu klein (etwa 28 pt). Raender, Rahmen und
   Hinweisabstaende enger, danach nachfragen, ob es reicht.
-- [ ] **Jonas** "Icons nicht nach Kosten sortiert" klaeren: Badges sind seit 27.09. nach Preis
-  sortiert, Themes ebenso, Flairs haben keinen Preis. Nachfragen, welche Icons er meint.
 
 ## Erledigt
 
+- [x] 2026-09-29 **Jonas** "Icons nicht nach Kosten sortiert" meinte die Badges; die sind seit
+  27.09. nach Preis sortiert, er hatte noch einen aelteren Build.
 - [x] 2026-09-29 **Jonas, Dani** Customize-Seite zu lang: Badges und Flairs sind jetzt aufklappbar,
   anfangs zu, mit Zaehler im Kopf (besessen/gesamt); Themes bleiben offen. Jeder Abschnitt merkt
   sich seinen Zustand (`ph:shop:badges`, `ph:shop:flairs`). Zugeklappt ist die Seite rund 1000 px
