@@ -1,0 +1,16 @@
+<en-US>
+Puzzle Hustle has its own logo.
+
+- New app icon and launch screen: an upright puzzle piece that forms an H
+- Solving a puzzle shows a result card with your time, moves and hints
+- Fewer unlocks pile up at once on your first daily
+- The purchase is now called No Ads · Free Hints
+</en-US>
+<de-DE>
+Puzzle Hustle hat ein eigenes Logo.
+
+- Neues App-Symbol und neuer Startbildschirm: ein aufrechtes Puzzleteil, das ein H bildet
+- Nach dem Lösen zeigt eine Ergebniskarte Zeit, Züge und Hints
+- Beim ersten Daily kommen weniger Freischaltungen auf einmal
+- Der Kauf heißt jetzt No Ads · Free Hints
+</de-DE>
