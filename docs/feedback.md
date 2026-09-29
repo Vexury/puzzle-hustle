@@ -22,6 +22,14 @@ Stand: 2026-09-29
   Schwierigkeit oder "How to play". Fix seit 25.09. (`contentInset: 'never'`, `user-select: none`),
   Dani sah die Markierung am 28.09. trotzdem noch beim Kreuzeziehen; seit 29.09. sperrt die Regel
   jedes Element und `selectstart` zusaetzlich. Am iPhone mit TestFlight Build 17 pruefen.
+- [ ] **Tester** Erstes Oeffnen fuehlt sich an wie eine Productivity-App, "zu viele HTML-Vibes,
+  zu wenig Game". Stand 29.09., verschoben (Moritz noch unsicher): Kacheln statt Liste sind per
+  WhatsApp-Umfrage einstimmig abgelehnt, die Liste bleibt. Favorit war ein freundlicherer
+  Leerzustand: solange nichts geloest ist, statt Serienkarte mit "0 day streak, 0/9 solved" und
+  Countdown eine Begruessung ("Hey there! Nine fresh puzzles today, one for every mood.") mit den
+  Typ-Icons als huepfende, antippbare Reihe; dazu Coin-Pille bei 0 ausblenden und die erste
+  Intro-Karte umbenennen, damit man nicht doppelt begruesst wird. Weitere Ideen: Farbe je Typ in
+  der Liste, erst ein Mini-Raetsel statt Textkarten, gestaffeltes Einblenden und Federn.
 - [ ] **Frieder** Rueckmeldung zur Shapes-Startanordnung auf Genius steht noch aus. Easy bis Hard
   hat er am 20.09. als "perfekt" gegengetestet.
 
