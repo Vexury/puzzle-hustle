@@ -15,8 +15,11 @@ describe('hustle sequence', () => {
     for (let n = 2; n <= 1000; n++) expect(hustleType(n), `stage ${n}`).not.toBe(hustleType(n - 1));
   });
 
-  it('is the same for everyone', () => {
-    expect(Array.from({ length: 30 }, (_, i) => hustleSlot(i + 1))).toEqual(Array.from({ length: 30 }, (_, i) => hustleSlot(i + 1)));
+  it('keeps stage types fixed, so every player climbs the same sequence', () => {
+    // Snapshot of hustleType(1..12) to guard against silent RNG/seed changes that would reshuffle progression
+    const expected = ['zip', 'mosaic', 'crowns', 'killer', 'shapes', 'sudoku', 'tracks', 'slabs', 'stars', 'nonogram', 'sudoku', 'nonogram'] as const;
+    const actual = Array.from({ length: 12 }, (_, i) => hustleType(i + 1));
+    expect(actual).toEqual(expected);
   });
 
   it('pays coins every ten stages, growing to 100', () => {
