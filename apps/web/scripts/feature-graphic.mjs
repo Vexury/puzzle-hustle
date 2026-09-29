@@ -39,7 +39,7 @@ const grid = Buffer.from(
 );
 
 const title = await text('Puzzle Hustle', 78, '#faf9f8');
-const tagline = await text('Eight logic puzzles, new every day', 30, MUTED);
+const tagline = await text('Ten logic puzzles, new every day', 30, MUTED);
 const titleMeta = await sharp(title).metadata();
 
 await mkdir(OUT, { recursive: true });

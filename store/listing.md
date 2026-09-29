@@ -66,7 +66,7 @@ same day, because the record wins and puts a Solved banner over an untouched boa
 must not write `theme`, since it then overrides the emulated colour scheme.
 
 Both images are generated: `node scripts/android-icons.mjs` from `apps/web` renders the launcher
-icons, `node scripts/store-assets.mjs` the listing icon plus the PWA icons in `public/`, and
+icons, `node scripts/ios-icons.mjs` the iOS app icon and launch screen, `node scripts/store-assets.mjs` the listing icon plus the PWA icons in `public/`, and
 `PH_FONT=<path> node scripts/feature-graphic.mjs` the feature graphic. `PH_FONT` points at a Nunito
 TTF, which is not in the repo; take `ofl/nunito/Nunito[wght].ttf` from the google/fonts repository.
 

@@ -1,27 +1,24 @@
 export const BG = '#1c1b19';
 export const FG = '#FFA833';
 
-// The Shapes motif, same one the in-app puzzle icon draws: a diamond and a square meeting at
-// a corner with the shared area cut away, which is the rule the puzzle is built on.
-//
-// Drawn in a 64 box and bounded by 14..50 on both axes. Those bounds are load bearing:
-// android-icons.mjs scales this by 1.72 into the 108 adaptive canvas, and anything wider
-// would leave the safe zone and get clipped by round and squircle launchers.
-//
-// The shift is half the measured offset between the ink centroid and the canvas centre. The
-// square outweighs the diamond and sits lower right, so the correction goes up and left. Half,
-// because a full correction overshoots: the eye does not weigh a shape purely by its area.
-export function motif(fg = FG, bg = BG) {
+// The logo: an upright jigsaw piece whose sockets top and bottom leave an H. Drawn in a
+// 120 x 160 box.
+export const H_PATH =
+  'M10 0H47V18A24 24 0 1 0 73 18V0H110A10 10 0 0 1 120 10V150A10 10 0 0 1 110 160H73V142A24 24 0 1 0 47 142V160H10A10 10 0 0 1 0 150V10A10 10 0 0 1 10 0Z';
+
+// Placed in a 64 box and bounded by 15..49 vertically. Those bounds are load bearing:
+// android-icons.mjs scales this by 1.72 into the 108 adaptive canvas, and anything taller
+// would push the corners past the round launcher mask. The piece is symmetric, so geometric
+// and optical centre coincide.
+export function motif(fg = FG) {
   return `
-  <g transform="translate(-1.4,-1.4)">
-    <polygon points="14,26 26,14 38,26 26,38" fill="${fg}"/>
-    <rect x="26" y="26" width="24" height="24" fill="${fg}"/>
-    <polygon points="26,26 38,26 26,38" fill="${bg}"/>
+  <g transform="translate(19.25,15) scale(0.2125)">
+    <path d="${H_PATH}" fill="${fg}"/>
   </g>`;
 }
 
 export function icon({ rounded = false, bg = BG, fg = FG } = {}) {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64"${rounded ? ' rx="14"' : ''} fill="${bg}"/>${motif(fg, bg)}
+  <rect width="64" height="64"${rounded ? ' rx="14"' : ''} fill="${bg}"/>${motif(fg)}
 </svg>`;
 }
