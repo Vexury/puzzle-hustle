@@ -33,8 +33,11 @@ Stand: 2026-09-29
 - [ ] **Frieder** Rueckmeldung zur Shapes-Startanordnung auf Genius steht noch aus. Easy bis Hard
   hat er am 20.09. als "perfekt" gegengetestet.
 - [ ] **Saskia** Tracks: ein Zug, der als Loesungsanimation von A nach B faehrt.
-- [ ] **Saskia** Nonogramm 10x10: Zellen auf dem iPhone zu klein (etwa 28 pt). Raender, Rahmen und
-  Hinweisabstaende enger, danach nachfragen, ob es reicht.
+- [ ] **Saskia** Nonogramm: Zellen auf Handys zu klein. Vertagt am 29.09. Gemessen: Medium 27 bis 34 px,
+  Hard/Genius 22 bis 30 px (iPhone SE bis Pro Max, S23, Pixel 8); die Breite begrenzt, nicht die
+  Hoehe, der Seitenrand kostet 32 px, die Zeilenhinweise 51 bis 90 px. Zoom fuer passende Bretter
+  verworfen (Moritz: Zoom und Pan sind schrecklich zu bedienen). Offen als kleinere Stellschraube:
+  Seitenrand 16 auf 8 px und engere Hinweise, geschaetzt +10 %.
 
 ## Erledigt
 
