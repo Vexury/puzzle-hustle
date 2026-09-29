@@ -32,7 +32,6 @@ Stand: 2026-09-29
   der Liste, erst ein Mini-Raetsel statt Textkarten, gestaffeltes Einblenden und Federn.
 - [ ] **Frieder** Rueckmeldung zur Shapes-Startanordnung auf Genius steht noch aus. Easy bis Hard
   hat er am 20.09. als "perfekt" gegengetestet.
-- [ ] **Saskia** Tracks: ein Zug, der als Loesungsanimation von A nach B faehrt.
 - [ ] **Saskia** Nonogramm: Zellen auf Handys zu klein. Vertagt am 29.09. Gemessen: Medium 27 bis 34 px,
   Hard/Genius 22 bis 30 px (iPhone SE bis Pro Max, S23, Pixel 8); die Breite begrenzt, nicht die
   Hoehe, der Seitenrand kostet 32 px, die Zeilenhinweise 51 bis 90 px. Zoom fuer passende Bretter
@@ -41,6 +40,10 @@ Stand: 2026-09-29
 
 ## Erledigt
 
+- [x] 2026-09-30 **Saskia** Tracks: beim Loesen faehrt eine Lok mit zwei Wagen von links ueber A ein,
+  folgt der Strecke durch jede Kurve und verlaesst das Brett unten ueber B (SVG `animateMotion`,
+  mindestens 5 Zellen pro Sekunde, hoechstens rund 6 s). Nur beim frischen Loesen, nicht beim
+  Wiederoeffnen, nicht bei reduzierter Bewegung; Farben aus den Theme-Tokens.
 - [x] 2026-09-29 **Tester** Zip laedt lange, vor allem auf Genius. Level-Bretter liegen jetzt fertig im
   Bundle und oeffnen sofort, Random Zip Hard und Genius zieht aus einem Vorrat, und alles, was
   noch erzeugt wird, laeuft im Worker hinter "Building puzzle…" statt die App einzufrieren.

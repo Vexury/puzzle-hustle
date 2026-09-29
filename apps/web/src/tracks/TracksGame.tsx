@@ -66,6 +66,9 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
   const history = useHistory<TracksState>();
   const mistakes = useRef(showMistakes()).current;
   const solved = isTracksSolved(spec, state);
+  // The train runs for a solve made here, not for a board that opened solved.
+  const openedSolved = useRef(solved).current;
+  const calm = useRef(matchMedia('(prefers-reduced-motion: reduce)').matches).current;
 
   useEffect(() => {
     if (solved) onSolved();
@@ -252,6 +255,7 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
         state={state}
         mistakes={mistakes}
         flash={flash}
+        celebrate={!openedSolved && !calm}
         ref={svgRef}
         role="application"
         aria-label="Tracks board"

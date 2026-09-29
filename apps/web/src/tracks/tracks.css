@@ -42,3 +42,9 @@
 .tracks-count.over { fill: var(--danger); }
 .tracks-end { font-size: 0.42px; fill: var(--accent-text); }
 .board-frame.solved .tracks-piece { stroke: var(--success); }
+.tracks-train { pointer-events: none; }
+.tracks-train rect, .tracks-train circle { stroke: var(--text); stroke-width: 0.03; }
+.tracks-loco rect { fill: var(--accent); }
+.tracks-loco .tracks-cab { fill: var(--accent-deep); }
+.tracks-loco .tracks-chimney { fill: var(--text); }
+.tracks-wagon rect { fill: color-mix(in srgb, var(--accent) 55%, var(--card-bg)); }

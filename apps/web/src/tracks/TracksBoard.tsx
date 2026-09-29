@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   TRACK_E,
   TRACK_N,
@@ -24,6 +25,8 @@ export interface TracksBoardProps extends Omit<React.SVGProps<SVGSVGElement>, 'c
   mistakes: boolean;
   flash?: number | null;
   highlight?: readonly number[] | undefined;
+  // A train runs the finished line from A to B: set only for a solve that just happened.
+  celebrate?: boolean;
 }
 
 // Room around the grid: A's stub on the left, the column numbers on top, the row numbers on the
@@ -99,6 +102,97 @@ function pieceTrack(c: number, r: number, mask: number): Track {
   return { rails, sleepers };
 }
 
+// The solved line as one path along the middle of the track: in from off the board past A,
+// cell by cell (straight edge to edge, or the quarter circle round the shared corner that the
+// pieces draw), out past B. Its length sets the train's speed.
+const LEAD = 1.4;
+function trainRoute(spec: TracksSpec): { d: string; length: number } {
+  const { cols, rows } = spec.config;
+  const cells = [...spec.path];
+  const toward = (a: number, b: number) => (b === a - cols ? TRACK_N : b === a + 1 ? TRACK_E : b === a + cols ? TRACK_S : TRACK_W);
+  let d = `L0 ${spec.entryRow + 0.5}`;
+  let length = PAD_L + LEAD;
+  cells.forEach((cell, i) => {
+    const c = cell % cols;
+    const r = Math.floor(cell / cols);
+    const inDir = i === 0 ? TRACK_W : toward(cell, cells[i - 1]!);
+    const outDir = i === cells.length - 1 ? TRACK_S : toward(cell, cells[i + 1]!);
+    const mask = inDir | outDir;
+    const [x2, y2] = edgePoint(c, r, outDir);
+    if (mask === (TRACK_N | TRACK_S) || mask === (TRACK_E | TRACK_W)) {
+      d += `L${x2} ${y2}`;
+      length += 1;
+      return;
+    }
+    const [x1, y1] = edgePoint(c, r, inDir);
+    const ox = mask & TRACK_E ? c + 1 : c;
+    const oy = mask & TRACK_N ? r : r + 1;
+    let sweep = Math.atan2(y2 - oy, x2 - ox) - Math.atan2(y1 - oy, x1 - ox);
+    if (sweep > Math.PI) sweep -= 2 * Math.PI;
+    if (sweep < -Math.PI) sweep += 2 * Math.PI;
+    d += `A0.5 0.5 0 0 ${sweep > 0 ? 1 : 0} ${x2} ${y2}`;
+    length += Math.PI / 4;
+  });
+  d += `L${spec.exitCol + 0.5} ${rows + PAD_B + LEAD}`;
+  return { d, length: length + PAD_B + LEAD };
+}
+
+// Cars seen from above, drawn around the origin facing +x; animateMotion turns them along the line.
+const CARS = 3;
+const CAR_GAP = 0.52;
+function TracksTrain({ spec }: { spec: TracksSpec }) {
+  const motions = useRef<(SVGElement | null)[]>([]);
+  const { d, length } = useMemo(() => trainRoute(spec), [spec]);
+  // At least five cells a second, and never longer than about six seconds on the big boards.
+  const speed = Math.max(5, length / 6);
+  const startX = -PAD_L - LEAD;
+  const y = spec.entryRow + 0.5;
+  // Started by hand: an animation added after the SVG loaded would otherwise count its begin
+  // from the document's start and be over already. Chrome ignores a begin in the same frame the
+  // element arrived in, so it waits a frame, and the cars stay hidden until then instead of
+  // showing at (0, 0).
+  const [running, setRunning] = useState(false);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      for (const m of motions.current) (m as SVGAnimationElement | null)?.beginElement?.();
+      setRunning(true);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
+  return (
+    <g className="tracks-train" aria-hidden="true" visibility={running ? 'visible' : 'hidden'}>
+      {Array.from({ length: CARS }, (_, k) => {
+        // Each car starts further back on the same line and takes longer by exactly that much,
+        // so all run at one speed and keep their spacing.
+        const back = k * CAR_GAP;
+        return (
+          <g key={k} className={k === 0 ? 'tracks-loco' : 'tracks-wagon'}>
+            {k === 0 ? (
+              <>
+                <rect x={-0.24} y={-0.15} width={0.46} height={0.3} rx={0.07} />
+                <rect className="tracks-cab" x={-0.24} y={-0.15} width={0.17} height={0.3} rx={0.05} />
+                <circle className="tracks-chimney" cx={0.1} cy={0} r={0.06} />
+              </>
+            ) : (
+              <rect x={-0.2} y={-0.14} width={0.4} height={0.28} rx={0.05} />
+            )}
+            <animateMotion
+              ref={(el) => {
+                motions.current[k] = el;
+              }}
+              begin="indefinite"
+              dur={`${(length + back) / speed}s`}
+              fill="freeze"
+              rotate="auto"
+              path={`M${startX - back} ${y}${d}`}
+            />
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
 function TrackShape({ track, className }: { track: Track; className: string }) {
   return (
     <g className={className}>
@@ -108,7 +202,7 @@ function TrackShape({ track, className }: { track: Track; className: string }) {
   );
 }
 
-export function TracksBoard({ spec, state: played, mistakes, flash = null, highlight, ...rest }: TracksBoardProps) {
+export function TracksBoard({ spec, state: played, mistakes, flash = null, highlight, celebrate = false, ...rest }: TracksBoardProps) {
   const { cols, rows } = spec.config;
   const solved = isTracksSolved(spec, played);
   const state = solved ? tracksWithoutMarks(played) : played;
@@ -183,6 +277,7 @@ export function TracksBoard({ spec, state: played, mistakes, flash = null, highl
         <TrackShape className="tracks-piece given" track={straightTrack(0, entryY, -PAD_L, entryY, STUB_SLEEPERS_A)} />
         <TrackShape className="tracks-piece given" track={straightTrack(exitX, rows, exitX, rows + PAD_B, STUB_SLEEPERS_B)} />
         <g className="tracks-pieces">{pieces}</g>
+        {solved && celebrate && <TracksTrain spec={spec} />}
         <text className="tracks-end" x={-PAD_L / 2} y={entryY - 0.5} dy="0.33em">
           A
         </text>
