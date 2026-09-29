@@ -51,8 +51,9 @@ Ueberspringen von Stufen.
 
 - Eine geloeste Stufe landet wie jedes Raetsel in `ph:solves` unter `hustle:<n>`. Kein eigener
   Speicher; Backup und Wiederherstellung gelten damit automatisch.
-- `hustleLevel(solves)`: die kleinste Stufe n >= 1, fuer die `hustle:n` fehlt. Wer Stufe 1 bis 46
-  geloest hat, steht auf Level 47 und spielt als naechstes 47.
+- Das Hustle-Level ist die hoechste Stufe der lueckenlosen Reihe ab 1 (`hustleSolved`), 0 vor der
+  ersten. Wer Stufe 1 bis 46 geloest hat, hat Level 46 und spielt als naechstes 47 (`hustleNext`).
+  Tab, Chip und Profil zeigen dieselbe Zahl (Entscheidung 2026-09-30 beim Planen).
 - Es zaehlen nur Loesungen ab `ACHIEVEMENTS_EPOCH`, wie bei Achievements und Coins. Zum
   Produktionsrelease beginnen Tester also wieder bei 1; das gehoert in die Release-Notes.
 - Hustle-Loesungen zaehlen fuer die allgemeinen Achievements (etwa `solved-50`, `solved-1000`,
@@ -110,14 +111,15 @@ Meilenstein ist jede Stufe n mit n % 10 === 0, belohnt beim Loesen von Stufe n.
 ## Player Card und Server (apps/api)
 
 - Migration `0005_hustle.sql`: `ALTER TABLE players ADD COLUMN hustle INTEGER NOT NULL DEFAULT 0;`
-  (0 = nie gespielt, sonst hoechste geloeste Stufe).
+  (0 = nie gespielt, sonst hoechste geloeste Stufe, also das Hustle-Level).
 - Route `PUT /me/hustle` mit `{ level }`: nimmt nur ganze Zahlen von 0 bis 100000 an und speichert
   `max(alt, neu)`, damit ein veraltetes Geraet den Wert nicht senkt. Gleiche Vertrauensstufe wie
   Badge und Flair: der Wert kommt vom Geraet.
 - Bestenlisten liefern `hustle` pro Zeile mit (`board.ts`), `NameCell` zeigt ab 1 den Chip
   "Lv <hustle>" hinter Name und Badge; 0 zeigt nichts.
-- Die App meldet das Level nach jeder geloesten Hustle-Stufe, wenn angemeldet, ueber die vorhandene
-  Warteschlange (`queue.ts`), also auch offline gesammelt und spaeter gesendet.
+- Die App meldet das Level nach jeder geloesten Hustle-Stufe und nach jeder Anmeldung, wie die
+  Cosmetics ohne Warteschlange (`queue.ts` nimmt nur Perioden-Zeiten an). Da der Server nur den
+  hoechsten Wert behaelt, holt die naechste Meldung eine verlorene nach.
 - Profil zeigt das Hustle-Level bei den Statistiken.
 - Datenschutz: das Level ist eine Spielstatistik wie die Zeiten; Datenschutzseite und
   Datensicherheit bei Play in einem Satz ergaenzen.
