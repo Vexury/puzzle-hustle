@@ -5,6 +5,7 @@ import {
   applyTracksHint,
   emptyTracksState,
   isTracksSolved,
+  tracksCompleteFromMarks,
   tracksCycleMark,
   tracksHasEdge,
   tracksHint,
@@ -70,7 +71,8 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     if (solved) onSolved();
   }, [solved, onSolved]);
 
-  function commit(next: TracksState) {
+  function commit(move: TracksState) {
+    const next = tracksCompleteFromMarks(spec, move) ?? move;
     stateRef.current = next;
     setState(next);
     onMove();

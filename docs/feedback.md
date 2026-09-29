@@ -32,8 +32,29 @@ Stand: 2026-09-29
   der Liste, erst ein Mini-Raetsel statt Textkarten, gestaffeltes Einblenden und Federn.
 - [ ] **Frieder** Rueckmeldung zur Shapes-Startanordnung auf Genius steht noch aus. Easy bis Hard
   hat er am 20.09. als "perfekt" gegengetestet.
+- [ ] **Saskia** Tracks: ein Zug, der als Loesungsanimation von A nach B faehrt.
+- [ ] **Saskia** Zip: der Pfad bleibt orange, auch wenn er eine Zahl ausser der Reihe erreicht. Ab
+  dort rot zeichnen (nur mit eingeschalteten Fehlermarkierungen), auch in der Demo.
+- [ ] **Saskia** Cats: Tuerkis `#c8e4e2`, Hellblau `#c9dcef` und Lavendel `#d5d5ef` liegen
+  nebeneinander und sind kaum zu unterscheiden. Palette in hell und dunkel nach Farbton spreizen,
+  aehnliche Paare in `regionsPalette` nicht benachbart vergeben.
+- [ ] **Saskia** Nonogramm-Demo: "A 5 fills its whole row" und "The outer columns have their 2
+  already" sind fuer Neulinge unklar. Ausformulieren (fuenf gefuellte Felder, zwei gefuellte Felder).
+- [ ] **Saskia** Nonogramm 10x10: Zellen auf dem iPhone zu klein (etwa 28 pt). Raender, Rahmen und
+  Hinweisabstaende enger, danach nachfragen, ob es reicht.
+- [ ] **Jonas, Dani** Customize-Seite zu lang: Badges und Flairs aufklappbar mit Zaehler, Themes offen,
+  Zustand merken. "Nicht nach Kosten sortiert" klaeren: Badges sind seit 27.09. sortiert, Flairs
+  haben keinen Preis.
 
 ## Erledigt
+
+- [x] 2026-09-29 **Saskia** Tracks: alle Loesungszellen als Gleis markiert, alle Zahlen gruen, aber
+  nicht geloest, weil die Strecke erst verlegt werden musste. Decken Markierungen und Stuecke genau
+  die Loesungszellen ab und liegt kein falsches Stueck, legt das Spiel die Strecke jetzt selbst
+  (`tracksCompleteFromMarks`); die Loesung ist eindeutig, also nimmt das nichts vorweg.
+- [x] 2026-09-29 **Michi** Tracks: geloest, aber Spalte und Zeile rot, weil eine uebrige
+  Gleismarkierung neben der Strecke mitzaehlte. Ein geloestes Brett zeigt und zaehlt jetzt nur die
+  Strecke, auch bei schon gespeicherten Loesungen.
 
 - [x] 2026-09-28 **Tester** Die Demo-Anleitung lief von selbst weiter, und zwischen den Schritten ging
   es nur ueber die kleinen Punkte. Sie wartet jetzt bei jedem Schritt: "Continue" (im letzten "Got it")

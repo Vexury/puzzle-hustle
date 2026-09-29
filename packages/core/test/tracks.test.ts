@@ -11,6 +11,7 @@ import {
   emptyTracksState,
   generateTracks,
   isTracksSolved,
+  tracksCompleteFromMarks,
   tracksCycleMark,
   tracksPaintMark,
   tracksHasEdge,
@@ -19,6 +20,7 @@ import {
   tracksMask,
   tracksSetEdge,
   tracksStepToward,
+  tracksWithoutMarks,
   validTracksState,
 } from '../src/tracks/puzzle.ts';
 import {
@@ -473,6 +475,40 @@ describe('tracks state', () => {
     const counts = tracksLineCounts(spec, s);
     expect(counts.rows).toEqual([...spec.rowCounts]);
     expect(counts.cols).toEqual([...spec.colCounts]);
+  });
+
+  it('lays the track itself once marks cover exactly the solution cells', () => {
+    const s = emptyTracksState(spec);
+    for (let i = 0; i < s.length; i++) if (spec.solution[i] && !tracksMask(spec, s, i)) s[i] = TRACKS_STATE_T;
+    const short = [...s];
+    short[s.lastIndexOf(TRACKS_STATE_T)] = 0;
+    expect(tracksCompleteFromMarks(spec, short)).toBeNull();
+    const extra = [...s];
+    extra[offPath] = TRACKS_STATE_T;
+    expect(tracksCompleteFromMarks(spec, extra)).toBeNull();
+    const done = tracksCompleteFromMarks(spec, s)!;
+    expect(isTracksSolved(spec, done)).toBe(true);
+    expect(done.every((v) => (v & (TRACKS_STATE_X | TRACKS_STATE_T)) === 0)).toBe(true);
+  });
+
+  it('does not overrule a wrongly drawn piece when completing from marks', () => {
+    let s = emptyTracksState(spec);
+    for (let i = 0; i < s.length; i++) if (spec.solution[i] && !tracksMask(spec, s, i)) s[i] = TRACKS_STATE_T;
+    let drawn = false;
+    for (let i = 0; i < s.length - 1 && !drawn; i++) {
+      if (i % cols === cols - 1 || !spec.solution[i] || !spec.solution[i + 1] || spec.solution[i]! & TRACK_E) continue;
+      const next = tracksSetEdge(spec, s, i, i + 1, true);
+      if (next) {
+        s = next;
+        drawn = true;
+      }
+    }
+    expect(drawn).toBe(true);
+    expect(tracksCompleteFromMarks(spec, s)).toBeNull();
+  });
+
+  it('strips marks but keeps drawn track', () => {
+    expect(tracksWithoutMarks([TRACKS_STATE_E | TRACKS_STATE_X, TRACKS_STATE_S | TRACKS_STATE_T, TRACKS_STATE_X, 0])).toEqual([TRACKS_STATE_E, TRACKS_STATE_S, 0, 0]);
   });
 
   it('removes a wrong piece before laying anything', () => {

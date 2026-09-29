@@ -10,6 +10,7 @@ import {
   isTracksSolved,
   tracksLineCounts,
   tracksMask,
+  tracksWithoutMarks,
   type TracksSpec,
   type TracksState,
 } from '@puzzle-hustle/core';
@@ -107,9 +108,10 @@ function TrackShape({ track, className }: { track: Track; className: string }) {
   );
 }
 
-export function TracksBoard({ spec, state, mistakes, flash = null, highlight, ...rest }: TracksBoardProps) {
+export function TracksBoard({ spec, state: played, mistakes, flash = null, highlight, ...rest }: TracksBoardProps) {
   const { cols, rows } = spec.config;
-  const solved = isTracksSolved(spec, state);
+  const solved = isTracksSolved(spec, played);
+  const state = solved ? tracksWithoutMarks(played) : played;
   const packMark = usePackMark();
 
   // A cell is drawn in the given style when every direction of its track comes from a given
