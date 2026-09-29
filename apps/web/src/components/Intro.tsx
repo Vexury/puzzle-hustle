@@ -3,6 +3,7 @@ import { pushBackGuard } from '../lib/back.ts';
 import { href, navigate } from '../lib/router.ts';
 import { INTRO_SEEN_KEY as SEEN_KEY, readSetting, writeSetting } from '../lib/storage.ts';
 import { track } from '../lib/telemetry.ts';
+import { Logo } from './Logo.tsx';
 import { introDismissed } from './UnlockModal.tsx';
 
 const CARDS = [
@@ -55,6 +56,7 @@ export function Intro() {
         <button type="button" className="linklike muted small intro-skip" onClick={() => dismiss(false)}>
           Skip
         </button>
+        {card === 0 && <Logo className="intro-logo" />}
         <h2>{CARDS[card]!.title}</h2>
         <p className="muted">{CARDS[card]!.body}</p>
         <div className="intro-dots" aria-hidden="true">

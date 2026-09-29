@@ -16,6 +16,7 @@ import { dailyStreaks, totalSolved, typeStats } from '../lib/stats.ts';
 import { THEME_PREFS, centerOf, resetProgressAndAppearance, usePack, useTheme, type ThemePref } from '../lib/theme.ts';
 import { AccountActions, AccountCard, PRIVACY_POLICY_URL } from '../components/AccountCard.tsx';
 import { CoinPill } from '../components/CoinPill.tsx';
+import { Logo } from '../components/Logo.tsx';
 import { toast } from '../components/Toast.tsx';
 import { ThemeToggle } from '../components/ThemeToggle.tsx';
 
@@ -325,6 +326,7 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
           )}
         </div>
 
+        <Logo className="footer-logo" />
         <p className="muted small center">
           Progress is stored on this device. ·{' '}
           <a href="https://vexury.dev" target="_blank" rel="noreferrer">

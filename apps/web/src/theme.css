@@ -169,6 +169,7 @@ button { font: inherit; color: inherit; }
 .intro { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 24px; background: rgba(0, 0, 0, 0.55); }
 .intro > .card-lg { position: relative; max-width: 22rem; gap: 12px; padding: 20px; }
 .intro-skip { position: absolute; top: 16px; right: 16px; }
+.intro-logo { width: 42px; height: 56px; align-self: center; margin-top: 8px; }
 .intro-dots { display: flex; gap: 6px; justify-content: center; margin-top: 4px; }
 .intro-dots .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border-mid); }
 .intro-dots .dot.on { background: var(--accent); }
@@ -179,6 +180,8 @@ p { margin: 0; }
 .muted { color: var(--text-muted); }
 .small { font-size: var(--fs-sm); }
 .center { text-align: center; }
+.logo { fill: var(--accent); }
+.footer-logo { display: block; width: 21px; height: 28px; margin: 8px auto 0; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .app {
