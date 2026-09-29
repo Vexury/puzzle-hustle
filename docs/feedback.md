@@ -48,6 +48,11 @@ Stand: 2026-09-29
 
 ## Erledigt
 
+- [x] 2026-09-29 **Saskia** Zip: der Pfad blieb orange, auch wenn er eine Zahl ausser der Reihe
+  erreichte. Ab der letzten richtig erreichten Zahl ist er jetzt rot, die falsch erreichte Zahl
+  ebenso (`zipOrderBreak`); gilt auch fuer die hoechste Zahl, solange noch Zellen frei sind.
+  Zurueckwischen bis dorthin macht ihn wieder orange. Nur mit eingeschalteten Fehlermarkierungen,
+  in der Demo immer.
 - [x] 2026-09-29 **Saskia** Tracks: alle Loesungszellen als Gleis markiert, alle Zahlen gruen, aber
   nicht geloest, weil die Strecke erst verlegt werden musste. Decken Markierungen und Stuecke genau
   die Loesungszellen ab und liegt kein falsches Stueck, legt das Spiel die Strecke jetzt selbst

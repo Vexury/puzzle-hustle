@@ -44,6 +44,7 @@
   opacity: 0.92;
   pointer-events: none;
 }
+.zip-path.wrong { stroke: var(--danger); }
 .zip-board.solved .zip-path { stroke: var(--success); opacity: 1; }
 .zip-path-dot { fill: var(--accent); pointer-events: none; }
 
@@ -62,6 +63,8 @@
 }
 .zip-number.filled circle { fill: var(--accent-deep); stroke: var(--text); stroke-width: 0.04; }
 .zip-number.filled text { fill: var(--on-accent); }
+.zip-number.filled.wrong circle { fill: var(--danger); }
+.zip-number.filled.wrong text { fill: #fff; }
 .zip-board.solved .zip-number.filled circle { fill: var(--success); }
 .zip-board.solved .zip-number.filled text { fill: #fff; }
 

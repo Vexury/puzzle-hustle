@@ -8,6 +8,7 @@ import {
   zipConfig,
   zipHint,
   zipNumberCount,
+  zipOrderBreak,
   zipPathValid,
   zipProgress,
   zipStart,
@@ -179,6 +180,25 @@ describe('state helpers', () => {
     expect(isZipSolved(spec, overrun)).toBe(false);
     expect(zipPathValid(spec, overrun.slice(0, 3))).toBe(true);
     expect(zipPathValid(spec, overrun.slice(0, 4))).toBe(false);
+  });
+
+  it('finds where the order breaks, back to the last number reached rightly', () => {
+    const spec: ZipSpec = {
+      version: ZIP_VERSION,
+      seed: 0,
+      difficulty: 'easy',
+      config: { size: 3, numbers: 3, walls: 0 },
+      numbers: Uint8Array.from([1, 0, 3, 0, 0, 0, 2, 0, 0]),
+      walls: new Uint8Array(9),
+      solution: Uint16Array.from([0, 3, 6, 7, 8, 5, 4, 1, 2]),
+    };
+    expect(zipOrderBreak(spec, [])).toBeNull();
+    expect(zipOrderBreak(spec, [...spec.solution])).toBeNull();
+    expect(zipOrderBreak(spec, [0, 3, 6, 7])).toBeNull();
+    // 3 before 2: wrong from 1 on.
+    expect(zipOrderBreak(spec, [0, 1, 2])).toBe(0);
+    // 3, the highest, with cells still empty: wrong from 2 on.
+    expect(zipOrderBreak(spec, [0, 3, 6, 7, 4, 5, 2])).toBe(2);
   });
 
   it('respects walls in step checks', () => {

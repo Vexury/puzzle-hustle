@@ -359,6 +359,24 @@ export function zipPathValid(spec: ZipSpec, state: ZipState): boolean {
   return true;
 }
 
+// Once the path reaches a number out of order, or the highest number before every cell is
+// filled, the path index of the last number it reached rightly; null while nothing is certainly
+// wrong. Everything after that number is the wrong detour, and swiping back to it repairs it.
+export function zipOrderBreak(spec: ZipSpec, state: ZipState): number | null {
+  const last = zipNumberCount(spec);
+  const total = spec.config.size * spec.config.size;
+  let next = 1;
+  let lastGood = 0;
+  for (let i = 0; i < state.length; i++) {
+    const v = spec.numbers[state[i]!]!;
+    if (!v) continue;
+    if (v !== next || (v === last && i < total - 1)) return lastGood;
+    lastGood = i;
+    next++;
+  }
+  return null;
+}
+
 export function isZipSolved(spec: ZipSpec, state: ZipState): boolean {
   const total = spec.config.size * spec.config.size;
   if (state.length !== total) return false;

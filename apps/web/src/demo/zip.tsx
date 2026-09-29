@@ -80,7 +80,7 @@ const CELL = 48;
 export function renderZipDemo(state: number[], highlight: number[] | undefined) {
   return (
     <div className="zip-wrap" style={{ '--size': N, '--cell': `${CELL}px`, width: `calc(${N} * ${CELL}px + 2 * var(--frame-border))` } as React.CSSProperties}>
-      <ZipBoard spec={ZIP_DEMO_SPEC} path={zipDemoPath(state)} highlight={highlight} />
+      <ZipBoard spec={ZIP_DEMO_SPEC} path={zipDemoPath(state)} mistakes highlight={highlight} />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { emptyZipState, isZipSolved, zipHint, zipStart, zipStepAllowed, type ZipSpec, type ZipState } from '@puzzle-hustle/core';
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
+import { showMistakes } from '../lib/mistakes.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
 import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 import { ZipBoard } from './ZipBoard.tsx';
@@ -100,6 +101,7 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintA
   const drag = useRef<Drag | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const history = useHistory<ZipState>();
+  const mistakes = useRef(showMistakes()).current;
   const solved = isZipSolved(spec, path);
 
   useEffect(() => {
@@ -278,6 +280,7 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintA
       <ZipBoard
         spec={spec}
         path={path}
+        mistakes={mistakes}
         flash={flash}
         ref={svgRef}
         role="application"
