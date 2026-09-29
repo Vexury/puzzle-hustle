@@ -314,11 +314,11 @@ async function appleCodeForDeletion(): Promise<string | null> {
   }
 }
 
-export async function deleteAccount(): Promise<void> {
+export async function deleteAccount(): Promise<boolean> {
   let apple: { appleCode: string; appleClientId?: string } | null = null;
   if (isAppleSession()) {
     const code = await appleCodeForDeletion();
-    if (!code) return;
+    if (!code) return false;
     apple = NATIVE_APPLE ? { appleCode: code } : { appleCode: code, appleClientId: APPLE_WEB_CLIENT_ID };
   }
   // A failed delete must not sign the player out: the account is still fully present on the
@@ -327,7 +327,8 @@ export async function deleteAccount(): Promise<void> {
     await apiFetch('/account', { method: 'DELETE', auth: true, body: apple ? JSON.stringify(apple) : null });
   } catch {
     toast('Could not delete your account. Try again.');
-    return;
+    return false;
   }
   signOut();
+  return true;
 }

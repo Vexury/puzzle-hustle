@@ -90,10 +90,16 @@ Billing. Coins are earned by solving and are never sold.
 app into the Families policy with extra requirements on ads, content and data handling.
 
 **App access:** Some functionality is restricted. Every puzzle works without an account; the
-Social tab (groups and standings) needs sign-in. Reviewer note: "Sign-in is optional and only
-unlocks the Social tab. Open Profile, tap Sign in and use any Google account; no account from us
-is needed. Then open Social, create a group and solve a Daily to see the standings." TODO verify
-that Play accepts "any Google account" instead of supplied test credentials.
+Social tab (groups and standings) needs sign-in. Play does not accept "any Google account":
+reviewers may neither create accounts nor use their own. Credentials entry "Google test account
+(Social tab)": user `review@vexury.dev` (a Google account on a Cloudflare Email Routing address that
+forwards to vexury.dev@gmail.com, no 2-step verification), password in the password manager. The
+account is a member of the group "Review" with submitted times. Reviewer note: "Sign-in is optional
+and only unlocks the Social tab (groups and daily standings). All puzzles, hints and the purchase
+work without it. To test: open Profile, tap Sign in and choose the Google account above. It is
+already a member of the group "Review" with submitted times, so Social shows standings right away.
+The one-time purchase "No Ads · Free Hints" only replaces hint videos; no content requires it."
+The box "credentials grant unrestricted access, including premium content" is ticked.
 
 **Data safety:** Data is collected, none is shared. Encrypted in transit: yes (HTTPS only). Users
 can request deletion: yes. Collection of the account data is optional (only when signed in).
@@ -139,23 +145,26 @@ storage plus a Preferences backup copy) and are not collected.
 
 **Account deletion:** In the app: Profile, Delete account, confirm. The Worker (`DELETE /account`)
 removes the player row, all scores, every report by or about the player and all memberships; owned
-groups pass to the longest member or are deleted when empty. Play also requires a web URL. There is
-no dedicated deletion page; https://vexury.dev/puzzle-hustle-privacy/ explains deletion in the web
-app (Google accounts, puzzles.vexury.dev, Profile) and by email. TODO verify that Play accepts the
-privacy page as the deletion URL, otherwise add a dedicated page.
+groups pass to the longest member or are deleted when empty. Play also requires a web URL:
+https://puzzles.vexury.dev/delete-account (since 2026-09-29), a page of the web app that names the
+app and developer, lists what is deleted and what stays on the device, signs in with Google or Apple
+and deletes the account, and offers deletion by email. It is the account and data deletion URL in
+the data safety form.
 
 **User-generated content:** Display names and group names. Both pass `validateName` in the Worker:
 2 to 24 characters, letters, digits, space, `.`, `_`, `-`, no links, a short blocklist. Names are
 only visible to members of a shared group. Every standings row has a report flag (`POST /report`,
 stored in `reports`); reports are reviewed by hand, there is no automatic ban. Group owners can
-remove members, everyone can leave a group. There is no per-player block feature. TODO verify how
-Play's UGC questions treat reporting without blocking.
+remove members, which also bars them from rejoining with the same code, and everyone can leave a
+group. Members cannot block each other individually.
 
 **Content rating (IARC):** No violence, no sexuality, no profanity, no gambling, no drugs, no
 location sharing. Digital purchases: yes. Users interact: yes (display names and group names seen
-by other group members, no chat). Outcome after the purchase answer on 2026-09-21: PEGI 3, USK 0,
-ESRB Everyone, Brazil 14 (ClassInd rates in-game purchases stricter). TODO verify the outcome after
-re-answering for user interaction.
+by other group members, no chat). Re-answered on 2026-09-29: purchase of digital goods only, no
+random items, no trading; users communicate by text: yes (display and group names); blocking: yes
+(owner removal bars rejoining); reporting: yes; chat moderation: no (there is no chat); interaction
+limited to invited friends: yes (groups are joined by code only). Outcome unchanged: PEGI 3, USK 0,
+ESRB Everyone, IARC 3+, Brazil 14 (ClassInd rates in-game purchases stricter).
 
 **Government app:** No. **Financial features:** none. **Health apps:** no.
 

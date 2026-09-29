@@ -10,6 +10,7 @@ import { SIGN_IN_AVAILABLE, useSession } from './lib/auth.ts';
 import { href, navigate, useRoute } from './lib/router.ts';
 import { Achievements } from './pages/Achievements.tsx';
 import { Daily } from './pages/Daily.tsx';
+import { DeleteAccount } from './pages/DeleteAccount.tsx';
 import { Friends } from './pages/Friends.tsx';
 import { LevelsIndex, LevelsType } from './pages/Levels.tsx';
 import { Play } from './pages/Play.tsx';
@@ -80,6 +81,10 @@ export function App() {
   let chrome = true;
   if (route.path === '/play') {
     page = <Play params={route.params} />;
+    chrome = false;
+  } else if (route.path === '/delete-account') {
+    // Opened from the Play listing by people who may never have used the app: no tab bar, no intro.
+    page = <DeleteAccount />;
     chrome = false;
   } else if (route.path === '/levels') page = <LevelsIndex />;
   else if (route.path.startsWith('/levels/')) page = <LevelsType type={route.path.slice('/levels/'.length)} />;

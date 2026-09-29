@@ -32,6 +32,8 @@ jobs:
           VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
           VITE_API_BASE: ${{ vars.VITE_API_BASE || 'https://puzzles-api.vexury.dev' }}
       - run: cp apps/web/dist/index.html apps/web/dist/404.html
+      # The Play listing links here, so it must answer 200 rather than come through the 404 page.
+      - run: mkdir -p apps/web/dist/delete-account && cp apps/web/dist/index.html apps/web/dist/delete-account/index.html
       - uses: actions/upload-pages-artifact@v5
         with:
           path: apps/web/dist

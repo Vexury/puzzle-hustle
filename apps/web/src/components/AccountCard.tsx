@@ -115,7 +115,7 @@ export function AccountCard({ joinCode = null }: { joinCode?: string | null } = 
 
 // The rare account actions, kept apart from the name so the top card carries one button.
 // Deleting must stay reachable in the app (Apple and Play both require it), just not up front.
-export function AccountActions() {
+export function AccountActions({ onDeleted }: { onDeleted?: () => void } = {}) {
   const session = useSession();
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -150,7 +150,9 @@ export function AccountActions() {
             return;
           }
           setConfirmDelete(false);
-          void deleteAccount();
+          void deleteAccount().then((deleted) => {
+            if (deleted) onDeleted?.();
+          });
         }}
       >
         {confirmDelete ? 'Tap again to delete your account' : 'Delete account'}
@@ -175,7 +177,7 @@ const GOOGLE_LOGO = (
   </svg>
 );
 
-function SignInButton({ joinCode }: { joinCode: string | null }) {
+export function SignInButton({ joinCode }: { joinCode: string | null }) {
   // At rest the card carries a plain "Sign in", and only asking loads Apple's script, so a player
   // who never signs in never talks to Apple or Google. The apps skip the step: their sheets
   // are native and load nothing.

@@ -611,6 +611,7 @@ p { margin: 0; }
 }
 .card-lg h2 { font-size: var(--fs-md); }
 .label { font-size: var(--fs-sm); color: var(--text-muted); }
+.plain-list { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 4px; }
 .name-btn { background: none; border: none; padding: 0; text-align: left; font-size: var(--fs-lg); font-weight: 700; cursor: pointer; }
 .name-btn .badge-fx { vertical-align: -0.12em; }
 .name-form input {
