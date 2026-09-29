@@ -9,3 +9,6 @@ docs/reference/
 .wrangler/
 .dev.vars
 .env.local
+
+# Brainstorming mockups (superpowers visual companion)
+.superpowers/
