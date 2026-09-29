@@ -13,7 +13,7 @@ const CARDS = [
   },
   {
     title: 'Stuck? Take a hint',
-    body: 'The first hint in every puzzle is free. Every hint after that costs a short video, or you remove ads once and every hint is free for good.',
+    body: 'You get one free hint a day, across all puzzles. After that a hint costs 20 coins or a short video, or you remove ads once and every hint is free for good.',
   },
   {
     title: 'Start easy',

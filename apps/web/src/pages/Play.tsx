@@ -14,7 +14,6 @@ import {
   generateSudoku,
   generateTracks,
   generateZip,
-  HINT_PRICE,
   adapter,
   levelRef,
   mosaicAdapter,
@@ -37,9 +36,9 @@ import { href, leaveTo, navigate, onBackLinkClick, onLinkClick } from '../lib/ro
 import { pushBackGuard } from '../lib/back.ts';
 import { clearProgress, getSolve, keepFinalBoard, readProgress, readSetting, recordSolve, useSolves, writeProgress, writeSetting, type SolveRecord } from '../lib/storage.ts';
 import { capitalize, formatSeconds, share, shareText } from '../lib/share.ts';
-import { balance } from '../lib/coins.ts';
+import { HintCard } from '../components/HintCard.tsx';
 import { syncFlairs } from '../lib/flairs.ts';
-import { currentHintProvider, freeHints, type HintChoice } from '../lib/hints.ts';
+import { requestHint, useHintBadge, type HintChoice, type HintOffer } from '../lib/hints.ts';
 import { enqueue, flush } from '../lib/queue.ts';
 import { DEMOS } from '../demo/index.ts';
 import { DemoPlayer } from '../demo/DemoPlayer.tsx';
@@ -171,7 +170,7 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
   const helpSeen = useRef(readSetting(seenKey) === '1');
   const showHelpRef = useRef(showHelp);
   showHelpRef.current = showHelp;
-  const [askHint, setAskHint] = useState<{ canPay: boolean } | null>(null);
+  const [askHint, setAskHint] = useState<HintOffer | null>(null);
   const [adWait, setAdWait] = useState(false);
   const adWaitRef = useRef(false);
   const hintAnswer = useRef<((choice: HintChoice) => void) | null>(null);
@@ -181,10 +180,10 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
   const pausedSince = useRef<number | null>(null);
   const frozen = useRef<number | null>(null);
 
-  const askForHint = (canPay: boolean) =>
+  const askForHint = (offer: HintOffer) =>
     new Promise<HintChoice>((resolve) => {
       hintAnswer.current = resolve;
-      setAskHint({ canPay });
+      setAskHint(offer);
     });
 
   const answerHint = (choice: HintChoice) => {
@@ -204,7 +203,7 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
     else resumeClock();
   };
 
-  const hintProvider = currentHintProvider(hints, id, askForHint, waitForAd);
+  const hintBadge = useHintBadge();
   const back = backTarget(puzzleRef);
 
   // The clock runs from the moment the puzzle is on screen. Starting it on the first move
@@ -489,8 +488,8 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
           onMove={onMove}
           onSolved={onSolved}
           onHintUsed={onHintUsed}
-          requestHint={() => hintProvider.request()}
-          hintAd={hintProvider !== freeHints}
+          requestHint={() => requestHint(id, askForHint, waitForAd)}
+          hintAd={hintBadge}
           locked={false}
           initialState={initialState}
           onStateChange={onStateChange}
@@ -501,8 +500,8 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
           onMove={onMove}
           onSolved={onSolved}
           onHintUsed={onHintUsed}
-          requestHint={() => hintProvider.request()}
-          hintAd={hintProvider !== freeHints}
+          requestHint={() => requestHint(id, askForHint, waitForAd)}
+          hintAd={hintBadge}
           locked={false}
           initialState={initialState}
           onStateChange={onStateChange}
@@ -513,8 +512,8 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
           onMove={onMove}
           onSolved={onSolved}
           onHintUsed={onHintUsed}
-          requestHint={() => hintProvider.request()}
-          hintAd={hintProvider !== freeHints}
+          requestHint={() => requestHint(id, askForHint, waitForAd)}
+          hintAd={hintBadge}
           locked={false}
           initialState={initialState}
           onStateChange={onStateChange}
@@ -527,8 +526,8 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
           onMove={onMove}
           onSolved={onSolved}
           onHintUsed={onHintUsed}
-          requestHint={() => hintProvider.request()}
-          hintAd={hintProvider !== freeHints}
+          requestHint={() => requestHint(id, askForHint, waitForAd)}
+          hintAd={hintBadge}
           locked={false}
           initialState={initialState}
           onStateChange={onStateChange}
@@ -539,8 +538,8 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
           onMove={onMove}
           onSolved={onSolved}
           onHintUsed={onHintUsed}
-          requestHint={() => hintProvider.request()}
-          hintAd={hintProvider !== freeHints}
+          requestHint={() => requestHint(id, askForHint, waitForAd)}
+          hintAd={hintBadge}
           locked={false}
           initialState={initialState}
           onStateChange={onStateChange}
@@ -551,8 +550,8 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
           onMove={onMove}
           onSolved={onSolved}
           onHintUsed={onHintUsed}
-          requestHint={() => hintProvider.request()}
-          hintAd={hintProvider !== freeHints}
+          requestHint={() => requestHint(id, askForHint, waitForAd)}
+          hintAd={hintBadge}
           locked={false}
           initialState={initialState}
           onStateChange={onStateChange}
@@ -563,8 +562,8 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
           onMove={onMove}
           onSolved={onSolved}
           onHintUsed={onHintUsed}
-          requestHint={() => hintProvider.request()}
-          hintAd={hintProvider !== freeHints}
+          requestHint={() => requestHint(id, askForHint, waitForAd)}
+          hintAd={hintBadge}
           locked={false}
           initialState={initialState}
           onStateChange={onStateChange}
@@ -576,8 +575,8 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
           onMove={onMove}
           onSolved={onSolved}
           onHintUsed={onHintUsed}
-          requestHint={() => hintProvider.request()}
-          hintAd={hintProvider !== freeHints}
+          requestHint={() => requestHint(id, askForHint, waitForAd)}
+          hintAd={hintBadge}
           locked={false}
           initialState={initialState}
           onStateChange={onStateChange}
@@ -625,41 +624,7 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
         </div>
       )}
 
-      {askHint && (
-        <div className="ad-ask" role="dialog" aria-modal="true" aria-label="Get another hint">
-          <div className="card-lg">
-            <b>One more hint?</b>
-            <span className="muted small">
-              {askHint.canPay
-                ? `Pay ${HINT_PRICE} coins or watch a short video. Your first hint on every puzzle is always free.`
-                : 'Watch a short video and the next hint is yours. Your first hint on every puzzle is always free.'}
-            </span>
-            {!askHint.canPay && <span className="muted small">{HINT_PRICE} coins needed, you have {balance()}.</span>}
-            {askHint.canPay ? (
-              <div className="ad-ask-row stack">
-                <button type="button" className="pill" onClick={() => answerHint('coins')}>
-                  Use {HINT_PRICE} coins
-                </button>
-                <button type="button" className="pill outline" onClick={() => answerHint('video')}>
-                  Watch video
-                </button>
-                <button type="button" className="pill outline" onClick={() => answerHint(null)}>
-                  Not now
-                </button>
-              </div>
-            ) : (
-              <div className="ad-ask-row">
-                <button type="button" className="pill outline" onClick={() => answerHint(null)}>
-                  Not now
-                </button>
-                <button type="button" className="pill" onClick={() => answerHint('video')}>
-                  Watch video
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {askHint && <HintCard offer={askHint} onAnswer={answerHint} />}
 
       {adWait && (
         <div className="ad-ask" role="status" aria-live="polite">
