@@ -96,7 +96,7 @@ it('announces once per achievement and not again on a second run', () => {
 it('announces several simultaneous unlocks in catalog order', () => {
   // Deliberately does not hardcode which ids unlock: night-owl/early-bird depend on the test
   // runner's local timezone (parsed.solvedAt's local hour), so the set of what fires alongside
-  // first-weekly/first-monthly/first-genius/daily-no-hint can vary. What must not vary is that,
+  // first-weekly/first-monthly/first-genius can vary. What must not vary is that,
   // whatever unlocks, the banner announcements fire in ACHIEVEMENTS catalog order.
   const solvedAt = new Date(after).toISOString();
   localStorage.setItem(

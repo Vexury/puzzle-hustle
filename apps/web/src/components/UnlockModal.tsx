@@ -24,6 +24,8 @@ export interface UnlockRow {
   description: string;
   coinsText: string | null;
   equipped: boolean;
+  // A flair earned by this very achievement rides in its row instead of repeating it below.
+  flair: { id: string; title: string; equipped: boolean } | null;
 }
 
 // Pure: turns the queued unlocks into what the card shows, looking titles/descriptions up in
@@ -31,6 +33,16 @@ export interface UnlockRow {
 // id from a newer client build that this one does not recognise is dropped rather than shown
 // blank.
 export function buildUnlockRows(items: readonly UnlockItem[], equippedFlairId: string | null): UnlockRow[] {
+  const achievementIds = new Set(items.filter((i) => i.kind === 'achievement').map((i) => i.id));
+  const riders = new Map<string, { id: string; title: string; equipped: boolean }>();
+  for (const item of items) {
+    if (item.kind !== 'flair') continue;
+    const flair = findCosmetic(item.id);
+    if (flair?.kind !== 'flair' || !('achievement' in flair.requires) || !achievementIds.has(flair.requires.achievement)) continue;
+    riders.set(flair.requires.achievement, { id: flair.id, title: flair.title, equipped: equippedFlairId === flair.id });
+  }
+  const riding = new Set([...riders.values()].map((f) => f.id));
+
   const rows: UnlockRow[] = [];
   for (const item of items) {
     if (item.kind === 'streak') {
@@ -42,6 +54,7 @@ export function buildUnlockRows(items: readonly UnlockItem[], equippedFlairId: s
         description: `Solve ${STREAK_MIN} dailies every day to keep it going. Skip a day and it starts over.`,
         coinsText: null,
         equipped: false,
+        flair: null,
       });
     } else if (item.kind === 'achievement') {
       const achievement = ACHIEVEMENTS.find((a) => a.id === item.id);
@@ -54,8 +67,10 @@ export function buildUnlockRows(items: readonly UnlockItem[], equippedFlairId: s
         description: achievement.description,
         coinsText: `+${ACHIEVEMENT_COINS} coins`,
         equipped: false,
+        flair: riders.get(item.id) ?? null,
       });
     } else {
+      if (riding.has(item.id)) continue;
       const flair = findCosmetic(item.id);
       if (!flair || flair.kind !== 'flair') continue;
       rows.push({
@@ -66,6 +81,7 @@ export function buildUnlockRows(items: readonly UnlockItem[], equippedFlairId: s
         description: requirementText(flair),
         coinsText: null,
         equipped: equippedFlairId === item.id,
+        flair: null,
       });
     }
   }
@@ -253,8 +269,9 @@ export function UnlockModalHost() {
     <div className="ad-ask unlock-ask" role="dialog" aria-modal="true" aria-label="Unlocked">
       <div className={rows.length === 1 ? 'card-lg unlock-card unlock-single' : 'card-lg unlock-card'}>
         <ul className="unlock-list">
-          {rows.map((row) =>
-            row.kind !== 'flair' ? (
+          {rows.map((row) => {
+            const wear = row.kind === 'flair' ? { id: row.id, title: row.title, equipped: row.equipped } : row.flair;
+            return !wear ? (
               <li key={row.key} className="unlock-row">
                 <UnlockRowBody row={row} />
               </li>
@@ -263,14 +280,14 @@ export function UnlockModalHost() {
                 <button
                   type="button"
                   className="unlock-row"
-                  onClick={() => equip('flair', row.id)}
-                  aria-label={`${row.title}, ${row.equipped ? 'equipped' : 'tap to wear'}`}
+                  onClick={() => equip('flair', wear.id)}
+                  aria-label={`${row.kind === 'flair' ? row.title : `${row.title}, flair ${wear.title}`}, ${wear.equipped ? 'equipped' : 'tap to wear'}`}
                 >
                   <UnlockRowBody row={row} />
                 </button>
               </li>
-            ),
-          )}
+            );
+          })}
         </ul>
         <div className="ad-ask-row">
           <button type="button" className="pill" onClick={() => dismissUnlocks()}>
@@ -303,6 +320,11 @@ function UnlockRowBody({ row }: { row: UnlockRow }) {
           <>
             <span className="muted unlock-desc">{row.description}</span>
             <span className="coin-line">{row.coinsText}</span>
+            {row.flair && (
+              <span className="unlock-flair-action">
+                ♦ Flair <i>{row.flair.title}</i> · {row.flair.equipped ? '✓ Equipped' : 'Tap to wear'}
+              </span>
+            )}
           </>
         ) : (
           <>

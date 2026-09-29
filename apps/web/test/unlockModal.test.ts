@@ -35,8 +35,29 @@ it('builds an achievement row from the catalogue, with the coin award text', () 
       description: weekly.description,
       coinsText: `+${ACHIEVEMENT_COINS} coins`,
       equipped: false,
+      flair: null,
     },
   ]);
+});
+
+it('folds a flair earned by an achievement in the same batch into that achievement’s row', () => {
+  const rows = buildUnlockRows(
+    [
+      { kind: 'achievement', id: 'first-solve' },
+      { kind: 'achievement', id: 'night-owl' },
+      { kind: 'flair', id: 'night-shift' },
+    ],
+    null,
+  );
+  expect(rows.map((r) => r.key)).toEqual(['achievement:first-solve', 'achievement:night-owl']);
+  expect(rows[0]!.flair).toBeNull();
+  expect(rows[1]!.flair).toEqual({ id: 'night-shift', title: 'Night Shift', equipped: false });
+  expect(buildUnlockRows([{ kind: 'achievement', id: 'night-owl' }, { kind: 'flair', id: 'night-shift' }], 'night-shift')[0]!.flair!.equipped).toBe(true);
+});
+
+it('keeps an achievement flair as its own row when its achievement is not in the batch', () => {
+  const rows = buildUnlockRows([{ kind: 'achievement', id: 'first-solve' }, { kind: 'flair', id: 'night-shift' }], null);
+  expect(rows.map((r) => r.key)).toEqual(['achievement:first-solve', 'flair:night-shift']);
 });
 
 it('builds a pack flair row with the same requirement wording the shop toast uses', () => {

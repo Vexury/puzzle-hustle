@@ -47,6 +47,10 @@ export const ACHIEVEMENTS_EPOCH = Date.parse('2026-09-22T00:00:00+02:00');
 // Seconds, strictly under, hint-free dailies only. Calibrated 2026-09-25 from the leaderboard's
 // hint-free daily times near the fastest quarter; see the 2026-09-25 rework spec.
 export const SPEED_TARGETS = { zip: 25, shapes: 10, crowns: 30, stars: 30, tracks: 45 } as const;
+// Dailies under the target, not one: a single lucky run on an easy daily board earned it on a
+// new player's very first daily (2026-09-29).
+export const SPEED_COUNT = 5;
+export const DAILY_NO_HINT_COUNT = 10;
 type SpeedType = keyof typeof SPEED_TARGETS;
 
 const isSpeedType = (type: PuzzleTypeId): type is SpeedType => type in SPEED_TARGETS;
@@ -69,7 +73,7 @@ const TYPE_TITLES: Record<PuzzleTypeId, { volume: string; signature: string }> =
 const GENERAL: readonly Achievement[] = [
   { id: 'first-solve', title: 'Hello, Hustler', description: 'Solve your first puzzle.', group: 'start' },
   { id: 'every-type', title: 'Sampler', description: 'Solve at least one puzzle of every daily type.', group: 'start', target: DAILY_TYPES.length },
-  { id: 'daily-no-hint', title: 'No Help Needed', description: 'Solve a daily without a hint.', group: 'start' },
+  { id: 'daily-no-hint', title: 'No Help Needed', description: `Solve ${DAILY_NO_HINT_COUNT} dailies without a hint.`, group: 'start', target: DAILY_NO_HINT_COUNT },
   { id: 'first-weekly', title: 'Weekender', description: 'Solve a Weekly.', group: 'start' },
   { id: 'first-monthly', title: "Month's Finest", description: 'Solve a Monthly.', group: 'start' },
   { id: 'first-genius', title: 'Big Brain', description: 'Solve a puzzle on Genius.', group: 'start' },
@@ -108,9 +112,10 @@ function typeAchievements(type: PuzzleTypeId): Achievement[] {
     ? {
         id: `${type}-speed`,
         title: titles.signature,
-        description: `Solve the ${name} daily in under ${SPEED_TARGETS[type]} seconds without a hint.`,
+        description: `Solve the ${name} daily in under ${SPEED_TARGETS[type]} seconds without a hint, ${SPEED_COUNT} times.`,
         group: 'type',
         type,
+        target: SPEED_COUNT,
       }
     : {
         id: `${type}-genius`,
@@ -132,10 +137,10 @@ interface Facts {
   monthly: boolean;
   genius: boolean;
   geniusNoHint: Set<PuzzleTypeId>;
-  fastestDaily: Map<PuzzleTypeId, number>;
+  fastDailies: Map<PuzzleTypeId, number>;
   bestStreak: number;
   perfectDays: number;
-  dailyNoHint: boolean;
+  dailiesNoHint: number;
   perfectDayNoHint: boolean;
   nightOwl: boolean;
   earlyBird: boolean;
@@ -151,10 +156,10 @@ function gather(solves: readonly SolveEntry[]): Facts {
     monthly: false,
     genius: false,
     geniusNoHint: new Set(),
-    fastestDaily: new Map(),
+    fastDailies: new Map(),
     bestStreak: 0,
     perfectDays: 0,
-    dailyNoHint: false,
+    dailiesNoHint: 0,
     perfectDayNoHint: false,
     nightOwl: false,
     earlyBird: false,
@@ -177,12 +182,11 @@ function gather(solves: readonly SolveEntry[]): Facts {
     if (parsed.period !== 'daily') continue;
 
     if (entry.hints === 0) {
-      facts.dailyNoHint = true;
+      facts.dailiesNoHint++;
       // A record without a usable time reads as 0 seconds (storedSolves' default); that is a
       // missing value, not a fast solve.
-      if (entry.seconds > 0) {
-        const best = facts.fastestDaily.get(parsed.type);
-        if (best === undefined || entry.seconds < best) facts.fastestDaily.set(parsed.type, entry.seconds);
+      if (entry.seconds > 0 && isSpeedType(parsed.type) && entry.seconds < SPEED_TARGETS[parsed.type]) {
+        facts.fastDailies.set(parsed.type, (facts.fastDailies.get(parsed.type) ?? 0) + 1);
       }
     }
 
@@ -211,6 +215,8 @@ function gather(solves: readonly SolveEntry[]): Facts {
 // Counter achievements: the name of the counter they read (shared along a ladder) and its value.
 function counterOf(a: Achievement, f: Facts): { counter: string; value: number } | null {
   if (a.target === undefined) return null;
+  if (a.id === 'daily-no-hint') return { counter: 'daily-no-hint', value: f.dailiesNoHint };
+  if (a.type && a.id.endsWith('-speed')) return { counter: `speed:${a.type}`, value: f.fastDailies.get(a.type) ?? 0 };
   if (a.type) return { counter: `type:${a.type}`, value: f.perType.get(a.type) ?? 0 };
   switch (a.group) {
     case 'streak':
@@ -230,7 +236,6 @@ function counterOf(a: Achievement, f: Facts): { counter: string; value: number }
 // Yes/no achievements, by id. The per-type signatures are filled in below.
 const FLAGS: Record<string, (f: Facts) => boolean> = {
   'first-solve': (f) => f.total > 0,
-  'daily-no-hint': (f) => f.dailyNoHint,
   'first-weekly': (f) => f.weeks.size > 0,
   'first-monthly': (f) => f.monthly,
   'first-genius': (f) => f.genius,
@@ -240,8 +245,7 @@ const FLAGS: Record<string, (f: Facts) => boolean> = {
   'early-bird': (f) => f.earlyBird,
 };
 for (const type of PUZZLE_TYPES) {
-  if (isSpeedType(type)) FLAGS[`${type}-speed`] = (f) => (f.fastestDaily.get(type) ?? Infinity) < SPEED_TARGETS[type];
-  else FLAGS[`${type}-genius`] = (f) => f.geniusNoHint.has(type);
+  if (!isSpeedType(type)) FLAGS[`${type}-genius`] = (f) => f.geniusNoHint.has(type);
 }
 
 function earned(a: Achievement, f: Facts): boolean {

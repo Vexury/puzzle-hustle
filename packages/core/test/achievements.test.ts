@@ -4,6 +4,8 @@ import { DAILY_TYPES } from '../src/schedule.ts';
 import {
   ACHIEVEMENTS,
   ACHIEVEMENTS_EPOCH,
+  DAILY_NO_HINT_COUNT,
+  SPEED_COUNT,
   SPEED_TARGETS,
   achievementProgress,
   unlockedAchievements,
@@ -37,6 +39,11 @@ function thinStreak(days: number): SolveEntry[] {
   const out: SolveEntry[] = [];
   for (let i = 0; i < days; i++) out.push(...dailies(dayKey(i), 3));
   return out;
+}
+
+// `n` dailies of one type on consecutive days, each solved in `seconds`.
+function typeDailies(type: string, n: number, seconds = 600, hints = 0): SolveEntry[] {
+  return Array.from({ length: n }, (_, i) => solve(`${type}:daily:${dayKey(i)}`, dayKey(i), 12, hints, seconds));
 }
 
 function randoms(type: string, n: number): SolveEntry[] {
@@ -140,10 +147,12 @@ describe('unlockedAchievements', () => {
     expect(unlocked(sudokuInstead).has('perfect-day')).toBe(false);
   });
 
-  it('daily-no-hint and perfect-day-no-hint', () => {
-    expect(unlocked([solve('zip:daily:2026-06-01')]).has('daily-no-hint')).toBe(true);
-    expect(unlocked([solve('zip:daily:2026-06-01', '2026-06-01', 12, 1)]).has('daily-no-hint')).toBe(false);
-    expect(unlocked([solve('sudoku:weekly:2026-W23'), solve('zip:medium:1a2b')]).has('daily-no-hint')).toBe(false);
+  it('daily-no-hint counts hint-free dailies up to its target, and perfect-day-no-hint', () => {
+    expect(unlocked(typeDailies('zip', DAILY_NO_HINT_COUNT - 1)).has('daily-no-hint')).toBe(false);
+    expect(unlocked(typeDailies('zip', DAILY_NO_HINT_COUNT)).has('daily-no-hint')).toBe(true);
+    expect(unlocked(typeDailies('zip', DAILY_NO_HINT_COUNT, 600, 1)).has('daily-no-hint')).toBe(false);
+    const others = [...weeklies(DAILY_NO_HINT_COUNT), ...randoms('zip', DAILY_NO_HINT_COUNT)];
+    expect(unlocked([...typeDailies('zip', DAILY_NO_HINT_COUNT - 1), ...others]).has('daily-no-hint')).toBe(false);
     expect(unlocked(dailies('2026-06-01', DAILY_TYPES.length)).has('perfect-day-no-hint')).toBe(true);
     const hinted = dailies('2026-06-02', DAILY_TYPES.length, 1);
     expect(unlocked(hinted).has('perfect-day')).toBe(true);
@@ -171,18 +180,29 @@ describe('unlockedAchievements', () => {
     expect(unlocked([...randoms('zip', 99), solve('shapes:level:easy:1')]).has('zip-100')).toBe(false);
   });
 
-  it('speed wants a hint-free daily strictly under the target', () => {
+  it('speed wants SPEED_COUNT hint-free dailies strictly under the target', () => {
     const target = SPEED_TARGETS.zip;
-    const daily = (seconds: number, hints = 0) => [solve('zip:daily:2026-06-01', '2026-06-01', 12, hints, seconds)];
-    expect(unlocked(daily(target - 1)).has('zip-speed')).toBe(true);
-    expect(unlocked(daily(target)).has('zip-speed')).toBe(false);
-    expect(unlocked(daily(target - 1, 1)).has('zip-speed')).toBe(false);
-    expect(unlocked([solve('zip:medium:seed', '2026-06-01', 12, 0, 1)]).has('zip-speed')).toBe(false);
-    expect(unlocked([solve('zip:level:hard:1', '2026-06-01', 12, 0, 1)]).has('zip-speed')).toBe(false);
+    expect(unlocked(typeDailies('zip', SPEED_COUNT, target - 1)).has('zip-speed')).toBe(true);
+    expect(unlocked(typeDailies('zip', SPEED_COUNT - 1, target - 1)).has('zip-speed')).toBe(false);
+    expect(unlocked(typeDailies('zip', SPEED_COUNT, target)).has('zip-speed')).toBe(false);
+    expect(unlocked(typeDailies('zip', SPEED_COUNT, target - 1, 1)).has('zip-speed')).toBe(false);
+    const slowOne = [...typeDailies('zip', SPEED_COUNT - 1, target - 1), solve(`zip:daily:${dayKey(20)}`, dayKey(20), 12, 0, target + 10)];
+    expect(unlocked(slowOne).has('zip-speed')).toBe(false);
+    const fastElsewhere = [
+      ...typeDailies('zip', SPEED_COUNT - 1, target - 1),
+      solve('zip:medium:seed', '2026-06-01', 12, 0, 1),
+      solve('zip:level:hard:1', '2026-06-01', 12, 0, 1),
+      solve(`shapes:daily:${dayKey(0)}`, dayKey(0), 12, 0, 1),
+    ];
+    expect(unlocked(fastElsewhere).has('zip-speed')).toBe(false);
   });
 
   it('a zero or missing time never counts as fast', () => {
-    expect(unlocked([solve('zip:daily:2026-06-01', '2026-06-01', 12, 0, 0)]).has('zip-speed')).toBe(false);
+    expect(unlocked(typeDailies('zip', SPEED_COUNT, 0)).has('zip-speed')).toBe(false);
+  });
+
+  it('a new player’s first fast, hint-free daily earns only the first-solve achievement', () => {
+    expect([...unlocked([solve('zip:daily:2026-06-01', '2026-06-01', 12, 0, 5)])]).toEqual(['first-solve']);
   });
 
   it('genius signatures want Genius and no hint, in any mode', () => {
@@ -230,7 +250,7 @@ describe('unlockedAchievements', () => {
 
   it('returns exactly what a handcrafted history earns', () => {
     expect([...unlocked(dailies('2026-06-01', DAILY_TYPES.length))].sort()).toEqual(
-      ['daily-no-hint', 'every-type', 'first-solve', 'perfect-day', 'perfect-day-no-hint'].sort(),
+      ['every-type', 'first-solve', 'perfect-day', 'perfect-day-no-hint'].sort(),
     );
     expect([...unlocked([solve('sudoku:weekly:2026-W23')])].sort()).toEqual(['first-solve', 'first-weekly']);
   });
@@ -240,7 +260,7 @@ describe('unlockedAchievements', () => {
     const fixtures: Record<string, SolveEntry[]> = {
       'first-solve': [solve('shapes:level:easy:1')],
       'every-type': DAILY_TYPES.map((t) => solve(`${t}:daily:2026-06-01`)),
-      'daily-no-hint': [solve('zip:daily:2026-06-01')],
+      'daily-no-hint': typeDailies('zip', DAILY_NO_HINT_COUNT),
       'first-weekly': [solve('sudoku:weekly:2026-W23')],
       'first-monthly': [solve('sudoku:monthly:2026-06')],
       'first-genius': [solve('shapes:level:genius:1')],
@@ -261,7 +281,7 @@ describe('unlockedAchievements', () => {
     };
     for (const type of PUZZLE_TYPES) {
       fixtures[`${type}-100`] = randoms(type, 100);
-      if (type in SPEED_TARGETS) fixtures[`${type}-speed`] = [solve(`${type}:daily:2026-06-01`, '2026-06-01', 12, 0, 1)];
+      if (type in SPEED_TARGETS) fixtures[`${type}-speed`] = typeDailies(type, SPEED_COUNT, 1);
       else fixtures[`${type}-genius`] = [solve(`${type}:level:genius:1`)];
     }
     expect(Object.keys(fixtures).sort()).toEqual([...ids].sort());
@@ -294,6 +314,8 @@ describe('achievementProgress', () => {
     expect(byId.get('solved-50')).toBe(byId.get('solved-1000'));
     expect(byId.get('zip-100')).toBe('type:zip');
     expect(byId.get('zip-100')).not.toBe(byId.get('shapes-100'));
+    expect(byId.get('zip-speed')).toBe('speed:zip');
+    expect(byId.get('daily-no-hint')).toBe('daily-no-hint');
   });
 
   it('reports the counter and caps it at the target', () => {
@@ -304,7 +326,7 @@ describe('achievementProgress', () => {
   });
 
   it('agrees with unlockedAchievements on every counter', () => {
-    const history = [...thinStreak(8), ...randoms('zip', 100), ...weeklies(10), ...streakDays(10)];
+    const history = [...thinStreak(8), ...randoms('zip', 100), ...weeklies(10), ...streakDays(10), ...typeDailies('tracks', SPEED_COUNT - 1, 1)];
     const earned = unlocked(history);
     for (const p of progress(history)) expect(p.current >= p.target, p.id).toBe(earned.has(p.id));
   });
