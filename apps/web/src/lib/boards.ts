@@ -58,7 +58,7 @@ export async function loadBoard(ref: BoardRef): Promise<PuzzleSpec> {
   const stored = await storedBoard(ref);
   if (stored) return stored;
   // Only the fields the generator reads: the rest of a PuzzleRef does not survive postMessage usefully.
-  const board: BoardRef = { type: ref.type, seed: ref.seed, difficulty: ref.difficulty, ...(ref.period ? { period: ref.period } : {}) };
+  const board: BoardRef = { type: ref.type, seed: ref.seed, difficulty: ref.difficulty, ...(ref.period ? { period: ref.period } : {}), ...(ref.hustle ? { hustle: ref.hustle } : {}) };
   const w = generator();
   if (!w) return generateBoard(board);
   const id = nextId++;

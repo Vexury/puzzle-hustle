@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { hustleDifficulty, hustleMilestoneCoins, hustleSlot, hustleType, HUSTLE_ROUND } from '../src/hustle.ts';
 import { PUZZLE_TYPES } from '../src/types.ts';
+import { decodeRef, encodeRef, hustleRef, refId } from '../src/ref.ts';
+import { parseSolveId } from '../src/solveId.ts';
+import { POOL_SEEDS } from '../src/boards/pools.ts';
+import { generateBoard } from '../src/boards.ts';
 
 describe('hustle sequence', () => {
   it('climbs through the tiers at 40, 120 and 300', () => {
@@ -29,5 +33,36 @@ describe('hustle sequence', () => {
     expect(hustleMilestoneCoins(100)).toBe(70);
     expect(hustleMilestoneCoins(160)).toBe(100);
     expect(hustleMilestoneCoins(1000)).toBe(100);
+  });
+});
+
+describe('hustle refs', () => {
+  it('names a stage by its number alone', () => {
+    const ref = hustleRef(47);
+    expect(ref).toMatchObject({ hustle: 47, ...{ type: ref.type, difficulty: 'medium' } });
+    expect(refId(ref)).toBe('hustle:47');
+    expect(encodeRef(ref)).toBe('h=47');
+    expect(decodeRef('h=47')).toEqual(ref);
+    expect(decodeRef('h=47&t=zip&d=genius&s=abc')).toEqual(ref);
+    expect(decodeRef('h=0')).toBeNull();
+    expect(decodeRef('h=x')).toBeNull();
+  });
+
+  it('parses a hustle solve with its slot', () => {
+    const ref = hustleRef(301);
+    expect(parseSolveId('hustle:301')).toEqual({ type: ref.type, mode: 'hustle', difficulty: 'genius', level: 301 });
+    expect(parseSolveId('hustle:0')).toBeNull();
+  });
+
+  it('takes Zip hard and genius from the pool, one after another', () => {
+    const zipStages: number[] = [];
+    for (let n = 121; zipStages.length < 3; n++) if (hustleRef(n).type === 'zip') zipStages.push(n);
+    const pool = POOL_SEEDS.zip!.hard!;
+    expect(zipStages.map((n) => hustleRef(n).seed)).toEqual(pool.slice(0, 3));
+  });
+
+  it('builds the same board for a stage everywhere', () => {
+    const ref = hustleRef(3);
+    expect(generateBoard(ref)).toEqual(generateBoard({ ...ref }));
   });
 });

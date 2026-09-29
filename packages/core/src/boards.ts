@@ -1,6 +1,6 @@
 import { generateMosaic, type MosaicSpec } from './mosaic/puzzle.ts';
 import { generateNonogram, type NonogramSpec } from './nonogram/puzzle.ts';
-import type { PuzzleRef } from './ref.ts';
+import { hustleSeed, type PuzzleRef } from './ref.ts';
 import type { RegionsSpec } from './regions/puzzle.ts';
 import { adapter, crownsAdapter, mosaicAdapter, nonogramAdapter, shapesAdapter, starsAdapter, zipAdapter } from './registry.ts';
 import { generateShapes, type ShapesSpec } from './shapes/puzzle.ts';
@@ -12,12 +12,13 @@ import { generateZip, type ZipSpec } from './zip/puzzle.ts';
 
 export type PuzzleSpec = ShapesSpec | NonogramSpec | MosaicSpec | RegionsSpec | SudokuSpec | ZipSpec | TracksSpec | SlabsSpec;
 
-export type BoardRef = Pick<PuzzleRef, 'type' | 'seed' | 'difficulty' | 'period'>;
+export type BoardRef = Pick<PuzzleRef, 'type' | 'seed' | 'difficulty' | 'period' | 'hustle'>;
 
 // The board a ref stands for, built from its seed. The game, the generator worker and the board
 // pack all go through here, so a stored board and a generated one can never disagree on options.
 export function generateBoard(ref: BoardRef): PuzzleSpec {
-  const { seed, difficulty, period } = ref;
+  const seed = ref.hustle && ref.seed === 0 ? hustleSeed(ref.hustle) : ref.seed;
+  const { difficulty, period } = ref;
   switch (ref.type) {
     case 'shapes':
       return generateShapes(seed, difficulty, shapesAdapter.options(period));

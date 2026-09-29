@@ -18,6 +18,8 @@ export const POOLS: Partial<Record<PuzzleTypeId, Partial<Record<Difficulty, numb
 // Pool seeds start far above the level seeds, which the level script counts up from 1000.
 const POOL_SEED_START = 5_000_000;
 
+const pools: Record<string, unknown> = {};
+
 for (const type of ONLY ? [ONLY] : PUZZLE_TYPES) {
   const a = adapter(type);
   const pack: BoardPack = { version: a.version, boards: {} };
@@ -43,10 +45,26 @@ for (const type of ONLY ? [ONLY] : PUZZLE_TYPES) {
   // A module rather than a .json file: a JSON import needs an import attribute, which Vite's dev
   // server does not honour, and JSON.parse on one string literal parses faster than an object
   // literal. Base64, keys and numbers carry no quote or backslash, so the literal needs no escaping.
+  if (pack.pool) pools[type] = pack.pool;
   const json = JSON.stringify(pack);
   if (/['\\\n]/.test(json)) throw new Error(`${type}: board data would need escaping`);
   const out = fileURLToPath(new URL(`../src/boards/${type}.ts`, import.meta.url));
   const text = `// Written by \`pnpm boards\`, do not edit.\nimport type { BoardPack } from '../boards.ts';\n\nconst pack: BoardPack = JSON.parse('${json}');\nexport default pack;\n`;
   writeFileSync(out, text);
   console.log(`${type}: ${Object.keys(pack.boards).length} boards, ${(text.length / 1024).toFixed(0)} KB, ${((performance.now() - t0) / 1000).toFixed(1)} s`);
+}
+
+// Random needs the pool seeds synchronously (Hustle maps stages onto them) while the packs load
+// lazily. A partial run would drop the other types' pools, so only a full run writes this.
+if (!ONLY) {
+  const out = fileURLToPath(new URL('../src/boards/pools.ts', import.meta.url));
+  writeFileSync(
+    out,
+    `// Written by \`pnpm boards\`, do not edit. The Random pools' seeds, needed synchronously
+// (Hustle maps stages onto them) while the board packs load lazily.
+import type { Difficulty, PuzzleTypeId } from '../types.ts';
+
+export const POOL_SEEDS: Partial<Record<PuzzleTypeId, Partial<Record<Difficulty, readonly number[]>>>> = ${JSON.stringify(pools)};
+`,
+  );
 }

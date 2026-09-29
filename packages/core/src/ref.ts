@@ -1,3 +1,5 @@
+import { POOL_SEEDS } from './boards/pools.ts';
+import { hustleSlot } from './hustle.ts';
 import { levelEntry } from './levels.ts';
 import { parsePuzzleId } from './puzzleId.ts';
 import { adapter } from './registry.ts';
@@ -12,6 +14,7 @@ export interface PuzzleRef {
   period?: Period;
   key?: string;
   level?: number;
+  hustle?: number;
 }
 
 const PERIOD_ATTEMPTS = 24;
@@ -61,7 +64,37 @@ export function levelRef(type: PuzzleTypeId, difficulty: Difficulty, level: numb
   return entry ? { type, difficulty, seed: entry.seed, level } : null;
 }
 
+// Cheap: type, difficulty and, where a Random pool exists, the pooled seed. Every other seed is
+// found where the board is built (hustleSeed), because finding it runs the generator.
+export function hustleRef(n: number): PuzzleRef {
+  const { type, difficulty } = hustleSlot(n);
+  const pool = POOL_SEEDS[type]?.[difficulty];
+  let seed = 0;
+  if (pool?.length) {
+    let before = 0;
+    for (let k = 1; k < n; k++) {
+      const slot = hustleSlot(k);
+      if (slot.type === type && slot.difficulty === difficulty) before++;
+    }
+    seed = pool[before % pool.length]!;
+  }
+  return { type, difficulty, seed, hustle: n };
+}
+
+// The first seed the adapter accepts for stage n, like a period's seed.
+export function hustleSeed(n: number): number {
+  const { type, difficulty } = hustleSlot(n);
+  const a = adapter(type);
+  let seed = 0;
+  for (let attempt = 0; attempt < PERIOD_ATTEMPTS; attempt++) {
+    seed = hashString(`hustle|${n}|${attempt}`) % 0xffffffff;
+    if (a.accepts(seed, difficulty, a.options(undefined))) break;
+  }
+  return seed;
+}
+
 export function encodeRef(ref: PuzzleRef): string {
+  if (ref.hustle) return new URLSearchParams({ h: String(ref.hustle) }).toString();
   const params = new URLSearchParams({ t: ref.type, d: ref.difficulty, s: ref.seed.toString(36) });
   if (ref.period && ref.key) {
     params.set('p', ref.period);
@@ -73,6 +106,11 @@ export function encodeRef(ref: PuzzleRef): string {
 
 export function decodeRef(query: string | URLSearchParams): PuzzleRef | null {
   const params = typeof query === 'string' ? new URLSearchParams(query) : query;
+  const hustle = params.get('h');
+  if (hustle !== null) {
+    const n = Number(hustle);
+    return Number.isInteger(n) && n >= 1 ? hustleRef(n) : null;
+  }
   const type = params.get('t');
   const difficulty = params.get('d');
   const seedRaw = params.get('s');
@@ -96,6 +134,7 @@ export function decodeRef(query: string | URLSearchParams): PuzzleRef | null {
 }
 
 export function refId(ref: PuzzleRef): string {
+  if (ref.hustle) return `hustle:${ref.hustle}`;
   if (ref.period && ref.key) return `${ref.type}:${ref.period}:${ref.key}`;
   if (ref.level) return `${ref.type}:level:${ref.difficulty}:${ref.level}`;
   return `${ref.type}:${ref.difficulty}:${ref.seed.toString(36)}`;

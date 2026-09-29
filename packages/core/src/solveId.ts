@@ -1,7 +1,8 @@
+import { hustleSlot } from './hustle.ts';
 import { parsePuzzleId } from './puzzleId.ts';
 import { isDifficulty, isPuzzleTypeId, type Difficulty, type Period, type PuzzleTypeId } from './types.ts';
 
-export type SolveMode = 'period' | 'level' | 'random';
+export type SolveMode = 'period' | 'level' | 'random' | 'hustle';
 
 export interface ParsedSolveId {
   type: PuzzleTypeId;
@@ -16,9 +17,16 @@ export interface ParsedSolveId {
 //   type:period:key              a daily, weekly or monthly
 //   type:level:difficulty:n      a level from a pack
 //   type:difficulty:seed36       a random puzzle
+//   hustle:n                     a Hustle stage
 // The first and third both have three segments, so the middle one decides.
 export function parseSolveId(id: string): ParsedSolveId | null {
   const parts = id.split(':');
+
+  if (parts.length === 2 && parts[0] === 'hustle') {
+    const n = Number(parts[1]);
+    if (!Number.isInteger(n) || n < 1) return null;
+    return { ...hustleSlot(n), mode: 'hustle', level: n };
+  }
 
   if (parts.length === 4) {
     const [type, marker, difficulty, level] = parts;

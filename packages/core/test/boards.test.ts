@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { boardKey, decodeBoard, encodeBoard, generateBoard, storedBoard, type BoardPack } from '../src/boards.ts';
+import { POOL_SEEDS } from '../src/boards/pools.ts';
 import { levelList } from '../src/levels.ts';
 import { adapter } from '../src/registry.ts';
 import { DIFFICULTIES, PUZZLE_TYPES, type Difficulty, type PuzzleTypeId } from '../src/types.ts';
@@ -14,6 +15,10 @@ const read = (type: PuzzleTypeId): BoardPack => packs[type];
 const SLOW: Partial<Record<PuzzleTypeId, Difficulty[]>> = { zip: ['hard', 'genius'] };
 
 describe('board packs', () => {
+  it('keeps the pool constant in step with the packs', () => {
+    for (const type of PUZZLE_TYPES) expect(POOL_SEEDS[type] ?? undefined, type).toEqual(read(type).pool ?? undefined);
+  });
+
   it('round-trip every kind of board through the codec', () => {
     for (const type of PUZZLE_TYPES) {
       const seed = levelList(type, 'easy')[0]!.seed;
