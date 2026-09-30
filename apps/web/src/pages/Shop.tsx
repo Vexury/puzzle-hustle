@@ -18,13 +18,13 @@ import { NameCell } from '../components/Board.tsx';
 import { CoinPill } from '../components/CoinPill.tsx';
 import { toast } from '../components/Toast.tsx';
 import { useSession } from '../lib/auth.ts';
-import { storedAccent } from '../lib/accent.ts';
+import { ACCENTS, ACCENT_NAMES, storedAccent, useAccent } from '../lib/accent.ts';
 import { storedSolves } from '../lib/achievements.ts';
 import { pushBackGuard } from '../lib/back.ts';
 import { buyItem, equip, owned, useBalance, useEquipped, type Equipped } from '../lib/coins.ts';
 import { requirementText } from '../lib/flairs.ts';
 import { readSetting, writeSetting } from '../lib/storage.ts';
-import { centerOf, equipPack, tryOnPack, usePack, useTheme } from '../lib/theme.ts';
+import { THEME_PREFS, centerOf, equipPack, tryOnPack, usePack, useTheme, type ThemePref } from '../lib/theme.ts';
 import { BackLink } from '../components/BackLink.tsx';
 import { Chevron } from '../components/Chevron.tsx';
 
@@ -83,7 +83,8 @@ export function Shop() {
   const solves = storedSolves();
   const [armed, setArmed] = useState<string | null>(null);
   const active = usePack();
-  const { theme: vexuryMode } = useTheme();
+  const { theme: vexuryMode, pref, setPref } = useTheme();
+  const { accent, setAccent } = useAccent();
   const [trying, setTrying] = useState<ThemeCosmetic | null>(null);
   const tryingRef = useRef(trying);
   tryingRef.current = trying;
@@ -210,6 +211,36 @@ export function Shop() {
           <NameCell entry={{ name, ...equipped, hustle: hustleSolved(solves) }} />
           {!session && <span className="muted small">Badges and flairs show in your groups once you sign in.</span>}
         </section>
+
+        {!active && (
+          <section className="card-lg">
+            <h2>Appearance</h2>
+            <span className="muted small">System follows your device setting.</span>
+            <div className="segmented three" role="radiogroup" aria-label="Appearance">
+              {THEME_PREFS.map((p: ThemePref) => (
+                <button key={p} type="button" role="radio" aria-checked={pref === p} className={pref === p ? 'seg active' : 'seg'} onClick={(e) => setPref(p, centerOf(e.currentTarget))}>
+                  {p === 'system' ? 'System' : p === 'light' ? 'Light' : 'Dark'}
+                </button>
+              ))}
+            </div>
+            <div className="swatches" role="radiogroup" aria-label="Accent color">
+              {ACCENTS.map((a) => (
+                <button
+                  key={a}
+                  type="button"
+                  role="radio"
+                  aria-checked={accent === a}
+                  aria-label={ACCENT_NAMES[a]}
+                  title={ACCENT_NAMES[a]}
+                  data-accent={a}
+                  className="swatch"
+                  onClick={() => setAccent(a)}
+                />
+              ))}
+            </div>
+            <span className="muted small">{ACCENT_NAMES[accent]}</span>
+          </section>
+        )}
 
         <section className="card-lg">
           <h2>Themes</h2>

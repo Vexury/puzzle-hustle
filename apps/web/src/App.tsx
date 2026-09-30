@@ -17,14 +17,20 @@ import { LevelsIndex, LevelsType } from './pages/Levels.tsx';
 import { Play } from './pages/Play.tsx';
 import { Profile } from './pages/Profile.tsx';
 import { Shop } from './pages/Shop.tsx';
+import { Social } from './pages/Friends.tsx';
+import { Stats } from './pages/Stats.tsx';
+import { Gameplay } from './pages/Gameplay.tsx';
+import { Account } from './pages/Account.tsx';
 
 // Position in the tab bar, for the direction of the slide. A puzzle is -1: it sits below the
-// bar rather than on it and gets its own direction below. Achievements and the shop are each
-// reached from a card rather than from the bar, so they stay still too. /join is Profile entered
-// through an invitation link, and /friends (the old Social tab) only redirects there.
+// bar rather than on it and gets its own direction below. The pages behind Profile's rows stay
+// still too; /join is Social entered through an invitation link, and /friends (the old Social
+// tab) only redirects.
+const PROFILE_PAGES = ['/achievements', '/shop', '/social', '/join', '/stats', '/gameplay', '/account'];
+
 function tabIndex(path: string): number {
-  if (path === '/play' || path === '/achievements' || path === '/shop') return -1;
-  if (path === '/profile' || path === '/friends' || path === '/join') return 3;
+  if (path === '/play' || PROFILE_PAGES.includes(path)) return -1;
+  if (path === '/profile' || path === '/friends') return 3;
   if (path.startsWith('/levels')) return 2;
   if (path === '/hustle') return 1;
   return 0;
@@ -37,9 +43,9 @@ export function App() {
   // An invitation opened while signed out. Signing in happens on Profile only, so the code
   // waits here and the player is sent on to the group once the session exists.
   const [pendingJoin, setPendingJoin] = useState<string | null>(null);
-  // Social lives on Profile since 2026-09-30; /friends stays for old links and bookmarks.
+  // Social is a page under Profile since 2026-09-30; /friends stays for old links and bookmarks.
   useEffect(() => {
-    if (route.path === '/friends') navigate(href('/profile'), true);
+    if (route.path === '/friends' || (route.path === '/social' && !session)) navigate(href(session ? '/social' : '/profile'), true);
     if (route.path !== '/join' || session) return;
     const code = route.params.get('c')?.trim().toUpperCase().slice(0, 6);
     if (code && SIGN_IN_AVAILABLE) setPendingJoin(code);
@@ -87,8 +93,12 @@ export function App() {
   } else if (route.path === '/hustle') page = <Hustle />;
   else if (route.path === '/levels') page = <LevelsIndex />;
   else if (route.path.startsWith('/levels/')) page = <LevelsType type={route.path.slice('/levels/'.length)} />;
-  else if (route.path === '/join' && session) page = <Profile socialCode={route.params.get('c') ?? ''} />;
-  else if (route.path === '/profile' || route.path === '/friends' || route.path === '/join') page = <Profile joinCode={pendingJoin} />;
+  else if (route.path === '/join' && session) page = <Social code={route.params.get('c') ?? ''} />;
+  else if (route.path === '/social' && session) page = <Social />;
+  else if (route.path === '/stats') page = <Stats />;
+  else if (route.path === '/gameplay') page = <Gameplay />;
+  else if (route.path === '/account') page = <Account />;
+  else if (route.path === '/profile' || route.path === '/friends' || route.path === '/join' || route.path === '/social') page = <Profile joinCode={pendingJoin} />;
   else if (route.path === '/achievements') page = <Achievements />;
   else if (route.path === '/shop') page = <Shop />;
   else page = <Daily />;

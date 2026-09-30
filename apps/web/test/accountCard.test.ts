@@ -1,7 +1,7 @@
 import { act, createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it } from 'vitest';
-import { AccountCard } from '../src/components/AccountCard.tsx';
+import { ProfileHero } from '../src/components/AccountCard.tsx';
 import { writeSession } from '../src/lib/api.ts';
 import { signOut } from '../src/lib/auth.ts';
 
@@ -25,7 +25,7 @@ afterEach(() => {
 it('drops the signed-out player name from an open card', () => {
   writeSession({ token: 't', player: { id: 'p', name: 'Moritz' } });
   localStorage.setItem('ph:name', 'Moritz');
-  act(() => root.render(createElement(AccountCard)));
+  act(() => root.render(createElement(ProfileHero)));
   expect(container.querySelector('.name-btn')?.textContent).toContain('Moritz');
   act(() => signOut());
   expect(container.querySelector('.name-btn')?.textContent).toContain('Add a name');

@@ -5,7 +5,7 @@ const TABS = [
   { path: '/', label: 'Daily', match: (p: string) => p === '/' },
   { path: '/hustle', label: 'Hustle', match: (p: string) => p === '/hustle' },
   { path: '/levels', label: 'Puzzles', match: (p: string) => p.startsWith('/levels') },
-  { path: '/profile', label: 'Profile', match: (p: string) => p === '/profile' || p === '/join' || p === '/shop' || p === '/achievements' },
+  { path: '/profile', label: 'Profile', match: (p: string) => ['/profile', '/join', '/social', '/shop', '/achievements', '/stats', '/gameplay', '/account'].includes(p) },
 ] as const;
 
 export const TAB_PATHS = TABS.map((t) => t.path);

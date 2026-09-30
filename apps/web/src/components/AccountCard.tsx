@@ -15,9 +15,13 @@ import {
   signOut,
   useSession,
 } from '../lib/auth.ts';
+import { hustleSolved } from '@puzzle-hustle/core';
+import { storedSolves } from '../lib/achievements.ts';
 import { useEquipped } from '../lib/coins.ts';
 import { href, onLinkClick } from '../lib/router.ts';
-import { readSetting, writeSetting } from '../lib/storage.ts';
+import { readSetting, useSolves, writeSetting } from '../lib/storage.ts';
+import { dailyStreaks, totalSolved } from '../lib/stats.ts';
+import { Flame } from '../pages/Daily.tsx';
 import { BadgeIcon } from './BadgeIcon.tsx';
 import { rowCosmetics } from './Board.tsx';
 import { toast } from './Toast.tsx';
@@ -35,11 +39,16 @@ const NAME_REJECTION_MESSAGES: Record<string, string> = {
   name_blocked: 'Pick a different name',
 };
 
-export function AccountCard({ joinCode = null }: { joinCode?: string | null } = {}) {
+// Top of Profile, shaped like the streak card on Daily: the player as their groups see them and
+// the headline numbers.
+export function ProfileHero({ joinCode = null }: { joinCode?: string | null } = {}) {
   const session = useSession();
   const [name, setName] = useState(readSetting('ph:name') ?? '');
   const [editing, setEditing] = useState(false);
   const { badge, flair } = rowCosmetics(useEquipped());
+  const solves = useSolves();
+  const streaks = dailyStreaks(solves);
+  const hustle = hustleSolved(storedSolves());
 
   // Follow the signed-in player's name, which sign-in may have replaced, and fall back to the
   // local name on sign-out, which signOut() has already cleared. Reading `editing` via
@@ -71,45 +80,75 @@ export function AccountCard({ joinCode = null }: { joinCode?: string | null } = 
   };
 
   return (
-    <div className="card-lg">
-      <span className="label">Display name</span>
-      {editing ? (
-        <form
-          className="name-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            commitName();
-          }}
-        >
-          <input autoFocus value={name} onChange={(e) => setName(e.target.value)} onBlur={commitName} maxLength={24} placeholder="Your name" />
-        </form>
-      ) : (
-        <button type="button" className="name-btn" onClick={() => setEditing(true)}>
-          {name || 'Add a name'}
-          {badge && (
-            <>
-              {' '}
-              <BadgeIcon id={badge.id} />
-            </>
-          )}{' '}
-          <span className="muted">✎</span>
-        </button>
-      )}
-      {flair && <span className="leaderboard-flair">{flair.title}</span>}
-      <span className="muted small">
-        {session
-          ? 'Your name shows in your groups.'
-          : SIGN_IN_AVAILABLE
-            ? 'Sign in to compare your daily times with friends. Everything else works without an account.'
-            : "Sign-in isn't set up on this build yet. Everything else works without an account."}
-      </span>
-      {!session && SIGN_IN_AVAILABLE && <SignInButton joinCode={joinCode} />}
-      <div className="friends-actions">
+    <section className={`streak-hero profile-hero${streaks.current > 0 ? ' has-streak' : ''}`}>
+      <div className="profile-top">
+        <div className="profile-who">
+          <span className="small muted">{session ? 'How your groups see you' : 'Your name'}</span>
+          {editing ? (
+            <form
+              className="name-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                commitName();
+              }}
+            >
+              <input autoFocus value={name} onChange={(e) => setName(e.target.value)} onBlur={commitName} maxLength={24} placeholder="Your name" />
+            </form>
+          ) : (
+            <button type="button" className="name-btn" onClick={() => setEditing(true)}>
+              {name || 'Add a name'}
+              {badge && <BadgeIcon id={badge.id} />}
+              {hustle > 0 && <span className="hustle-chip">Lv {hustle}</span>}
+              <span className="muted">✎</span>
+            </button>
+          )}
+          {flair && <span className="leaderboard-flair">{flair.title}</span>}
+        </div>
         <a href={href('/shop')} className="pill outline" onClick={onLinkClick}>
           Customize ›
         </a>
       </div>
-    </div>
+      {!session && (
+        <>
+          <span className="muted small">
+            {SIGN_IN_AVAILABLE
+              ? 'Sign in to compare your daily times with friends. Everything else works without an account.'
+              : "Sign-in isn't set up on this build yet. Everything else works without an account."}
+          </span>
+          {SIGN_IN_AVAILABLE && <SignInButton joinCode={joinCode} />}
+        </>
+      )}
+      <div className="profile-stats">
+        <span>
+          <b>
+            <Flame />
+            {streaks.current}
+          </b>
+          day streak
+        </span>
+        <span>
+          <b>{streaks.best}</b>
+          best streak
+        </span>
+        <span>
+          <b>{totalSolved(solves)}</b>
+          solved
+        </span>
+        <span>
+          <b>{streaks.perfectDays}</b>
+          perfect {streaks.perfectDays === 1 ? 'day' : 'days'}
+        </span>
+      </div>
+    </section>
+  );
+}
+
+export function TrophyIcon() {
+  return (
+    <svg className="glyph" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M8 4h8v5a4 4 0 0 1-8 0z" />
+      <path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8" />
+    </svg>
   );
 }
 
