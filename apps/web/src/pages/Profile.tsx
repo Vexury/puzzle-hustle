@@ -7,6 +7,7 @@ import { isAppleSession, useSession } from '../lib/auth.ts';
 import { href, onLinkClick } from '../lib/router.ts';
 import { useSolves } from '../lib/storage.ts';
 import { dailyStreaks, totalSolved } from '../lib/stats.ts';
+import { appVersion } from '../lib/version.ts';
 import { PRIVACY_POLICY_URL, ProfileHero, TrophyIcon } from '../components/AccountCard.tsx';
 import { Chevron } from '../components/Chevron.tsx';
 import { CoinPill } from '../components/CoinPill.tsx';
@@ -21,6 +22,10 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
   const { groups } = useGroups();
   const [privacy, setPrivacy] = useState(privacyOptionsAvailable);
   useEffect(() => onAdsConsent(() => setPrivacy(privacyOptionsAvailable())), []);
+  const [version, setVersion] = useState<string | null>(null);
+  useEffect(() => {
+    void appVersion().then(setVersion, () => {});
+  }, []);
 
   return (
     <>
@@ -62,25 +67,27 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
         <Row to="/account" icon={<PersonIcon />} title="Account" sub={session ? `Signed in with ${isAppleSession() ? 'Apple' : 'Google'}` : 'Purchase, stats, reset'} />
       </div>
 
-      <Logo className="footer-logo" />
-      <p className="muted small center">
-        Progress is stored on this device. ·{' '}
-        <a href="https://vexury.dev" target="_blank" rel="noreferrer">
-          vexury.dev
-        </a>
-        {' · '}
-        <a href={PRIVACY_POLICY_URL} target="_blank" rel="noreferrer">
-          Privacy policy
-        </a>
-        {adsAvailable && privacy ? (
-          <>
-            {' · '}
+      <footer className="profile-footer">
+        <Logo className="footer-logo" />
+        <p>
+          <b>Puzzle Hustle</b>
+          {version && <span className="muted"> · {version}</span>}
+        </p>
+        <p className="muted">Your progress stays on this device.</p>
+        <nav className="footer-links" aria-label="About">
+          <a href={PRIVACY_POLICY_URL} target="_blank" rel="noreferrer">
+            Privacy policy
+          </a>
+          {adsAvailable && privacy && (
             <button type="button" className="linklike" onClick={() => void showPrivacyOptions()}>
-              Ad privacy settings
+              Ad privacy
             </button>
-          </>
-        ) : null}
-      </p>
+          )}
+          <a href="https://vexury.dev" target="_blank" rel="noreferrer">
+            vexury.dev
+          </a>
+        </nav>
+      </footer>
     </>
   );
 }

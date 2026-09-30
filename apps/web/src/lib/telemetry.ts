@@ -2,6 +2,7 @@ import { Capacitor } from '@capacitor/core';
 import { ageBucket, periodKey, type Platform, type TelemetryEvent, type TelemetryPayload } from '@puzzle-hustle/core';
 import { apiFetch, ApiError } from './api.ts';
 import { allSolves, readSetting, removeSetting, writeSetting } from './storage.ts';
+import { BUILD } from './version.ts';
 
 // Anonymous usage events for tuning the puzzles. Nothing sent tells two devices apart: see
 // parseTelemetryEvent in core for the exact shape the server accepts.
@@ -13,8 +14,6 @@ const MAX_QUEUE = 300;
 const BATCH = 50;
 const FLUSH_AT = 20;
 
-declare const __BUILD__: string;
-const BUILD = typeof __BUILD__ === 'string' ? __BUILD__ : 'dev';
 
 export function telemetryEnabled(): boolean {
   return readSetting(TELEMETRY_KEY) !== '0';
