@@ -1,8 +1,20 @@
 <en-US>
-- Tracks: medium, hard and genius are harder, with fewer given pieces. Levels renumbered
-- Tracks: swipe a new way from a full piece to turn the track there, no need to lift it first
+More game feel, a new start screen and harder Tracks.
+
+- Buttons you can press, a colour for every puzzle, up to three stars per level
+- New start: sharp logo, faster launch, a short welcome once a day
+- "Solved" stamp over the board, in its own look for every theme
+- The Next button names the next puzzle, or swipe left to go on
+- Tracks: medium to genius are harder; swipe a new way to turn a laid track. Levels renumbered
+- Tidier profile, now with the app version
 </en-US>
 <de-DE>
-- Tracks: Medium, Hard und Genius sind schwerer, mit weniger Vorgaben. Level neu nummeriert
-- Tracks: aus einem vollen Stück in eine neue Richtung wischen dreht das Gleis dort, ohne erst zu löschen
+Mehr Spielgefühl, ein neuer Start und schwereres Tracks.
+
+- Knöpfe zum Drücken, eine Farbe je Rätsel, bis zu drei Sterne pro Level
+- Neuer Start: scharfes Logo, schneller, einmal am Tag eine kurze Begrüßung
+- "Solved"-Stempel über dem Brett, in jedem Theme anders
+- Der Weiter-Knopf nennt das nächste Rätsel, oder nach links wischen
+- Tracks: Medium bis Genius sind schwerer; in neue Richtung wischen dreht ein Gleis. Level neu nummeriert
+- Aufgeräumtes Profil, jetzt mit App-Version
 </de-DE>
