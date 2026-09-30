@@ -42,7 +42,7 @@ export function getSolve(id: string): SolveRecord | undefined {
 const PERIOD_ID = /:(daily|weekly|monthly):/;
 
 export function counted(id: string, record: SolveRecord | undefined): SolveRecord | undefined {
-  return record && id.startsWith('hustle:') && Date.parse(record.solvedAt) < ACHIEVEMENTS_EPOCH ? undefined : record;
+  return record && id.startsWith('hustle:') && !(Date.parse(record.solvedAt) >= ACHIEVEMENTS_EPOCH) ? undefined : record;
 }
 
 export function recordSolve(id: string, record: SolveRecord) {
