@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { ACHIEVEMENTS, DAILY_TYPES, PUZZLE_META, hustleSolved } from '@puzzle-hustle/core';
+import { ACHIEVEMENTS, DAILY_TYPES, PUZZLE_META } from '@puzzle-hustle/core';
 import { Flame } from './Daily.tsx';
 import { ACCENTS, ACCENT_NAMES, useAccent } from '../lib/accent.ts';
 import { adsAvailable, onAdsConsent, privacyOptionsAvailable, showPrivacyOptions } from '../lib/ads.ts';
-import { currentUnlocked, storedSolves } from '../lib/achievements.ts';
+import { currentUnlocked } from '../lib/achievements.ts';
 import { pushCosmetics } from '../lib/coins.ts';
 import { buyUnlimitedHints, hasUnlimitedHints, onEntitlement, restoreUnlimitedHints, type PurchaseOutcome } from '../lib/entitlement.ts';
 import { HAPTICS_KEY, hapticsAvailable, tap } from '../lib/haptics.ts';
@@ -91,7 +91,6 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
           <Stat value={streaks.best} label="best streak" />
           <Stat value={streaks.daysPlayed} label="days played" />
           <Stat value={totalSolved(solves)} label="puzzles solved" />
-          <Stat value={hustleSolved(storedSolves())} label="Hustle level" />
         </div>
 
         <div className="card-lg streak-card">
