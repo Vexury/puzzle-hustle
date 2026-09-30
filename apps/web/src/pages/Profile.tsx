@@ -14,6 +14,7 @@ import { readSetting, useSolves, writeSetting } from '../lib/storage.ts';
 import { formatSeconds } from '../lib/share.ts';
 import { dailyStreaks, totalSolved, typeStats } from '../lib/stats.ts';
 import { THEME_PREFS, centerOf, resetProgressAndAppearance, usePack, useTheme, type ThemePref } from '../lib/theme.ts';
+import { SocialSection } from './Friends.tsx';
 import { AccountActions, AccountCard, PRIVACY_POLICY_URL } from '../components/AccountCard.tsx';
 import { CoinPill } from '../components/CoinPill.tsx';
 import { Logo } from '../components/Logo.tsx';
@@ -27,7 +28,8 @@ const PURCHASE_TOASTS: Record<PurchaseOutcome, string | null> = {
   failed: 'No purchase was made',
 };
 
-export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) {
+// joinCode: an invitation waiting for sign-in. socialCode: an invitation opened while signed in.
+export function Profile({ joinCode = null, socialCode = '' }: { joinCode?: string | null; socialCode?: string } = {}) {
   const solves = useSolves();
   const streaks = dailyStreaks(solves);
   const stats = typeStats(solves);
@@ -73,6 +75,7 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
           </div>
         )}
         <AccountCard joinCode={joinCode} />
+        <SocialSection key={socialCode} code={socialCode} />
 
         <div className="card-lg row-between">
           <span>

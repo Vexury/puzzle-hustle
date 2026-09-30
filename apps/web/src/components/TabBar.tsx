@@ -1,15 +1,16 @@
-import { useSession } from '../lib/auth.ts';
+import { Logo } from './Logo.tsx';
 import { href, onLinkClick, useRoute } from '../lib/router.ts';
 
 const TABS = [
   { path: '/', label: 'Daily', match: (p: string) => p === '/' },
   { path: '/hustle', label: 'Hustle', match: (p: string) => p === '/hustle' },
   { path: '/levels', label: 'Puzzles', match: (p: string) => p.startsWith('/levels') },
-  { path: '/profile', label: 'Profile', match: (p: string) => p === '/profile' || p === '/shop' || p === '/achievements' },
-  { path: '/friends', label: 'Social', match: (p: string) => p === '/friends' || p === '/join' },
+  { path: '/profile', label: 'Profile', match: (p: string) => p === '/profile' || p === '/join' || p === '/shop' || p === '/achievements' },
 ] as const;
 
-function Icon({ name }: { name: 'Daily' | 'Hustle' | 'Puzzles' | 'Profile' | 'Social' }) {
+export const TAB_PATHS = TABS.map((t) => t.path);
+
+function Icon({ name }: { name: 'Daily' | 'Hustle' | 'Puzzles' | 'Profile' }) {
   switch (name) {
     case 'Daily':
       return (
@@ -22,12 +23,7 @@ function Icon({ name }: { name: 'Daily' | 'Hustle' | 'Puzzles' | 'Profile' | 'So
         </svg>
       );
     case 'Hustle':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M3 20h4v-5h4v-5h4V5h6" />
-          <path d="M17 5h4v4" className="fill" />
-        </svg>
-      );
+      return <Logo className="tab-logo" />;
     case 'Puzzles':
       return (
         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -44,27 +40,14 @@ function Icon({ name }: { name: 'Daily' | 'Hustle' | 'Puzzles' | 'Profile' | 'So
           <path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" />
         </svg>
       );
-    case 'Social':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="9" cy="8" r="3.4" />
-          <path d="M2.5 20c0-3.4 2.9-5.8 6.5-5.8s6.5 2.4 6.5 5.8" />
-          <circle cx="17.5" cy="7" r="2.6" className="fill" />
-          <path d="M16 13.2c3.1-.6 5.5 1.6 5.5 4.6" />
-        </svg>
-      );
   }
 }
 
 export function TabBar() {
   const route = useRoute();
-  const session = useSession();
-  // Social only exists for a signed-in player: without an account there is nothing on it, and a
-  // player who just wants to solve on their own never gets nudged toward comparing times.
-  const tabs = session ? TABS : TABS.filter((t) => t.label !== 'Social');
   return (
     <nav className="tabbar" aria-label="Main">
-      {tabs.map((t) => (
+      {TABS.map((t) => (
         <a key={t.path} href={href(t.path)} onClick={onLinkClick} className={t.match(route.path) ? 'tab active' : 'tab'} aria-current={t.match(route.path) ? 'page' : undefined}>
           <Icon name={t.label} />
           <span>{t.label}</span>

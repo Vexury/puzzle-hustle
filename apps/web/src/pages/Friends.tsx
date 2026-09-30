@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { DAILY_TYPES, PUZZLE_META, dailyRef, hustleSolved, periodRef, refId } from '@puzzle-hustle/core';
 import { ApiError, apiFetch, readSession } from '../lib/api.ts';
 import { useSession } from '../lib/auth.ts';
@@ -8,7 +8,6 @@ import { href, onLinkClick } from '../lib/router.ts';
 import { capitalize, joinUrl, share } from '../lib/share.ts';
 import { toast } from '../components/Toast.tsx';
 import { Board, NameCell } from '../components/Board.tsx';
-import { CoinPill } from '../components/CoinPill.tsx';
 
 export interface Group {
   id: string;
@@ -88,8 +87,12 @@ export function activeGroup(groups: Group[], selected: string | null): Group | n
 // How long an armed Leave stays armed, as for Reset on Profile.
 const CONFIRM_MS = 2000;
 
-export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
+// The groups part of Profile, below the account card. Only with a session: without an account
+// there is nothing here, and a player who just wants to solve never sees times to compare.
+// An invitation link (/join?c=CODE) prefills the join field and scrolls the section into view.
+export function SocialSection({ code: initialCode = '' }: { code?: string } = {}) {
   const session = useSession();
+  const ref = useRef<HTMLElement>(null);
   const { groups, reload, loading, failed } = useGroups();
   const [name, setName] = useState('');
   const [code, setCode] = useState(normalizeCode(initialCode).slice(0, 6));
@@ -109,18 +112,19 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
     return () => clearTimeout(timer);
   }, [leaving]);
 
-  // App sends a signed-out player to Profile instead; this only covers the render before it does.
+  // After the navigation's own scroll to the top, which runs before this commit.
+  useEffect(() => {
+    if (initialCode) ref.current?.scrollIntoView({ block: 'start' });
+  }, []);
+
   if (!session) return null;
 
   if (loading && groups.length === 0) {
     return (
-      <>
-        <section className="page-head">
-          <h1>Social</h1>
-          <CoinPill />
-        </section>
+      <section ref={ref} id="social" className="stack">
+        <h2 className="section-h">Social</h2>
         <p className="muted small">Loading…</p>
-      </>
+      </section>
     );
   }
 
@@ -170,133 +174,127 @@ export function Friends({ code: initialCode = '' }: { code?: string } = {}) {
   const puzzle = puzzles[puzzleIndex]!;
 
   return (
-    <>
-      <section className="page-head">
-        <h1>Social</h1>
-        <CoinPill />
-      </section>
-
-      <div className="stack">
-        {failed && (
-          <section className="card-lg friends-failed" role="alert">
-            <span className="muted small">Your groups could not be loaded. Check your connection.</span>
-            <button type="button" className="pill" onClick={reload} disabled={loading}>
-              Retry
-            </button>
-          </section>
-        )}
-        <section className="card-lg row-between">
-          <span className="social-look">
-            <span className="label">You in your groups</span>
-            <NameCell entry={{ name: session.player.name, ...equipped, hustle: hustleSolved(storedSolves()) }} />
-          </span>
-          <a href={href('/shop')} className="pill outline" onClick={onLinkClick}>
-            Customize ›
-          </a>
+    <section ref={ref} id="social" className="stack">
+      <h2 className="section-h">Social</h2>
+      {failed && (
+        <section className="card-lg friends-failed" role="alert">
+          <span className="muted small">Your groups could not be loaded. Check your connection.</span>
+          <button type="button" className="pill" onClick={reload} disabled={loading}>
+            Retry
+          </button>
         </section>
-        <div className="card-row">
-          <section className="card-lg">
-            <h2>New group</h2>
-            <div className="friends-actions stacked">
-              <input value={name} onChange={(e) => setName(e.target.value)} maxLength={24} placeholder="Group name" />
-              <button type="button" className="pill" onClick={() => void create()} disabled={name.trim().length < 2 || creating}>
-                Create
-              </button>
-            </div>
-          </section>
+      )}
+      <section className="card-lg row-between">
+        <span className="social-look">
+          <span className="label">You in your groups</span>
+          <NameCell entry={{ name: session.player.name, ...equipped, hustle: hustleSolved(storedSolves()) }} />
+        </span>
+        <a href={href('/shop')} className="pill outline" onClick={onLinkClick}>
+          Customize ›
+        </a>
+      </section>
+      <div className="card-row">
+        <section className="card-lg">
+          <h2>New group</h2>
+          <div className="friends-actions stacked">
+            <input value={name} onChange={(e) => setName(e.target.value)} maxLength={24} placeholder="Group name" />
+            <button type="button" className="pill" onClick={() => void create()} disabled={name.trim().length < 2 || creating}>
+              Create
+            </button>
+          </div>
+        </section>
 
-          <section className="card-lg">
-            <h2>Join a group</h2>
-            <div className="friends-actions stacked">
-              <input
-                value={code}
-                onChange={(e) => setCode(normalizeCode(e.target.value))}
-                maxLength={6}
-                placeholder="CODE"
-                className="num"
-              />
-              <button type="button" className="pill" onClick={() => void join()} disabled={code.length !== 6 || joining}>
-                Join
-              </button>
-            </div>
-          </section>
-        </div>
+        <section className="card-lg">
+          <h2>Join a group</h2>
+          <div className="friends-actions stacked">
+            <input
+              value={code}
+              onChange={(e) => setCode(normalizeCode(e.target.value))}
+              maxLength={6}
+              placeholder="CODE"
+              className="num"
+            />
+            <button type="button" className="pill" onClick={() => void join()} disabled={code.length !== 6 || joining}>
+              Join
+            </button>
+          </div>
+        </section>
+      </div>
 
-        {active && (
-          <section className="card-lg">
-            <h2>Standings</h2>
-            {groups.length > 1 && (
-              <div className="pill-row">
-                {groups.map((group) => (
-                  <button
-                    key={group.id}
-                    type="button"
-                    className={group.id === active ? 'pill' : 'pill outline'}
-                    onClick={() => setGroupId(group.id)}
-                  >
-                    {group.name}
-                  </button>
-                ))}
-              </div>
-            )}
+      {active && (
+        <section className="card-lg">
+          <h2>Standings</h2>
+          {groups.length > 1 && (
             <div className="pill-row">
-              {puzzles.map((ref, index) => (
+              {groups.map((group) => (
                 <button
-                  key={refId(ref)}
+                  key={group.id}
                   type="button"
-                  className={index === puzzleIndex ? 'pill' : 'pill outline'}
-                  onClick={() => setPuzzleIndex(index)}
+                  className={group.id === active ? 'pill' : 'pill outline'}
+                  onClick={() => setGroupId(group.id)}
                 >
-                  {ref.period === 'daily' ? PUZZLE_META[ref.type].name : capitalize(ref.period!)}
+                  {group.name}
                 </button>
               ))}
             </div>
-            <Board
-              groupId={active}
-              puzzle={refId(puzzle)}
-              meId={session.player.id}
-              owner={current?.owner ?? false}
-              onRemoved={reload}
-            />
-          </section>
-        )}
-
-        {groups.map((group) => (
-          <div key={group.id} className="row-card friends-row">
-            <span className="row-text">
-              <span className="row-title">{group.name}</span>
-              <span className="row-sub">
-                {group.members} member{group.members === 1 ? '' : 's'} · code <b className="num">{group.code}</b>
-              </span>
-            </span>
-            <span className="friends-row-actions">
+          )}
+          <div className="pill-row">
+            {puzzles.map((ref, index) => (
               <button
+                key={refId(ref)}
                 type="button"
-                className="pill outline"
-                onClick={() =>
-                  void share(`Join my Puzzle Hustle group "${group.name}"\nCode ${group.code}\n${joinUrl(group.code)}`).then(
-                    (outcome) => {
-                      if (outcome === 'copied') toast('Link copied');
-                      else if (outcome === 'failed') toast('Could not share');
-                    },
-                  )
-                }
+                className={index === puzzleIndex ? 'pill' : 'pill outline'}
+                onClick={() => setPuzzleIndex(index)}
               >
-                Invite
+                {ref.period === 'daily' ? PUZZLE_META[ref.type].name : capitalize(ref.period!)}
               </button>
-              {leaving === group.id ? (
-                <button type="button" className="pill danger" onClick={() => void leave(group)}>
-                  {group.members === 1 ? 'Delete group' : 'Leave'}
-                </button>
-              ) : (
-                <button type="button" className="pill outline" onClick={() => setLeaving(group.id)}>
-                  Leave
-                </button>
-              )}
-            </span>
+            ))}
           </div>
-        ))}
-      </div>
-    </>
+          <Board
+            groupId={active}
+            puzzle={refId(puzzle)}
+            meId={session.player.id}
+            owner={current?.owner ?? false}
+            onRemoved={reload}
+          />
+        </section>
+      )}
+
+      {groups.map((group) => (
+        <div key={group.id} className="row-card friends-row">
+          <span className="row-text">
+            <span className="row-title">{group.name}</span>
+            <span className="row-sub">
+              {group.members} member{group.members === 1 ? '' : 's'} · code <b className="num">{group.code}</b>
+            </span>
+          </span>
+          <span className="friends-row-actions">
+            <button
+              type="button"
+              className="pill outline"
+              onClick={() =>
+                void share(`Join my Puzzle Hustle group "${group.name}"\nCode ${group.code}\n${joinUrl(group.code)}`).then(
+                  (outcome) => {
+                    if (outcome === 'copied') toast('Link copied');
+                    else if (outcome === 'failed') toast('Could not share');
+                  },
+                )
+              }
+            >
+              Invite
+            </button>
+            {leaving === group.id ? (
+              <button type="button" className="pill danger" onClick={() => void leave(group)}>
+                {group.members === 1 ? 'Delete group' : 'Leave'}
+              </button>
+            ) : (
+              <button type="button" className="pill outline" onClick={() => setLeaving(group.id)}>
+                Leave
+              </button>
+            )}
+          </span>
+        </div>
+      ))}
+    </section>
   );
 }

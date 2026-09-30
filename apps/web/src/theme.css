@@ -696,6 +696,7 @@ p { margin: 0; }
 }
 .tab svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .tab svg .fill { fill: currentColor; stroke: none; }
+.tab svg.tab-logo { width: 17px; fill: currentColor; stroke: none; }
 .tab.active { background: var(--accent-soft); color: var(--accent-deep); }
 
 .play { display: flex; flex-direction: column; gap: 12px; }
