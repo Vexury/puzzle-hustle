@@ -7,6 +7,8 @@ import {
   coinsForSolve,
   adapter,
   levelRef,
+  hustleNext,
+  hustleRef,
   dailyRef,
   periodRef,
   refId,
@@ -23,7 +25,7 @@ import { pushBackGuard } from '../lib/back.ts';
 import { clearProgress, getSolve, keepFinalBoard, readProgress, readSetting, recordSolve, useSolves, writeProgress, writeSetting, type SolveRecord } from '../lib/storage.ts';
 import { capitalize, formatSeconds, share, shareText } from '../lib/share.ts';
 import { HintCard } from '../components/HintCard.tsx';
-import { loadBoard, randomBoardRef } from '../lib/boards.ts';
+import { loadBoard, prefetchBoard, randomBoardRef } from '../lib/boards.ts';
 import { syncFlairs } from '../lib/flairs.ts';
 import { requestHint, useHintBadge, type HintChoice, type HintOffer } from '../lib/hints.ts';
 import { enqueue, flush } from '../lib/queue.ts';
@@ -52,7 +54,9 @@ export function Play({ params }: { params: URLSearchParams }) {
   // Bumped by a replay, so the same puzzle mounts afresh: new board, clock at zero, best re-read.
   const [run, setRun] = useState(0);
   const ref = decodeRef(params);
-  if (!ref) {
+  const stage = ref?.hustle ? Math.min(ref.hustle, hustleNext(storedSolves())) : null;
+  const puzzle = ref && stage && stage !== ref.hustle ? hustleRef(stage) : ref;
+  if (!puzzle) {
     return (
       <section className="page-head">
         <h1>Unknown puzzle</h1>
@@ -63,10 +67,11 @@ export function Play({ params }: { params: URLSearchParams }) {
       </section>
     );
   }
-  return <PlayPuzzle key={`${refId(ref)}:${run}`} puzzleRef={ref} onReplay={() => setRun((r) => r + 1)} />;
+  return <PlayPuzzle key={`${refId(puzzle)}:${run}`} puzzleRef={puzzle} onReplay={() => setRun((r) => r + 1)} />;
 }
 
 function subtitle(ref: PuzzleRef): string {
+  if (ref.hustle) return `Hustle ${ref.hustle}`;
   if (ref.level) return `#${ref.level}`;
   if (ref.period === 'daily' && ref.key) return `Daily #${dailyNumber(ref.key)}`;
   if (ref.period && ref.key) return `${capitalize(ref.period)} ${ref.key}`;
@@ -74,6 +79,7 @@ function subtitle(ref: PuzzleRef): string {
 }
 
 function backTarget(ref: PuzzleRef): { url: string; label: string } {
+  if (ref.hustle) return { url: href('/hustle'), label: 'Hustle' };
   if (ref.level || !ref.period) return { url: href(`/levels/${ref.type}`), label: PUZZLE_META[ref.type].name };
   return { url: href('/'), label: 'Daily' };
 }
@@ -124,7 +130,7 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
   const existing = solves[id];
   // A level or a seeded practice puzzle can be played again for a better time, so reopening one
   // starts a fresh run. A period keeps its first run, that is the time the leaderboard got.
-  const replayable = !puzzleRef.period;
+  const replayable = !puzzleRef.period && !puzzleRef.hustle;
   const bestBefore = useRef(existing?.seconds ?? null).current;
   const sizeLabel =
     'slabs' in spec
@@ -274,6 +280,9 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
     setAskLeave(true);
     return true;
   };
+  useEffect(() => {
+    if (puzzleRef.hustle) prefetchBoard(hustleRef(puzzleRef.hustle + 1));
+  }, []);
   useEffect(() => pushBackGuard(() => backGuard.current()), []);
 
   const stay = () => {
@@ -439,6 +448,7 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
     onReplay();
     window.scrollTo({ top: 0 });
   };
+  const nextHustle = puzzleRef.hustle ? hustleRef(puzzleRef.hustle + 1) : null;
   const nextLevel = puzzleRef.level ? levelRef(puzzleRef.type, puzzleRef.difficulty, puzzleRef.level + 1) : null;
   const nextChallenge = useMemo(() => {
     if (!puzzleRef.period) return null;
@@ -610,12 +620,17 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
               <ReplayIcon />
             </button>
           )}
+          {nextHustle && (
+            <a href={href(`/play?${encodeRef(nextHustle)}`)} className="pill" onClick={onNextClick}>
+              Next ›
+            </a>
+          )}
           {nextLevel && (
             <a href={href(`/play?${encodeRef(nextLevel)}`)} className="pill" onClick={onNextClick}>
               Level #{nextLevel.level} ›
             </a>
           )}
-          {!puzzleRef.period && !puzzleRef.level && (
+          {!puzzleRef.period && !puzzleRef.level && !puzzleRef.hustle && (
             <button type="button" className="pill" onClick={another}>
               Another {capitalize(puzzleRef.difficulty)} ›
             </button>

@@ -54,7 +54,7 @@ function generator(): Worker | null {
   return worker;
 }
 
-export async function loadBoard(ref: BoardRef): Promise<PuzzleSpec> {
+async function buildBoard(ref: BoardRef): Promise<PuzzleSpec> {
   const stored = await storedBoard(ref);
   if (stored) return stored;
   // Only the fields the generator reads: the rest of a PuzzleRef does not survive postMessage usefully.
@@ -66,4 +66,26 @@ export async function loadBoard(ref: BoardRef): Promise<PuzzleSpec> {
     waiting.set(id, { ref: board, resolve, reject });
     w.postMessage({ id, ref: board });
   });
+}
+
+// A Hustle stage built ahead while the one before is played, so "Next ›" opens at once. Only
+// the latest one is kept.
+let ahead: { id: string; spec: Promise<PuzzleSpec> } | null = null;
+const idOf = (ref: BoardRef) => `${ref.type}|${ref.difficulty}|${ref.seed}|${ref.period ?? ''}|${ref.hustle ?? ''}`;
+
+export function prefetchBoard(ref: BoardRef): void {
+  const id = idOf(ref);
+  if (ahead?.id === id) return;
+  const spec = buildBoard(ref);
+  spec.catch(() => {});
+  ahead = { id, spec };
+}
+
+export function loadBoard(ref: BoardRef): Promise<PuzzleSpec> {
+  if (ahead?.id === idOf(ref)) {
+    const { spec } = ahead;
+    ahead = null;
+    return spec;
+  }
+  return buildBoard(ref);
 }

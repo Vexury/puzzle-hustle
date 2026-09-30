@@ -1,10 +1,10 @@
 import { act, createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { dailyRef, encodeRef, generateStars, levelRef, refId } from '@puzzle-hustle/core';
+import { dailyRef, encodeRef, generateStars, hustleRef, levelRef, refId } from '@puzzle-hustle/core';
 import { Play } from '../src/pages/Play.tsx';
 import { handleBackPress } from '../src/lib/back.ts';
-import { readProgress, writeSetting } from '../src/lib/storage.ts';
+import { readProgress, recordSolve, writeSetting } from '../src/lib/storage.ts';
 
 vi.mock('../src/lib/haptics.ts', () => ({ solved: vi.fn(), tap: vi.fn(), press: vi.fn() }));
 vi.mock('@puzzle-hustle/core', async (original) => {
@@ -135,4 +135,22 @@ it('shows the cats how-to as a demo', async () => {
   await mount(encodeRef(dailyRef('crowns')));
   expect(container.querySelector('.help .demo')).not.toBeNull();
   act(() => vi.advanceTimersByTime(5_000));
+});
+
+it('opens the current Hustle stage when a link points higher', async () => {
+  await mount('h=999');
+  expect(container.querySelector('.play-bar h1')?.textContent).toContain('Hustle 1');
+});
+
+it('names a Hustle stage in the title', async () => {
+  await mount('h=1');
+  expect(container.querySelector('.play-bar h1')?.textContent).toContain('Hustle 1');
+  expect(hustleRef(1).hustle).toBe(1);
+});
+
+it('stays on a Hustle stage after it is solved', async () => {
+  await mount('h=1');
+  act(() => recordSolve('hustle:1', { solvedAt: new Date().toISOString(), seconds: 5, hints: 0, moves: 3 }));
+  await act(async () => root.render(createElement(Play, { params: new URLSearchParams('h=1') })));
+  expect(container.querySelector('.play-bar h1')?.textContent).toContain('Hustle 1');
 });
