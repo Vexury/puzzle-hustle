@@ -33,7 +33,7 @@ function ChallengeCard({ puzzleRef }: { puzzleRef: PuzzleRef }) {
   const average = puzzleRef.period === 'daily' ? dailyAverageSeconds(solves, puzzleRef.type) : null;
   return (
     <a href={url} onClick={onLinkClick} className={solve ? 'row-card solved' : 'row-card'}>
-      <span className="row-icon">
+      <span className={solve ? 'row-icon done' : 'row-icon open'}>
         <PuzzleIcon type={puzzleRef.type} />
         {solve && (
           <span className={justSolved(solve) ? 'row-check pop' : 'row-check'} role="img" aria-label="Solved">

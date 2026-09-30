@@ -1,5 +1,6 @@
 import {
   encodeRef,
+  hustleDifficulty,
   hustleSolved,
   hustleMilestoneCoins,
   hustleRef,
@@ -65,7 +66,10 @@ export function Hustle() {
   const { type, difficulty } = hustleSlot(stage);
   const next = nextMilestones(level, 1)[0]!;
   const toGo = next.n - level;
-  const tierEnd = TIER_END[difficulty];
+  // The section of the curve comes from the stage number; the board's own difficulty is balanced
+  // per type (Sumdoku a tier down, Shapes a tier up) and shows on the card below.
+  const tier = hustleDifficulty(stage);
+  const tierEnd = TIER_END[tier];
   const filled = level % HUSTLE_MILESTONE;
   const owned = REWARDS.filter((r) => level >= r.n).length;
   const nextName = next.badge ? `${badgeTitle(next.badge)} badge` : next.flair ? flairTitle(next.flair) : null;
@@ -91,8 +95,8 @@ export function Hustle() {
             </div>
           </div>
           <div className="streak-timer">
-            <b>{capitalize(difficulty)}</b>
-            {tierEnd ? `${tierEnd - level} to ${NEXT_TIER[difficulty]}` : 'top tier'}
+            <b>{tierEnd ? `${tierEnd - level} stages` : 'Genius'}</b>
+            {tierEnd ? `to ${NEXT_TIER[tier]}` : 'top tier'}
           </div>
         </div>
         <div className="daily-progress" role="progressbar" aria-valuemin={0} aria-valuemax={HUSTLE_MILESTONE} aria-valuenow={filled}>
@@ -111,7 +115,7 @@ export function Hustle() {
 
       <div className="stack">
         <a className="row-card" href={href(`/play?${encodeRef(hustleRef(stage))}`)} onClick={onLinkClick}>
-          <span className="row-icon">
+          <span className="row-icon open">
             <PuzzleIcon type={type} />
           </span>
           <span className="row-text">

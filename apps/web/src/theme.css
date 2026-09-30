@@ -412,6 +412,10 @@ p { margin: 0; }
    (text, actions) no matter how many buttons are in play; a later one slots in here too. */
 .friends-row-actions { display: flex; gap: 14px; }
 .row-icon { position: relative; display: inline-flex; }
+/* Where a tile has a solved state, the ring says "still open" and the full tint says "done"
+   (2026-10-01, compared on the S23). Lists without that state keep the plain tinted tile. */
+.row-icon.open .puzzle-icon { background: var(--board-cell); border: 2px solid var(--accent); }
+.row-icon.done .puzzle-icon { background: color-mix(in srgb, var(--accent) 30%, var(--board-cell)); border: 2px solid transparent; }
 .row-check {
   position: absolute;
   inset: 0;
