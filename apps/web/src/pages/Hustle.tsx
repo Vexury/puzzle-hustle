@@ -9,10 +9,11 @@ import {
   HUSTLE_MILESTONE,
   PUZZLE_META,
 } from '@puzzle-hustle/core';
-import type { CSSProperties } from 'react';
 import { BadgeIcon } from '../components/BadgeIcon.tsx';
+import { CoinPill } from '../components/CoinPill.tsx';
 import { PuzzleIcon } from '../components/PuzzleIcon.tsx';
 import { CoinIcon } from '../components/SolvedCard.tsx';
+import { ThemeToggle } from '../components/ThemeToggle.tsx';
 import { storedSolves } from '../lib/achievements.ts';
 import { href, onLinkClick } from '../lib/router.ts';
 import { capitalize } from '../lib/share.ts';
@@ -20,7 +21,6 @@ import { useSolves } from '../lib/storage.ts';
 
 const TIER_END: Record<string, number | null> = { easy: 40, medium: 120, hard: 300, genius: null };
 const NEXT_TIER: Record<string, string> = { easy: 'Medium', medium: 'Hard', hard: 'Genius' };
-const TIERS = ['easy', 'medium', 'hard', 'genius'] as const;
 
 type Milestone = { n: number; coins: number; badge?: string; flair?: string };
 
@@ -38,11 +38,26 @@ export function nextMilestones(solved: number, count: number): Milestone[] {
 const flairTitle = (id: string) => HUSTLE_FLAIRS.find((f) => f.id === id)!.title;
 const badgeTitle = (id: string) => HUSTLE_BADGES.find((b) => b.id === id)!.title;
 
+// Every badge and flair Hustle pays out, in the order they are earned.
+const REWARDS = [
+  ...HUSTLE_BADGES.map((b) => ({ id: b.id, title: `${b.title} badge`, kind: 'Badge', badge: b.id, n: hustleNeeded(b) })),
+  ...HUSTLE_FLAIRS.map((f) => ({ id: f.id, title: f.title, kind: 'Flair', badge: undefined, n: hustleNeeded(f) })),
+].sort((a, b) => a.n - b.n);
+
 // Sized by the font size of its box.
-function MilestoneIcon({ m }: { m: Milestone }) {
+function MilestoneIcon({ m }: { m: { badge?: string | undefined; flair?: string | undefined } }) {
   if (m.badge) return <BadgeIcon id={m.badge} />;
   if (m.flair) return <span className="hustle-flair-mark">♦</span>;
   return <CoinIcon />;
+}
+
+function HustleMark() {
+  return (
+    <svg className="hustle-mark" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3 20h4v-5h4v-5h4V5h6" />
+      <path d="M17 5h4v4" />
+    </svg>
+  );
 }
 
 export function Hustle() {
@@ -51,136 +66,97 @@ export function Hustle() {
   const level = hustleSolved(storedSolves());
   const stage = level + 1;
   const { type, difficulty } = hustleSlot(stage);
-  const upcoming = nextMilestones(level, 5);
-  const next = upcoming[0]!;
+  const next = nextMilestones(level, 1)[0]!;
   const toGo = next.n - level;
   const tierEnd = TIER_END[difficulty];
   const filled = level % HUSTLE_MILESTONE;
-  const tierIndex = TIERS.indexOf(difficulty as (typeof TIERS)[number]);
-  const owned = [...HUSTLE_BADGES, ...HUSTLE_FLAIRS].filter((c) => level >= hustleNeeded(c)).length;
-  const nextName = next.badge ? `${badgeTitle(next.badge)} badge` : next.flair ? `"${flairTitle(next.flair)}"` : null;
+  const owned = REWARDS.filter((r) => level >= r.n).length;
+  const nextName = next.badge ? `${badgeTitle(next.badge)} badge` : next.flair ? flairTitle(next.flair) : null;
 
   return (
     <>
-      <section className="page-head">
+      <header className="page-head">
         <h1>Hustle</h1>
-      </section>
-      <div className="stack">
-        <section className="card-lg hustle-card">
-          <div className="hustle-hero">
-            <div className="hustle-ring" style={{ '--p': `${(filled / HUSTLE_MILESTONE) * 100}%` } as CSSProperties}>
+        <p className="muted">Endless puzzles, harder as you climb.</p>
+        <div className="head-actions">
+          <CoinPill />
+          <ThemeToggle />
+        </div>
+      </header>
+
+      <section className={`streak-hero hustle-hero${level > 0 ? ' has-streak' : ''}`}>
+        <div className="streak-hero-top">
+          <div className="streak-count">
+            <HustleMark />
+            <div>
               <b className="hustle-level">{level}</b>
-              <small>Level</small>
-            </div>
-            <div className="hustle-hero-text">
-              <b className="hustle-tier-name">{capitalize(difficulty)} tier</b>
-              <div className="hustle-tiers" aria-hidden="true">
-                {TIERS.map((t, i) => (
-                  <span key={t} className={i < tierIndex ? 'done' : i === tierIndex ? 'cur' : undefined}>
-                    {t}
-                  </span>
-                ))}
-              </div>
-              <span className="muted small">
-                {tierEnd ? `${tierEnd - level} stages to ${NEXT_TIER[difficulty]}` : 'The top tier, from here on'}
-              </span>
+              <span>hustle level</span>
             </div>
           </div>
-          <div className="hustle-reward">
-            <span className="hustle-reward-icon">
+          <div className="streak-timer">
+            <b>{capitalize(difficulty)}</b>
+            {tierEnd ? `${tierEnd - level} to ${NEXT_TIER[difficulty]}` : 'top tier'}
+          </div>
+        </div>
+        <div className="daily-progress" role="progressbar" aria-valuemin={0} aria-valuemax={HUSTLE_MILESTONE} aria-valuenow={filled}>
+          <div className="track">
+            <span className="fill" style={{ width: `${(filled / HUSTLE_MILESTONE) * 100}%` }} />
+            <span className="goal-badge">
               <MilestoneIcon m={next} />
             </span>
-            <span className="hustle-reward-text">
-              <span className="muted small">
-                {toGo} more to Lv {next.n}
-              </span>
-              <b>
-                {nextName ? (
-                  <>
-                    {nextName} +{' '}
-                    <span className="hustle-coins">
-                      {next.coins} <CoinIcon />
-                    </span>
-                  </>
-                ) : (
-                  `${next.coins} coins`
-                )}
-              </b>
-              <span className="hustle-bar" aria-hidden="true">
-                {Array.from({ length: HUSTLE_MILESTONE }, (_, i) => (
-                  <i key={i} className={i < filled ? 'on' : undefined} />
-                ))}
-              </span>
-            </span>
           </div>
-        </section>
-
-        <section className="card-lg hustle-next">
-          <PuzzleIcon type={type} size={48} />
-          <span className="hustle-next-text">
-            <b>
-              Stage {stage} · {PUZZLE_META[type].name}
-            </b>
-            <span className="muted small">{capitalize(difficulty)}</span>
+          <span className="small hustle-caption">
+            {filled}/{HUSTLE_MILESTONE} · {toGo} more for {nextName ? `${nextName} + ` : '+'}
+            {next.coins} <CoinIcon />
           </span>
-          <a className="pill" href={href(`/play?${encodeRef(hustleRef(stage))}`)} onClick={onLinkClick}>
-            Play
-          </a>
-        </section>
+        </div>
+      </section>
 
-        <section className="card-lg">
-          <h2>Coming up</h2>
-          <ul className="hustle-upcoming">
-            {upcoming.map((m) => (
-              <li key={m.n} className={m.badge || m.flair ? 'special' : undefined}>
-                <span className="hustle-upcoming-lv">Lv {m.n}</span>
-                <span className="hustle-upcoming-icon">
-                  <MilestoneIcon m={m} />
-                </span>
-                <b>{m.badge ? badgeTitle(m.badge) : m.flair ? flairTitle(m.flair) : `+${m.coins}`}</b>
-                <span className="small muted hustle-coins-line">
-                  {m.badge ? 'Badge + ' : m.flair ? 'Flair + ' : 'Coins'}
-                  {m.badge || m.flair ? (
-                    <>
-                      {m.coins} <CoinIcon />
-                    </>
-                  ) : null}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="card-lg">
-          <h2>
-            Hustle collection{' '}
-            <span className="muted small">
-              {owned} of {HUSTLE_BADGES.length + HUSTLE_FLAIRS.length}
+      <div className="stack">
+        <a className="row-card" href={href(`/play?${encodeRef(hustleRef(stage))}`)} onClick={onLinkClick}>
+          <span className="row-icon">
+            <PuzzleIcon type={type} />
+          </span>
+          <span className="row-text">
+            <span className="row-title">{PUZZLE_META[type].name}</span>
+            <span className="row-sub">
+              Stage {stage} · {capitalize(difficulty)}
             </span>
-          </h2>
-          <ul className="hustle-badges">
-            {HUSTLE_BADGES.map((b) => (
-              <li key={b.id} className={level >= hustleNeeded(b) ? 'own' : undefined} title={b.title}>
-                <BadgeIcon id={b.id} />
-                <span className="hustle-req">{hustleNeeded(b)}</span>
-              </li>
-            ))}
-          </ul>
-          <ul className="hustle-flairs">
-            {HUSTLE_FLAIRS.map((f) =>
-              level >= hustleNeeded(f) ? (
-                <li key={f.id} className="own">
-                  {f.title} ✓
-                </li>
-              ) : (
-                <li key={f.id}>
-                  {f.title} · {hustleNeeded(f)}
-                </li>
-              ),
-            )}
-          </ul>
-        </section>
+          </span>
+          <span className="pill">Play</span>
+        </a>
       </div>
+
+      <h2 className="section-h">Rewards</h2>
+      <p className="muted small section-sub">
+        {owned} of {REWARDS.length} earned
+      </p>
+      <section className="card-lg">
+        <ul className="hustle-rewards">
+          {REWARDS.map((r) => (
+            <li key={r.id} className={level >= r.n ? 'own' : undefined}>
+              <span className="hustle-reward-icon">
+                <MilestoneIcon m={r.badge ? { badge: r.badge } : { flair: r.id }} />
+              </span>
+              <span className="row-text">
+                <b>{r.title}</b>
+                <span className="row-sub">
+                  {r.kind} · Lv {r.n}
+                </span>
+              </span>
+              {level >= r.n ? (
+                <span className="hustle-owned" role="img" aria-label="Earned">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5.5 12.25L10 16.75L18.5 7.25" />
+                  </svg>
+                </span>
+              ) : (
+                <span className="small muted">{r.n - level} to go</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
     </>
   );
 }
