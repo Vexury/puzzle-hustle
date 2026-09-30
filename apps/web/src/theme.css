@@ -1244,10 +1244,18 @@ button.unlock-row { cursor: pointer; }
 .coin-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); font-family: var(--font-num); text-decoration: none; }
 .coin-pill svg { width: 1em; height: 1em; }
 /* Coins came in: the pill hops and a glint runs across it while the number counts up. */
-.coin-pill.bump { position: relative; overflow: hidden; animation: coin-bump 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
-.coin-pill.bump::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.55) 50%, transparent 70%); transform: translateX(-100%); animation: coin-glint 0.7s ease-out; }
+/* The glint is the pill's own background layer, three times its width: at 0% its band lies past the
+   right edge, at 100% (where it rests) past the left, so it can never show outside the pill or
+   linger, whatever positioning the page head gives the pill. */
+.coin-pill.bump {
+  background-image: linear-gradient(110deg, transparent 38%, rgba(255, 255, 255, 0.5) 50%, transparent 62%);
+  background-size: 300% 100%;
+  background-repeat: no-repeat;
+  background-position: 100% 0;
+  animation: coin-bump 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), coin-glint 0.7s ease-out;
+}
 @keyframes coin-bump { 40% { transform: scale(1.15); } }
-@keyframes coin-glint { to { transform: translateX(100%); } }
+@keyframes coin-glint { from { background-position: 0 0; } to { background-position: 100% 0; } }
 .shop-preview { gap: 6px; }
 .shop-section-head { display: flex; align-items: center; gap: 8px; width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .shop-section-title { flex: 1; }
@@ -1342,7 +1350,7 @@ button.unlock-row { cursor: pointer; }
 /* Game feel (2026-09-30): none of it moves for players who asked for less motion. */
 @media (prefers-reduced-motion: reduce) {
   .pill, .tool, .tab-ind, .tab.active svg, .streak-hero .flame, .daily-progress.grow .fill, .row-check.pop,
-  .coin-pill.bump, .coin-pill.bump::after, .tile.open, .stars.pop svg, .play.enter :is(.board-frame, .slabs-board) {
+  .coin-pill.bump, .tile.open, .stars.pop svg, .play.enter :is(.board-frame, .slabs-board) {
     animation: none !important;
     transition: none !important;
   }
