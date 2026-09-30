@@ -22,6 +22,8 @@
   --shadow-hover: 0 0 18px rgba(255, 79, 216, 0.24);
   --radius: 14px;
   --radius-sm: 10px;
+  --radius-xs: 6px;
+  --radius-icon: 10px;
   --nono-c2: #3ff0ff;
   --nono-c3: #ffb347;
   --pack-pattern-image: linear-gradient(to bottom, transparent 55%, rgba(255, 79, 216, 0.10));

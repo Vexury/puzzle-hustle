@@ -23,6 +23,9 @@
   --shadow-hover: 0 0 14px rgba(255, 176, 0, 0.22);
   --radius: 4px;
   --radius-sm: 2px;
+  --radius-xs: 2px;
+  --radius-icon: 3px;
+  --radius-pill: 3px;
   --nono-c2: #5d9be0;
   --nono-c3: #d06aa4;
   --pack-pattern-image: repeating-linear-gradient(to bottom, rgba(255, 176, 0, 0.025) 0 1px, transparent 1px 3px);

@@ -23,6 +23,8 @@
   --shadow-hover: 0 4px 12px rgba(60, 50, 20, 0.12);
   --radius: 14px;
   --radius-sm: 10px;
+  --radius-xs: 6px;
+  --radius-icon: 10px;
   --nono-c2: #d9822b;
   --nono-c3: #b8508a;
   --pack-pattern-image: radial-gradient(rgba(120, 100, 60, 0.06) 1px, transparent 1px);
