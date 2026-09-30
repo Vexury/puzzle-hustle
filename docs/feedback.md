@@ -4,7 +4,7 @@ Quelle ist die WhatsApp-Gruppe "Puzzle Hustle" (seit 18.09.2026) und die Einzelc
 Neue Punkte kommen unter "Offen", erledigte wandern mit Datum nach "Erledigt". Ein Punkt gehoert
 in denselben Commit wie sein Fix.
 
-Stand: 2026-09-29
+Stand: 2026-09-30
 
 ## Offen
 
@@ -70,6 +70,8 @@ Stand: 2026-09-29
   nicht geloest, weil die Strecke erst verlegt werden musste. Decken Markierungen und Stuecke genau
   die Loesungszellen ab und liegt kein falsches Stueck, legt das Spiel die Strecke jetzt selbst
   (`tracksCompleteFromMarks`); die Loesung ist eindeutig, also nimmt das nichts vorweg.
+  Am 2026-09-30 zurueckgenommen (Entscheidung Moritz: die Strecke zieht der Spieler selbst), siehe
+  decisions.md.
 - [x] 2026-09-29 **Michi** Tracks: geloest, aber Spalte und Zeile rot, weil eine uebrige
   Gleismarkierung neben der Strecke mitzaehlte. Ein geloestes Brett zeigt und zaehlt jetzt nur die
   Strecke, auch bei schon gespeicherten Loesungen.

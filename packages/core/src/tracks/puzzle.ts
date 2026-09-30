@@ -370,23 +370,6 @@ export function tracksWithoutMarks(state: TracksState): TracksState {
   return state.map((v) => v & (TRACKS_STATE_E | TRACKS_STATE_S));
 }
 
-// Marks and track that cover exactly the solution's cells already decide the track: those cells
-// meet every line count, so a second path through them would be a second solution. Returns the
-// solved board then, or null. A drawn edge the solution does not have blocks it, so the game
-// never quietly overrules a piece the player laid.
-export function tracksCompleteFromMarks(spec: TracksSpec, state: TracksState): TracksState | null {
-  if (isTracksSolved(spec, state)) return null;
-  for (let i = 0; i < state.length; i++) {
-    if (state[i]! & TRACKS_STATE_E && !(spec.solution[i]! & TRACK_E)) return null;
-    if (state[i]! & TRACKS_STATE_S && !(spec.solution[i]! & TRACK_S)) return null;
-    const covered = tracksMask(spec, state, i) !== 0 || (state[i]! & TRACKS_STATE_T) !== 0;
-    if (covered !== (spec.solution[i] !== 0)) return null;
-  }
-  let next = emptyTracksState(spec);
-  for (const cell of spec.path) next = applyTracksHint(spec, next, { kind: 'place', cell });
-  return next;
-}
-
 // Counts the cells the board shows as track: given, closed by two given edges, drawn into by the
 // player, or marked. A cell the track merely must enter (A/B, one given edge) waits for the player.
 export function tracksLineCounts(spec: TracksSpec, state: TracksState): { rows: number[]; cols: number[] } {
