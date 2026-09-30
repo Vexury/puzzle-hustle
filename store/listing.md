@@ -117,6 +117,17 @@ can request deletion: yes. Collection of the account data is optional (only when
 Not collected: email address (the server reads only `sub` from the Google token), purchase history
 (Play Billing handles it, the server keeps no record), location, contacts, crash logs.
 The IP address reaches Cloudflare and the `/session` and `/events` rate limiters, but is not stored.
+**App Store review notes** (App Review Information of the version, set by API 2026-09-30, no demo
+account). Paste as is:
+
+```
+No demo account needed. Every puzzle works without an account.
+Sign-in is optional (Profile tab, Sign in with Apple) and only unlocks private friend groups with Daily/Weekly/Monthly standings: after signing in, tap the "Social" row on the Profile tab. Any Apple ID works.
+Hints: one free hint a day across all puzzles. After that a hint costs 20 coins or a rewarded video; the video plays only after the player confirms on a prompt.
+In-app purchase "No Ads · Free Hints" (unlimited_hints, non-consumable): Profile tab, row "Account", card "No ads · Free hints", button "Unlock"; "Restore purchase" on the same card.
+Account deletion: Profile tab, row "Account", "Delete account" (shown when signed in).
+```
+
 **App Store privacy label** (published 2026-09-28). Our own types plus those in the Google Mobile
 Ads SDK's privacy manifest (read from the 13.10.0 SPM package). Apple asks per data type for the
 whole app, so a type counts as linked when any collector links it.
