@@ -151,7 +151,7 @@ function TrophyIcon() {
   );
 }
 
-function CoinIcon() {
+export function CoinIcon() {
   return (
     <svg viewBox="0 0 24 24" className="solved-coin" aria-hidden="true">
       <circle cx="12" cy="12" r="9" fill="currentColor" />

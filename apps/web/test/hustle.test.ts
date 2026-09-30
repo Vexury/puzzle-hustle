@@ -29,6 +29,11 @@ it('shows the level, the progress to the next milestone and the next puzzle', ()
   expect(container.querySelector('.hustle-level')?.textContent).toBe('46');
   expect(container.querySelectorAll('.hustle-bar .on').length).toBe(6);
   expect(container.textContent).toContain('4 more to Lv 50');
+  expect(container.querySelector('.hustle-reward b')?.textContent).toBe('Mountain badge + 45 ');
+  expect(container.querySelectorAll('.hustle-upcoming li').length).toBe(5);
+  expect(container.querySelector('.hustle-tiers .cur')?.textContent).toBe('medium');
+  expect(container.textContent).toContain('1 of 10');
+  expect(container.querySelector('.hustle-flairs .own')?.textContent).toContain('Hustle Starter');
   expect(container.querySelector('a.pill')?.getAttribute('href')).toContain('h=47');
   act(() => root.unmount());
 });

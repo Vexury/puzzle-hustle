@@ -1177,14 +1177,43 @@ button.unlock-row { cursor: pointer; }
 .ad-ask.help { place-items: safe center; background: color-mix(in srgb, var(--bg) 70%, transparent); backdrop-filter: blur(14px); overflow-y: auto; }
 .help > .howto { width: 100%; max-width: 22rem; gap: 12px; }
 
-.hustle-card { align-items: center; text-align: center; }
-.hustle-level { font-family: var(--font-num); font-size: 3.2rem; font-weight: 800; line-height: 1; color: var(--accent-text); }
-.hustle-bar { display: flex; align-items: center; gap: 4px; width: 100%; margin-top: 8px; }
-.hustle-bar i { flex: 1; height: 10px; border-radius: 5px; background: var(--border); }
+.hustle-card { gap: 14px; }
+.hustle-hero { display: flex; align-items: center; gap: 16px; }
+.hustle-ring { --p: 0%; position: relative; flex: none; width: 92px; height: 92px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: conic-gradient(var(--accent) var(--p), var(--border) var(--p)); }
+.hustle-ring::before { content: ""; position: absolute; inset: 7px; border-radius: 50%; background: var(--card-bg); }
+.hustle-ring > * { position: relative; }
+.hustle-level { font-family: var(--font-num); font-size: 2.2rem; font-weight: 800; line-height: 1; color: var(--accent-text); }
+.hustle-ring small { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+.hustle-hero-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.hustle-tier-name { font-size: var(--fs-lg); font-weight: 900; }
+.hustle-tiers { display: flex; gap: 3px; }
+.hustle-tiers span { flex: 1; text-align: center; padding: 3px 0; border-radius: 6px; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; background: var(--border); color: var(--text-muted); }
+.hustle-tiers .done { background: var(--accent-soft); color: var(--accent-text); }
+.hustle-tiers .cur { background: var(--accent); color: var(--on-accent); }
+.hustle-reward { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--accent-soft); border: 1px dashed color-mix(in srgb, var(--accent) 55%, transparent); }
+.hustle-reward-icon { flex: none; width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 30px; color: var(--accent-text); background: var(--card-bg); }
+.hustle-reward-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.hustle-coins { display: inline-flex; align-items: center; gap: 3px; color: var(--accent-text); white-space: nowrap; }
+.hustle-flair-mark { font-size: 0.75em; line-height: 1; color: var(--accent-text); }
+.hustle-bar { display: flex; gap: 3px; margin-top: 4px; }
+.hustle-bar i { flex: 1; max-width: 18px; height: 6px; border-radius: 3px; background: var(--border-mid); }
 .hustle-bar i.on { background: var(--accent); }
-.hustle-node { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--accent); color: var(--accent-text); flex: none; }
-.hustle-next { flex-direction: row; align-items: center; gap: 12px; }
+.hustle-next { flex-direction: row; align-items: center; gap: 12px; border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); background: linear-gradient(135deg, var(--accent-soft), var(--card-bg) 70%); }
 .hustle-next-text { flex: 1; display: flex; flex-direction: column; }
-.hustle-milestones { display: flex; gap: 10px; list-style: none; margin: 0; padding: 0; }
-.hustle-milestones li { display: flex; flex-direction: column; align-items: center; gap: 4px; font-family: var(--font-num); }
-.hustle-milestones li:not(.special) .hustle-node { border-style: dashed; border-color: var(--border-mid); color: var(--text-muted); }
+.hustle-upcoming { display: flex; gap: 10px; list-style: none; margin: 0 -16px; padding: 2px 16px 4px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.hustle-upcoming::-webkit-scrollbar { display: none; }
+.hustle-upcoming li { flex: none; width: 112px; scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 8px; border-radius: var(--radius-sm); background: var(--board-cell); text-align: center; }
+.hustle-upcoming li.special { background: linear-gradient(180deg, var(--accent-soft), var(--board-cell)); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent) 55%, transparent); }
+.hustle-upcoming-lv { font-family: var(--font-num); font-size: var(--fs-xs); font-weight: 800; color: var(--text-muted); }
+.hustle-upcoming-icon { width: 54px; height: 54px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 34px; color: var(--accent-text); background: var(--card-bg); }
+.hustle-coins-line { display: inline-flex; align-items: center; gap: 3px; }
+.hustle-upcoming b { font-size: var(--fs-sm); line-height: 1.2; }
+.hustle-badges { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; list-style: none; margin: 0 0 6px; padding: 0; }
+.hustle-badges li { position: relative; aspect-ratio: 1; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 30px; background: var(--board-cell); }
+.hustle-badges li:not(.own) > :not(.hustle-req) { opacity: 0.35; filter: grayscale(1); }
+.hustle-badges li.own { background: var(--accent-soft); box-shadow: inset 0 0 0 1.5px var(--accent); }
+.hustle-req { position: absolute; bottom: -7px; padding: 0 5px; border-radius: 6px; font-family: var(--font-num); font-size: 0.65rem; font-weight: 800; background: var(--card-bg); color: var(--text-muted); }
+.hustle-badges li.own .hustle-req { color: var(--accent-text); }
+.hustle-flairs { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 8px 0 0; padding: 0; }
+.hustle-flairs li { padding: 4px 10px; border-radius: 999px; font-size: var(--fs-xs); font-weight: 800; background: var(--board-cell); color: var(--text-muted); }
+.hustle-flairs li.own { background: var(--accent-soft); color: var(--accent-text); }
