@@ -2,6 +2,10 @@ import { LOGO_PATH } from '../src/lib/logo.ts';
 
 export const BG = '#1c1b19';
 export const FG = '#FFA833';
+// Launch splash: the page background of theme.css for the system's light or dark mode, so the
+// splash hands over to the first screen without a flash, and the piece's height in dp (= CSS px).
+export const SPLASH_BG = { light: '#faf9f8', dark: '#111110' };
+export const SPLASH_PIECE = 96;
 
 // Placed in a 64 box and bounded by 15..49 vertically, about 53 % of the tile. android-icons.mjs
 // scales the same motif on its own into the 108 adaptive canvas. The piece is symmetric, so

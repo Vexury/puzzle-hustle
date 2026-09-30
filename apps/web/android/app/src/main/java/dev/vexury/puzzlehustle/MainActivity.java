@@ -5,16 +5,19 @@ import androidx.core.splashscreen.SplashScreen;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
-    // The system splash disappears with the first frame, so the app looks like it never
-    // started. Hold the logo briefly instead; the web view keeps loading behind it.
-    private static final long SPLASH_MS = 800;
+    // The splash stays until the web app has painted its first frame (LaunchPlugin.ready), where
+    // the same piece waits in the same place, so the handover shows no blank web view. The cap
+    // keeps a web side that never reports from holding the splash for good.
+    private static final long SPLASH_MAX_MS = 2000;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(StatusBarStylePlugin.class);
+        registerPlugin(LaunchPlugin.class);
+        LaunchPlugin.reset();
         SplashScreen splash = SplashScreen.installSplashScreen(this);
         long start = System.currentTimeMillis();
-        splash.setKeepOnScreenCondition(() -> System.currentTimeMillis() - start < SPLASH_MS);
+        splash.setKeepOnScreenCondition(() -> !LaunchPlugin.isReady() && System.currentTimeMillis() - start < SPLASH_MAX_MS);
         super.onCreate(savedInstanceState);
         // A web view refuses to render text below 8 px by default, which is meant for pages
         // nobody controls. Here it silently inflated the pencil marks and cage sums of a Killer

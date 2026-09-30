@@ -1,7 +1,8 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
-import { BG, icon, motif } from './mark.mjs';
+import { LOGO_PATH } from '../src/lib/logo.ts';
+import { BG, FG, SPLASH_BG, SPLASH_PIECE, icon, motif } from './mark.mjs';
 
 const RES = fileURLToPath(new URL('../android/app/src/main/res/', import.meta.url));
 
@@ -53,3 +54,42 @@ await writeFile(
   `<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">${BG}</color>\n</resources>\n`,
 );
 console.log('ic_launcher_background set to', BG);
+
+// The launch splash draws the piece as a vector, so it stays sharp at any size; the bitmap
+// foreground above got stretched from 108 dp to the splash's 288 dp. Without an icon background
+// Android shows 288 dp and keeps the middle 192 dp circle; the piece sits well inside it, at the
+// size the web launch (components/Launch.tsx) takes over from.
+const SPLASH_W = SPLASH_PIECE * 0.75;
+await mkdir(`${RES}drawable`, { recursive: true });
+await writeFile(
+  `${RES}drawable/splash_icon.xml`,
+  `<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="288"
+    android:viewportHeight="288">
+    <group
+        android:translateX="${(288 - SPLASH_W) / 2}"
+        android:translateY="${(288 - SPLASH_PIECE) / 2}"
+        android:scaleX="${SPLASH_PIECE / 160}"
+        android:scaleY="${SPLASH_PIECE / 160}">
+        <path
+            android:fillColor="${FG}"
+            android:pathData="${LOGO_PATH}" />
+    </group>
+</vector>
+`,
+);
+for (const [dir, color] of [
+  ['values', SPLASH_BG.light],
+  ['values-night', SPLASH_BG.dark],
+]) {
+  await mkdir(`${RES}${dir}`, { recursive: true });
+  await writeFile(`${RES}${dir}/splash.xml`, `<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="splash_background">${color}</color>
+</resources>
+`);
+}
+console.log(`splash_icon ${SPLASH_PIECE} dp piece, background ${SPLASH_BG.light} / ${SPLASH_BG.dark}`);

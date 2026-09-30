@@ -7,6 +7,9 @@ import { completeGoogleRedirect } from './lib/auth.ts';
 import { initBackButton } from './lib/back.ts';
 import { restoreBackup } from './lib/backup.ts';
 import { initEntitlement } from './lib/entitlement.ts';
+import { initLaunch, signalLaunchReady } from './lib/launch.ts';
+import { loadRefCache, saveRefCache } from './lib/refCache.ts';
+import { currentPath } from './lib/router.ts';
 import { syncFlairs } from './lib/flairs.ts';
 import { syncHustleBadges } from './lib/hustle.ts';
 import { initQueue } from './lib/queue.ts';
@@ -19,6 +22,7 @@ import './packs/index.css';
 
 await restoreBackup();
 rehydrate();
+loadRefCache();
 
 // Backs up the user-select rule in theme.css, which iOS WebKit does not always honour.
 document.addEventListener('selectstart', (e) => {
@@ -40,8 +44,12 @@ syncHustleBadges();
 // gets the modal's usual delay.
 markUnlocksLive();
 initEntitlement();
+initLaunch(currentPath());
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
   </StrictMode>,
 );
+signalLaunchReady();
+// After the first frame, when the Daily page has asked for its seeds.
+setTimeout(saveRefCache, 1000);

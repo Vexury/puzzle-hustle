@@ -3,6 +3,7 @@ import { PackAnchor } from './packs/anchors.tsx';
 import { PackLayer } from './packs/PackLayer.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import { Intro } from './components/Intro.tsx';
+import { Launch } from './components/Launch.tsx';
 import { TAB_PATHS, TabBar } from './components/TabBar.tsx';
 import { ToastHost } from './components/Toast.tsx';
 import { UnlockModalHost } from './components/UnlockModal.tsx';
@@ -119,6 +120,7 @@ export function App() {
         {chrome && <Intro />}
         <ToastHost />
         <UnlockModalHost />
+        <Launch />
       </div>
     </>
   );

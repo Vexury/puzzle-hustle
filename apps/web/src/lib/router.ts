@@ -19,6 +19,10 @@ function read(): Route {
   return { path, params: new URLSearchParams(location.search) };
 }
 
+export function currentPath(): string {
+  return snapshot.path;
+}
+
 function emit() {
   snapshot = read();
   for (const l of listeners) l();

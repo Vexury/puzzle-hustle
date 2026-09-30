@@ -168,6 +168,19 @@ button { font: inherit; color: inherit; }
 .spinner { width: 22px; height: 22px; flex: none; border-radius: 50%; border: 3px solid var(--border-mid); border-top-color: var(--accent); animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
+/* Launch (components/Launch.tsx): the splash's piece on the page background, above everything
+   incl. the intro, and never in the way of a tap. Centred with left/top, not a transform, which
+   the animations own. */
+.launch { position: fixed; inset: 0; z-index: 100; pointer-events: none; }
+.launch-veil { position: absolute; inset: 0; background: var(--bg); }
+.launch-piece { position: absolute; left: calc(50% - 36px); top: calc(50% - 48px); overflow: visible; }
+.launch-ring { position: absolute; left: calc(50% - 75px); top: calc(50% - 75px); width: 150px; height: 150px; border-radius: 50%; border: 3px solid #ffa833; opacity: 0; }
+.launch-flying .tabbar .tab-logo { visibility: hidden; }
+.launch-in .page > * { animation: launch-rise 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.launch-in .page > :nth-child(2) { animation-delay: 50ms; }
+.launch-in .page > :nth-child(3) { animation-delay: 100ms; }
+.launch-in .page > :nth-child(n + 4) { animation-delay: 140ms; }
+@keyframes launch-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 .intro { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 24px; background: rgba(0, 0, 0, 0.55); }
 .intro > .card-lg { position: relative; max-width: 22rem; gap: 12px; padding: 20px; }
 .intro-skip { position: absolute; top: 16px; right: 16px; }

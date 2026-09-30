@@ -23,6 +23,28 @@ const PERIOD_ATTEMPTS = 24;
 // day is fine, once per render is not.
 const scheduledCache = new Map<string, PuzzleRef>();
 
+// The found seeds for a client to keep across cold starts (apps/web lib/refCache.ts), where
+// the search is most of the time to the first frame. Each entry carries its adapter version and
+// difficulty, and one that no longer matches is searched again, so a stored seed never makes a
+// device disagree with the others about a daily.
+export type StoredRef = [type: PuzzleTypeId, period: Period, key: string, difficulty: Difficulty, version: number, seed: number];
+
+export function storedScheduledRefs(keep: (period: Period, key: string) => boolean): StoredRef[] {
+  return [...scheduledCache.values()].filter((r) => keep(r.period!, r.key!)).map((r) => [r.type, r.period!, r.key!, r.difficulty, adapter(r.type).version, r.seed]);
+}
+
+export function primeScheduledRefs(entries: unknown) {
+  if (!Array.isArray(entries)) return;
+  for (const e of entries) {
+    if (!Array.isArray(e) || e.length !== 6) continue;
+    const [type, period, key, difficulty, version, seed] = e as unknown[];
+    if (!isPuzzleTypeId(type) || !isPeriod(period) || typeof key !== 'string' || !isDifficulty(difficulty)) continue;
+    if (typeof seed !== 'number' || !Number.isInteger(seed) || seed < 0) continue;
+    if (version !== adapter(type).version || difficulty !== periodDifficulty(type, period)) continue;
+    scheduledCache.set(`${type}|${period}|${key}`, { type, difficulty, seed, period, key });
+  }
+}
+
 export function periodRef(period: Period, date: Date = new Date()): PuzzleRef {
   const key = periodKey(period, date);
   return { ...scheduledRef(periodPuzzleType(period, key), period, key), period, key };
