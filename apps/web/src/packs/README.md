@@ -23,6 +23,10 @@ that is one of these things adds it.
 - Board cells: `.nono-cell`, `.mosaic-cell`, `.sudoku-cell` (background image; leave `.f1`-`.f3`
   and `.filled` alone), `.zip-cell`, `.tracks-cell` (SVG fill, through a pattern the scene defines).
 - Drawn paths when solved: `.zip-board.solved .zip-path`, `.board-frame.solved .tracks-piece`.
+- `.solved-stamp` and its `span`: "Solved" laid over a freshly solved board for 2.4 s
+  (`components/SolvedStamp.tsx`). Every pack gives it its own look and entrance; the animation
+  ends at opacity 0, the base adds `!` through `span::after`, and `span::before`/`::after` plus
+  `.solved-stamp::after` are free for decoration. Reduced motion shows it still.
 
 ## Marks
 

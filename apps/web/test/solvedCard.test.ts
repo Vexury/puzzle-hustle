@@ -31,9 +31,9 @@ const tiles = () => [...container.querySelectorAll('.solved-tile')].map((t) => t
 const tile = (cls: string) => container.querySelector(`.solved-tile.${cls}`);
 const chips = () => [...container.querySelectorAll('.solved-chip')].map((c) => c.textContent);
 
-it('always says Solved! and puts time, moves and hints in three tiles', () => {
+it('puts time, moves and hints in three tiles and leaves the word to the stamp', () => {
   render({});
-  expect(container.querySelector('.solved-title')!.textContent).toBe('Solved!');
+  expect(container.querySelector('.solved-title')).toBeNull();
   expect(tiles()).toEqual(['1:24time', '31moves', '0hints']);
   expect(tile('good')!.textContent).toBe('0hints');
 });

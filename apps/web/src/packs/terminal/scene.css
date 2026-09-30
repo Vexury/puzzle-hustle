@@ -6,16 +6,12 @@
 }
 @keyframes tm-type { from { width: 0; } }
 
-.tm-boot, .tm-line {
+.tm-boot {
   position: absolute; font-family: 'Inconsolata', ui-monospace, monospace; color: #ffb000;
   text-shadow: 0 0 6px rgba(255, 176, 0, 0.6);
 }
 .tm-boot {
   left: 16px; top: calc(8px + env(safe-area-inset-top)); font-size: 13px;
   animation: tm-fade 2.6s steps(1) forwards;
-}
-.tm-line {
-  translate: -50% 0; padding: 4px 10px; background: rgba(10, 12, 10, 0.92); border: 1px solid #ffb000;
-  font-size: 18px; animation: tm-fade 3.2s ease-in forwards;
 }
 @keyframes tm-fade { 0%, 85% { opacity: 1; } 100% { opacity: 0; } }

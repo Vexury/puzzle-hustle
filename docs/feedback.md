@@ -40,6 +40,9 @@ Stand: 2026-09-30
 
 ## Erledigt
 
+- [x] 2026-09-30 **Pia** Hustle: nach dem Loesen sehen, welches Raetsel als naechstes kommt. Die
+  Weiter-Pille traegt jetzt Typ-Symbol und Namen (am Stufenwechsel mit Schwierigkeit), sitzt in der
+  kompakteren Ergebniskarte ohne Scrollen, und Wischen nach links fuehrt weiter.
 - [x] 2026-09-30 **Frieder** Tracks zu schnell geloest, eher Schienen ziehen als Ueberlegen; Wunsch 2 bis
   3 min fuer ein normales Level. Medium, Hard und Genius je eine Kerbe schwerer (`TRACKS_VERSION` 4,
   siehe decisions.md); Report zeigte fuer das Daily 34 s im Median.

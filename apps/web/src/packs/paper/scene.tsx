@@ -1,18 +1,8 @@
-import { useState } from 'react';
-import { boardRect, useSolved } from '../shared.ts';
 import './scene.css';
 
-// Pencil doodles in the margins of the exercise book, and an ink stamp on a solved board.
+// Pencil doodles in the margins of the exercise book. The ink stamp on a solved board is the
+// .solved-stamp slot in pack.css.
 export default function PaperScene() {
-  const [stamp, setStamp] = useState<{ n: number; x: number; y: number } | null>(null);
-  useSolved(() => {
-    const rect = boardRect();
-    setStamp((prev) => ({
-      n: prev ? prev.n + 1 : 1,
-      x: rect ? rect.left + rect.width / 2 : innerWidth / 2,
-      y: rect ? rect.top + rect.height / 2 : innerHeight / 2,
-    }));
-  });
   return (
     <>
       <div className="pack-back">
@@ -29,13 +19,6 @@ export default function PaperScene() {
           <path d="M20 5c9 0 15 6 15 15s-6 15-15 15S5 29 5 20 11 5 20 5ZM14 16v2M26 16v2M13 24c4 5 10 5 14 0" />
         </svg>
       </div>
-      {stamp && (
-        <div className="pack-front">
-          <div key={stamp.n} className="pp-stamp" style={{ left: stamp.x, top: stamp.y }}>
-            Solved
-          </div>
-        </div>
-      )}
     </>
   );
 }

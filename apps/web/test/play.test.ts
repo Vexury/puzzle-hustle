@@ -1,8 +1,8 @@
 import { act, createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { ACHIEVEMENTS_EPOCH, dailyRef, encodeRef, generateStars, hustleRef, levelRef, refId } from '@puzzle-hustle/core';
-import { Play } from '../src/pages/Play.tsx';
+import { ACHIEVEMENTS_EPOCH, PUZZLE_META, dailyRef, encodeRef, generateStars, hustleRef, levelRef, periodRef, refId } from '@puzzle-hustle/core';
+import { Play, nextLabel } from '../src/pages/Play.tsx';
 import { handleBackPress } from '../src/lib/back.ts';
 import { readProgress, recordSolve, rehydrate, writeSetting } from '../src/lib/storage.ts';
 
@@ -162,4 +162,34 @@ it('plays a Hustle stage again when its solve predates the epoch', async () => {
   expect(container.querySelector('.play-bar h1')?.textContent).toContain('Hustle 1');
   expect(container.textContent).not.toContain('Solved');
   expect(container.querySelector('.tracks, .board, svg')).not.toBeNull();
+});
+
+it('names the next Hustle puzzle on the pill inside the result card and goes there on a swipe left', async () => {
+  act(() => recordSolve('hustle:1', { solvedAt: new Date().toISOString(), seconds: 5, hints: 0, moves: 3 }));
+  await mount('h=1');
+  const pill = container.querySelector('.solved-card .solved-actions a.pill');
+  expect(pill?.textContent).toContain(PUZZLE_META[hustleRef(2).type].name);
+  expect(pill?.querySelector('.puzzle-icon')).not.toBeNull();
+  const touch = (type: string, x: number) =>
+    document.dispatchEvent(Object.assign(new Event(type), { touches: type === 'touchend' ? [] : [{ clientX: x, clientY: 300 }], changedTouches: [{ clientX: x, clientY: 300 }] }));
+  act(() => {
+    touch('touchstart', 300);
+    touch('touchend', 150);
+  });
+  expect(location.search).toContain(encodeRef(hustleRef(2)));
+});
+
+it('labels the way on by what comes next', () => {
+  expect(nextLabel(hustleRef(40), hustleRef(41))).toBe(`${PUZZLE_META[hustleRef(41).type].name} · Medium`);
+  expect(nextLabel(hustleRef(41), hustleRef(42))).toBe(PUZZLE_META[hustleRef(42).type].name);
+  expect(nextLabel(levelRef('zip', 'easy', 3)!, levelRef('zip', 'easy', 4)!)).toBe('Level #4');
+  expect(nextLabel(dailyRef('zip'), dailyRef('tracks'))).toBe('Tracks');
+  expect(nextLabel(dailyRef('zip'), periodRef('weekly'))).toBe('Weekly');
+});
+
+it('lays the stamp over the board only for a fresh solve', async () => {
+  act(() => recordSolve('hustle:1', { solvedAt: new Date().toISOString(), seconds: 5, hints: 0, moves: 3 }));
+  await mount('h=1');
+  expect(container.querySelector('.solved-card')).not.toBeNull();
+  expect(container.querySelector('.solved-stamp')).toBeNull();
 });

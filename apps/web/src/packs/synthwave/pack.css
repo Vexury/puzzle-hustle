@@ -50,3 +50,15 @@
   src: url('../../../public/fonts/orbitron-latin.woff2') format('woff2');
 }
 [data-pack="synthwave"] body { --font-display: 'Orbitron', var(--font-text); }
+
+/* Solved: neon tubing flickering on, with a slight colour split. */
+[data-pack="synthwave"] .solved-stamp span {
+  background: none; box-shadow: none; color: #fff; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  text-shadow: -2px 0 #3ee6ff, 2px 0 var(--accent), 0 0 14px var(--accent), 0 0 32px var(--accent);
+  animation: sw-neon 2.4s linear forwards;
+}
+[data-pack="synthwave"] .solved-stamp span::after { content: none; }
+@keyframes sw-neon {
+  0% { opacity: 0; } 4% { opacity: 1; } 7% { opacity: 0.2; } 10% { opacity: 1; } 13% { opacity: 0.5; } 16% { opacity: 1; }
+  82% { opacity: 1; } 100% { opacity: 0; }
+}

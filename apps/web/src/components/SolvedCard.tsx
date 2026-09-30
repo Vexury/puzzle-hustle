@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import type { CoinAward } from '@puzzle-hustle/core';
 import { formatSeconds } from '../lib/share.ts';
 import { Flame } from '../pages/Daily.tsx';
@@ -14,6 +14,8 @@ export interface SolvedCardProps {
   // Off when an already solved puzzle is reopened: the card is simply there.
   animate: boolean;
   placement?: ReactNode;
+  // Share, replay and the way on, inside the card so they show without scrolling.
+  actions?: ReactNode;
 }
 
 const COUNT_MS = 700;
@@ -42,7 +44,8 @@ function useCountUp(target: number, animate: boolean): number {
   return value;
 }
 
-export function SolvedCard({ seconds, moves, hints, bestBefore, awards, animate, placement }: SolvedCardProps) {
+export function SolvedCard({ seconds, moves, hints, bestBefore, awards, animate, placement, actions }: SolvedCardProps) {
+  const ref = useRef<HTMLDivElement>(null);
   const coins = awards ? awards.reduce((n, a) => n + a.coins, 0) : 0;
   const shownCoins = useCountUp(coins, animate);
   const sweep = awards?.some((a) => a.reason === 'clean-sweep') ?? false;
@@ -50,10 +53,15 @@ export function SolvedCard({ seconds, moves, hints, bestBefore, awards, animate,
   let pop = 0;
   const next = () => ({ '--pop': pop++ }) as CSSProperties;
 
-  return (
-    <div className={animate ? 'solved-card animate' : 'solved-card'}>
-      <h2 className="solved-title">Solved!</h2>
+  // Below a tall board the card lands under the fold; bring all of it into view once it has risen.
+  useEffect(() => {
+    if (!animate) return;
+    const timer = setTimeout(() => ref.current?.scrollIntoView?.({ block: 'nearest', behavior: reducedMotion() ? 'auto' : 'smooth' }), 350);
+    return () => clearTimeout(timer);
+  }, [animate]);
 
+  return (
+    <div ref={ref} className={animate ? 'solved-card animate' : 'solved-card'}>
       <div className="solved-tiles">
         <Tile style={next()} icon={<ClockIcon />} value={formatSeconds(seconds)} label="time" />
         <Tile style={next()} icon={<MoveIcon />} value={String(moves)} label={moves === 1 ? 'move' : 'moves'} />
@@ -84,13 +92,14 @@ export function SolvedCard({ seconds, moves, hints, bestBefore, awards, animate,
           {placement}
         </div>
       )}
+      {actions}
     </div>
   );
 }
 
 function Tile({ icon, value, label, className, style }: { icon: ReactNode; value: string; label: string; className?: string; style: CSSProperties }) {
   return (
-    <span className={className ? `solved-tile ${className}` : 'solved-tile'} style={style}>
+    <span className={className ? `solved-tile ${className}` : 'solved-tile'} style={style} title={`${value} ${label}`}>
       <span className="solved-tile-icon">{icon}</span>
       <b>{value}</b>
       <span className="solved-tile-label">{label}</span>

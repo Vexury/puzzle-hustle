@@ -43,7 +43,10 @@ import { MosaicGame } from '../mosaic/MosaicGame.tsx';
 import { SudokuGame } from '../sudoku/SudokuGame.tsx';
 import { RegionsGame } from '../regions/RegionsGame.tsx';
 import { Chevron } from '../components/Chevron.tsx';
+import { PuzzleIcon } from '../components/PuzzleIcon.tsx';
+import { useSwipeNext } from '../lib/useSwipeNext.ts';
 import { PlacementChip, SolvedCard } from '../components/SolvedCard.tsx';
+import { SolvedStamp } from '../components/SolvedStamp.tsx';
 import { toast } from '../components/Toast.tsx';
 import { announceUnlock } from '../components/UnlockModal.tsx';
 import * as haptics from '../lib/haptics.ts';
@@ -173,6 +176,7 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
   const [result, setResult] = useState<SolveRecord | undefined>(replayable ? undefined : existing);
   const [awards, setAwards] = useState<CoinAward[] | null>(null);
   const [freshSolve, setFreshSolve] = useState(false);
+  const [stamp, setStamp] = useState(0);
   // Gates Placement below: it must mount only once the solve just submitted has actually had
   // its round trip, not the instant it is enqueued. A puzzle that was already solved in an
   // earlier session has nothing racing it, so it starts settled.
@@ -405,6 +409,7 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
     setSeconds(elapsed);
     setResult(record);
     setFreshSolve(true);
+    setStamp((n) => n + 1);
     const firstSolve = counted(id, getSolve(id)) === undefined;
     recordSolve(id, record);
     try {
@@ -447,7 +452,10 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
 
   // The next puzzle replaces this one, so the header chevron still steps back to the list.
   const another = () => void randomBoardRef(puzzleRef.type, puzzleRef.difficulty).then((r) => navigate(href(`/play?${encodeRef(r)}`), true));
-  const onNextClick = (event: React.MouseEvent<HTMLAnchorElement>) => onLinkClick(event, true);
+  const onNextClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    onLinkClick(event, true);
+    if (event.defaultPrevented) slideIn();
+  };
   const replay = () => {
     onReplay();
     window.scrollTo({ top: 0 });
@@ -459,6 +467,16 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
     const candidates = [...DAILY_TYPES.map((type) => dailyRef(type)), periodRef('weekly'), periodRef('monthly')];
     return candidates.find((c) => refId(c) !== id && !solves[refId(c)]) ?? null;
   }, [puzzleRef, id, solves]);
+  // Where the pill and a swipe to the left go: the next Hustle stage, the next level, the next
+  // unsolved challenge, or another random board.
+  const nextRef = nextHustle ?? nextLevel ?? nextChallenge;
+  const random = !puzzleRef.period && !puzzleRef.level && !puzzleRef.hustle;
+  const goNext = () => {
+    if (nextRef) navigate(href(`/play?${encodeRef(nextRef)}`), true);
+    else another();
+    slideIn();
+  };
+  useSwipeNext(result && (nextRef || random) ? goNext : null);
   // The how-to covers the board, so like the other dialogs it stops the clock while it is up.
   const openHelp = () => {
     showHelpRef.current = true;
@@ -602,6 +620,8 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
         />
       )}
 
+      {stamp > 0 && <SolvedStamp key={stamp} onDone={() => setStamp(0)} />}
+
       {result && (
         <SolvedCard
           seconds={result.seconds}
@@ -611,40 +631,30 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
           awards={awards}
           animate={freshSolve}
           placement={puzzleRef.period && scoreSettled ? <Placement puzzle={id} /> : null}
+          actions={
+            <div className="solved-actions">
+              <button type="button" className="icon-round" onClick={doShare} aria-label="Share result" title="Share result">
+                <ShareIcon />
+              </button>
+              {replayable && (
+                <button type="button" className="icon-round" onClick={replay} aria-label="Play again" title="Play again">
+                  <ReplayIcon />
+                </button>
+              )}
+              {nextRef && (
+                <a href={href(`/play?${encodeRef(nextRef)}`)} className="pill" onClick={onNextClick}>
+                  <PuzzleIcon type={nextRef.type} size={22} />
+                  {nextLabel(puzzleRef, nextRef)} ›
+                </a>
+              )}
+              {random && (
+                <button type="button" className="pill" onClick={goNext}>
+                  Another {capitalize(puzzleRef.difficulty)} ›
+                </button>
+              )}
+            </div>
+          }
         />
-      )}
-
-      {result && (
-        <div className="solved-actions">
-          <button type="button" className="icon-round" onClick={doShare} aria-label="Share result" title="Share result">
-            <ShareIcon />
-          </button>
-          {replayable && (
-            <button type="button" className="icon-round" onClick={replay} aria-label="Play again" title="Play again">
-              <ReplayIcon />
-            </button>
-          )}
-          {nextHustle && (
-            <a href={href(`/play?${encodeRef(nextHustle)}`)} className="pill" onClick={onNextClick}>
-              Next ›
-            </a>
-          )}
-          {nextLevel && (
-            <a href={href(`/play?${encodeRef(nextLevel)}`)} className="pill" onClick={onNextClick}>
-              Level #{nextLevel.level} ›
-            </a>
-          )}
-          {!puzzleRef.period && !puzzleRef.level && !puzzleRef.hustle && (
-            <button type="button" className="pill" onClick={another}>
-              Another {capitalize(puzzleRef.difficulty)} ›
-            </button>
-          )}
-          {nextChallenge && (
-            <a href={href(`/play?${encodeRef(nextChallenge)}`)} className="pill" onClick={onNextClick}>
-              {nextChallenge.period === 'daily' ? PUZZLE_META[nextChallenge.type].name : capitalize(nextChallenge.period!)} ›
-            </a>
-          )}
-        </div>
       )}
 
       {askHint && <HintCard offer={askHint} onAnswer={answerHint} />}
@@ -692,6 +702,26 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
 // different number of sequential D1 round trips and neither was ever guaranteed to finish
 // first. Offline (submission still queued) or signed out or groupless, this renders nothing
 // rather than an error: the result screen must never look broken over it.
+// The pill names what comes, and a Hustle stage that starts a new difficulty says so.
+export function nextLabel(current: PuzzleRef, next: PuzzleRef): string {
+  if (next.level) return `Level #${next.level}`;
+  if (next.period && next.period !== 'daily') return capitalize(next.period);
+  const name = PUZZLE_META[next.type].name;
+  return next.hustle && next.difficulty !== current.difficulty ? `${name} · ${capitalize(next.difficulty)}` : name;
+}
+
+// The next puzzle comes in from the right, as a tab to the right of this one would.
+function slideIn() {
+  if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  document.querySelector('.page')?.animate?.(
+    [
+      { transform: 'translateX(26px)', opacity: 0 },
+      { transform: 'none', opacity: 1 },
+    ],
+    { duration: 260, easing: 'ease-out' },
+  );
+}
+
 function Placement({ puzzle }: { puzzle: string }) {
   const session = useSession();
   const { groups } = useGroups();

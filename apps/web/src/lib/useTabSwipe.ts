@@ -1,13 +1,13 @@
 import { useEffect, type RefObject } from 'react';
 import { href, navigate } from './router.ts';
 
-const MIN_DX = 60;
+export const MIN_DX = 60;
 // Android and iOS keep the screen edges for their own back gestures.
-const EDGE = 24;
+export const EDGE = 24;
 
 // Something that owns the horizontal drag itself: text fields, the how-to demo, and any strip
 // that can still scroll sideways in the direction of the swipe.
-function claimed(target: EventTarget | null, dx: number): boolean {
+export function claimed(target: EventTarget | null, dx: number): boolean {
   for (let el = target instanceof Element ? target : null; el; el = el.parentElement) {
     if (el.matches('input, textarea, select, .demo, [data-no-swipe]')) return true;
     if (el.scrollWidth > el.clientWidth && ['auto', 'scroll'].includes(getComputedStyle(el).overflowX)) {
