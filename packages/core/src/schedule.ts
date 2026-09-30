@@ -1,5 +1,5 @@
 import { hashString } from './rng.ts';
-import { PUZZLE_TYPES, type Difficulty, type Period, type PuzzleTypeId } from './types.ts';
+import { DIFFICULTIES, PUZZLE_TYPES, type Difficulty, type Period, type PuzzleTypeId } from './types.ts';
 
 export const TIME_ZONE = 'Europe/Berlin';
 
@@ -62,6 +62,15 @@ const DAILY_DIFFICULTY: Partial<Record<PuzzleTypeId, Difficulty>> = {
 
 export function periodDifficulty(type: PuzzleTypeId, period: Period): Difficulty {
   return (period === 'daily' ? DAILY_DIFFICULTY[type] : undefined) ?? PERIOD_DIFFICULTY[period];
+}
+
+// The same balance as the dailies, as steps away from medium: Killer and Stars take much longer
+// than the rest at the same difficulty, Shapes much less. Hustle shifts each stage's tier by it,
+// clamped to easy and genius, so one type does not tower over its neighbours in the sequence.
+export function balancedDifficulty(type: PuzzleTypeId, tier: Difficulty): Difficulty {
+  const shift = DIFFICULTIES.indexOf(DAILY_DIFFICULTY[type] ?? 'medium') - DIFFICULTIES.indexOf('medium');
+  const at = Math.min(DIFFICULTIES.length - 1, Math.max(0, DIFFICULTIES.indexOf(tier) + shift));
+  return DIFFICULTIES[at]!;
 }
 
 // The dailies, in the order PUZZLE_TYPES gives them. Plain Sudoku sits out and Killer takes

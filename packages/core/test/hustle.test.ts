@@ -79,3 +79,18 @@ describe('hustle guards and pins', () => {
     expect([hustleSeed(1), hustleSeed(50)]).toEqual([2122481030, 1394498158]);
   });
 });
+
+describe('hustle balance', () => {
+  it('plays Killer and Stars a tier below the stage and Shapes a tier above, within easy and genius', () => {
+    const at = (type: string, from: number) => {
+      for (let n = from; ; n++) if (hustleSlot(n).type === type) return hustleSlot(n).difficulty;
+    };
+    expect(at('killer', 41)).toBe('easy');
+    expect(at('stars', 41)).toBe('easy');
+    expect(at('shapes', 41)).toBe('hard');
+    expect(at('killer', 1)).toBe('easy');
+    expect(at('shapes', 301)).toBe('genius');
+    expect(at('killer', 301)).toBe('hard');
+    expect(at('tracks', 41)).toBe('medium');
+  });
+});

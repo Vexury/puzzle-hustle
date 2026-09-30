@@ -7,6 +7,7 @@ import {
   coinsForSolve,
   adapter,
   levelRef,
+  hustleDifficulty,
   hustleNext,
   hustleRef,
   dailyRef,
@@ -710,12 +711,14 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
 // different number of sequential D1 round trips and neither was ever guaranteed to finish
 // first. Offline (submission still queued) or signed out or groupless, this renders nothing
 // rather than an error: the result screen must never look broken over it.
-// The pill names what comes, and a Hustle stage that starts a new difficulty says so.
+// The pill names what comes, and a Hustle stage that opens a new tier (41, 121, 301) says how
+// hard its puzzle is. Within a tier the per-type balance alone would name it on every other step.
 export function nextLabel(current: PuzzleRef, next: PuzzleRef): string {
   if (next.level) return `Level #${next.level}`;
   if (next.period && next.period !== 'daily') return capitalize(next.period);
   const name = PUZZLE_META[next.type].name;
-  return next.hustle && next.difficulty !== current.difficulty ? `${name} · ${capitalize(next.difficulty)}` : name;
+  const newTier = next.hustle && current.hustle && hustleDifficulty(next.hustle) !== hustleDifficulty(current.hustle);
+  return newTier ? `${name} · ${capitalize(next.difficulty)}` : name;
 }
 
 // The next puzzle comes in from the right, as a tab to the right of this one would.

@@ -3,6 +3,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { ACHIEVEMENTS_EPOCH, PUZZLE_META, dailyRef, encodeRef, generateStars, hustleRef, levelRef, periodRef, refId } from '@puzzle-hustle/core';
 import { Play, nextLabel } from '../src/pages/Play.tsx';
+import { capitalize } from '../src/lib/share.ts';
 import { handleBackPress } from '../src/lib/back.ts';
 import { readProgress, recordSolve, rehydrate, writeSetting } from '../src/lib/storage.ts';
 
@@ -180,7 +181,7 @@ it('names the next Hustle puzzle on the pill inside the result card and goes the
 });
 
 it('labels the way on by what comes next', () => {
-  expect(nextLabel(hustleRef(40), hustleRef(41))).toBe(`${PUZZLE_META[hustleRef(41).type].name} · Medium`);
+  expect(nextLabel(hustleRef(40), hustleRef(41))).toBe(`${PUZZLE_META[hustleRef(41).type].name} · ${capitalize(hustleRef(41).difficulty)}`);
   expect(nextLabel(hustleRef(41), hustleRef(42))).toBe(PUZZLE_META[hustleRef(42).type].name);
   expect(nextLabel(levelRef('zip', 'easy', 3)!, levelRef('zip', 'easy', 4)!)).toBe('Level #4');
   expect(nextLabel(dailyRef('zip'), dailyRef('tracks'))).toBe('Tracks');

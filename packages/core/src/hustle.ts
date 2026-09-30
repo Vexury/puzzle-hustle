@@ -1,4 +1,5 @@
 import { hashString, Rng } from './rng.ts';
+import { balancedDifficulty } from './schedule.ts';
 import { PUZZLE_TYPES, type Difficulty, type PuzzleTypeId } from './types.ts';
 
 // Hustle: one endless sequence, the same for every player. Stage n (from 1) has a fixed type
@@ -32,8 +33,11 @@ export function hustleType(n: number): PuzzleTypeId {
   return roundOrder(Math.floor((n - 1) / HUSTLE_ROUND))[(n - 1) % HUSTLE_ROUND]!;
 }
 
+// The tier of the stage, balanced per type like the dailies (2026-09-30: Killer medium at stages
+// 49 and 56 took testers far longer than the stages around it).
 export function hustleSlot(n: number): { type: PuzzleTypeId; difficulty: Difficulty } {
-  return { type: hustleType(n), difficulty: hustleDifficulty(n) };
+  const type = hustleType(n);
+  return { type, difficulty: balancedDifficulty(type, hustleDifficulty(n)) };
 }
 
 export const HUSTLE_MILESTONE = 10;
