@@ -3,6 +3,7 @@ import {
   coinBalance,
   coinsEarned,
   earnedFlairs,
+  earnedHustleBadges,
   findCosmetic,
   HINT_PRICE,
   ownedItems,
@@ -82,15 +83,15 @@ export function spendHint(puzzle: string): boolean {
   return true;
 }
 
-// Bought badges and themes plus earned flairs: a flair is never in ph:coins:spent (buyItem
-// refuses it), so the two sources never overlap.
+// Bought badges and themes plus earned flairs and Hustle badges: those are never in
+// ph:coins:spent (buyItem refuses them), so the sources never overlap.
 export function owned(): Set<string> {
-  return new Set([...ownedItems(readSpent()), ...earnedFlairs(storedSolves())]);
+  return new Set([...ownedItems(readSpent()), ...earnedFlairs(storedSolves()), ...earnedHustleBadges(storedSolves())]);
 }
 
 export function buyItem(id: string): boolean {
   const item = findCosmetic(id);
-  if (!item || (item.kind !== 'badge' && item.kind !== 'theme') || owned().has(id) || balance() < item.price) return false;
+  if (!item || (item.kind !== 'badge' && item.kind !== 'theme') || (item.kind === 'badge' && item.requires) || owned().has(id) || balance() < item.price) return false;
   appendSpent({ kind: 'item', item: id, coins: item.price, at: Date.now() });
   return true;
 }

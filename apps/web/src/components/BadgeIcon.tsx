@@ -146,6 +146,16 @@ const SHAPES: Record<string, ReactNode> = {
       <ellipse cx="12" cy="12" rx="10.5" ry="3.5" transform="rotate(-20 12 12)" {...stroke} strokeWidth={1.8} />
     </>
   ),
+  'hustle-mountain': <path d="M2 20 9 7l3.5 5.5L15 9l7 11Z" />,
+  'hustle-ladder': <path fillRule="evenodd" d="M6 2h2.5v3h7V2H18v20h-2.5v-3h-7v3H6Zm2.5 5.5v3h7v-3Zm0 5.5v3.5h7V13Z" />,
+  'hustle-arrow': <path d="M12 2 19 10h-4.5v6.5c0 3-1.2 5.5-2.5 5.5s-2.5-2.5-2.5-5.5V10H5Z" />,
+  'hustle-crown': <path d="M3 18 2 7l5.5 4.5L12 4l4.5 7.5L22 7l-1 11Zm0 2h18v2H3Z" />,
+  'hustle-summit': (
+    <>
+      <path d="M2 21 10 8l4 6 2-3 6 10Z" />
+      <path d="M10 8V2l5 2-5 2" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" fill="none" />
+    </>
+  ),
   paw: (
     <>
       <path d="M12 12c-3 0-6.5 3.5-6.5 6.3 0 1.8 1.4 2.7 3 2.7 1.3 0 2.2-.8 3.5-.8s2.2.8 3.5.8c1.6 0 3-.9 3-2.7 0-2.8-3.5-6.3-6.5-6.3Z" />
@@ -163,6 +173,7 @@ const MOTIONS: Record<string, 'flicker' | 'wiggle' | 'hop' | 'spin'> = {
   leaf: 'wiggle', cat: 'wiggle', moon: 'wiggle', clover: 'wiggle', umbrella: 'wiggle', anchor: 'wiggle', note: 'wiggle',
   bean: 'wiggle', fox: 'wiggle', owl: 'wiggle', paw: 'wiggle', cactus: 'wiggle',
   ghost: 'hop', rocket: 'hop', frog: 'hop', bird: 'hop', fish: 'hop', dice: 'hop', mushroom: 'hop', coffee: 'hop',
+  'hustle-mountain': 'hop', 'hustle-ladder': 'hop', 'hustle-arrow': 'flicker', 'hustle-crown': 'wiggle', 'hustle-summit': 'wiggle',
   sun: 'spin', compass: 'spin', snowflake: 'spin', planet: 'spin',
 };
 

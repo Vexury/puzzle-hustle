@@ -24,6 +24,15 @@ it('builds a streak row that explains the rule, without coins', () => {
   expect(row!.description).toMatch(/every day/);
 });
 
+it('shows an earned badge as its own row', () => {
+  const rows = buildUnlockRows([{ kind: 'badge', id: 'hustle-mountain' }], null);
+  expect(rows).toMatchObject([{ kind: 'badge', id: 'hustle-mountain', title: 'Mountain', description: 'Reach Hustle level 50.' }]);
+});
+
+it('drops a badge that is not earned-only', () => {
+  expect(buildUnlockRows([{ kind: 'badge', id: 'bolt' }, { kind: 'badge', id: 'nope' }], null)).toEqual([]);
+});
+
 it('builds an achievement row from the catalogue, with the coin award text', () => {
   const rows = buildUnlockRows([{ kind: 'achievement', id: 'first-weekly' }], null);
   expect(rows).toEqual([

@@ -8,6 +8,7 @@ import { initBackButton } from './lib/back.ts';
 import { restoreBackup } from './lib/backup.ts';
 import { initEntitlement } from './lib/entitlement.ts';
 import { syncFlairs } from './lib/flairs.ts';
+import { syncHustleBadges } from './lib/hustle.ts';
 import { initQueue } from './lib/queue.ts';
 import { initTelemetry } from './lib/telemetry.ts';
 import { rehydrate } from './lib/storage.ts';
@@ -33,6 +34,7 @@ initTelemetry();
 void completeGoogleRedirect();
 syncAchievements();
 syncFlairs();
+syncHustleBadges();
 // Anything syncAchievements()/syncFlairs() just announced is app-start catch-up and opens right
 // away; everything announced after this point (in practice, only ever a solve) is "live" and
 // gets the modal's usual delay.

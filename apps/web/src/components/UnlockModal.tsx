@@ -1,6 +1,7 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import confetti from 'canvas-confetti';
 import { ACHIEVEMENTS, ACHIEVEMENT_COINS, STREAK_MIN, findCosmetic } from '@puzzle-hustle/core';
+import { BadgeIcon } from './BadgeIcon.tsx';
 import { pushBackGuard } from '../lib/back.ts';
 import { equip, useEquipped } from '../lib/coins.ts';
 import { requirementText } from '../lib/flairs.ts';
@@ -8,17 +9,17 @@ import * as haptics from '../lib/haptics.ts';
 import { INTRO_SEEN_KEY, readSetting } from '../lib/storage.ts';
 import { Flame } from '../pages/Daily.tsx';
 
-export type UnlockItem = { kind: 'achievement'; id: string } | { kind: 'flair'; id: string } | { kind: 'streak'; id: string };
+export type UnlockItem = { kind: 'achievement'; id: string } | { kind: 'flair'; id: string } | { kind: 'streak'; id: string } | { kind: 'badge'; id: string };
 
 function isUnlockItem(value: unknown): value is UnlockItem {
   if (!value || typeof value !== 'object') return false;
   const v = value as Record<string, unknown>;
-  return (v.kind === 'achievement' || v.kind === 'flair' || v.kind === 'streak') && typeof v.id === 'string';
+  return (v.kind === 'achievement' || v.kind === 'flair' || v.kind === 'streak' || v.kind === 'badge') && typeof v.id === 'string';
 }
 
 export interface UnlockRow {
   key: string;
-  kind: 'achievement' | 'flair' | 'streak';
+  kind: 'achievement' | 'flair' | 'streak' | 'badge';
   id: string;
   title: string;
   description: string;
@@ -69,6 +70,10 @@ export function buildUnlockRows(items: readonly UnlockItem[], equippedFlairId: s
         equipped: false,
         flair: riders.get(item.id) ?? null,
       });
+    } else if (item.kind === 'badge') {
+      const badge = findCosmetic(item.id);
+      if (badge?.kind !== 'badge' || !badge.requires) continue;
+      rows.push({ key: `badge:${item.id}`, kind: 'badge', id: item.id, title: badge.title, description: `Reach Hustle level ${badge.requires.hustle}.`, coinsText: null, equipped: false, flair: null });
     } else {
       if (riding.has(item.id)) continue;
       const flair = findCosmetic(item.id);
@@ -270,6 +275,16 @@ export function UnlockModalHost() {
       <div className={rows.length === 1 ? 'card-lg unlock-card unlock-single' : 'card-lg unlock-card'}>
         <ul className="unlock-list">
           {rows.map((row) => {
+            if (row.kind === 'badge') {
+              const on = equipped.badge === row.id;
+              return (
+                <li key={row.key}>
+                  <button type="button" className="unlock-row" onClick={() => equip('badge', row.id)} aria-label={`${row.title}, badge, ${on ? 'equipped' : 'tap to wear'}`}>
+                    <UnlockRowBody row={row} wearing={on} />
+                  </button>
+                </li>
+              );
+            }
             const wear = row.kind === 'flair' ? { id: row.id, title: row.title, equipped: row.equipped } : row.flair;
             return !wear ? (
               <li key={row.key} className="unlock-row">
@@ -303,13 +318,14 @@ const EYEBROW: Record<UnlockRow['kind'], string> = {
   streak: 'Daily streak',
   achievement: 'Achievement unlocked',
   flair: 'Flair unlocked',
+  badge: 'New badge',
 };
 
-function UnlockRowBody({ row }: { row: UnlockRow }) {
+function UnlockRowBody({ row, wearing = false }: { row: UnlockRow; wearing?: boolean }) {
   return (
     <>
       <span className="unlock-mark" aria-hidden="true">
-        {row.kind === 'streak' ? <Flame /> : row.kind === 'achievement' ? '★' : '♦'}
+        {row.kind === 'streak' ? <Flame /> : row.kind === 'badge' ? <BadgeIcon id={row.id} /> : row.kind === 'achievement' ? '★' : '♦'}
       </span>
       <span className="unlock-text">
         <span className="unlock-eyebrow">{EYEBROW[row.kind]}</span>
@@ -325,6 +341,11 @@ function UnlockRowBody({ row }: { row: UnlockRow }) {
                 ♦ Flair <i>{row.flair.title}</i> · {row.flair.equipped ? '✓ Equipped' : 'Tap to wear'}
               </span>
             )}
+          </>
+        ) : row.kind === 'badge' ? (
+          <>
+            <span className="muted unlock-desc">{row.description}</span>
+            <span className="unlock-flair-action">{wearing ? '✓ Equipped' : 'Tap to wear'}</span>
           </>
         ) : (
           <>

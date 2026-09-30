@@ -28,8 +28,8 @@ import { BackLink } from '../components/BackLink.tsx';
 import { Chevron } from '../components/Chevron.tsx';
 
 const REVERT_MS = 4000;
-// Cheapest first; sort is stable, so equal prices keep their catalogue order.
-const BADGES: readonly BadgeCosmetic[] = COSMETICS.filter((c): c is BadgeCosmetic => c.kind === 'badge').sort((a, b) => a.price - b.price);
+// Cheapest first, earned-only badges last; sort is stable, so equal prices keep their catalogue order.
+const BADGES: readonly BadgeCosmetic[] = COSMETICS.filter((c): c is BadgeCosmetic => c.kind === 'badge').sort((a, b) => (a.requires ? 1 : 0) - (b.requires ? 1 : 0) || a.price - b.price);
 const FLAIRS: readonly FlairCosmetic[] = COSMETICS.filter((c): c is FlairCosmetic => c.kind === 'flair');
 
 // Badges and flairs fold away so the page stays short; themes stay open, the try-on is the point
@@ -67,7 +67,7 @@ export function itemState(id: string, ownedIds: Set<string>, equipped: Equipped,
   if (equipped.badge === id || equipped.flair === id || equipped.theme === id) return 'equipped';
   if (ownedIds.has(id)) return 'owned';
   const item = COSMETICS.find((c) => c.id === id);
-  if (!item || item.kind === 'flair') return 'locked';
+  if (!item || item.kind === 'flair' || (item.kind === 'badge' && item.requires)) return 'locked';
   return balance >= item.price ? 'buyable' : 'locked';
 }
 
@@ -150,7 +150,7 @@ export function Shop() {
     } else if (state === 'owned') {
       equip('badge', item.id);
     } else if (state === 'locked') {
-      toast(`${item.price - balance} more coins needed`);
+      toast(item.requires ? `Reach Hustle level ${item.requires.hustle}` : `${item.price - balance} more coins needed`);
     } else if (armed !== item.id) {
       setArmed(item.id);
     } else {
@@ -163,6 +163,7 @@ export function Shop() {
     const state = itemState(item.id, ownedIds, equipped, balance);
     if (state === 'equipped') return 'Equipped';
     if (state === 'owned') return 'Owned';
+    if (item.requires) return `Hustle ${item.requires.hustle}`;
     return armed === item.id ? 'Buy?' : `${item.price}`;
   };
 

@@ -87,6 +87,13 @@ it('refuses to buy a flair, whatever the balance: flairs are earned, never bough
   expect(readSpent()).toEqual([]);
 });
 
+it('refuses to buy an earned-only badge, whatever the balance', () => {
+  earnSome(50);
+  expect(buyItem('hustle-mountain')).toBe(false);
+  expect(readSpent()).toEqual([]);
+  expect(localStorage.getItem('ph:coins:spent')).toBeNull();
+});
+
 it('owns a flair once it is earned by solving, with no spend entry involved', () => {
   expect(owned().has('basic-zipper')).toBe(false);
   earnBasicZipper();

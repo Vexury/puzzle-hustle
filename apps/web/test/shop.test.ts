@@ -15,6 +15,11 @@ it('a flair is locked until earned, whatever the balance, and never buyable', ()
   expect(itemState('basic-zipper', new Set(), none, 1_000_000)).toBe('locked');
 });
 
+it('never offers an earned-only badge for coins', () => {
+  expect(itemState('hustle-mountain', new Set(), none, 1_000_000)).toBe('locked');
+  expect(itemState('hustle-mountain', new Set(['hustle-mountain']), none, 0)).toBe('owned');
+});
+
 it('an earned flair is owned, and equips once worn', () => {
   expect(itemState('hustler', new Set(['hustler']), none, 0)).toBe('owned');
   expect(itemState('hustler', new Set(['hustler']), { badge: null, flair: 'hustler', theme: null }, 0)).toBe('equipped');
