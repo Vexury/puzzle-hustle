@@ -45,3 +45,9 @@ describe('parseTelemetryEvent', () => {
     expect(parseTelemetryEvent(null)).toBeNull();
   });
 });
+
+it('takes a Hustle attempt with its stage and refuses a stage past the end', () => {
+  expect(parseTelemetryEvent({ ...attempt, mode: 'hustle', level: 4321 })).toMatchObject({ mode: 'hustle', level: 4321 });
+  expect(parseTelemetryEvent({ ...attempt, mode: 'hustle', level: 100_001 })).toBeNull();
+  expect(parseTelemetryEvent({ ...attempt, mode: 'level', level: 4321 })).toBeNull();
+});

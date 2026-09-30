@@ -142,7 +142,66 @@ export function introSection(intro: readonly IntroRow[]): string {
   return `- Durchgeklickt: ${pct(done, total)} von ${total}\n- Uebersprungen bei ${at || '–'}`;
 }
 
-export function report(days: number, attempts: readonly AttemptRow[], launches: readonly LaunchRow[], intro: readonly IntroRow[]): string {
+const MODE_ORDER = ['daily', 'weekly', 'monthly', 'level', 'hustle', 'random'];
+const DIFFICULTY_ORDER = ['easy', 'medium', 'hard', 'genius'];
+const order = (list: string[], v: string) => (list.includes(v) ? list.indexOf(v) : list.length);
+
+// Play times of every mode, type and difficulty: the measure the difficulty settings are tuned by,
+// since generator scores only compare boards of one type.
+export function timesSection(attempts: readonly AttemptRow[]): string {
+  const groups = [...groupBy(attempts, (a) => `${a.mode}|${a.type}|${a.difficulty}`)].sort(([a], [b]) => {
+    const [ma, ta, da] = a.split('|') as [string, string, string];
+    const [mb, tb, db] = b.split('|') as [string, string, string];
+    return order(MODE_ORDER, ma) - order(MODE_ORDER, mb) || ta.localeCompare(tb) || order(DIFFICULTY_ORDER, da) - order(DIFFICULTY_ORDER, db);
+  });
+  if (groups.length === 0) return 'Keine Versuche im Zeitraum.';
+  return table(
+    ['Modus', 'Typ', 'Stufe', 'Versuche', 'geloest', 'Median ohne Hint', 'P75 ohne Hint', 'mit Hint'],
+    groups.map(([k, list]) => {
+      const [mode, type, difficulty] = k.split('|') as [string, string, string];
+      const solved = list.filter((a) => a.outcome === 'solved');
+      const clean = solved.filter((a) => a.hints === 0).map((a) => a.seconds);
+      return [mode, type, difficulty, String(list.length), pct(solved.length, list.length), time(quantile(clean, 0.5)), time(quantile(clean, 0.75)), pct(solved.filter((a) => a.hints > 0).length, solved.length)];
+    }),
+  );
+}
+
+// How a type's generator score relates to real time: solves without a hint, split into thirds by
+// the score of their board (`scoreOf` rebuilds it; null where the board cannot be known, as for
+// random). Rising medians from the low to the high third mean the score can steer that type.
+export function scoreSection(attempts: readonly AttemptRow[], scoreOf: (a: AttemptRow) => number | null): string {
+  const byType = groupBy(
+    attempts.filter((a) => a.outcome === 'solved' && a.hints === 0),
+    (a) => a.type,
+  );
+  const rows: string[][] = [];
+  for (const [type, list] of [...byType].sort(([a], [b]) => a.localeCompare(b))) {
+    const scored = list.map((a) => ({ score: scoreOf(a), seconds: a.seconds })).filter((x): x is { score: number; seconds: number } => x.score !== null);
+    if (scored.length < 3) continue;
+    scored.sort((a, b) => a.score - b.score);
+    const third = Math.ceil(scored.length / 3);
+    const parts = [scored.slice(0, third), scored.slice(third, 2 * third), scored.slice(2 * third)];
+    rows.push([
+      type,
+      String(scored.length),
+      ...parts.map((p) => (p.length ? `${time(quantile(p.map((x) => x.seconds), 0.5))} (${Math.round(p[0]!.score)}–${Math.round(p[p.length - 1]!.score)})` : '–')),
+    ]);
+  }
+  if (rows.length === 0) return 'Zu wenige Loesungen mit bekanntem Brett.';
+  return [
+    table(['Typ', 'Loesungen', 'Median, leichtes Drittel (Score)', 'mittleres Drittel', 'schweres Drittel'], rows),
+    '',
+    '- Score nach dem aktuellen Generator; Versuche aus Builds vor einer Generator-Aenderung koennen zu einem anderen Brett gehoeren.',
+  ].join('\n');
+}
+
+export function report(
+  days: number,
+  attempts: readonly AttemptRow[],
+  launches: readonly LaunchRow[],
+  intro: readonly IntroRow[],
+  scoreOf: (a: AttemptRow) => number | null = () => null,
+): string {
   return [
     `# Puzzle Hustle, Nutzung der letzten ${days} Tage`,
     '',
@@ -151,6 +210,12 @@ export function report(days: number, attempts: readonly AttemptRow[], launches: 
     '',
     '## Dailys je Typ',
     dailySection(attempts),
+    '',
+    '## Spielzeiten je Modus, Typ und Stufe',
+    timesSection(attempts),
+    '',
+    '## Score gegen Spielzeit je Typ',
+    scoreSection(attempts, scoreOf),
     '',
     '## Erstkontakt je Typ',
     firstContactSection(attempts),

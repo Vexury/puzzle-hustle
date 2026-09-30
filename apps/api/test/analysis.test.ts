@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { dailySection, quantile, retentionSection, stickyLevelsSection, type AttemptRow } from '../scripts/analysis.ts';
+import { dailySection, quantile, retentionSection, scoreSection, stickyLevelsSection, timesSection, type AttemptRow } from '../scripts/analysis.ts';
 
 function attempt(over: Partial<AttemptRow>): AttemptRow {
   return {
@@ -55,4 +55,22 @@ it('computes next-day retention against the previous day', () => {
     { day: '2026-09-28', age: 1, n: 1 },
   ]);
   expect(out).toContain('Am Folgetag zurueck: 33 % (5 von 15)');
+});
+
+it('lists play times for every mode, type and difficulty, Hustle included', () => {
+  const out = timesSection([
+    attempt({ mode: 'hustle', level: 49, type: 'killer', difficulty: 'easy', seconds: 300 }),
+    attempt({ mode: 'hustle', level: 56, type: 'killer', difficulty: 'easy', seconds: 420, hints: 1 }),
+    attempt({ mode: 'level', level: 3, seconds: 40 }),
+  ]);
+  expect(out).toContain('| level | zip | medium | 1 | 100 % | 40s |');
+  expect(out).toContain('| hustle | killer | easy | 2 | 100 % | 5:00 |');
+  expect(out.indexOf('| level |')).toBeLessThan(out.indexOf('| hustle |'));
+});
+
+it('sets play time against the board score in thirds, skipping boards it cannot know', () => {
+  const rows = [10, 20, 30, 40, 50, 60].map((s, i) => attempt({ mode: 'level', level: i + 1, seconds: s }));
+  const out = scoreSection([...rows, attempt({ mode: 'random', seconds: 999 })], (a) => (a.mode === 'level' ? a.level! * 10 : null));
+  expect(out).toContain('| zip | 6 | 20s (10–20) | 40s (30–40) | 1:00 (50–60) |');
+  expect(scoreSection(rows, () => null)).toBe('Zu wenige Loesungen mit bekanntem Brett.');
 });

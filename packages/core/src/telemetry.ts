@@ -1,3 +1,4 @@
+import { HUSTLE_MAX_STAGE } from './hustle.ts';
 import { isDifficulty, isPuzzleTypeId, type Difficulty, type PuzzleTypeId } from './types.ts';
 
 // Anonymous usage events. No event carries anything that tells two devices apart: no id, no
@@ -5,7 +6,8 @@ import { isDifficulty, isPuzzleTypeId, type Difficulty, type PuzzleTypeId } from
 export const PLATFORMS = ['android', 'ios', 'web'] as const;
 export type Platform = (typeof PLATFORMS)[number];
 
-export const ATTEMPT_MODES = ['daily', 'weekly', 'monthly', 'level', 'random'] as const;
+// A Hustle attempt carries its stage in `level` (since 2026-09-30; before, Hustle counted as random).
+export const ATTEMPT_MODES = ['daily', 'weekly', 'monthly', 'level', 'random', 'hustle'] as const;
 export type AttemptMode = (typeof ATTEMPT_MODES)[number];
 
 // Lower bounds in days since install. 0 and 1 stay exact, they carry next-day retention.
@@ -66,7 +68,7 @@ export function parseTelemetryEvent(value: unknown): TelemetryEvent | null {
   }
   if (v.kind === 'attempt') {
     if (!isPuzzleTypeId(v.type) || !isDifficulty(v.difficulty) || !oneOf(ATTEMPT_MODES, v.mode)) return null;
-    if (v.level !== null && !count(v.level, 999)) return null;
+    if (v.level !== null && !count(v.level, v.mode === 'hustle' ? HUSTLE_MAX_STAGE : 999)) return null;
     if (v.outcome !== 'solved' && v.outcome !== 'left') return null;
     if (!count(v.seconds, 86_400) || !count(v.moves, 100_000) || !count(v.hints, 999)) return null;
     if (typeof v.resumed !== 'boolean' || typeof v.first !== 'boolean') return null;
