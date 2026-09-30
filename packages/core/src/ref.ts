@@ -1,5 +1,5 @@
 import { POOL_SEEDS } from './boards/pools.ts';
-import { hustleSlot } from './hustle.ts';
+import { HUSTLE_MAX_STAGE, hustleSlot } from './hustle.ts';
 import { levelEntry } from './levels.ts';
 import { parsePuzzleId } from './puzzleId.ts';
 import { adapter } from './registry.ts';
@@ -109,7 +109,7 @@ export function decodeRef(query: string | URLSearchParams): PuzzleRef | null {
   const hustle = params.get('h');
   if (hustle !== null) {
     const n = Number(hustle);
-    return Number.isInteger(n) && n >= 1 ? hustleRef(n) : null;
+    return Number.isInteger(n) && n >= 1 && n <= HUSTLE_MAX_STAGE ? hustleRef(n) : null;
   }
   const type = params.get('t');
   const difficulty = params.get('d');

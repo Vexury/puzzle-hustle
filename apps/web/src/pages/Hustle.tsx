@@ -16,6 +16,8 @@ import { href, onLinkClick } from '../lib/router.ts';
 import { capitalize } from '../lib/share.ts';
 import { useSolves } from '../lib/storage.ts';
 
+const milestoneSymbol = (m: { flair?: unknown }) => (m.flair ? '♦' : '🎁');
+
 const TIER_END: Record<string, number | null> = { easy: 40, medium: 120, hard: 300, genius: null };
 const NEXT_TIER: Record<string, string> = { easy: 'Medium', medium: 'Hard', hard: 'Genius' };
 
@@ -62,7 +64,7 @@ export function Hustle() {
             {Array.from({ length: HUSTLE_MILESTONE }, (_, i) => (
               <i key={i} className={i < filled ? 'on' : undefined} />
             ))}
-            <span className="hustle-node">{next!.badge ? <BadgeIcon id={next!.badge} /> : '🎁'}</span>
+            <span className="hustle-node">{next!.badge ? <BadgeIcon id={next!.badge} /> : milestoneSymbol(next!)}</span>
           </div>
           <span className="muted small">
             {toGo} more to Lv {next!.n} · {reward(next!)}
@@ -87,7 +89,7 @@ export function Hustle() {
           <ul className="hustle-milestones">
             {[next!, ...later].map((m) => (
               <li key={m.n} className={m.badge || m.flair ? 'special' : undefined}>
-                <span className="hustle-node">{m.badge ? <BadgeIcon id={m.badge} /> : m.flair ? '♦' : '🎁'}</span>
+                <span className="hustle-node">{m.badge ? <BadgeIcon id={m.badge} /> : milestoneSymbol(m)}</span>
                 <span className="small">{m.n}</span>
               </li>
             ))}

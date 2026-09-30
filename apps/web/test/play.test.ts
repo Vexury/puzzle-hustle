@@ -1,10 +1,10 @@
 import { act, createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { dailyRef, encodeRef, generateStars, hustleRef, levelRef, refId } from '@puzzle-hustle/core';
+import { ACHIEVEMENTS_EPOCH, dailyRef, encodeRef, generateStars, hustleRef, levelRef, refId } from '@puzzle-hustle/core';
 import { Play } from '../src/pages/Play.tsx';
 import { handleBackPress } from '../src/lib/back.ts';
-import { readProgress, recordSolve, writeSetting } from '../src/lib/storage.ts';
+import { readProgress, recordSolve, rehydrate, writeSetting } from '../src/lib/storage.ts';
 
 vi.mock('../src/lib/haptics.ts', () => ({ solved: vi.fn(), tap: vi.fn(), press: vi.fn() }));
 vi.mock('@puzzle-hustle/core', async (original) => {
@@ -20,6 +20,7 @@ let root: Root;
 
 beforeEach(() => {
   localStorage.clear();
+  rehydrate();
   vi.useFakeTimers();
   writeSetting('ph:howto:tracks', '1');
   container = document.createElement('div');
@@ -153,4 +154,12 @@ it('stays on a Hustle stage after it is solved', async () => {
   act(() => recordSolve('hustle:1', { solvedAt: new Date().toISOString(), seconds: 5, hints: 0, moves: 3 }));
   await act(async () => root.render(createElement(Play, { params: new URLSearchParams('h=1') })));
   expect(container.querySelector('.play-bar h1')?.textContent).toContain('Hustle 1');
+});
+
+it('plays a Hustle stage again when its solve predates the epoch', async () => {
+  act(() => recordSolve('hustle:1', { solvedAt: new Date(ACHIEVEMENTS_EPOCH - 86_400_000).toISOString(), seconds: 5, hints: 0, moves: 3 }));
+  await mount('h=1');
+  expect(container.querySelector('.play-bar h1')?.textContent).toContain('Hustle 1');
+  expect(container.textContent).not.toContain('Solved');
+  expect(container.querySelector('.tracks, .board, svg')).not.toBeNull();
 });

@@ -3,6 +3,7 @@ import { PUZZLE_TYPES, type Difficulty, type PuzzleTypeId } from './types.ts';
 
 // Hustle: one endless sequence, the same for every player. Stage n (from 1) has a fixed type
 // and difficulty; the seed is found where the board is built (see hustleRef in ref.ts).
+export const HUSTLE_MAX_STAGE = 100_000;
 export const HUSTLE_ROUND = PUZZLE_TYPES.length;
 
 const TIERS: readonly { upTo: number; difficulty: Difficulty }[] = [

@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { adapter, isPuzzleTypeId, parsePuzzleId, periodKey } from '@puzzle-hustle/core';
+import { ACHIEVEMENTS_EPOCH, adapter, isPuzzleTypeId, parsePuzzleId, periodKey } from '@puzzle-hustle/core';
 import { isBackedUp, scheduleBackup } from './backup.ts';
 
 // Shared by Intro.tsx and UnlockModal.tsx: neither component imports the other, so either can
@@ -41,8 +41,14 @@ export function getSolve(id: string): SolveRecord | undefined {
 
 const PERIOD_ID = /:(daily|weekly|monthly):/;
 
+export function counted(id: string, record: SolveRecord | undefined): SolveRecord | undefined {
+  return record && id.startsWith('hustle:') && Date.parse(record.solvedAt) < ACHIEVEMENTS_EPOCH ? undefined : record;
+}
+
 export function recordSolve(id: string, record: SolveRecord) {
-  const previous = cache[id];
+  const old = cache[id];
+  // A Hustle solve from before the epoch does not count, so the new one replaces it and starts fresh.
+  const previous = counted(id, old);
   // Dailies, Weeklies and Monthlies keep their first run, that is the time the leaderboard got.
   // Everything else is repeatable, so a faster run replaces the old one, unless it took more
   // hints: a hinted replay must not take back a hint-free achievement. The first solve date

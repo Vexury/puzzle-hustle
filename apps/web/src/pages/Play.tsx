@@ -22,7 +22,7 @@ import { storedSolves, syncAchievements } from '../lib/achievements.ts';
 import { emitAppEvent } from '../lib/appEvents.ts';
 import { href, leaveTo, navigate, onBackLinkClick, onLinkClick } from '../lib/router.ts';
 import { pushBackGuard } from '../lib/back.ts';
-import { clearProgress, getSolve, keepFinalBoard, readProgress, readSetting, recordSolve, useSolves, writeProgress, writeSetting, type SolveRecord } from '../lib/storage.ts';
+import { clearProgress, counted, getSolve, keepFinalBoard, readProgress, readSetting, recordSolve, useSolves, writeProgress, writeSetting, type SolveRecord } from '../lib/storage.ts';
 import { capitalize, formatSeconds, share, shareText } from '../lib/share.ts';
 import { HintCard } from '../components/HintCard.tsx';
 import { loadBoard, prefetchBoard, randomBoardRef } from '../lib/boards.ts';
@@ -128,7 +128,8 @@ function PlayPuzzle({ puzzleRef, onReplay }: { puzzleRef: PuzzleRef; onReplay: (
 function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: PuzzleSpec; onReplay: () => void }) {
   const id = refId(puzzleRef);
   const solves = useSolves();
-  const existing = solves[id];
+  // A Hustle solve from before the epoch does not count (hustleNext ignores it), so it is played again.
+  const existing = counted(id, solves[id]);
   // A level or a seeded practice puzzle can be played again for a better time, so reopening one
   // starts a fresh run. A period keeps its first run, that is the time the leaderboard got.
   const replayable = !puzzleRef.period && !puzzleRef.hustle;
@@ -404,7 +405,7 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
     setSeconds(elapsed);
     setResult(record);
     setFreshSolve(true);
-    const firstSolve = getSolve(id) === undefined;
+    const firstSolve = counted(id, getSolve(id)) === undefined;
     recordSolve(id, record);
     try {
       const earned = firstSolve ? coinsForSolve(id, storedSolves()) : [];

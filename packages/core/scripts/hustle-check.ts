@@ -13,6 +13,7 @@ for (let n = 1; n <= N; n++) {
     generateBoard(ref);
   } catch (e) {
     console.log(`stage ${n} (${ref.type} ${ref.difficulty}) failed: ${String(e)}`);
+    process.exitCode = 1;
     continue;
   }
   const ms = performance.now() - t;
@@ -23,4 +24,4 @@ for (const [tier, times] of byTier) {
   const sorted = [...times].sort((a, b) => a - b);
   console.log(`${tier}: ${times.length} stages, median ${sorted[sorted.length >> 1]!.toFixed(0)} ms, max ${sorted.at(-1)!.toFixed(0)} ms`);
 }
-console.log('slowest', slow.sort((a, b) => b[1] - a[1]).slice(0, 10).map(([n, ms]) => `${n}:${(ms / 1000).toFixed(1)}s`).join(' '));
+if (slow.length) console.log('slowest', slow.sort((a, b) => b[1] - a[1]).slice(0, 10).map(([n, ms]) => `${n}:${(ms / 1000).toFixed(1)}s`).join(' '));

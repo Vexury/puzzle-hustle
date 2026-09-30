@@ -57,3 +57,9 @@ it('does not count a board saved on another generator version as started', () =>
   expect(readCurrentProgress('sudoku:level:easy:2')).toBeNull();
   expect(readCurrentProgress('sudoku:level:easy:1')?.seconds).toBe(30);
 });
+
+it('replaces a pre-epoch Hustle solve with the new one, even a slower one', () => {
+  recordSolve('hustle:1', record(20, '2026-09-20T10:00:00.000Z'));
+  recordSolve('hustle:1', record(90, '2026-09-30T10:00:00.000Z'));
+  expect(getSolve('hustle:1')).toEqual({ solvedAt: '2026-09-30T10:00:00.000Z', seconds: 90, hints: 0, moves: 20 });
+});

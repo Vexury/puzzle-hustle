@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { hustleDifficulty, hustleMilestoneCoins, hustleSlot, hustleType, HUSTLE_ROUND } from '../src/hustle.ts';
 import { PUZZLE_TYPES } from '../src/types.ts';
-import { decodeRef, encodeRef, hustleRef, refId } from '../src/ref.ts';
+import { decodeRef, encodeRef, hustleRef, hustleSeed, refId } from '../src/ref.ts';
 import { parseSolveId } from '../src/solveId.ts';
 import { POOL_SEEDS } from '../src/boards/pools.ts';
 import { generateBoard } from '../src/boards.ts';
@@ -64,5 +64,18 @@ describe('hustle refs', () => {
   it('builds the same board for a stage everywhere', () => {
     const ref = hustleRef(3);
     expect(generateBoard(ref)).toEqual(generateBoard({ ...ref }));
+  });
+});
+
+describe('hustle guards and pins', () => {
+  it('rejects a stage beyond the server bound quickly', () => {
+    const t = performance.now();
+    expect(decodeRef('h=1000000000')).toBeNull();
+    expect(performance.now() - t).toBeLessThan(500);
+    expect(decodeRef('h=100000')?.hustle).toBe(100000);
+  });
+
+  it('pins the seeds of stages 1 and 50', () => {
+    expect([hustleSeed(1), hustleSeed(50)]).toEqual([2122481030, 1394498158]);
   });
 });

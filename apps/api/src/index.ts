@@ -1,4 +1,4 @@
-import { isCosmeticOf } from '@puzzle-hustle/core';
+import { HUSTLE_MAX_STAGE, isCosmeticOf } from '@puzzle-hustle/core';
 import { readBoard } from './board.ts';
 import { revokeAppleAuthorization, verifyAppleIdToken } from './apple.ts';
 import { verifyGoogleIdToken } from './google.ts';
@@ -106,7 +106,7 @@ async function postCosmetics(request: Request, env: Env, playerId: string): Prom
 // The level comes from the device, like badge and flair. MAX keeps a stale device from lowering it.
 async function postHustle(request: Request, env: Env, playerId: string): Promise<Response> {
   const { level } = await body(request);
-  if (typeof level !== 'number' || !Number.isInteger(level) || level < 0 || level > 100_000) return error(400, 'bad_level');
+  if (typeof level !== 'number' || !Number.isInteger(level) || level < 0 || level > HUSTLE_MAX_STAGE) return error(400, 'bad_level');
   const row = await env.DB.prepare('UPDATE players SET hustle = MAX(hustle, ?) WHERE id = ? RETURNING hustle')
     .bind(level, playerId)
     .first<{ hustle: number }>();
