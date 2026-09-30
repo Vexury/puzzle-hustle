@@ -7,7 +7,7 @@ import { BadgeIcon } from './BadgeIcon.tsx';
 import { toast } from './Toast.tsx';
 
 export interface BoardData {
-  entries: Array<{ playerId: string; name: string; seconds: number; hints: number; badge?: string | null; flair?: string | null }>;
+  entries: Array<{ playerId: string; name: string; seconds: number; hints: number; badge?: string | null; flair?: string | null; hustle?: number }>;
   me: number | null;
   percentile: { total: number; faster: number } | null;
 }
@@ -113,7 +113,7 @@ export function NameCell({
   entry,
   wave = 0,
 }: {
-  entry: { name: string; badge?: string | null; flair?: string | null };
+  entry: { name: string; badge?: string | null; flair?: string | null; hustle?: number | undefined };
   wave?: number;
 }) {
   const { badge, flair } = rowCosmetics(entry);
@@ -122,6 +122,7 @@ export function NameCell({
       <span className="leaderboard-name">
         <span className="leaderboard-name-text">{entry.name}</span>
         {badge && <BadgeIcon id={badge.id} wave={wave} />}
+        {entry.hustle ? <span className="hustle-chip">Lv {entry.hustle}</span> : null}
       </span>
       {flair && <span className="leaderboard-flair">{flair.title}</span>}
     </span>

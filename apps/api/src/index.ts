@@ -103,6 +103,16 @@ async function postCosmetics(request: Request, env: Env, playerId: string): Prom
   return json({ badge, flair });
 }
 
+// The level comes from the device, like badge and flair. MAX keeps a stale device from lowering it.
+async function postHustle(request: Request, env: Env, playerId: string): Promise<Response> {
+  const { level } = await body(request);
+  if (typeof level !== 'number' || !Number.isInteger(level) || level < 0 || level > 100_000) return error(400, 'bad_level');
+  const row = await env.DB.prepare('UPDATE players SET hustle = MAX(hustle, ?) WHERE id = ? RETURNING hustle')
+    .bind(level, playerId)
+    .first<{ hustle: number }>();
+  return json({ hustle: row?.hustle ?? level });
+}
+
 // Anonymous by design: no token, and the IP only keys the rate limiter, it is never stored.
 async function postEvents(request: Request, env: Env): Promise<Response> {
   if (env.EVENTS_LIMIT) {
@@ -131,6 +141,7 @@ async function route(request: Request, env: Env): Promise<Response> {
 
   if (method === 'POST' && path === '/name') return postName(request, env, playerId);
   if (method === 'POST' && path === '/cosmetics') return postCosmetics(request, env, playerId);
+  if (method === 'POST' && path === '/hustle') return postHustle(request, env, playerId);
 
   if (method === 'GET' && path === '/groups') return json({ groups: await listGroups(env.DB, playerId) });
 

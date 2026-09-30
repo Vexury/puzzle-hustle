@@ -1,6 +1,7 @@
-import { earnedHustleBadges, HUSTLE_BADGES } from '@puzzle-hustle/core';
+import { earnedHustleBadges, HUSTLE_BADGES, hustleSolved } from '@puzzle-hustle/core';
 import { announceUnlock } from '../components/UnlockModal.tsx';
 import { storedSolves } from './achievements.ts';
+import { apiFetch, readSession } from './api.ts';
 import { syncAnnouncements } from './announce.ts';
 
 const BADGES_KEY = 'ph:hustle-badges';
@@ -9,4 +10,17 @@ const ORDER = HUSTLE_BADGES.map((b) => b.id);
 // Like syncFlairs: after a solve and on app start, never throws.
 export function syncHustleBadges(): void {
   syncAnnouncements(BADGES_KEY, () => earnedHustleBadges(storedSolves()), ORDER, (id) => announceUnlock({ kind: 'badge', id }));
+}
+
+// Same path as the cosmetics: no queue. The server keeps the highest value it saw, so a failed
+// push is simply repeated after the next Hustle solve or sign-in.
+export async function pushHustle(): Promise<void> {
+  if (!readSession()) return;
+  const level = hustleSolved(storedSolves());
+  if (level === 0) return;
+  try {
+    await apiFetch('/hustle', { method: 'POST', body: JSON.stringify({ level }), auth: true });
+  } catch {
+    /* next solve or sign-in sends it again */
+  }
 }

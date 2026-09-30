@@ -27,7 +27,7 @@ import { capitalize, formatSeconds, share, shareText } from '../lib/share.ts';
 import { HintCard } from '../components/HintCard.tsx';
 import { loadBoard, prefetchBoard, randomBoardRef } from '../lib/boards.ts';
 import { syncFlairs } from '../lib/flairs.ts';
-import { syncHustleBadges } from '../lib/hustle.ts';
+import { pushHustle, syncHustleBadges } from '../lib/hustle.ts';
 import { requestHint, useHintBadge, type HintChoice, type HintOffer } from '../lib/hints.ts';
 import { enqueue, flush } from '../lib/queue.ts';
 import { DEMOS } from '../demo/index.ts';
@@ -433,6 +433,7 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
     syncAchievements();
     syncFlairs();
     syncHustleBadges();
+    if (puzzleRef.hustle) void pushHustle();
     if (replayable) clearProgress(id);
     else if (lastState.current) keepFinalBoard(id, { state: lastState.current, seconds: elapsed, moves: record.moves, hints: record.hints, version });
   };

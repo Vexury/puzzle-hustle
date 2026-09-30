@@ -1,5 +1,7 @@
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { expect, it } from 'vitest';
-import { percentileText, readHidden, rowCosmetics, splitHidden, writeHidden } from '../src/components/Board.tsx';
+import { percentileText, readHidden, NameCell, rowCosmetics, splitHidden, writeHidden } from '../src/components/Board.tsx';
 
 it('hides the line when there is no percentile at all', () => {
   expect(percentileText(null, 'daily')).toBeNull();
@@ -62,4 +64,11 @@ it('stores hidden players once and survives a corrupt setting', () => {
   expect(readHidden()).toEqual(['a', 'b']);
   localStorage.setItem('ph:hidden', JSON.stringify(['a', 7]));
   expect(readHidden()).toEqual(['a']);
+});
+
+it('shows the Hustle chip only from level 1', () => {
+  const html = (hustle?: number) => renderToStaticMarkup(createElement(NameCell, { entry: { name: 'A', hustle } }));
+  expect(html(47)).toContain('Lv 47');
+  expect(html(0)).not.toContain('Lv');
+  expect(html(undefined)).not.toContain('Lv');
 });

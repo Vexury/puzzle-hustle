@@ -4,6 +4,7 @@ import { SocialLogin } from '@capgo/capacitor-social-login';
 import { BASE, navigate } from './router.ts';
 import { SESSION_KEY, apiFetch, readSession, subscribeSession, writeSession, type Session } from './api.ts';
 import { pushCosmetics } from './coins.ts';
+import { pushHustle } from './hustle.ts';
 import { flush, resetBackoff } from './queue.ts';
 import { readSetting, removeSetting, writeSetting } from './storage.ts';
 import { toast } from '../components/Toast.tsx';
@@ -50,7 +51,10 @@ async function startSession(provider: 'google' | 'apple', idToken: string): Prom
   // player, or to anyone when nobody was signed in on this device before.
   const previous = readSetting(PREVIOUS_PLAYER_KEY);
   removeSetting(PREVIOUS_PLAYER_KEY);
-  if (previous === null || previous === session.player.id) void pushCosmetics();
+  if (previous === null || previous === session.player.id) {
+    void pushCosmetics();
+    void pushHustle();
+  }
   // Sign-in rejects an invalid offered name server-side and replaces it with a generated one
   // without saying so. Keep the local name in step with whatever the server settled on, so
   // the Profile name field never disagrees with the server. Only toast about it when a local name

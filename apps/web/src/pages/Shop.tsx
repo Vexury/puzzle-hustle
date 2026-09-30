@@ -3,6 +3,7 @@ import {
   ACTIVITY_FLAIRS,
   COSMETICS,
   FLAIRS_BY_TYPE,
+  hustleSolved,
   packProgress,
   PUZZLE_META,
   PUZZLE_TYPES,
@@ -206,7 +207,7 @@ export function Shop() {
 
       <div className="stack">
         <section className="card-lg shop-preview">
-          <NameCell entry={{ name, ...equipped }} />
+          <NameCell entry={{ name, ...equipped, hustle: hustleSolved(solves) }} />
           {!session && <span className="muted small">Badges and flairs show in your groups once you sign in.</span>}
         </section>
 

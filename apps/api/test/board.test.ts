@@ -93,8 +93,8 @@ it('carries each player badge and flair, null when unset', async () => {
   await score('b', 300);
 
   const board = (await readBoard(env.DB, 'a', 'g1', PUZZLE))!;
-  expect(board.entries.map((e) => [e.name, e.badge, e.flair])).toEqual([
-    ['Anna', 'cat', 'puzzler'],
-    ['Ben', null, null],
+  expect(board.entries.map((e) => [e.name, e.badge, e.flair, e.hustle])).toEqual([
+    ['Anna', 'cat', 'puzzler', 0],
+    ['Ben', null, null, 0],
   ]);
 });

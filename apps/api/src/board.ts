@@ -3,6 +3,7 @@ export interface BoardEntry {
   name: string;
   badge: string | null;
   flair: string | null;
+  hustle: number;
   seconds: number;
   hints: number;
 }
@@ -27,7 +28,7 @@ export async function readBoard(
 
   const { results } = await db
     .prepare(
-      `SELECT s.player_id AS playerId, p.name, p.badge, p.flair, s.seconds, s.hints
+      `SELECT s.player_id AS playerId, p.name, p.badge, p.flair, p.hustle, s.seconds, s.hints
          FROM scores s
          JOIN members m ON m.player_id = s.player_id AND m.group_id = ?
          JOIN players p ON p.id = s.player_id
