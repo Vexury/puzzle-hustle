@@ -4,7 +4,7 @@ import type { PuzzleTypeId } from '@puzzle-hustle/core';
 export function PuzzleIcon({ type, size = 56 }: { type: PuzzleTypeId; size?: number }) {
   const clip = useId();
   return (
-    <span className="puzzle-icon" style={{ width: size, height: size }} aria-hidden="true">
+    <span className="puzzle-icon" data-type={type} style={{ width: size, height: size }} aria-hidden="true">
       {type === 'shapes' ? (
         <svg viewBox="0 0 40 40">
           <g className="ic-grid">

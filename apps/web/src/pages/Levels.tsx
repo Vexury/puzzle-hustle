@@ -8,11 +8,14 @@ import {
   isPuzzleTypeId,
   levelList,
   levelRef,
+  levelStars,
   refId,
+  starTarget,
   type Difficulty,
   type PuzzleTypeId,
 } from '@puzzle-hustle/core';
 import { PuzzleIcon } from '../components/PuzzleIcon.tsx';
+import { justSolved } from './Daily.tsx';
 import { randomBoardRef } from '../lib/boards.ts';
 import { href, navigate, onLinkClick } from '../lib/router.ts';
 import { readSetting, startedIds, useSolves, writeSetting, type SolveRecord } from '../lib/storage.ts';
@@ -146,19 +149,29 @@ function LevelGrid({ type }: { type: PuzzleTypeId }) {
           if (n > open) {
             return (
               <button key={n} type="button" className="tile locked" aria-label={`Level ${n}, locked`} onClick={() => toast(`Solve #${open} first`)}>
-                <b>#{n}</b>
-                <small>locked</small>
+                <LockIcon />
               </button>
             );
           }
           return (
-            <a key={n} href={href(`/play?${encodeRef(ref)}`)} onClick={onLinkClick} className={solve ? 'tile solved' : 'tile open'}>
+            <a
+              key={n}
+              href={href(`/play?${encodeRef(ref)}`)}
+              onClick={onLinkClick}
+              className={solve ? 'tile solved' : 'tile open'}
+              aria-label={solve ? `Level ${n}, ${levelStars(type, difficulty, solve)} of 3 stars, ${formatSeconds(solve.seconds)}` : undefined}
+            >
               <b>#{n}</b>
-              <small>{solve ? `✓ ${formatSeconds(solve.seconds)}` : started.has(refId(ref)) ? 'continue' : 'play'}</small>
+              {solve ? (
+                <Stars count={levelStars(type, difficulty, solve)} fresh={justSolved(solve)} />
+              ) : (
+                <small>{started.has(refId(ref)) ? 'continue' : 'play'}</small>
+              )}
             </a>
           );
         })}
       </div>
+      <p className="muted small center star-rule">Stars: solve it · no hint · under {formatSeconds(starTarget(type, difficulty))}</p>
 
       {open > list.length ? (
         <div className="actions">
@@ -172,5 +185,28 @@ function LevelGrid({ type }: { type: PuzzleTypeId }) {
         </p>
       )}
     </>
+  );
+}
+
+// One star for solving, one without a hint, one within the target time (core levelStars). A
+// level solved just now lets its stars pop in one by one.
+function Stars({ count, fresh }: { count: number; fresh: boolean }) {
+  return (
+    <span className={fresh ? 'stars pop' : 'stars'} aria-hidden="true">
+      {[1, 2, 3].map((i) => (
+        <svg key={i} viewBox="0 0 24 24" className={i <= count ? 'on' : undefined} style={{ '--n': i } as React.CSSProperties}>
+          <path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17l-5.9 3.3 1.3-6.5L2.5 9.3l6.6-.8z" />
+        </svg>
+      ))}
+    </span>
+  );
+}
+
+function LockIcon() {
+  return (
+    <svg className="lock" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="5" y="11" width="14" height="10" rx="2" />
+      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+    </svg>
   );
 }

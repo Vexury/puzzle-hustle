@@ -32,6 +32,20 @@
 }
 
 :root {
+  /* One hue per puzzle type for its icon tile (PuzzleIcon sets --accent to it), so the lists read
+     as ten games rather than ten rows. A pack may override any of them. */
+  --type-zip: #4f9cf7;
+  --type-shapes: #ffa833;
+  --type-nonogram: #9b7bff;
+  --type-mosaic: #23b5a0;
+  --type-crowns: #ff8a3d;
+  --type-stars: #ff5f8f;
+  --type-sudoku: #8494ab;
+  --type-killer: #e0b93a;
+  --type-tracks: #5fb86a;
+  --type-slabs: #c9855a;
+  /* The squared-paper dots behind every page without a pack pattern. */
+  --dot: rgba(0, 0, 0, 0.06);
   --piece-line: color-mix(in srgb, var(--text) 60%, var(--bg));
   --mark-inset: 12%;
   --mark-length: 76%;
@@ -68,6 +82,7 @@
 }
 
 [data-theme="dark"] {
+  --dot: rgba(255, 255, 255, 0.045);
   --bg: #111110;
   --card-bg: #1c1b19;
   --text: #e8e4de;
@@ -135,8 +150,8 @@
 html, body { margin: 0; padding: 0; }
 body {
   background-color: var(--bg);
-  background-image: var(--pack-pattern-image, none);
-  background-size: var(--pack-pattern-size, auto);
+  background-image: var(--pack-pattern-image, radial-gradient(var(--dot) 1.1px, transparent 1.4px));
+  background-size: var(--pack-pattern-size, 18px 18px);
   color: var(--text);
   --font-num: 'Inconsolata', ui-monospace, monospace;
   --font-text: 'Nunito', system-ui, sans-serif;
@@ -301,6 +316,13 @@ p { margin: 0; }
   opacity: 0;
   animation: streak-ring 0.8s ease-out 0.35s;
 }
+/* The bar grows from where Daily last showed it today (DailyProgress sets --from). */
+.daily-progress.grow .fill { animation: fill-grow 0.8s cubic-bezier(0.34, 1.25, 0.64, 1) 0.15s backwards; }
+.daily-progress.grow.ignite .fill { animation: fill-grow 0.8s cubic-bezier(0.34, 1.25, 0.64, 1) 0.15s backwards, streak-flare 0.9s ease-out 0.9s; }
+@keyframes fill-grow { from { width: var(--from); } }
+/* A streak that is alive burns: the big flame flickers softly. */
+.streak-hero.has-streak .streak-count .flame { transform-origin: 50% 85%; animation: flame-flicker 1.8s ease-in-out infinite; }
+@keyframes flame-flicker { 0%, 100% { transform: none; } 30% { transform: scale(1.05, 0.95) rotate(-2deg); } 65% { transform: scale(0.97, 1.05) rotate(2deg); } }
 @keyframes streak-flare { 0% { filter: brightness(1); } 35% { filter: brightness(1.45); } 100% { filter: brightness(1); } }
 @keyframes streak-sweep { to { transform: translateX(100%); } }
 @keyframes streak-ignite {
@@ -403,6 +425,8 @@ p { margin: 0; }
   place-items: center;
   box-shadow: 0 0 0 3px var(--card-bg);
 }
+.row-check.pop { animation: check-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s backwards; }
+@keyframes check-pop { from { transform: scale(0); } }
 .row-check svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 4.4; stroke-linecap: round; stroke-linejoin: round; }
 .row-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .row-title { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-md); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -412,10 +436,21 @@ p { margin: 0; }
   display: inline-grid;
   place-items: center;
   border-radius: 14px;
-  background: var(--board-cell);
-  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--accent) 15%, var(--board-cell));
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border));
   overflow: hidden;
 }
+/* Each type draws in its own hue (tokens --type-*), tinting its tile to match. */
+.puzzle-icon[data-type="zip"] { --accent: var(--type-zip); }
+.puzzle-icon[data-type="shapes"] { --accent: var(--type-shapes); }
+.puzzle-icon[data-type="nonogram"] { --accent: var(--type-nonogram); }
+.puzzle-icon[data-type="mosaic"] { --accent: var(--type-mosaic); }
+.puzzle-icon[data-type="crowns"] { --accent: var(--type-crowns); }
+.puzzle-icon[data-type="stars"] { --accent: var(--type-stars); }
+.puzzle-icon[data-type="sudoku"] { --accent: var(--type-sudoku); }
+.puzzle-icon[data-type="killer"] { --accent: var(--type-killer); }
+.puzzle-icon[data-type="tracks"] { --accent: var(--type-tracks); }
+.puzzle-icon[data-type="slabs"] { --accent: var(--type-slabs); }
 .puzzle-icon svg { width: 100%; height: 100%; }
 .ic-a { fill: var(--accent); }
 .ic-path { fill: none; stroke: var(--accent); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; opacity: 0.55; }
@@ -444,21 +479,23 @@ p { margin: 0; }
   text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
+  /* A game button: a darker edge below that the button presses down onto. */
+  box-shadow: 0 3px 0 var(--pill-edge, color-mix(in srgb, var(--accent) 58%, #3a2000));
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.08s, box-shadow 0.08s;
 }
-.pill:active { transform: scale(0.97); }
-.pill:disabled { opacity: 0.5; cursor: default; transform: none; }
-.pill.outline { background: transparent; color: var(--text); border-color: var(--border-mid); }
-.pill.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+.pill:active { transform: translateY(3px); box-shadow: 0 0 0 transparent; }
+.pill:disabled { opacity: 0.5; cursor: default; transform: none; box-shadow: none; }
+.pill.outline { background: transparent; color: var(--text); border-color: var(--border-mid); --pill-edge: color-mix(in srgb, var(--border-mid) 55%, transparent); }
+.pill.danger { background: var(--danger); border-color: var(--danger); color: #fff; --pill-edge: color-mix(in srgb, var(--danger) 55%, #300); }
 /* Apple's button rules allow white on dark surfaces and white with a black outline on light
    ones, nothing tinted, so this one ignores the accent colour on purpose. White in both themes
    keeps it level with Google's button beside it on the web. */
-.pill.apple-signin { background: #fff; border-color: #000; color: #000; font-weight: 600; }
+.pill.apple-signin { background: #fff; border-color: #000; color: #000; font-weight: 600; --pill-edge: rgba(0, 0, 0, 0.3); }
 [data-theme="dark"] .pill.apple-signin { border-color: #fff; }
 .pill.apple-signin svg { width: 1.05em; height: 1.05em; margin-top: -0.15em; fill: currentColor; }
 /* Google's light colours for a custom button, white with a grey outline and the G in its own
    colours. Kept in the dark theme too, so it matches the white Apple button. */
-.pill.google-signin { background: #fff; border-color: #747775; color: #1f1f1f; font-weight: 600; }
+.pill.google-signin { background: #fff; border-color: #747775; color: #1f1f1f; font-weight: 600; --pill-edge: rgba(0, 0, 0, 0.3); }
 [data-theme="dark"] .pill.google-signin { border-color: #fff; }
 .pill.google-signin svg { width: 1.05em; height: 1.05em; }
 /* Both providers stacked at the width of the wider one, so they read as one choice. */
@@ -482,7 +519,7 @@ p { margin: 0; }
 .friends-actions.stacked { flex-direction: column; min-width: 0; margin-top: auto; }
 .friends-actions.stacked input { flex: none; width: 100%; }
 .row-sub .num { font-family: var(--font-num); }
-.row-card.solved .pill.outline { border-color: var(--success); color: var(--success); }
+.row-card.solved .pill.outline { border-color: var(--success); color: var(--success); --pill-edge: color-mix(in srgb, var(--success) 45%, transparent); }
 
 .pill-row { display: flex; flex-wrap: wrap; gap: 0.4rem; overflow-x: auto; }
 
@@ -549,8 +586,10 @@ p { margin: 0; }
   background: transparent;
   color: var(--text);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--border-mid) 55%, transparent);
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.08s, box-shadow 0.08s;
 }
+.tool:active:not(:disabled) { transform: translateY(3px); box-shadow: none; }
 .tool-glyph { position: relative; display: block; width: 24px; height: 24px; }
 .tool-icon { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .tool-label { font-size: var(--fs-xs); font-weight: 700; line-height: 1; }
@@ -644,6 +683,16 @@ p { margin: 0; }
 .tile.solved { border-color: var(--success); background: var(--success-soft); }
 .tile.solved b, .tile.solved small { color: var(--success); }
 .tile.locked { opacity: 0.45; border-style: dashed; }
+.tile .lock { width: 18px; height: 18px; fill: none; stroke: var(--text-muted); stroke-width: 2.2; stroke-linecap: round; }
+/* The next level to play breathes, so the way on is the one thing on the grid that moves. */
+.tile.open { animation: tile-breathe 2s ease-in-out infinite; }
+@keyframes tile-breathe { 50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 22%, transparent); } }
+.stars { display: flex; gap: 2px; }
+.stars svg { width: 15px; height: 15px; fill: var(--board-cell); stroke: color-mix(in srgb, var(--text-muted) 55%, transparent); stroke-width: 1.4; stroke-linejoin: round; }
+.stars svg.on { fill: #ffc233; stroke: #d98f00; }
+.stars.pop svg.on { animation: star-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) calc(0.2s + var(--n) * 0.15s) backwards; }
+@keyframes star-pop { from { transform: scale(0) rotate(-40deg); } }
+.star-rule { margin: 2px 0 0; }
 .tile:not(.locked):active { transform: scale(0.97); }
 
 .card-lg {
@@ -738,7 +787,17 @@ p { margin: 0; }
 .tab svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .tab svg .fill { fill: currentColor; stroke: none; }
 .tab svg.tab-logo { width: 17px; fill: currentColor; stroke: none; }
-.tab.active { background: var(--accent-soft); color: var(--accent-deep); }
+.tab { position: relative; z-index: 1; }
+.tab.active { color: var(--accent-deep); }
+/* The active tab's pill glides to a new tab (TabBar.tsx sets --i), and the icon hops on arrival. */
+.tab-ind {
+  position: absolute; top: 6px; bottom: 6px; left: 6px; width: calc((100% - 24px) / 4);
+  border-radius: 999px; background: var(--accent-soft);
+  transform: translateX(calc(var(--i) * (100% + 4px)));
+  transition: transform 0.34s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+.tab.active svg { animation: tab-hop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes tab-hop { 40% { transform: translateY(-5px) scale(1.1); } }
 
 .play { display: flex; flex-direction: column; gap: 12px; }
 .play-bar { display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; gap: 8px; }
@@ -791,6 +850,19 @@ p { margin: 0; }
    .solved-stamp and its span are a slot: every pack gives it its own look (packs/README.md);
    the span carries the word, its ::before/::after are free for decoration. */
 .play { position: relative; }
+/* An unsolved board sweeps in from the top left as it opens (Play sets .enter for 0.7 s): a
+   diagonal mask runs across it, which works the same on every board type. */
+.play.enter :is(.board-frame, .slabs-board) {
+  -webkit-mask-image: linear-gradient(135deg, #000 42%, transparent 58%);
+  mask-image: linear-gradient(135deg, #000 42%, transparent 58%);
+  -webkit-mask-size: 300% 300%;
+  mask-size: 300% 300%;
+  animation: board-in 0.5s cubic-bezier(0.3, 0.7, 0.4, 1) both;
+}
+@keyframes board-in {
+  from { -webkit-mask-position: 100% 100%; mask-position: 100% 100%; transform: scale(0.97); }
+  to { -webkit-mask-position: 0 0; mask-position: 0 0; transform: none; }
+}
 .solved-stamp { position: absolute; z-index: 30; translate: -50% -50%; pointer-events: none; white-space: nowrap; }
 .solved-stamp span {
   display: block; padding: 10px 28px; border-radius: 999px;
@@ -1171,6 +1243,11 @@ button.unlock-row { cursor: pointer; }
 
 .coin-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); font-family: var(--font-num); text-decoration: none; }
 .coin-pill svg { width: 1em; height: 1em; }
+/* Coins came in: the pill hops and a glint runs across it while the number counts up. */
+.coin-pill.bump { position: relative; overflow: hidden; animation: coin-bump 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.coin-pill.bump::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.55) 50%, transparent 70%); transform: translateX(-100%); animation: coin-glint 0.7s ease-out; }
+@keyframes coin-bump { 40% { transform: scale(1.15); } }
+@keyframes coin-glint { to { transform: translateX(100%); } }
 .shop-preview { gap: 6px; }
 .shop-section-head { display: flex; align-items: center; gap: 8px; width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .shop-section-title { flex: 1; }
@@ -1261,3 +1338,13 @@ button.unlock-row { cursor: pointer; }
 .hustle-rewards li.own .hustle-reward-icon { color: var(--accent-text); background: var(--accent-soft); }
 .hustle-owned { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--on-accent); }
 .hustle-owned svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Game feel (2026-09-30): none of it moves for players who asked for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  .pill, .tool, .tab-ind, .tab.active svg, .streak-hero .flame, .daily-progress.grow .fill, .row-check.pop,
+  .coin-pill.bump, .coin-pill.bump::after, .tile.open, .stars.pop svg, .play.enter :is(.board-frame, .slabs-board) {
+    animation: none !important;
+    transition: none !important;
+  }
+  .play.enter :is(.board-frame, .slabs-board) { -webkit-mask-image: none; mask-image: none; }
+}

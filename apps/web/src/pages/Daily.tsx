@@ -36,7 +36,7 @@ function ChallengeCard({ puzzleRef }: { puzzleRef: PuzzleRef }) {
       <span className="row-icon">
         <PuzzleIcon type={puzzleRef.type} />
         {solve && (
-          <span className="row-check" role="img" aria-label="Solved">
+          <span className={justSolved(solve) ? 'row-check pop' : 'row-check'} role="img" aria-label="Solved">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M5.5 12.25L10 16.75L18.5 7.25" />
             </svg>
@@ -121,6 +121,12 @@ export function Daily() {
 }
 
 const IGNITE_KEY = 'ph:view:streak-ignite';
+const SEEN_KEY = 'ph:view:daily-seen';
+
+// A solve from the last moments, so coming back from it to Daily lets its check pop in.
+export function justSolved(solve: { solvedAt: string }, now = Date.now()): boolean {
+  return now - Date.parse(solve.solvedAt) < 30_000;
+}
 
 function DailyProgress({ solved, total, streak, day }: { solved: number; total: number; streak: number; day: string }) {
   const safe = solved >= STREAK_MIN;
@@ -142,9 +148,27 @@ function DailyProgress({ solved, total, streak, day }: { solved: number; total: 
       /* storage unavailable */
     }
   }, [stage]);
+  // The bar grows from where this page last showed it today, so a solve visibly adds its part.
+  const [grownFrom] = useState(() => {
+    try {
+      const [seenDay, seen] = (localStorage.getItem(SEEN_KEY) ?? '').split('|');
+      const before = Number(seen);
+      return seenDay === day && Number.isInteger(before) && before < solved ? before : null;
+    } catch {
+      return null;
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem(SEEN_KEY, `${day}|${solved}`);
+    } catch {
+      /* storage unavailable */
+    }
+  }, [day, solved]);
   return (
     <div
-      className={`daily-progress${safe ? ' safe' : ''}${full ? ' full' : ''}${ignite ? ' ignite' : ''}`}
+      className={`daily-progress${safe ? ' safe' : ''}${full ? ' full' : ''}${ignite ? ' ignite' : ''}${grownFrom !== null ? ' grow' : ''}`}
+      style={grownFrom !== null ? ({ '--from': `${Math.min(1, grownFrom / total) * 100}%` } as React.CSSProperties) : undefined}
       role="progressbar"
       aria-valuemin={0}
       aria-valuemax={total}

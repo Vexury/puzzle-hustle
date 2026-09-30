@@ -177,6 +177,14 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
   const [awards, setAwards] = useState<CoinAward[] | null>(null);
   const [freshSolve, setFreshSolve] = useState(false);
   const [stamp, setStamp] = useState(0);
+  // An unsolved board sweeps in once as it opens; the class comes off again so the mask it
+  // animates with does not stay on a board that zooms and scrolls.
+  const [entering, setEntering] = useState(() => !result && !(typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches));
+  useEffect(() => {
+    if (!entering) return;
+    const timer = setTimeout(() => setEntering(false), 700);
+    return () => clearTimeout(timer);
+  }, []);
   // Gates Placement below: it must mount only once the solve just submitted has actually had
   // its round trip, not the instant it is enqueued. A puzzle that was already solved in an
   // earlier session has nothing racing it, so it starts settled.
@@ -493,7 +501,7 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
   const demo = DEMOS[puzzleRef.type];
 
   return (
-    <section className="play">
+    <section className={entering ? 'play enter' : 'play'}>
       <div className="play-bar">
         <a href={back.url} onClick={onBackLinkClick} className="icon-round" aria-label={`Back to ${back.label}`}>
           <Chevron />

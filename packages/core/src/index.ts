@@ -33,3 +33,4 @@ export * from './tracks/puzzle.ts';
 export * from './tracks/solver.ts';
 export * from './slabs/puzzle.ts';
 export * from './slabs/solver.ts';
+export * from './stars.ts';

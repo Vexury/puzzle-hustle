@@ -45,8 +45,10 @@ function Icon({ name }: { name: 'Daily' | 'Hustle' | 'Puzzles' | 'Profile' }) {
 
 export function TabBar() {
   const route = useRoute();
+  const active = TABS.findIndex((t) => t.match(route.path));
   return (
     <nav className="tabbar" aria-label="Main">
+      {active >= 0 && <span className="tab-ind" style={{ '--i': active } as React.CSSProperties} aria-hidden="true" />}
       {TABS.map((t) => (
         <a key={t.path} href={href(t.path)} onClick={onLinkClick} className={t.match(route.path) ? 'tab active' : 'tab'} aria-current={t.match(route.path) ? 'page' : undefined}>
           <Icon name={t.label} />
