@@ -1,0 +1,20 @@
+<en-US>
+Hustle: an endless mode across all ten puzzles.
+
+- Hustle: one puzzle after another, harder as you climb. Badges, flairs and your level in groups
+- Hints: one free hint a day, then coins or a short video
+- Every level ships ready-made, hard Zip opens instantly. 30 levels per pack, renumbered
+- Tracks: a train runs the solved line. You draw the last track yourself again
+- New Profile: Social, Stats and settings on their own pages
+- Swipe to switch tabs
+</en-US>
+<de-DE>
+Hustle: ein endloser Modus über alle zehn Rätsel.
+
+- Hustle: ein Rätsel nach dem anderen, immer schwerer. Badges, Flairs und dein Level in Gruppen
+- Hints: ein freier Hint am Tag, dann Coins oder ein Video
+- Alle Level liegen fertig bereit, schweres Zip öffnet sofort. 30 Level je Stufe, neu nummeriert
+- Tracks: ein Zug fährt die Strecke. Das letzte Gleis ziehst du wieder selbst
+- Neues Profil: Social, Stats und Einstellungen auf eigenen Seiten
+- Wischen wechselt die Tabs
+</de-DE>
