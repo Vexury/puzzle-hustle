@@ -90,14 +90,15 @@ Billing. Coins are earned by solving and are never sold.
 app into the Families policy with extra requirements on ads, content and data handling.
 
 **App access:** Some functionality is restricted. Every puzzle works without an account; the
-Social tab (groups and standings) needs sign-in. Play does not accept "any Google account":
+Social page (groups and standings, a row on Profile since 2026-09-30) needs sign-in. Play does not accept "any Google account":
 reviewers may neither create accounts nor use their own. Credentials entry "Google test account
-(Social tab)": user `review@vexury.dev` (a Google account on a Cloudflare Email Routing address that
+(Social)": user `review@vexury.dev` (a Google account on a Cloudflare Email Routing address that
 forwards to vexury.dev@gmail.com, no 2-step verification), password in the password manager. The
 account is a member of the group "Review" with submitted times. Reviewer note: "Sign-in is optional
-and only unlocks the Social tab (groups and daily standings). All puzzles, hints and the purchase
-work without it. To test: open Profile, tap Sign in and choose the Google account above. It is
-already a member of the group "Review" with submitted times, so Social shows standings right away.
+and only unlocks Social (groups and daily standings). All puzzles, hints and the purchase work
+without it. To test: open the Profile tab, tap Sign in and choose the Google account above, then
+tap the Social row on Profile. The account is already a member of the group "Review" with
+submitted times, so Social shows standings right away.
 The one-time purchase "No Ads · Free Hints" only replaces hint videos; no content requires it."
 The box "credentials grant unrestricted access, including premium content" is ticked.
 
