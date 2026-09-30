@@ -10,6 +10,7 @@ import { SIGN_IN_AVAILABLE, useSession } from './lib/auth.ts';
 import { href, navigate, useRoute } from './lib/router.ts';
 import { Achievements } from './pages/Achievements.tsx';
 import { Daily } from './pages/Daily.tsx';
+import { Hustle } from './pages/Hustle.tsx';
 import { DeleteAccount } from './pages/DeleteAccount.tsx';
 import { Friends } from './pages/Friends.tsx';
 import { LevelsIndex, LevelsType } from './pages/Levels.tsx';
@@ -23,9 +24,10 @@ import { Shop } from './pages/Shop.tsx';
 // entered through an invitation link and slides like the tab it is.
 function tabIndex(path: string): number {
   if (path === '/play' || path === '/achievements' || path === '/shop') return -1;
-  if (path === '/friends' || path === '/join') return 3;
-  if (path === '/profile') return 2;
-  if (path.startsWith('/levels')) return 1;
+  if (path === '/friends' || path === '/join') return 4;
+  if (path === '/profile') return 3;
+  if (path.startsWith('/levels')) return 2;
+  if (path === '/hustle') return 1;
   return 0;
 }
 
@@ -87,7 +89,8 @@ export function App() {
     // Pages serves it from delete-account/index.html and redirects the bare path to the slash.
     page = <DeleteAccount />;
     chrome = false;
-  } else if (route.path === '/levels') page = <LevelsIndex />;
+  } else if (route.path === '/hustle') page = <Hustle />;
+  else if (route.path === '/levels') page = <LevelsIndex />;
   else if (route.path.startsWith('/levels/')) page = <LevelsType type={route.path.slice('/levels/'.length)} />;
   else if (route.path === '/profile' || (social && !session)) page = <Profile joinCode={pendingJoin} />;
   else if (route.path === '/friends') page = <Friends />;

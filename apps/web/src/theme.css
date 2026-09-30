@@ -1175,3 +1175,15 @@ button.unlock-row { cursor: pointer; }
 }
 .ad-ask.help { place-items: safe center; background: color-mix(in srgb, var(--bg) 70%, transparent); backdrop-filter: blur(14px); overflow-y: auto; }
 .help > .howto { width: 100%; max-width: 22rem; gap: 12px; }
+
+.hustle-card { align-items: center; text-align: center; }
+.hustle-level { font-family: var(--font-num); font-size: 3.2rem; font-weight: 800; line-height: 1; color: var(--accent-text); }
+.hustle-bar { display: flex; align-items: center; gap: 4px; width: 100%; margin-top: 8px; }
+.hustle-bar i { flex: 1; height: 10px; border-radius: 5px; background: var(--border); }
+.hustle-bar i.on { background: var(--accent); }
+.hustle-node { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--accent); color: var(--accent-text); flex: none; }
+.hustle-next { flex-direction: row; align-items: center; gap: 12px; }
+.hustle-next-text { flex: 1; display: flex; flex-direction: column; }
+.hustle-milestones { display: flex; gap: 10px; list-style: none; margin: 0; padding: 0; }
+.hustle-milestones li { display: flex; flex-direction: column; align-items: center; gap: 4px; font-family: var(--font-num); }
+.hustle-milestones li:not(.special) .hustle-node { border-style: dashed; border-color: var(--border-mid); color: var(--text-muted); }

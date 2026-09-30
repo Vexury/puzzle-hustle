@@ -3,12 +3,13 @@ import { href, onLinkClick, useRoute } from '../lib/router.ts';
 
 const TABS = [
   { path: '/', label: 'Daily', match: (p: string) => p === '/' },
+  { path: '/hustle', label: 'Hustle', match: (p: string) => p === '/hustle' },
   { path: '/levels', label: 'Puzzles', match: (p: string) => p.startsWith('/levels') },
   { path: '/profile', label: 'Profile', match: (p: string) => p === '/profile' || p === '/shop' || p === '/achievements' },
   { path: '/friends', label: 'Social', match: (p: string) => p === '/friends' || p === '/join' },
 ] as const;
 
-function Icon({ name }: { name: 'Daily' | 'Puzzles' | 'Profile' | 'Social' }) {
+function Icon({ name }: { name: 'Daily' | 'Hustle' | 'Puzzles' | 'Profile' | 'Social' }) {
   switch (name) {
     case 'Daily':
       return (
@@ -18,6 +19,13 @@ function Icon({ name }: { name: 'Daily' | 'Puzzles' | 'Profile' | 'Social' }) {
           <line x1="8" y1="3" x2="8" y2="7" />
           <line x1="16" y1="3" x2="16" y2="7" />
           <rect x="7" y="13" width="3" height="3" rx="0.5" className="fill" />
+        </svg>
+      );
+    case 'Hustle':
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 20h4v-5h4v-5h4V5h6" />
+          <path d="M17 5h4v4" className="fill" />
         </svg>
       );
     case 'Puzzles':
