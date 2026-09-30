@@ -811,14 +811,15 @@ p { margin: 0; }
 .solved-card.animate { animation: solve-rise 0.5s ease-out both; }
 .solved-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .solved-tile {
-  display: flex; align-items: baseline; justify-content: center; flex-wrap: wrap; gap: 2px 5px; min-width: 0;
+  display: grid; grid-template-columns: auto auto; justify-content: center; align-items: center; gap: 2px 5px; min-width: 0;
   padding: 8px 6px; border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--text) 6%, transparent);
 }
-.solved-tile-icon { display: flex; align-self: center; color: var(--text-muted); }
+.solved-tile-icon { display: flex; color: var(--text-muted); }
 .solved-tile-icon svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .solved-tile b { font-family: var(--font-num); font-size: var(--fs-lg); line-height: 1.15; }
-.solved-tile-label { font-size: var(--fs-xs); line-height: 1.2; color: var(--text-muted); }
+/* The word always goes below icon and figure; a narrow "0" would otherwise pull it up beside them. */
+.solved-tile-label { grid-column: 1 / -1; text-align: center; font-size: var(--fs-xs); line-height: 1.2; color: var(--text-muted); }
 .solved-tile.good { background: var(--success-soft); }
 .solved-tile.good, .solved-tile.good .solved-tile-icon, .solved-tile.good .solved-tile-label { color: var(--success); }
 .solved-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
