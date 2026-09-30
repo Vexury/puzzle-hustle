@@ -40,6 +40,12 @@ Stand: 2026-09-30
 
 ## Erledigt
 
+- [x] 2026-09-30 **Frieder** Tracks zu schnell geloest, eher Schienen ziehen als Ueberlegen; Wunsch 2 bis
+  3 min fuer ein normales Level. Medium, Hard und Genius je eine Kerbe schwerer (`TRACKS_VERSION` 4,
+  siehe decisions.md); Report zeigte fuer das Daily 34 s im Median.
+- [x] 2026-09-30 **Frieder** Tracks: gezogenes Gleis laesst sich nicht direkt umlegen, erst muss das
+  weiterfuehrende Stueck weg. Wischen aus einer vollen Zelle in eine neue Richtung dreht das Gleis
+  jetzt dort (`tracksReroute`), der Rest bleibt lose liegen.
 - [x] 2026-09-30 **Saskia** Tracks: beim Loesen faehrt eine Lok mit zwei Wagen von links ueber A ein,
   folgt der Strecke durch jede Kurve und verlaesst das Brett unten ueber B (SVG `animateMotion`,
   mindestens 5 Zellen pro Sekunde, hoechstens rund 6 s). Nur beim frischen Loesen, nicht beim

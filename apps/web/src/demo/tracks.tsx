@@ -11,6 +11,7 @@ import {
   tracksHasEdge,
   tracksMask,
   tracksPaintMark,
+  tracksReroute,
   tracksSetEdge,
   type TracksSpec,
   type TracksState,
@@ -89,7 +90,8 @@ function tracksScript(): DemoScript {
       const from = cells[k - 1]!;
       if (tracksHasEdge(spec, empty, from, cell)) return [];
       mode ??= tracksHasEdge(spec, state, from, cell) ? 'lift' : 'lay';
-      return step(tracksSetEdge(spec, state, from, cell, mode === 'lay'));
+      const turned = mode === 'lay' ? () => tracksReroute(spec, state, from, cell, k > 1 ? cells[k - 2]! : null) : () => null;
+      return step(tracksSetEdge(spec, state, from, cell, mode === 'lay') ?? turned());
     });
     return { swipe: cells, set, ...(ms ? { ms } : {}) };
   };
@@ -106,7 +108,9 @@ function tracksScript(): DemoScript {
       { say: 'Hold on a mark, then swipe to clear marks.', do: [holdMark([12, 13, 14])], wait: 700 },
       { say: 'Swipe from A or any track to lay straight or curved pieces.', do: [lay([5, 6, 7, 2, 3, 8])], wait: 900 },
       { say: 'Swipe back along the track to lift it. Given pieces stay put.', hl: [7], do: [lay([8, 3, 2, 7, 6])], wait: 900 },
-      { say: 'No branches, crossings or loops. Green numbers are right.', do: [lay([2, 3, 8, 9, 14, 13, 18, 19, 24], 170)], wait: 2600 },
+      { say: 'Took a wrong turn? No need to lift it first.', do: [lay([2, 3, 4])], wait: 900 },
+      { say: 'Swipe a new way from a full piece to turn the track there.', hl: [3], do: [lay([3, 8])], wait: 1200 },
+      { say: 'No branches, crossings or loops. Green numbers are right.', do: [lay([8, 9, 14, 13, 18, 19, 24], 170)], wait: 2600 },
     ],
   };
 }

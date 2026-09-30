@@ -1,0 +1,8 @@
+<en-US>
+- Tracks: medium, hard and genius are harder, with fewer given pieces. Levels renumbered
+- Tracks: swipe a new way from a full piece to turn the track there, no need to lift it first
+</en-US>
+<de-DE>
+- Tracks: Medium, Hard und Genius sind schwerer, mit weniger Vorgaben. Level neu nummeriert
+- Tracks: aus einem vollen Stück in eine neue Richtung wischen dreht das Gleis dort, ohne erst zu löschen
+</de-DE>

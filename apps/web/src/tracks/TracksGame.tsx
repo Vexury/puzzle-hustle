@@ -10,6 +10,7 @@ import {
   tracksHint,
   tracksMask,
   tracksPaintMark,
+  tracksReroute,
   tracksSetEdge,
   tracksStepToward,
   validTracksState,
@@ -45,6 +46,7 @@ interface Drag {
   pointerId: number;
   start: number;
   last: number;
+  prev: number | null;
   track: boolean;
   mode: 'lay' | 'lift' | null;
   paint: { mark: number; on: boolean };
@@ -110,6 +112,7 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
       pointerId: e.pointerId,
       start: cell,
       last: cell,
+      prev: null,
       track: tracksMask(spec, cur, cell) !== 0,
       mode: null,
       paint: { mark: TRACKS_STATE_X, on: (v & TRACKS_STATE_X) === 0 },
@@ -176,7 +179,10 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
       // decides whether this drag lays or lifts.
       const given = tracksHasEdge(spec, empty, d.last, step);
       if (!given) d.mode ??= tracksHasEdge(spec, cur, d.last, step) ? 'lift' : 'lay';
-      const next = given ? null : tracksSetEdge(spec, cur, d.last, step, d.mode === 'lay');
+      // Laying on from a cell that already has both ends turns the track there.
+      const next = given
+        ? null
+        : (tracksSetEdge(spec, cur, d.last, step, d.mode === 'lay') ?? (d.mode === 'lay' ? tracksReroute(spec, cur, d.last, step, d.prev) : null));
       if (next) {
         rememberOnce(d);
         commit(next);
@@ -186,6 +192,7 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
           return;
         }
       }
+      d.prev = d.last;
       d.last = step;
       d.moved = true;
     }

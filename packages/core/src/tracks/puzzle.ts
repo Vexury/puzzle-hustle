@@ -2,7 +2,7 @@ import { Rng } from '../rng.ts';
 import type { Difficulty } from '../types.ts';
 import { TRACK_E, TRACK_N, TRACK_S, TRACK_W, solveTracks, tracksGivenCount, tracksOutside, type TracksPuzzle } from './solver.ts';
 
-export const TRACKS_VERSION = 3;
+export const TRACKS_VERSION = 4;
 
 export interface TracksConfig {
   cols: number;
@@ -24,9 +24,9 @@ export interface TracksConfig {
 // and the harder boards grow downwards instead of needing zoom and pan.
 export const TRACKS_PRESETS: Record<Difficulty, TracksConfig> = {
   easy: { cols: 6, rows: 6, minPath: 12, maxPath: 22, maxTier: 1, minTopSteps: 0, minGivens: 2, maxTopSteps: 0, maxGivens: 4 },
-  medium: { cols: 8, rows: 8, minPath: 22, maxPath: 38, maxTier: 1, minTopSteps: 0, minGivens: 2, maxTopSteps: 0, maxGivens: 4 },
-  hard: { cols: 10, rows: 10, minPath: 34, maxPath: 60, maxTier: 2, minTopSteps: 2, minGivens: 2, maxTopSteps: 8, maxGivens: 5 },
-  genius: { cols: 10, rows: 12, minPath: 45, maxPath: 75, maxTier: 3, minTopSteps: 1, minGivens: 2, maxTopSteps: 6, maxGivens: 5 },
+  medium: { cols: 8, rows: 8, minPath: 22, maxPath: 38, maxTier: 2, minTopSteps: 2, minGivens: 1, maxTopSteps: 6, maxGivens: 4 },
+  hard: { cols: 10, rows: 10, minPath: 34, maxPath: 60, maxTier: 3, minTopSteps: 2, minGivens: 1, maxTopSteps: 6, maxGivens: 5 },
+  genius: { cols: 10, rows: 12, minPath: 45, maxPath: 75, maxTier: 3, minTopSteps: 4, minGivens: 1, maxTopSteps: 16, maxGivens: 5 },
 };
 
 export interface TracksSpec extends TracksPuzzle {
@@ -302,6 +302,62 @@ export function tracksSetEdge(spec: TracksSpec, state: TracksState, a: number, b
     next[b] = next[b]! & ~(TRACKS_STATE_X | TRACKS_STATE_T);
   }
   return next;
+}
+
+const DIRS: [number, number, number][] = [
+  [TRACK_N, -1, 0],
+  [TRACK_E, 0, 1],
+  [TRACK_S, 1, 0],
+  [TRACK_W, 0, -1],
+];
+
+function neighbour(cols: number, rows: number, cell: number, dir: number): number {
+  const [, dr, dc] = DIRS.find(([d]) => d === dir)!;
+  const r = Math.floor(cell / cols) + dr;
+  const c = (cell % cols) + dc;
+  return r < 0 || c < 0 || r >= rows || c >= cols ? -1 : r * cols + c;
+}
+
+// Follows the track from `cell` out through `dir` to its end: 'A' or 'B' when it runs off the
+// board there, null when it stops loose or closes on itself.
+function trackEnd(spec: TracksSpec, state: TracksState, cell: number, dir: number): 'A' | 'B' | null {
+  const { cols, rows } = spec.config;
+  let prev = cell;
+  let cur = neighbour(cols, rows, cell, dir);
+  for (let n = 0; cur >= 0 && cur !== cell && n <= cols * rows; n++) {
+    const out = tracksOutside(spec, cur);
+    if (out) return out === TRACK_W ? 'A' : 'B';
+    const m = tracksMask(spec, state, cur);
+    const next = DIRS.map(([d]) => (m & d ? neighbour(cols, rows, cur, d) : -1)).find((x) => x >= 0 && x !== prev);
+    if (next === undefined) return null;
+    prev = cur;
+    cur = next;
+  }
+  return null;
+}
+
+// Laying from a cell that already has both its connections turns the track there instead of
+// refusing: the drawn connection the track ran on through gives way to the new one, and what it
+// led to stays on the board as a loose piece. `from` is the cell the stroke came from, whose
+// connection always stays; a stroke that starts on the cell keeps the side toward A (else B).
+// Given edges never give way.
+export function tracksReroute(spec: TracksSpec, state: TracksState, a: number, b: number, from: number | null): TracksState | null {
+  const { cols, rows } = spec.config;
+  if (tracksHasEdge(spec, state, a, b) || bits(tracksMask(spec, state, b)) >= 2) return null;
+  const m = tracksMask(spec, state, a);
+  if (bits(m) !== 2) return null;
+  const sides = DIRS.map(([d]) => d).filter((d) => m & d);
+  const ends = sides.map((d) => (neighbour(cols, rows, a, d) < 0 ? 'stub' : trackEnd(spec, state, a, d)));
+  let drop: number[];
+  if (from !== null) drop = sides.filter((d) => neighbour(cols, rows, a, d) !== from);
+  else if (ends.includes('stub') || ends.includes('A')) drop = sides.filter((_, i) => ends[i] !== 'stub' && ends[i] !== 'A');
+  else drop = sides.filter((_, i) => ends[i] !== 'B');
+  if (drop.length !== 1) return null;
+  const slot = edgeSlot(cols, cols * rows, a, neighbour(cols, rows, a, drop[0]!));
+  if (!slot || givenEdge(spec, slot[0], slot[1])) return null;
+  const cut = [...state];
+  cut[slot[0]] = cut[slot[0]]! & ~slot[1];
+  return tracksSetEdge(spec, cut, a, b, true);
 }
 
 // A stroke of marks, `mark` being TRACKS_STATE_X or TRACKS_STATE_T: on, it goes into cells with

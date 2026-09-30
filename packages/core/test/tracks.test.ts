@@ -13,6 +13,7 @@ import {
   isTracksSolved,
   tracksCycleMark,
   tracksPaintMark,
+  tracksReroute,
   tracksHasEdge,
   tracksHint,
   tracksLineCounts,
@@ -262,12 +263,15 @@ describe('tracks generator', () => {
     });
   }
 
-  it('solves medium with the basic rules and needs the loop rules on hard', () => {
-    expect(solveTracks(generateTracks(4, 'medium'), 1).solved).toBe(true);
+  it('solves easy with the basic rules, needs the loop rules on medium and looks ahead on hard', () => {
+    expect(solveTracks(generateTracks(4, 'easy'), 1).solved).toBe(true);
+    const medium = generateTracks(4, 'medium');
+    expect(solveTracks(medium, 1).solved).toBe(false);
+    expect(tracksDifficultyReport(medium).steps[1]).toBeGreaterThan(0);
+    expect(tracksDifficultyReport(medium).steps[2]).toBe(0);
     const hard = generateTracks(4, 'hard');
-    expect(solveTracks(hard, 1).solved).toBe(false);
-    expect(tracksDifficultyReport(hard).steps[1]).toBeGreaterThan(0);
-    expect(tracksDifficultyReport(hard).steps[2]).toBe(0);
+    expect(solveTracks(hard, 2).solved).toBe(false);
+    expect(tracksDifficultyReport(hard).steps[2]).toBeGreaterThan(0);
   });
 
   it('is deterministic per seed and differs across seeds', () => {
@@ -539,5 +543,50 @@ describe('tracks state', () => {
     for (let hint = tracksHint(m, s); hint && guard < 500; hint = tracksHint(m, s), guard++) s = applyTracksHint(m, s, hint);
     expect(isTracksSolved(m, s)).toBe(true);
     expect(tracksHint(m, s)).toBeNull();
+  });
+
+  describe('rerouting', () => {
+    // The easy board without any given piece, so every edge here is drawn.
+    const open = { ...spec, given: new Uint8Array(spec.given.length) };
+    const a = open.entryRow * cols;
+    const turn = (cell: number) => (cell + cols < open.solution.length ? cell + cols : cell - cols);
+
+    it('turns the track at a full cell and leaves the rest as a loose piece', () => {
+      let s = emptyTracksState(open);
+      s = tracksSetEdge(open, s, free, free + 1, true)!;
+      s = tracksSetEdge(open, s, free + 1, free + 2, true)!;
+      const t = tracksReroute(open, s, free + 1, turn(free + 1), free)!;
+      expect(tracksHasEdge(open, t, free, free + 1)).toBe(true);
+      expect(tracksHasEdge(open, t, free + 1, turn(free + 1))).toBe(true);
+      expect(tracksHasEdge(open, t, free + 1, free + 2)).toBe(false);
+    });
+
+    it('keeps the side toward A when the stroke starts on the full cell', () => {
+      let s = emptyTracksState(open);
+      s = tracksSetEdge(open, s, a, a + 1, true)!;
+      s = tracksSetEdge(open, s, a + 1, a + 2, true)!;
+      const t = tracksReroute(open, s, a + 1, turn(a + 1), null)!;
+      expect(tracksHasEdge(open, t, a, a + 1)).toBe(true);
+      expect(tracksHasEdge(open, t, a + 1, turn(a + 1))).toBe(true);
+      expect(tracksHasEdge(open, t, a + 1, a + 2)).toBe(false);
+    });
+
+    it('refuses when nothing says which side gives way, or the cell still has room', () => {
+      let s = emptyTracksState(open);
+      s = tracksSetEdge(open, s, free, free + 1, true)!;
+      expect(tracksReroute(open, s, free + 1, turn(free + 1), free)).toBeNull();
+      s = tracksSetEdge(open, s, free + 1, free + 2, true)!;
+      expect(tracksReroute(open, s, free + 1, turn(free + 1), null)).toBeNull();
+    });
+
+    it('never lets a given edge give way', () => {
+      const g = spec.given.findIndex((m, i) => (m & TRACK_E) !== 0 && i % cols < cols - 2);
+      if (g < 0) return;
+      let s = emptyTracksState(spec);
+      s = tracksSetEdge(spec, s, g + 1, g + 2, true) ?? s;
+      if (!tracksHasEdge(spec, s, g + 1, g + 2)) return;
+      expect(tracksReroute(spec, s, g + 1, turn(g + 1), g)).not.toBeNull();
+      expect(tracksReroute(spec, s, g + 1, turn(g + 1), g + 2)).toBeNull();
+    });
   });
 });
