@@ -52,6 +52,8 @@ interface Drag {
   // The pose the slab will drop in.
   dir: number;
   moved: boolean;
+  // Grabbed in its pending pose, which the drag keeps instead of springing back.
+  fromPending: boolean;
 }
 
 interface Ghost {
@@ -188,18 +190,27 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
       return;
     }
     setPending({ slab, pivot, od });
-    revertTimer.current = window.setTimeout(() => {
-      setPending(null);
-      let delta = (((od - committed) * 90) % 360 + 540) % 360 - 180;
-      if (delta === -180) delta = 180;
-      spin(slab, pivot, delta);
-    }, REVERT_MS);
+    revertTimer.current = window.setTimeout(revertPending, REVERT_MS);
+  }
+
+  function revertPending() {
+    const p = pendingRef.current;
+    if (!p) return;
+    setPending(null);
+    const committed = otherDir(stateRef.current[p.slab * 2 + 1]!, p.pivot);
+    let delta = (((p.od - committed) * 90) % 360 + 540) % 360 - 180;
+    if (delta === -180) delta = 180;
+    spin(p.slab, p.pivot, delta);
   }
 
   function beginDrag(e: React.PointerEvent, slab: number, pivot: 0 | 1, from: 'board' | 'tray', grabX: number, grabY: number) {
     if (locked || solved || drag.current) return;
     e.preventDefault();
-    if (pendingRef.current && (pendingRef.current.slab !== slab || from === 'tray')) setPending(null);
+    const p = pendingRef.current;
+    const fromPending = !!p && p.slab === slab && from === 'board';
+    if (p && !fromPending) setPending(null);
+    // Holding a pending slab stops it springing back, so it can be picked up in its turned pose.
+    if (fromPending) clearTimeout(revertTimer.current);
     (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
     const t0 = performance.now();
     drag.current = {
@@ -213,17 +224,31 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
       grabX,
       grabY,
       cell: cellPx(),
-      dir: stateRef.current[slab * 2 + 1]!,
+      dir: fromPending ? (p!.pivot === 0 ? p!.od : (p!.od + 2) % 4) : stateRef.current[slab * 2 + 1]!,
       moved: false,
+      fromPending,
     };
   }
 
   function boardDown(e: React.PointerEvent<SVGSVGElement>) {
     const cell = cellAt(e.clientX, e.clientY);
     if (cell < 0) return;
-    const slab = slabsOccupancy(spec, stateRef.current)[cell]!;
-    if (slab < 0) return;
-    const pivot = slabsPivotCell(spec, stateRef.current, slab, 0) === cell ? 0 : 1;
+    // A pending slab is drawn over whatever lies under its turned half, so it takes the touch first.
+    const p = pendingRef.current;
+    const pendPivot = p ? slabsPivotCell(spec, stateRef.current, p.slab, p.pivot) : -1;
+    let slab: number;
+    let pivot: 0 | 1;
+    if (p && cell === pendPivot) {
+      slab = p.slab;
+      pivot = p.pivot;
+    } else if (p && cell === slabNeighbour(cols, rows, pendPivot, p.od)) {
+      slab = p.slab;
+      pivot = p.pivot === 0 ? 1 : 0;
+    } else {
+      slab = slabsOccupancy(spec, stateRef.current)[cell]!;
+      if (slab < 0) return;
+      pivot = slabsPivotCell(spec, stateRef.current, slab, 0) === cell ? 0 : 1;
+    }
     const rect = svgRef.current!.getBoundingClientRect();
     const size = rect.width / cols;
     const cx = rect.left + ((cell % cols) + 0.5) * size;
@@ -273,7 +298,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
         commit(next);
         return;
       }
-      tapTurn(d.slab, d.pivot);
+      tapTurn(d.slab, d.fromPending ? pendingRef.current!.pivot : d.pivot);
       return;
     }
     setPending(null);
@@ -281,8 +306,10 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     const under = cellAt(e.clientX, e.clientY);
     if (overTray(e.clientX, e.clientY) || under < 0 || spec.blocked[under]) {
       if (d.from === 'tray') return;
+      const next = slabsToTray(cur, d.slab);
+      next[d.slab * 2 + 1] = d.dir;
       history.remember(cur);
-      commit(slabsToTray(cur, d.slab));
+      commit(next);
       return;
     }
     const pose = dropPose(d, e.clientX, e.clientY);
@@ -298,6 +325,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     if (!d || d.pointerId !== e.pointerId) return;
     drag.current = null;
     setGhost(null);
+    if (d.fromPending) revertPending();
   }
 
   async function useHint() {

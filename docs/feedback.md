@@ -4,7 +4,7 @@ Quelle ist die WhatsApp-Gruppe "Puzzle Hustle" (seit 18.09.2026) und die Einzelc
 Neue Punkte kommen unter "Offen", erledigte wandern mit Datum nach "Erledigt". Ein Punkt gehoert
 in denselben Commit wie sein Fix.
 
-Stand: 2026-09-30
+Stand: 2026-10-01
 
 ## Offen
 
@@ -40,6 +40,10 @@ Stand: 2026-09-30
 
 ## Erledigt
 
+- [x] 2026-10-01 **goldenloop** Slabs: ein gedrehter Slab, der so nicht passt, sprang zurueck, auch
+  wenn man ihn gerade verschieben wollte. Wer den gedrehten Slab festhaelt, nimmt ihn jetzt in der
+  neuen Drehung mit, auch in die Ablage. Tippen dreht wie bisher weiter, ohne Beruehrung springt er
+  nach 0,9 s zurueck.
 - [x] 2026-09-30 **Pia** Hustle: nach dem Loesen sehen, welches Raetsel als naechstes kommt. Die
   Weiter-Pille traegt jetzt Typ-Symbol und Namen (am Stufenwechsel mit Schwierigkeit), sitzt in der
   kompakteren Ergebniskarte ohne Scrollen, und Wischen nach links fuehrt weiter.
