@@ -96,7 +96,7 @@ export function ProfileHero({ joinCode = null }: { joinCode?: string | null } = 
             </form>
           ) : (
             <button type="button" className="name-btn" onClick={() => setEditing(true)}>
-              {name || 'Add a name'}
+              <span className="name-text">{name || 'Add a name'}</span>
               {badge && <BadgeIcon id={badge.id} />}
               {hustle > 0 && <span className="hustle-chip">Lv {hustle}</span>}
               <span className="muted">✎</span>
@@ -110,12 +110,12 @@ export function ProfileHero({ joinCode = null }: { joinCode?: string | null } = 
       </div>
       {!session && (
         <>
-          <span className="muted small">
-            {SIGN_IN_AVAILABLE
-              ? 'Sign in to compare your daily times with friends. Everything else works without an account.'
-              : "Sign-in isn't set up on this build yet. Everything else works without an account."}
-          </span>
-          {SIGN_IN_AVAILABLE && <SignInButton joinCode={joinCode} />}
+          <span className="muted small">{SIGN_IN_AVAILABLE ? 'Sign in to compare times with friends.' : "Sign-in isn't set up on this build yet."}</span>
+          {SIGN_IN_AVAILABLE && (
+            <div className="profile-signin">
+              <SignInButton joinCode={joinCode} />
+            </div>
+          )}
         </>
       )}
       <div className="profile-stats">

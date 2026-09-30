@@ -345,10 +345,15 @@ p { margin: 0; }
 /* Profile's hero reuses the streak card: the player as their groups see them, three headline
    numbers, and the bar towards all achievements with a trophy as its goal. */
 .profile-hero { display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; }
-.profile-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.profile-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .profile-top > .pill { flex: none; min-height: 34px; padding: 4px 14px; font-size: var(--fs-sm); }
 .profile-who { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.profile-who .name-btn { display: flex; align-items: center; gap: 6px; font-size: 1.45rem; font-weight: 800; line-height: 1.15; }
+.profile-who .name-btn { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; max-width: 100%; font-size: 1.45rem; font-weight: 800; line-height: 1.15; }
+/* The name keeps one line (a long one ends in an ellipsis); badge, level and pencil wrap below it. */
+.profile-who .name-text { min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Signed out, the sign-in spans the card, so its right edge lines up with Customize above. */
+.profile-signin :is(.friends-actions, .signin-options) { width: 100%; }
+.profile-signin .pill { flex: 1; width: 100%; }
 .profile-who .leaderboard-flair { font-size: var(--fs-sm); }
 .profile-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--border); }
 .profile-stats > span { display: flex; flex-direction: column; align-items: center; font-size: var(--fs-xs); color: var(--text-muted); white-space: nowrap; }
