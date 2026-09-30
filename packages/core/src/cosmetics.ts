@@ -7,7 +7,7 @@ export type FlairRequirement = { pack: PuzzleTypeId; difficulty: Difficulty } | 
 export type Cosmetic =
   | { id: string; kind: 'badge'; title: string; price: number; requires?: { hustle: number } }
   | { id: string; kind: 'flair'; title: string; requires: FlairRequirement }
-  | { id: string; kind: 'theme'; title: string; price: number; mode: 'light' | 'dark' };
+  | { id: string; kind: 'theme'; title: string; price: number; mode: 'light' | 'dark'; requires?: { hustle: number } };
 
 export type BadgeCosmetic = Extract<Cosmetic, { kind: 'badge' }>;
 export type FlairCosmetic = Extract<Cosmetic, { kind: 'flair' }>;
@@ -170,6 +170,13 @@ export const THEMES: readonly ThemeCosmetic[] = [
   { id: 'synthwave', kind: 'theme', title: 'Synthwave', price: 1200, mode: 'dark' },
 ];
 
+// Earned only by climbing Hustle, like HUSTLE_BADGES; each comes with the achievement of its stage.
+export const HUSTLE_THEMES: readonly ThemeCosmetic[] = [
+  { id: 'ocean', kind: 'theme', title: 'Ocean', price: 0, mode: 'light', requires: { hustle: 333 } },
+  { id: 'inferno', kind: 'theme', title: 'Inferno', price: 0, mode: 'dark', requires: { hustle: 666 } },
+  { id: 'casino', kind: 'theme', title: 'Casino', price: 0, mode: 'dark', requires: { hustle: 777 } },
+];
+
 export const COSMETICS: readonly Cosmetic[] = [
   ...BADGES,
   ...HUSTLE_BADGES,
@@ -177,6 +184,7 @@ export const COSMETICS: readonly Cosmetic[] = [
   ...ACTIVITY_FLAIRS,
   ...HUSTLE_FLAIRS,
   ...THEMES,
+  ...HUSTLE_THEMES,
 ];
 
 const BY_ID = new Map(COSMETICS.map((c) => [c.id, c]));

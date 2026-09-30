@@ -1,0 +1,74 @@
+/* Sunlit water, a little brighter at the top and a little deeper at the bottom, under light rings
+   that drift like sunlight through the surface. */
+.oc-water { position: absolute; inset: 0; background: linear-gradient(#f1fafb, var(--bg) 55%, #cfeaee); }
+.oc-caustic {
+  position: absolute; inset: -20%; opacity: 0.55;
+  background:
+    radial-gradient(closest-side, rgba(255, 255, 255, 0.9), transparent) 0 0 / 120px 90px,
+    radial-gradient(closest-side, rgba(255, 255, 255, 0.7), transparent) 40px 50px / 150px 110px;
+  animation: oc-drift 14s ease-in-out infinite alternate;
+}
+@keyframes oc-drift {
+  from { transform: translate(0, 0) scale(1); opacity: 0.45; }
+  to { transform: translate(40px, 30px) scale(1.08); opacity: 0.6; }
+}
+
+/* Bubbles rise from below the screen, wobbling sideways by their own --dx. */
+/* White on the pale water barely showed on the S23, so the rim is turquoise and the body tinted. */
+.oc-bubble {
+  position: absolute; bottom: -20px; border-radius: 50%; opacity: 0;
+  border: 1.5px solid rgba(21, 151, 168, 0.55);
+  background: radial-gradient(circle at 32% 30%, #fff 0 16%, rgba(255, 255, 255, 0.5) 20%, rgba(82, 198, 211, 0.22) 60%, rgba(21, 151, 168, 0.3));
+  box-shadow: inset -1px -2px 3px rgba(11, 102, 116, 0.18);
+  animation: oc-bubble ease-in infinite;
+}
+@keyframes oc-bubble {
+  0% { transform: translate(0, 0); opacity: 0; }
+  8% { opacity: 1; }
+  50% { transform: translate(var(--dx), -50vh); }
+  100% { transform: translate(0, calc(-100vh - 40px)); opacity: 0.2; }
+}
+
+/* The seabed row closes every page in the page flow, 96 px high and clipped, edge to edge past the
+   page gutter. Its sand ends in the floor colour, and the floor in the back plane carries on. */
+.oc-bed { position: relative; height: 96px; margin: 8px -16px 0; overflow: hidden; }
+.oc-floor {
+  position: absolute; left: 0; right: 0; top: 0; height: 100%;
+  background:
+    radial-gradient(circle, rgba(185, 150, 95, 0.35) 0 1.2px, transparent 1.6px) 0 0 / 23px 19px,
+    radial-gradient(circle, rgba(255, 245, 220, 0.5) 0 1px, transparent 1.4px) 9px 11px / 29px 23px,
+    linear-gradient(#dfc393, #d4b47f 60%, #caa872);
+}
+.oc-bed svg { position: absolute; bottom: 0; height: 96px; }
+.oc-sand { left: 0; width: 100%; }
+.oc-life { left: calc(50% - 150px); width: 300px; overflow: visible; }
+.oc-weed {
+  fill: none; stroke-linecap: round;
+  transform-box: fill-box; transform-origin: 50% 100%;
+  animation: oc-sway 3.4s ease-in-out infinite alternate;
+}
+.oc-weed-b { animation-duration: 4.2s; animation-delay: -1s; }
+.oc-weed-c { animation-duration: 3s; animation-delay: -2s; }
+@keyframes oc-sway { from { transform: rotate(-6deg); } to { transform: rotate(6deg); } }
+
+/* Solved: a wave runs across the board, clipped to it, then bubbles rise off it. */
+.oc-splash { position: absolute; overflow: hidden; }
+.oc-wave {
+  position: absolute; top: -10%; left: 0; width: 70%; height: 120%; opacity: 0;
+  animation: oc-sweep 1.2s ease-in-out forwards;
+}
+@keyframes oc-sweep {
+  from { transform: translateX(-110%); opacity: 0.9; }
+  to { transform: translateX(160%); opacity: 0.4; }
+}
+.oc-rise {
+  position: absolute; border-radius: 50%; opacity: 0;
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  background: radial-gradient(circle at 32% 30%, #fff 0 18%, rgba(82, 198, 211, 0.25) 22%);
+  animation: oc-rise ease-out both;
+}
+@keyframes oc-rise {
+  0% { transform: translate(0, 0) scale(0.4); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(1); opacity: 0; }
+}

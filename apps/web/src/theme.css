@@ -1344,6 +1344,8 @@ button.unlock-row { cursor: pointer; }
 .hustle-reward-icon { width: 40px; height: 40px; border-radius: var(--radius-sm); display: grid; place-items: center; font-size: 24px; color: var(--text-muted); background: var(--board-cell); }
 .hustle-rewards li:not(.own) .hustle-reward-icon > * { opacity: 0.45; }
 .hustle-rewards li.own .hustle-reward-icon { color: var(--accent-text); background: var(--accent-soft); }
+.hustle-reward-icon .mini-board { grid-template-columns: repeat(3, 8px); gap: 1px; padding: 3px; border-width: 1.5px; border-radius: 6px; }
+.hustle-reward-icon .mini-board i { width: 8px; height: 8px; border-radius: 2px; }
 .hustle-owned { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--on-accent); }
 .hustle-owned svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
 

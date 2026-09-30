@@ -41,18 +41,18 @@ afterEach(() => {
   container.remove();
 });
 
-it('fresh profile: all forty badges, none earned, no Almost there strip', () => {
+it('fresh profile: all forty-nine badges, none earned, no Almost there strip', () => {
   render();
-  expect(badges()).toHaveLength(40);
+  expect(badges()).toHaveLength(49);
   expect(container.querySelectorAll('.ach-disc.earned')).toHaveLength(0);
   expect(container.querySelector('.ach-next')).toBeNull();
-  expect(container.textContent).toContain('0 of 40 earned');
+  expect(container.textContent).toContain('0 of 49 earned');
 });
 
 it('marks earned badges and counts them in the head', () => {
   seed({ 'zip:weekly:2026-W39': {} });
   render();
-  expect(container.textContent).toContain('2 of 40 earned');
+  expect(container.textContent).toContain('2 of 49 earned');
   const earned = badges().filter((b) => b.querySelector('.ach-disc.earned'));
   expect(earned.map(title).sort()).toEqual(['Hello, Hustler', 'Weekender']);
 });
@@ -70,10 +70,13 @@ it('shows the closest started counters under Almost there', () => {
   expect(next[2]).toContain('Sampler');
 });
 
-it('filters by chip: General shows twenty, a type shows its two', () => {
+it('filters by chip: General shows twenty, Hustle nine, a type its two', () => {
   render();
   act(() => chip('General').click());
   expect(badges()).toHaveLength(20);
+  act(() => chip('Hustle').click());
+  expect(badges()).toHaveLength(9);
+  expect(badges().map(title)).toContain('Hellbent');
   act(() => chip('Zip').click());
   expect(badges().map(title)).toEqual(['Zip Fan', 'Lightning']);
   act(() => chip('All').click());

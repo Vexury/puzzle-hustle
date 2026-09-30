@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { ACHIEVEMENTS } from '../src/achievements.ts';
-import { COSMETICS, THEMES, findCosmetic, isCosmeticOf, type Cosmetic } from '../src/cosmetics.ts';
+import { COSMETICS, HUSTLE_THEMES, THEMES, findCosmetic, isCosmeticOf, type Cosmetic } from '../src/cosmetics.ts';
 import { levelList } from '../src/levels.ts';
 
 const isBadge = (c: Cosmetic): c is Extract<Cosmetic, { kind: 'badge' }> => c.kind === 'badge';
@@ -114,6 +114,18 @@ it('offers six theme packs with their prices and fixed modes, in shop order', ()
     ['synthwave', 1200, 'dark'],
   ]);
   for (const t of THEMES) expect(findCosmetic(t.id)).toBe(t);
+});
+
+it('offers three Hustle themes, never sold, each on the stage of a Hustle achievement', () => {
+  expect(HUSTLE_THEMES.map((t) => [t.id, t.price, t.mode, t.requires?.hustle])).toEqual([
+    ['ocean', 0, 'light', 333],
+    ['inferno', 0, 'dark', 666],
+    ['casino', 0, 'dark', 777],
+  ]);
+  for (const t of HUSTLE_THEMES) {
+    expect(findCosmetic(t.id)).toBe(t);
+    expect(achievementIds.has(`hustle-${t.requires!.hustle}`)).toBe(true);
+  }
 });
 
 it('keeps theme ids apart from badge and flair ids', () => {

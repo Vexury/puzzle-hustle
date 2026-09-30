@@ -10,6 +10,9 @@ All fonts below are licensed under the SIL Open Font License 1.1
 | Sniglet | midnight | Copyright (c) 2008, Haley Fiege, Copyright (c) 2012, Brenda Gallo, Copyright (c) 2013, Pablo Impallari |
 | Fredoka | cat-cafe | Copyright 2016 The Fredoka Project Authors (https://github.com/hafontia/Fredoka-One) |
 | Mali | paper | Copyright 2018 The Mali Project Authors (https://github.com/cadsondemak/Mali) |
+| Baloo 2 | ocean | Copyright 2019 The Baloo 2 Project Authors (https://github.com/EkType/Baloo2) |
+| Grenze Gotisch | inferno | Copyright 2020 The Grenze Gotisch Project Authors (https://github.com/Omnibus-Type/Grenze-Gotisch) |
+| Limelight | casino | Copyright (c) 2011 by Sorkin Type Co (www.sorkintype.com), with Reserved Font Name "Limelight" |
 
 ## Images
 

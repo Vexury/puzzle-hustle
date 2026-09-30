@@ -1,0 +1,133 @@
+[data-theme][data-pack="casino"] {
+  --frame-border: 12px;
+  color-scheme: dark;
+  --bg: #0b2a1f;
+  --card-bg: #103627;
+  --text: #f7f0dc;
+  --text-muted: #a8bba3;
+  --border: #1f4d3b;
+  --border-mid: #2f6650;
+  --board-cell: #0d2e22;
+  --board-line: #1d4a39;
+  --hover-bg: #f2c14e;
+  --hover-text: #2a1d00;
+  --accent: #f2c14e;
+  --accent-text: #f7d67a;
+  --accent-deep: #f7d67a;
+  --on-accent: #2a1d00;
+  --success: #8fe3a0;
+  --success-soft: rgba(143, 227, 160, 0.14);
+  --flame: #ff5b4a;
+  --danger: #ff7466;
+  --shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+  --shadow-hover: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --radius: 8px;
+  --radius-sm: 6px;
+  --nono-c2: #d6453d;
+  --nono-c3: #5a9be6;
+  /* Diamonds pressed into the felt; the scene lays a spotlight and a vignette over them. */
+  --pack-pattern-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Cpath d='M11 0 22 11 11 22 0 11Z' fill='%23000' fill-opacity='.09'/%3E%3C/svg%3E");
+  --pack-pattern-size: 22px 22px;
+}
+
+@font-face {
+  font-family: 'Limelight';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../../../public/fonts/limelight-latin.woff2') format('woff2');
+}
+[data-pack="casino"] body { --font-display: 'Limelight', var(--font-text); }
+/* Limelight has one weight; a synthesised bold would smear its thin strokes. */
+[data-pack="casino"] :is(h1, h2, h3, .row-title) { font-weight: 400; }
+
+/* The coin as a poker chip: red body, a ring of ivory edge spots and a dashed inlay. */
+[data-pack="casino"] .coin-pill { border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); }
+[data-pack="casino"] .coin-pill svg {
+  border-radius: 50%;
+  background: repeating-conic-gradient(#f7f0dc 0 22.5deg, #d6453d 0 45deg);
+  box-shadow: 0 1px 0 #6e1c17;
+}
+[data-pack="casino"] .coin-pill svg circle:first-child { fill: #d6453d; }
+[data-pack="casino"] .coin-pill svg circle + circle { stroke: #f7f0dc; stroke-width: 1.4; stroke-dasharray: 2.2 1.4; }
+
+/* The empty-cell glyph from marks.ts, tinted: diamonds. */
+[data-pack="casino"] :is(.nono-cell, .mosaic-cell, .regions-cell).x::before { background: #f2c14e; }
+[data-pack="casino"] .tracks-cross path { fill: #f2c14e; }
+
+/* A gold marquee frame with a bulb every 12 px. The two images light alternate bulbs, so swapping
+   them chases the light round the board; the frame clips its overflow, so the bulbs live in the
+   border image. The swap is a discrete step, which Chromium and Safari both animate. */
+[data-pack="casino"] .board-frame {
+  border-radius: 0; background-clip: padding-box;
+  border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' fill='%237a5410'/%3E%3Crect x='1' y='1' width='46' height='46' fill='%23b8872a'/%3E%3Crect x='2.5' y='2.5' width='43' height='43' fill='%23f2c14e'/%3E%3Crect x='9.5' y='9.5' width='29' height='29' fill='%23b8872a'/%3E%3Crect x='11' y='11' width='26' height='26' fill='%235a3d0a'/%3E%3Cg fill='%238a6420'%3E%3Ccircle cx='6' cy='6' r='2.6'/%3E%3Ccircle cx='18' cy='6' r='2.6'/%3E%3Ccircle cx='30' cy='6' r='2.6'/%3E%3Ccircle cx='42' cy='6' r='2.6'/%3E%3Ccircle cx='42' cy='18' r='2.6'/%3E%3Ccircle cx='42' cy='30' r='2.6'/%3E%3Ccircle cx='42' cy='42' r='2.6'/%3E%3Ccircle cx='30' cy='42' r='2.6'/%3E%3Ccircle cx='18' cy='42' r='2.6'/%3E%3Ccircle cx='6' cy='42' r='2.6'/%3E%3Ccircle cx='6' cy='30' r='2.6'/%3E%3Ccircle cx='6' cy='18' r='2.6'/%3E%3C/g%3E%3Cg fill='%23fff0b4' fill-opacity='.45'%3E%3Ccircle cx='18' cy='6' r='4.4'/%3E%3Ccircle cx='42' cy='6' r='4.4'/%3E%3Ccircle cx='42' cy='30' r='4.4'/%3E%3Ccircle cx='30' cy='42' r='4.4'/%3E%3Ccircle cx='6' cy='42' r='4.4'/%3E%3Ccircle cx='6' cy='18' r='4.4'/%3E%3C/g%3E%3Cg fill='%23fff7d1'%3E%3Ccircle cx='18' cy='6' r='2.8'/%3E%3Ccircle cx='42' cy='6' r='2.8'/%3E%3Ccircle cx='42' cy='30' r='2.8'/%3E%3Ccircle cx='30' cy='42' r='2.8'/%3E%3Ccircle cx='6' cy='42' r='2.8'/%3E%3Ccircle cx='6' cy='18' r='2.8'/%3E%3C/g%3E%3C/svg%3E") 12 / 12px / 0px round;
+  animation: casino-chase 0.9s infinite;
+}
+[data-pack="casino"] .board-frame.solved { animation-duration: 0.3s; box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 45%, transparent); }
+@keyframes casino-chase {
+  0%, 49.9% { border-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' fill='%237a5410'/%3E%3Crect x='1' y='1' width='46' height='46' fill='%23b8872a'/%3E%3Crect x='2.5' y='2.5' width='43' height='43' fill='%23f2c14e'/%3E%3Crect x='9.5' y='9.5' width='29' height='29' fill='%23b8872a'/%3E%3Crect x='11' y='11' width='26' height='26' fill='%235a3d0a'/%3E%3Cg fill='%238a6420'%3E%3Ccircle cx='6' cy='6' r='2.6'/%3E%3Ccircle cx='18' cy='6' r='2.6'/%3E%3Ccircle cx='30' cy='6' r='2.6'/%3E%3Ccircle cx='42' cy='6' r='2.6'/%3E%3Ccircle cx='42' cy='18' r='2.6'/%3E%3Ccircle cx='42' cy='30' r='2.6'/%3E%3Ccircle cx='42' cy='42' r='2.6'/%3E%3Ccircle cx='30' cy='42' r='2.6'/%3E%3Ccircle cx='18' cy='42' r='2.6'/%3E%3Ccircle cx='6' cy='42' r='2.6'/%3E%3Ccircle cx='6' cy='30' r='2.6'/%3E%3Ccircle cx='6' cy='18' r='2.6'/%3E%3C/g%3E%3Cg fill='%23fff0b4' fill-opacity='.45'%3E%3Ccircle cx='18' cy='6' r='4.4'/%3E%3Ccircle cx='42' cy='6' r='4.4'/%3E%3Ccircle cx='42' cy='30' r='4.4'/%3E%3Ccircle cx='30' cy='42' r='4.4'/%3E%3Ccircle cx='6' cy='42' r='4.4'/%3E%3Ccircle cx='6' cy='18' r='4.4'/%3E%3C/g%3E%3Cg fill='%23fff7d1'%3E%3Ccircle cx='18' cy='6' r='2.8'/%3E%3Ccircle cx='42' cy='6' r='2.8'/%3E%3Ccircle cx='42' cy='30' r='2.8'/%3E%3Ccircle cx='30' cy='42' r='2.8'/%3E%3Ccircle cx='6' cy='42' r='2.8'/%3E%3Ccircle cx='6' cy='18' r='2.8'/%3E%3C/g%3E%3C/svg%3E"); }
+  50%, 100% { border-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' fill='%237a5410'/%3E%3Crect x='1' y='1' width='46' height='46' fill='%23b8872a'/%3E%3Crect x='2.5' y='2.5' width='43' height='43' fill='%23f2c14e'/%3E%3Crect x='9.5' y='9.5' width='29' height='29' fill='%23b8872a'/%3E%3Crect x='11' y='11' width='26' height='26' fill='%235a3d0a'/%3E%3Cg fill='%238a6420'%3E%3Ccircle cx='6' cy='6' r='2.6'/%3E%3Ccircle cx='18' cy='6' r='2.6'/%3E%3Ccircle cx='30' cy='6' r='2.6'/%3E%3Ccircle cx='42' cy='6' r='2.6'/%3E%3Ccircle cx='42' cy='18' r='2.6'/%3E%3Ccircle cx='42' cy='30' r='2.6'/%3E%3Ccircle cx='42' cy='42' r='2.6'/%3E%3Ccircle cx='30' cy='42' r='2.6'/%3E%3Ccircle cx='18' cy='42' r='2.6'/%3E%3Ccircle cx='6' cy='42' r='2.6'/%3E%3Ccircle cx='6' cy='30' r='2.6'/%3E%3Ccircle cx='6' cy='18' r='2.6'/%3E%3C/g%3E%3Cg fill='%23fff0b4' fill-opacity='.45'%3E%3Ccircle cx='6' cy='6' r='4.4'/%3E%3Ccircle cx='30' cy='6' r='4.4'/%3E%3Ccircle cx='42' cy='18' r='4.4'/%3E%3Ccircle cx='42' cy='42' r='4.4'/%3E%3Ccircle cx='18' cy='42' r='4.4'/%3E%3Ccircle cx='6' cy='30' r='4.4'/%3E%3C/g%3E%3Cg fill='%23fff7d1'%3E%3Ccircle cx='6' cy='6' r='2.8'/%3E%3Ccircle cx='30' cy='6' r='2.8'/%3E%3Ccircle cx='42' cy='18' r='2.8'/%3E%3Ccircle cx='42' cy='42' r='2.8'/%3E%3Ccircle cx='18' cy='42' r='2.8'/%3E%3Ccircle cx='6' cy='30' r='2.8'/%3E%3C/g%3E%3C/svg%3E"); }
+}
+
+/* Solved: three reels spin up above a marquee sign and stop one after the other on 7 7 7 (the
+   last at 1.2 s, when the scene starts its coin rain), then the sign lights up and JACKPOT
+   flashes. The reels are one pseudo-element with a strip image per reel, moved by
+   background-position. The resting values are the end state, which reduced motion shows. */
+[data-pack="casino"] .solved-stamp span {
+  position: relative; padding: 10px 26px 12px; border-radius: 10px;
+  border: 3px solid #f2c14e; outline: 3px dotted #fff7d1; outline-offset: 3px;
+  background: #5a1512; color: #fff4c2; font-size: 44px; font-weight: 400; letter-spacing: 0.04em;
+  text-shadow: 0 0 8px #f2c14e, 0 0 20px #f2c14e, 0 2px 0 #7a5410;
+  box-shadow: 0 0 0 9px #7a5410, 0 0 28px rgba(242, 193, 78, 0.55), 0 10px 24px rgba(0, 0, 0, 0.5);
+  animation: cs-stamp 2.4s linear forwards, cs-sign 2.4s step-end forwards;
+}
+[data-pack="casino"] .solved-stamp span::before {
+  content: ''; position: absolute; left: 50%; bottom: calc(100% + 22px); box-sizing: content-box; width: 152px; height: 56px; margin-left: -82px;
+  border: 6px solid #f2c14e; border-radius: 10px;
+  box-shadow: 0 0 0 2px #b8872a, 0 6px 18px rgba(0, 0, 0, 0.5);
+  background-color: #7a5410;
+  background-image:
+    linear-gradient(to right, transparent 48px, #7a5410 48px 52px, transparent 52px 100px, #7a5410 100px 104px, transparent 104px),
+    linear-gradient(rgba(0, 0, 0, 0.45), transparent 24%, transparent 76%, rgba(0, 0, 0, 0.45)),
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2748%27%20height%3D%27384%27%20viewBox%3D%270%200%2048%20384%27%3E%3Crect%20width%3D%2748%27%20height%3D%27384%27%20fill%3D%27%23fbf5e2%27%2F%3E%3Cg%20font-family%3D%27Georgia%2CTimes%20New%20Roman%2Cserif%27%20font-weight%3D%27700%27%20text-anchor%3D%27middle%27%3E%3Ctext%20x%3D%2724%27%20y%3D%2736%27%20font-size%3D%2734%27%20fill%3D%27%23d6453d%27%3E7%3C%2Ftext%3E%3Ctext%20x%3D%2724%27%20y%3D%2784%27%20font-size%3D%2730%27%20fill%3D%27%23d6453d%27%3E%E2%99%A6%3C%2Ftext%3E%3Crect%20x%3D%278%27%20y%3D%27111%27%20width%3D%2732%27%20height%3D%2718%27%20rx%3D%273%27%20fill%3D%27%231c1c1c%27%2F%3E%3Ctext%20x%3D%2724%27%20y%3D%27125%27%20font-size%3D%2713%27%20fill%3D%27%23fbf5e2%27%3EBAR%3C%2Ftext%3E%3Ctext%20x%3D%2724%27%20y%3D%27180%27%20font-size%3D%2730%27%20fill%3D%27%231c1c1c%27%3E%E2%99%A3%3C%2Ftext%3E%3Ctext%20x%3D%2724%27%20y%3D%27228%27%20font-size%3D%2730%27%20fill%3D%27%23d6453d%27%3E%E2%99%A5%3C%2Ftext%3E%3Ctext%20x%3D%2724%27%20y%3D%27276%27%20font-size%3D%2730%27%20fill%3D%27%231c1c1c%27%3E%E2%99%A0%3C%2Ftext%3E%3Crect%20x%3D%278%27%20y%3D%27303%27%20width%3D%2732%27%20height%3D%2718%27%20rx%3D%273%27%20fill%3D%27%231c1c1c%27%2F%3E%3Ctext%20x%3D%2724%27%20y%3D%27317%27%20font-size%3D%2713%27%20fill%3D%27%23fbf5e2%27%3EBAR%3C%2Ftext%3E%3Ctext%20x%3D%2724%27%20y%3D%27372%27%20font-size%3D%2730%27%20fill%3D%27%23d6453d%27%3E%E2%99%A6%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fsvg%3E"), url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2748%27%20height%3D%27384%27%20viewBox%3D%270%200%2048%20384%27%3E%3Crect%20width%3D%2748%27%20height%3D%27384%27%20fill%3D%27%23fbf5e2%27%2F%3E%3Cg%20font-family%3D%27Georgia%2CTimes%20New%20Roman%2Cserif%27%20font-weight%3D%27700%27%20text-anchor%3D%27middle%27%3E%3Ctext%20x%3D%2724%27%20y%3D%2736%27%20font-size%3D%2734%27%20fill%3D%27%23d6453d%27%3E7%3C%2Ftext%3E%3Ctext%20x%3D%2724%27%20y%3D%2784%27%20font-size%3D%2730%27%20fill%3D%27%23d6453d%27%3E%E2%99%A6%3C%2Ftext%3E%3Crect%20x%3D%278%27%20y%3D%27111%27%20width%3D%2732%27%20height%3D%2718%27%20rx%3D%273%27%20fill%3D%27%231c1c1c%27%2F%3E%3Ctext%20x%3D%2724%27%20y%3D%27125%27%20font-size%3D%2713%27%20fill%3D%27%23fbf5e2%27%3EBAR%3C%2Ftext%3E%3Ctext%20x%3D%2724%27%20y%3D%27180%27%20font-size%3D%2730%27%20fill%3D%27%231c1c1c%27%3E%E2%99%A3%3C%2Ftext%3E%3Ctext%20x%3D%2724%27%20y%3D%27228%27%20font-size%3D%2730%27%20fill%3D%27%23d6453d%27%3E%E2%99%A5%3C%2Ftext%3E%3Ctext%20x%3D%2724%27%20y%3D%27276%27%20font-size%3D%2730%27%20fill%3D%27%231c1c1c%27%3E%E2%99%A0%3C%2Ftext%3E%3Crect%20x%3D%278%27%20y%3D%27303%27%20width%3D%2732%27%20height%3D%2718%27%20rx%3D%273%27%20fill%3D%27%231c1c1c%27%2F%3E%3Ctext%20x%3D%2724%27%20y%3D%27317%27%20font-size%3D%2713%27%20fill%3D%27%23fbf5e2%27%3EBAR%3C%2Ftext%3E%3Ctext%20x%3D%2724%27%20y%3D%27372%27%20font-size%3D%2730%27%20fill%3D%27%23d6453d%27%3E%E2%99%A6%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fsvg%3E"), url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2748%27%20height%3D%27384%27%20viewBox%3D%270%200%2048%20384%27%3E%3Crect%20width%3D%2748%27%20height%3D%27384%27%20fill%3D%27%23fbf5e2%27%2F%3E%3Cg%20font-family%3D%27Georgia%2CTimes%20New%20Roman%2Cserif%27%20font-weight%3D%27700%27%20text-anchor%3D%27middle%27%3E%3Ctext%20x%3D%2724%27%20y%3D%2736%27%20font-size%3D%2734%27%20fill%3D%27%23d6453d%27%3E7%3C%2Ftext%3E%3Ctext%20x%3D%2724%27%20y%3D%2784%27%20font-size%3D%2730%27%20fill%3D%27%23d6453d%27%3E%E2%99%A6%3C%2Ftext%3E%3Crect%20x%3D%278%27%20y%3D%27111%27%20width%3D%2732%27%20height%3D%2718%27%20rx%3D%273%27%20fill%3D%27%231c1c1c%27%2F%3E%3Ctext%20x%3D%2724%27%20y%3D%27125%27%20font-size%3D%2713%27%20fill%3D%27%23fbf5e2%27%3EBAR%3C%2Ftext%3E%3Ctext%20x%3D%2724%27%20y%3D%27180%27%20font-size%3D%2730%27%20fill%3D%27%231c1c1c%27%3E%E2%99%A3%3C%2Ftext%3E%3Ctext%20x%3D%2724%27%20y%3D%27228%27%20font-size%3D%2730%27%20fill%3D%27%23d6453d%27%3E%E2%99%A5%3C%2Ftext%3E%3Ctext%20x%3D%2724%27%20y%3D%27276%27%20font-size%3D%2730%27%20fill%3D%27%231c1c1c%27%3E%E2%99%A0%3C%2Ftext%3E%3Crect%20x%3D%278%27%20y%3D%27303%27%20width%3D%2732%27%20height%3D%2718%27%20rx%3D%273%27%20fill%3D%27%231c1c1c%27%2F%3E%3Ctext%20x%3D%2724%27%20y%3D%27317%27%20font-size%3D%2713%27%20fill%3D%27%23fbf5e2%27%3EBAR%3C%2Ftext%3E%3Ctext%20x%3D%2724%27%20y%3D%27372%27%20font-size%3D%2730%27%20fill%3D%27%23d6453d%27%3E%E2%99%A6%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  background-size: auto, auto, 48px 384px, 48px 384px, 48px 384px;
+  background-repeat: no-repeat, no-repeat, repeat-y, repeat-y, repeat-y;
+  background-position: 0 0, 0 0, 0 1156px, 52px 1540px, 104px 1924px;
+  animation: cs-reels 2.4s linear forwards;
+}
+[data-pack="casino"] .solved-stamp::after {
+  content: 'JACKPOT'; content: 'JACKPOT' / '';
+  position: absolute; left: 50%; top: calc(100% + 16px); translate: -50% 0;
+  font: 400 26px/1 var(--font-display); letter-spacing: 0.12em; color: #fff4c2;
+  text-shadow: 0 0 8px #f2c14e, 0 0 20px #f2c14e, 0 2px 0 #7a5410;
+  animation: cs-jackpot 2.4s linear forwards;
+}
+@keyframes cs-stamp {
+  0% { opacity: 0; } 4% { opacity: 1; } 86% { opacity: 1; } 100% { opacity: 0; }
+}
+/* Stepped: the sign switches on at once, then its bulbs blink three times. */
+@keyframes cs-sign {
+  0% { color: transparent; text-shadow: none; background-color: #2a0b09; border-color: #7a5410; outline-color: #8a6420; box-shadow: 0 0 0 9px #4a3208; }
+  50% { color: #fff4c2; background-color: #5a1512; border-color: #f2c14e; box-shadow: 0 0 0 9px #7a5410, 0 0 28px rgba(242, 193, 78, 0.55), 0 10px 24px rgba(0, 0, 0, 0.5); outline-color: #fff7d1; text-shadow: 0 0 14px #fff, 0 0 36px #f2c14e; }
+  53% { text-shadow: 0 0 8px #f2c14e, 0 0 20px #f2c14e, 0 2px 0 #7a5410; }
+  56%, 64% { outline-color: #8a6420; }
+  60%, 68% { outline-color: #fff7d1; }
+}
+@keyframes cs-jackpot {
+  0%, 51.9% { opacity: 0; transform: scale(0.6); }
+  54% { opacity: 1; transform: scale(1.15); }
+  57% { transform: scale(1); }
+  60%, 68%, 76% { opacity: 1; }
+  64%, 72% { opacity: 0.3; }
+  86% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes cs-reels {
+  0% { background-position: 0 0, 0 0, 0 4px, 52px 4px, 104px 4px; }
+  29% { background-position: 0 0, 0 0, 0 1164px, 52px 1123px, 104px 1122px; }
+  32% { background-position: 0 0, 0 0, 0 1156px, 52px 1239px, 104px 1238px; }
+  40% { background-position: 0 0, 0 0, 0 1156px, 52px 1548px, 104px 1546px; }
+  43% { background-position: 0 0, 0 0, 0 1156px, 52px 1540px, 104px 1662px; }
+  50% { background-position: 0 0, 0 0, 0 1156px, 52px 1540px, 104px 1932px; }
+  53%, 100% { background-position: 0 0, 0 0, 0 1156px, 52px 1540px, 104px 1924px; }
+}

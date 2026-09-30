@@ -94,6 +94,17 @@ it('refuses to buy an earned-only badge, whatever the balance', () => {
   expect(localStorage.getItem('ph:coins:spent')).toBeNull();
 });
 
+it('owns a Hustle theme once its stage is reached, and never sells it', () => {
+  expect(buyItem('ocean')).toBe(false);
+  for (let n = 1; n <= 333; n++) recordSolve(`hustle:${n}`, { solvedAt: '2026-09-23T10:00:00.000Z', seconds: 60, hints: 0, moves: 10 });
+  expect(owned().has('ocean')).toBe(true);
+  expect(owned().has('inferno')).toBe(false);
+  expect(buyItem('inferno')).toBe(false);
+  expect(readSpent()).toEqual([]);
+  expect(equip('theme', 'ocean')).toBe(true);
+  expect(readEquipped().theme).toBe('ocean');
+});
+
 it('owns a flair once it is earned by solving, with no spend entry involved', () => {
   expect(owned().has('basic-zipper')).toBe(false);
   earnBasicZipper();

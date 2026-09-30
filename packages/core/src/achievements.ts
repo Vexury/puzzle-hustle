@@ -1,5 +1,6 @@
 import { parseSolveId } from './solveId.ts';
-import { DAILY_TYPES } from './schedule.ts';
+import { HUSTLE_ROUND, hustleRun } from './hustle.ts';
+import { DAILY_TYPES, periodKey } from './schedule.ts';
 import { dailyStreaks } from './streaks.ts';
 import { PUZZLE_META, PUZZLE_TYPES, type PuzzleTypeId } from './types.ts';
 
@@ -11,7 +12,7 @@ export interface SolveEntry {
   moves: number;
 }
 
-export type AchievementGroup = 'start' | 'streak' | 'perfect' | 'volume' | 'oddity' | 'type';
+export type AchievementGroup = 'start' | 'streak' | 'perfect' | 'volume' | 'oddity' | 'hustle' | 'type';
 
 export interface Achievement {
   id: string;
@@ -57,6 +58,18 @@ const isSpeedType = (type: PuzzleTypeId): type is SpeedType => type in SPEED_TAR
 
 const TYPE_VOLUME = 100;
 
+// The rungs at 333, 666 and 777 unlock the Hustle themes of the same stage (HUSTLE_THEMES).
+const HUSTLE_LADDER: readonly [number, string][] = [
+  [10, 'First Round'],
+  [40, 'Level Up'],
+  [120, 'Hard Mode'],
+  [333, 'Deep Dive'],
+  [666, 'Hellbent'],
+  [777, 'Jackpot'],
+];
+export const HUSTLE_DAY_COUNT = 30;
+export const HUSTLE_GRIND_COUNT = 50;
+
 const TYPE_TITLES: Record<PuzzleTypeId, { volume: string; signature: string }> = {
   zip: { volume: 'Zip Fan', signature: 'Lightning' },
   shapes: { volume: 'In Good Shape', signature: 'Quick Fit' },
@@ -95,6 +108,11 @@ const GENERAL: readonly Achievement[] = [
 
   { id: 'night-owl', title: 'Night Owl', description: 'Solve a daily between midnight and four.', group: 'oddity' },
   { id: 'early-bird', title: 'Early Bird', description: 'Solve a daily between four and six in the morning.', group: 'oddity' },
+
+  ...HUSTLE_LADDER.map(([n, title]): Achievement => ({ id: `hustle-${n}`, title, description: `Reach Hustle level ${n}.`, group: 'hustle', target: n })),
+  { id: 'hustle-clean-round', title: 'Clean Round', description: `Solve a whole Hustle round of ${HUSTLE_ROUND} stages without a hint.`, group: 'hustle' },
+  { id: 'hustle-marathon', title: 'Marathon', description: `Solve ${HUSTLE_DAY_COUNT} Hustle stages in one day.`, group: 'hustle', target: HUSTLE_DAY_COUNT },
+  { id: 'hustle-grind', title: 'Genius Grind', description: `Solve ${HUSTLE_GRIND_COUNT} Hustle stages on Genius without a hint.`, group: 'hustle', target: HUSTLE_GRIND_COUNT },
 ];
 
 function typeAchievements(type: PuzzleTypeId): Achievement[] {
@@ -144,6 +162,10 @@ interface Facts {
   perfectDayNoHint: boolean;
   nightOwl: boolean;
   earlyBird: boolean;
+  hustleLevel: number;
+  hustleCleanRound: boolean;
+  hustleBestDay: number;
+  hustleGeniusNoHint: number;
 }
 
 function gather(solves: readonly SolveEntry[]): Facts {
@@ -163,7 +185,14 @@ function gather(solves: readonly SolveEntry[]): Facts {
     perfectDayNoHint: false,
     nightOwl: false,
     earlyBird: false,
+    hustleLevel: 0,
+    hustleCleanRound: false,
+    hustleBestDay: 0,
+    hustleGeniusNoHint: 0,
   };
+  const hustleStages = new Set<number>();
+  const hustleNoHint = new Set<number>();
+  const hustleByDay = new Map<string, number>();
 
   for (const entry of solves) {
     const parsed = parseSolveId(entry.id);
@@ -174,6 +203,17 @@ function gather(solves: readonly SolveEntry[]): Facts {
     if (parsed.difficulty === 'genius') {
       facts.genius = true;
       if (entry.hints === 0) facts.geniusNoHint.add(parsed.type);
+    }
+
+    if (parsed.mode === 'hustle' && parsed.level !== undefined) {
+      hustleStages.add(parsed.level);
+      if (entry.hints === 0) {
+        hustleNoHint.add(parsed.level);
+        if (parsed.difficulty === 'genius') facts.hustleGeniusNoHint++;
+      }
+      // A Berlin day, like the dailies, so "one day" means the same for every player.
+      const day = periodKey('daily', new Date(entry.solvedAt));
+      hustleByDay.set(day, (hustleByDay.get(day) ?? 0) + 1);
     }
 
     if (parsed.mode !== 'period' || !parsed.key) continue;
@@ -208,6 +248,15 @@ function gather(solves: readonly SolveEntry[]): Facts {
     if (!day.hinted) facts.perfectDayNoHint = true;
   }
 
+  facts.hustleLevel = hustleRun(hustleStages);
+  facts.hustleBestDay = Math.max(0, ...hustleByDay.values());
+  for (const n of hustleNoHint) {
+    if ((n - 1) % HUSTLE_ROUND !== 0) continue;
+    let whole = true;
+    for (let k = n; k < n + HUSTLE_ROUND && whole; k++) whole = hustleNoHint.has(k);
+    if (whole) facts.hustleCleanRound = true;
+  }
+
   facts.bestStreak = dailyStreaks(solves.map((s) => s.id)).best;
   return facts;
 }
@@ -225,6 +274,10 @@ function counterOf(a: Achievement, f: Facts): { counter: string; value: number }
       return { counter: 'perfect', value: f.perfectDays };
     case 'volume':
       return a.id === 'weekly-10' ? { counter: 'weekly', value: f.weeks.size } : { counter: 'solved', value: f.total };
+    case 'hustle':
+      if (a.id === 'hustle-marathon') return { counter: 'hustle-day', value: f.hustleBestDay };
+      if (a.id === 'hustle-grind') return { counter: 'hustle-grind', value: f.hustleGeniusNoHint };
+      return { counter: 'hustle', value: f.hustleLevel };
     case 'start':
       // every-type, the only counter in its group.
       return { counter: 'daily-types', value: DAILY_TYPES.filter((t) => f.types.has(t)).length };
@@ -243,6 +296,7 @@ const FLAGS: Record<string, (f: Facts) => boolean> = {
   'perfect-day-no-hint': (f) => f.perfectDayNoHint,
   'night-owl': (f) => f.nightOwl,
   'early-bird': (f) => f.earlyBird,
+  'hustle-clean-round': (f) => f.hustleCleanRound,
 };
 for (const type of PUZZLE_TYPES) {
   if (!isSpeedType(type)) FLAGS[`${type}-genius`] = (f) => f.geniusNoHint.has(type);

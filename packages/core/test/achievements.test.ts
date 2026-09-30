@@ -1,10 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PUZZLE_TYPES } from '../src/types.ts';
 import { DAILY_TYPES } from '../src/schedule.ts';
+import { hustleSlot } from '../src/hustle.ts';
 import {
   ACHIEVEMENTS,
   ACHIEVEMENTS_EPOCH,
   DAILY_NO_HINT_COUNT,
+  HUSTLE_DAY_COUNT,
+  HUSTLE_GRIND_COUNT,
   SPEED_COUNT,
   SPEED_TARGETS,
   achievementProgress,
@@ -54,15 +57,32 @@ function weeklies(n: number): SolveEntry[] {
   return Array.from({ length: n }, (_, i) => solve(`sudoku:weekly:2026-W${String(i + 1).padStart(2, '0')}`));
 }
 
+// Hustle stages from..to, one hour apart from Berlin noon on `day` onwards, so a run of up to a
+// dozen stays on one day; longer runs spread over the following days.
+function hustle(from: number, to: number, hints = 0, day = '2026-06-01'): SolveEntry[] {
+  const start = Date.parse(`${day}T12:00:00`);
+  return Array.from({ length: to - from + 1 }, (_, i) => ({ id: `hustle:${from + i}`, solvedAt: start + i * 3_600_000, seconds: 60, hints, moves: 10 }));
+}
+
+// The first `n` stages whose balanced difficulty is Genius, one hour apart.
+function geniusStages(n: number, hints = 0): SolveEntry[] {
+  const out: SolveEntry[] = [];
+  for (let k = 1; out.length < n; k++) {
+    if (hustleSlot(k).difficulty === 'genius') out.push({ id: `hustle:${k}`, solvedAt: Date.parse('2026-06-01T12:00:00') + out.length * 3_600_000, seconds: 60, hints, moves: 10 });
+  }
+  return out;
+}
+
 const unlocked = (s: SolveEntry[]) => unlockedAchievements(s, EPOCH);
 const progress = (s: SolveEntry[]) => achievementProgress(s, EPOCH);
 const ids = ACHIEVEMENTS.map((a) => a.id);
 
 describe('the catalog', () => {
-  it('has forty unique achievements, twenty general and two per type', () => {
-    expect(ACHIEVEMENTS).toHaveLength(40);
-    expect(new Set(ids).size).toBe(40);
-    expect(ACHIEVEMENTS.filter((a) => a.group !== 'type')).toHaveLength(20);
+  it('has forty-nine unique achievements, twenty general, nine for Hustle and two per type', () => {
+    expect(ACHIEVEMENTS).toHaveLength(49);
+    expect(new Set(ids).size).toBe(49);
+    expect(ACHIEVEMENTS.filter((a) => a.group !== 'type' && a.group !== 'hustle')).toHaveLength(20);
+    expect(ACHIEVEMENTS.filter((a) => a.group === 'hustle')).toHaveLength(9);
     for (const type of PUZZLE_TYPES) {
       const own = ACHIEVEMENTS.filter((a) => a.type === type);
       expect(own.map((a) => a.id)).toEqual([`${type}-100`, expect.stringMatching(new RegExp(`^${type}-(speed|genius)$`))]);
@@ -278,6 +298,15 @@ describe('unlockedAchievements', () => {
       'weekly-10': weeklies(10),
       'night-owl': [solve('zip:daily:2026-06-01', '2026-06-01', 1)],
       'early-bird': [solve('zip:daily:2026-06-01', '2026-06-01', 5)],
+      'hustle-10': hustle(1, 10),
+      'hustle-40': hustle(1, 40),
+      'hustle-120': hustle(1, 120),
+      'hustle-333': hustle(1, 333),
+      'hustle-666': hustle(1, 666),
+      'hustle-777': hustle(1, 777),
+      'hustle-clean-round': hustle(21, 30),
+      'hustle-marathon': Array.from({ length: HUSTLE_DAY_COUNT }, (_, i) => ({ id: `hustle:${i + 1}`, solvedAt: Date.parse('2026-06-01T08:00:00') + i * 60_000, seconds: 60, hints: 1, moves: 10 })),
+      'hustle-grind': geniusStages(HUSTLE_GRIND_COUNT),
     };
     for (const type of PUZZLE_TYPES) {
       fixtures[`${type}-100`] = randoms(type, 100);
@@ -297,6 +326,41 @@ describe('unlockedAchievements', () => {
     const decadeLater = unlocked(history);
     vi.useRealTimers();
     expect([...dayAfter].sort()).toEqual([...decadeLater].sort());
+  });
+});
+
+describe('hustle achievements', () => {
+  it('climbs the ladder on the unbroken run, not on the highest stage', () => {
+    expect(unlocked(hustle(1, 9)).has('hustle-10')).toBe(false);
+    expect(unlocked(hustle(1, 10)).has('hustle-10')).toBe(true);
+    expect(unlocked([...hustle(1, 9), ...hustle(11, 50)]).has('hustle-10')).toBe(false);
+  });
+
+  it('wants a whole round of ten from its first stage, none with a hint', () => {
+    expect(unlocked(hustle(1, 10)).has('hustle-clean-round')).toBe(true);
+    expect(unlocked(hustle(5, 14)).has('hustle-clean-round')).toBe(false);
+    const oneHinted = hustle(1, 10).map((s) => (s.id === 'hustle:7' ? { ...s, hints: 1 } : s));
+    expect(unlocked(oneHinted).has('hustle-clean-round')).toBe(false);
+  });
+
+  it('counts a marathon within one Berlin day', () => {
+    const at = (i: number, iso: string) => ({ id: `hustle:${i + 1}`, solvedAt: Date.parse(iso) + i * 60_000, seconds: 60, hints: 0, moves: 10 });
+    const sameDay = Array.from({ length: HUSTLE_DAY_COUNT }, (_, i) => at(i, '2026-06-01T20:00:00+02:00'));
+    expect(unlocked(sameDay).has('hustle-marathon')).toBe(true);
+    // From 23:45 Berlin, the last fifteen fall on the next day.
+    const acrossMidnight = Array.from({ length: HUSTLE_DAY_COUNT }, (_, i) => at(i, '2026-06-01T23:45:00+02:00'));
+    expect(unlocked(acrossMidnight).has('hustle-marathon')).toBe(false);
+  });
+
+  it('grinds on hint-free stages whose balanced difficulty is Genius, whatever the tier says', () => {
+    const grind = (s: SolveEntry[]) => progress(s).find((p) => p.id === 'hustle-grind')?.current;
+    // Shapes plays a tier up, so a Genius Shapes board turns up in the Hard tier already.
+    const hardTier = hustle(121, 300);
+    expect(grind(hardTier)).toBe(hardTier.filter((s) => hustleSlot(Number(s.id.slice(7))).difficulty === 'genius').length);
+    expect(grind(hardTier)).toBeGreaterThan(0);
+    expect(grind(hustle(1, 120))).toBe(0);
+    expect(grind(geniusStages(HUSTLE_GRIND_COUNT - 1))).toBe(HUSTLE_GRIND_COUNT - 1);
+    expect(grind(geniusStages(20, 1))).toBe(0);
   });
 });
 

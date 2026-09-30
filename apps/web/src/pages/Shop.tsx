@@ -3,6 +3,7 @@ import {
   ACTIVITY_FLAIRS,
   COSMETICS,
   FLAIRS_BY_TYPE,
+  HUSTLE_THEMES,
   hustleSolved,
   packProgress,
   PUZZLE_META,
@@ -32,6 +33,8 @@ const REVERT_MS = 4000;
 // Cheapest first, earned-only badges last; sort is stable, so equal prices keep their catalogue order.
 const BADGES: readonly BadgeCosmetic[] = COSMETICS.filter((c): c is BadgeCosmetic => c.kind === 'badge').sort((a, b) => (a.requires ? 1 : 0) - (b.requires ? 1 : 0) || a.price - b.price);
 const FLAIRS: readonly FlairCosmetic[] = COSMETICS.filter((c): c is FlairCosmetic => c.kind === 'flair');
+// Bought packs first, then the ones only Hustle gives, in the order they are earned.
+const ALL_THEMES: readonly ThemeCosmetic[] = [...THEMES, ...HUSTLE_THEMES];
 
 // Badges and flairs fold away so the page stays short; themes stay open, the try-on is the point
 // of the page. Closed by default, and each section remembers how it was left.
@@ -68,7 +71,7 @@ export function itemState(id: string, ownedIds: Set<string>, equipped: Equipped,
   if (equipped.badge === id || equipped.flair === id || equipped.theme === id) return 'equipped';
   if (ownedIds.has(id)) return 'owned';
   const item = COSMETICS.find((c) => c.id === id);
-  if (!item || item.kind === 'flair' || (item.kind === 'badge' && item.requires)) return 'locked';
+  if (!item || item.kind === 'flair' || item.requires) return 'locked';
   return balance >= item.price ? 'buyable' : 'locked';
 }
 
@@ -140,6 +143,7 @@ export function Shop() {
     const state = itemState(item.id, ownedIds, equipped, balance);
     if (state === 'equipped') return 'Equipped';
     if (state === 'owned') return 'Owned';
+    if (item.requires) return `Lv ${item.requires.hustle}`;
     return `${item.price}`;
   };
 
@@ -245,6 +249,7 @@ export function Shop() {
         <section className="card-lg">
           <h2>Themes</h2>
           {THEMES_FREE && <span className="muted small">Free while in beta. Prices apply from launch.</span>}
+          <span className="muted small">{HUSTLE_THEMES.map((t) => t.title).join(', ')}: earned in Hustle, never sold.</span>
           <div className="theme-grid">
             <button
               type="button"
@@ -256,7 +261,7 @@ export function Shop() {
               <b className="small">Vexury</b>
               <span className="small">{!equipped.theme ? 'Equipped' : 'Free'}</span>
             </button>
-            {THEMES.map((item) => (
+            {ALL_THEMES.map((item) => (
               <button
                 key={item.id}
                 type="button"
@@ -348,6 +353,10 @@ export function Shop() {
             <button type="button" className="pill" onClick={buyTheme}>
               Use free (beta)
             </button>
+          ) : trying.requires ? (
+            <button type="button" className="pill" disabled>
+              Reach Hustle level {trying.requires.hustle}
+            </button>
           ) : (
             <button type="button" className="pill" onClick={buyTheme} disabled={balance < trying.price}>
               {balance < trying.price ? `Need ${trying.price - balance} more` : `Buy for ${trying.price}`}
@@ -362,7 +371,7 @@ export function Shop() {
 // Nine cells in a pack's own colours: its attributes on this element make the same token block
 // apply here as on the whole app. The Vexury card passes its stored mode and accent instead,
 // because under a pack the root carries neither.
-function MiniBoard({ pack, mode, accent }: { pack?: ThemeCosmetic; mode?: string; accent?: string }) {
+export function MiniBoard({ pack, mode, accent }: { pack?: ThemeCosmetic; mode?: string; accent?: string }) {
   return (
     <span className="mini-board" data-theme={pack?.mode ?? mode} data-pack={pack?.id} data-accent={pack ? undefined : accent} aria-hidden="true">
       {Array.from({ length: 9 }, (_, i) => (

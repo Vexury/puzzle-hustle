@@ -1,0 +1,94 @@
+[data-theme][data-pack="inferno"] {
+  --frame-border: 3px;
+  color-scheme: dark;
+  --bg: #140b09;
+  --card-bg: #1f1210;
+  --text: #ffe9dc;
+  --text-muted: #b58a78;
+  --border: #3d211b;
+  --border-mid: #5c3026;
+  --board-cell: #2b1714;
+  --board-line: #4a2820;
+  --hover-bg: #ff5a1f;
+  --hover-text: #2a0a00;
+  --accent: #ff5a1f;
+  --accent-text: #ff8a4c;
+  --accent-deep: #ff8a4c;
+  --on-accent: #2a0a00;
+  --success: #7ee08a;
+  --success-soft: rgba(126, 224, 138, 0.14);
+  --flame: #ffb13b;
+  /* A cold rose, so an error never reads as one more ember. */
+  --danger: #ff4d79;
+  --shadow: 0 0 12px rgba(255, 90, 31, 0.08);
+  --shadow-hover: 0 0 20px rgba(255, 90, 31, 0.2);
+  --radius: 10px;
+  --radius-sm: 8px;
+  --nono-c2: #ffc93b;
+  --nono-c3: #b36bff;
+  --pack-pattern-image: linear-gradient(to bottom, #0e0706, transparent 320px);
+  --pack-pattern-size: auto;
+}
+
+@font-face {
+  font-family: 'Grenze Gotisch';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../../../public/fonts/grenze-gotisch-latin.woff2') format('woff2');
+}
+[data-pack="inferno"] body { --font-display: 'Grenze Gotisch', Georgia, serif; }
+
+/* A smouldering band round the board, dark red through orange to amber: the border is
+   transparent and a gradient shows through it from the border box while the padding box keeps
+   the card colour, as in synthwave, so it works on the SVG boards too. It breathes a slow glow
+   once the board has swept in, and a solved board keeps the band with a green ring outside. */
+[data-theme][data-pack="inferno"] .board-frame {
+  border-color: transparent;
+  background:
+    linear-gradient(var(--card-bg), var(--card-bg)) padding-box,
+    linear-gradient(160deg, #3d0f07, #ff5a1f 35%, #ffb13b 50%, #ff5a1f 65%, #3d0f07) border-box;
+  box-shadow: 0 0 10px rgba(255, 90, 31, 0.25);
+}
+[data-pack="inferno"] .board-frame:not(.solved, .play.enter *) { animation: inferno-smoulder 3.2s ease-in-out infinite; }
+@keyframes inferno-smoulder {
+  0%, 100% { box-shadow: 0 0 10px rgba(255, 90, 31, 0.25); }
+  50% { box-shadow: 0 0 22px rgba(255, 120, 40, 0.5); }
+}
+[data-theme][data-pack="inferno"] .board-frame.solved {
+  box-shadow: 0 0 0 3px var(--bg), 0 0 0 6px var(--success), 0 0 22px rgba(255, 120, 40, 0.4);
+}
+
+/* The coin is a glowing ember. */
+[data-pack="inferno"] .coin-pill svg { color: var(--flame); filter: drop-shadow(0 0 3px #ff5a1f); }
+
+/* The empty-cell glyph from marks.ts, tinted: small flames. */
+[data-pack="inferno"] :is(.nono-cell, .mosaic-cell, .regions-cell).x::before { background: #ff8a4c; }
+[data-pack="inferno"] .tracks-cross path { fill: #ff8a4c; }
+
+/* Solved: branded in white-hot, cooling through amber to dark red, and a wisp of smoke rising
+   off it as it goes. Reduced motion shows the glowing middle state. */
+[data-pack="inferno"] .solved-stamp span {
+  background: none; box-shadow: none; font-size: 60px; font-weight: 700; letter-spacing: 0.02em;
+  color: #ffb13b; text-shadow: 0 0 12px #ff5a1f, 0 0 26px #b8300e;
+  transform: rotate(-7deg);
+  animation: inferno-brand 2.4s ease-out forwards;
+}
+@keyframes inferno-brand {
+  0% { opacity: 0; transform: rotate(-7deg) scale(1.6); color: #fff; text-shadow: 0 0 30px #ffb13b, 0 0 60px #ff5a1f; }
+  10% { opacity: 1; transform: rotate(-7deg) scale(1); color: #fff8e0; text-shadow: 0 0 18px #ffd27a, 0 0 40px #ff5a1f; }
+  40% { color: #ffb13b; text-shadow: 0 0 12px #ff5a1f, 0 0 26px #b8300e; }
+  78% { opacity: 1; transform: rotate(-7deg); color: #b8300e; text-shadow: 0 0 4px #3d0f07, 0 2px 0 #1a0604; }
+  100% { opacity: 0; transform: rotate(-7deg); color: #7a1a08; text-shadow: 0 -18px 16px rgba(120, 110, 100, 0.25); }
+}
+[data-pack="inferno"] .solved-stamp::after {
+  content: ''; position: absolute; left: 30%; top: -20%; width: 40%; height: 70%; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(150, 132, 120, 0.4), transparent);
+  filter: blur(6px); opacity: 0; pointer-events: none;
+  animation: inferno-smoke 2.4s ease-out forwards;
+}
+@keyframes inferno-smoke {
+  0%, 55% { opacity: 0; transform: translateY(10px) scale(0.6); }
+  78% { opacity: 0.8; }
+  100% { opacity: 0; transform: translate(12px, -46px) scale(1.5, 1.8); }
+}

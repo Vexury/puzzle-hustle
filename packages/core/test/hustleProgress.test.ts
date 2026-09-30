@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { coinsEarned, coinsForSolve } from '../src/coins.ts';
 import { earnedFlairs } from '../src/flairs.ts';
-import { earnedHustleBadges, hustleNext, hustleSolved } from '../src/hustleProgress.ts';
+import { earnedHustleBadges, earnedHustleThemes, hustleNext, hustleSolved } from '../src/hustleProgress.ts';
 
 const EPOCH = 1_000;
 const solve = (n: number, at = 2_000) => ({ id: `hustle:${n}`, solvedAt: at, seconds: 60, hints: 0, moves: 10 });
@@ -33,5 +33,12 @@ describe('hustle progress', () => {
     expect(earnedFlairs(upTo(39), EPOCH).has('hustle-starter')).toBe(false);
     expect(earnedFlairs(upTo(40), EPOCH).has('hustle-starter')).toBe(true);
     expect(coinsEarned(upTo(40), EPOCH)).toBeGreaterThan(0);
+  });
+
+  it('earns the Hustle themes at 333, 666 and 777, and never counts them as badges', () => {
+    expect(earnedHustleThemes(upTo(332), EPOCH).size).toBe(0);
+    expect(earnedHustleThemes(upTo(333), EPOCH)).toEqual(new Set(['ocean']));
+    expect(earnedHustleThemes(upTo(777), EPOCH)).toEqual(new Set(['ocean', 'inferno', 'casino']));
+    expect(earnedHustleBadges(upTo(777), EPOCH).has('ocean')).toBe(false);
   });
 });

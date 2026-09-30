@@ -46,6 +46,9 @@ The list grows only when a pack needs a new place, and every addition goes here.
   marks the place with `<PackAnchor>`, the scene renders there through `<InAnchor>`, and the
   decoration takes room of its own, so it can never cover a control. `page-end` closes every
   page. A new anchor gets a name in `anchors.tsx` and a line here.
+- Ground that should carry on below the `page-end` decoration to the bottom of the screen (behind
+  the tab bar, and on short pages) lives in `.pack-back` and follows the anchor with
+  `useBelowPageEnd` from `shared.ts`; see ocean and inferno.
 - Animate `transform` and `opacity` where possible. `prefers-reduced-motion` stops every
   animation on both planes, in the anchors and on the slots, and hides the front plane (`index.css`).
 

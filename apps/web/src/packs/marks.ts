@@ -17,6 +17,10 @@ export const PACK_MARKS: Partial<Record<string, readonly string[]>> = {
   sakura: ['M4.2 21.2l2.3-2.4C4.6 11 9.6 4.4 20.6 3.6c.6 11-6.2 16.7-13.1 16l-2.3 2.6Z'],
   midnight: ['M12 1C13 9 15 11 23 12 15 13 13 15 12 23 11 15 9 13 1 12 9 11 11 9 12 1Z'],
   'cat-cafe': [[ellipse(12, 16, 5.6, 4.6), ellipse(5.2, 10.4, 2.2, 2.7), ellipse(9.4, 5.9, 2.2, 2.7), ellipse(14.6, 5.9, 2.2, 2.7), ellipse(18.8, 10.4, 2.2, 2.7)].join('')],
+  // A bubble: the inner circle winds the other way, so the ring has its hole under either fill rule.
+  ocean: ['M2 12a10 10 0 1 0 20 0a10 10 0 1 0-20 0ZM5.5 12a6.5 6.5 0 1 1 13 0a6.5 6.5 0 1 1-13 0ZM7.5 9.2a1.7 1.7 0 1 0 3.4 0a1.7 1.7 0 1 0-3.4 0Z'],
+  inferno: ['M12 1c1 4.5 7 7 7 14a7 7 0 0 1-14 0c0-3.5 2-5.5 3.5-7 0 2.5 1 3.5 2 4.5 1-3.5 0-8 1.5-11.5Z'],
+  casino: ['M12 1.5C14.2 5.2 16.8 8.8 20 12 16.8 15.2 14.2 18.8 12 22.5 9.8 18.8 7.2 15.2 4 12 7.2 8.8 9.8 5.2 12 1.5Z'],
 };
 
 // Which variant a cell gets: scattered, so neighbours rarely match, and the same on every render.

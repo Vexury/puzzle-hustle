@@ -6,6 +6,7 @@ const calendar = 'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4';
 const flame = 'M12 3c.5 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2.6 1.4-4 2.4-5.6.6 1.3 1.5 2 2.6 2.3-.4-2.2-.4-4.4 0-6.7z';
 const star = 'M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z';
 const layers = 'M4 8l8-4 8 4-8 4zM4 12l8 4 8-4M4 16l8 4 8-4';
+const stairs = 'M4 20h4v-4h4v-4h4V8h4V4';
 
 // 24-unit line drawings in currentColor, so they follow theme and accent. The store icons are
 // rendered from the same paths later.
@@ -30,6 +31,15 @@ export const GENERAL_ICONS: Record<string, string> = {
   'weekly-10': `${calendar}M8 14h2M11 14h2M14 14h2M8 17h2`,
   'night-owl': 'M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z',
   'early-bird': 'M4 18h16M7 18a5 5 0 0 1 10 0M12 7v3M5.6 10.6l1.8 1.8M18.4 10.6l-1.8 1.8',
+  'hustle-10': stairs,
+  'hustle-40': stairs,
+  'hustle-120': stairs,
+  'hustle-333': 'M3 10c2-2 4-2 6 0s4 2 6 0 4-2 6 0M3 15c2-2 4-2 6 0s4 2 6 0 4-2 6 0M3 20c2-2 4-2 6 0s4 2 6 0 4-2 6 0',
+  'hustle-666': flame,
+  'hustle-777': 'M12 3l7 9-7 9-7-9zM9 12h6',
+  'hustle-clean-round': 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM8 12.5l2.8 2.8L16.5 9',
+  'hustle-marathon': 'M12 8v4l2.5 2.5M9 3h6M12 21a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM3 12h2M19 12h2',
+  'hustle-grind': 'M3 16h18L19 5l-4 4-3-6-3 6-4-4zM3 20h18',
 };
 
 const CORNER_PATHS = {

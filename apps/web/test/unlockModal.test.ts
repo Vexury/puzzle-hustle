@@ -45,8 +45,16 @@ it('builds an achievement row from the catalogue, with the coin award text', () 
       coinsText: `+${ACHIEVEMENT_COINS} coins`,
       equipped: false,
       flair: null,
+      theme: null,
     },
   ]);
+});
+
+it('carries the Hustle theme of the same stage in the achievement row', () => {
+  const [row] = buildUnlockRows([{ kind: 'achievement', id: 'hustle-666' }], null);
+  expect(row).toMatchObject({ kind: 'achievement', title: 'Hellbent', theme: { id: 'inferno', title: 'Inferno', equipped: false } });
+  expect(buildUnlockRows([{ kind: 'achievement', id: 'hustle-666' }], null, 'inferno')[0]!.theme!.equipped).toBe(true);
+  expect(buildUnlockRows([{ kind: 'achievement', id: 'hustle-120' }], null)[0]!.theme).toBeNull();
 });
 
 it('folds a flair earned by an achievement in the same batch into that achievement’s row', () => {

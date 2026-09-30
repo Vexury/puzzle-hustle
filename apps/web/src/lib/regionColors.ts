@@ -13,6 +13,8 @@ export const REGION_PALETTES = {
   midnight: ['#233c56', '#351e01', '#433250', '#1b290a', '#532e34', '#002b29', '#4d3518', '#0c253d', '#314021', '#2c1c38', '#0c4441', '#3a171e'],
   synthwave: ['#004744', '#20154e', '#014456', '#340b40', '#0f3d70', '#410228', '#3a326e', '#002826', '#52295e', '#002631', '#622344', '#002147'],
   terminal: ['#7c3f2a', '#222800', '#74470f', '#002e03', '#645000', '#002c20', '#4e5916', '#431000', '#305f31', '#371d00', '#03614b', '#2d2300'],
+  inferno: ['#7d2f33', '#00343a', '#684403', '#0b2862', '#275a1c', '#401652', '#035760', '#570914', '#2b4a87', '#3f2802', '#623876', '#0a3701'],
+  casino: ['#6a001f', '#7e5000', '#084300', '#3f53a8', '#521261', '#00667d', '#1e2a7b', '#7b3d8c', '#053d4a', '#993142', '#4c2f02', '#246d18'],
 } as const;
 
 export type RegionPaletteId = keyof typeof REGION_PALETTES;
@@ -43,7 +45,7 @@ function measure(colors: readonly string[]): RegionPalette {
 
 const MEASURED = Object.fromEntries(Object.entries(REGION_PALETTES).map(([id, colors]) => [id, measure(colors)])) as Record<RegionPaletteId, RegionPalette>;
 
-// Packs without their own palette (Paper, Sakura, Cat Café) use the one for their mode.
+// Packs without their own palette (Paper, Sakura, Cat Café, Ocean) use the one for their mode.
 export function regionPaletteId(packId: string | undefined, theme: 'light' | 'dark'): RegionPaletteId {
   return packId && packId in REGION_PALETTES ? (packId as RegionPaletteId) : theme;
 }

@@ -1,0 +1,43 @@
+/* A spotlight over the middle of the table and the felt darkening toward the edges. */
+.cs-light {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(90% 55% at 50% 25%, rgba(255, 244, 194, 0.08), transparent 70%),
+    radial-gradient(140% 100% at 50% 40%, transparent 55%, rgba(3, 16, 11, 0.6));
+}
+.cs-glint { position: absolute; fill: #fff4c2; opacity: 0; animation: cs-glint ease-in-out infinite; }
+@keyframes cs-glint {
+  0%, 70%, 100% { opacity: 0; transform: scale(0.4) rotate(0deg); }
+  80% { opacity: 0.9; transform: scale(1) rotate(45deg); }
+}
+
+/* The slot machine closes every page in a row of its own. */
+.cs-row { display: flex; justify-content: center; margin-top: 8px; }
+.cs-slot { width: min(300px, 100%); height: auto; }
+.cs-reel-text { font-family: var(--font-display); }
+.cs-bulb { fill: #fff7d1; animation: cs-bulb 0.9s step-end infinite; }
+.cs-bulb-late { animation-delay: -0.45s; }
+@keyframes cs-bulb { 0% { opacity: 1; } 50% { opacity: 0; } }
+.cs-lever { transform-origin: 230px 44px; }
+.cs-pull { animation: cs-pull 0.7s ease-in-out; }
+@keyframes cs-pull {
+  40% { transform: scaleY(-0.6); }
+  100% { transform: none; }
+}
+
+/* Coins and a few chips raining down, each flipping as it falls. */
+.cs-coin {
+  position: absolute; top: -24px; width: 18px; height: 18px; border-radius: 50%; opacity: 0;
+  background: radial-gradient(circle at 35% 30%, #fff4c2, #f2c14e 55%, #a8761a);
+  box-shadow: inset 0 0 0 1.5px #a8761a;
+  animation: cs-fall cubic-bezier(0.4, 0.1, 0.7, 1) both;
+}
+.cs-chip {
+  background: radial-gradient(circle, #d6453d 0 55%, transparent 56%), repeating-conic-gradient(#f7f0dc 0 22.5deg, #d6453d 0 45deg);
+  box-shadow: none;
+}
+@keyframes cs-fall {
+  0% { opacity: 1; transform: translateY(0) rotateY(0deg) rotate(0deg); }
+  90% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(calc(100vh + 48px)) rotateY(1080deg) rotate(40deg); }
+}

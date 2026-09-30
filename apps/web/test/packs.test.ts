@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { expect, it } from 'vitest';
-import { THEMES } from '@puzzle-hustle/core';
+import { HUSTLE_THEMES, THEMES as PAID_THEMES } from '@puzzle-hustle/core';
 import { REGION_PALETTES, regionPaletteId } from '../src/lib/regionColors.ts';
 
 // A string literal directly inside `new URL(...)` gets rewritten by Vite's static asset-URL
@@ -31,6 +31,7 @@ function contrast(a: string, b: string): number {
 
 const REQUIRED = ['--bg', '--card-bg', '--text', '--text-muted', '--border', '--border-mid', '--board-cell', '--board-line', '--hover-bg', '--hover-text', '--accent', '--accent-text', '--accent-deep', '--on-accent', '--success', '--success-soft', '--danger', '--shadow', '--shadow-hover', '--radius', '--radius-sm', '--nono-c2', '--nono-c3', '--pack-pattern-image', '--pack-pattern-size', 'color-scheme'];
 
+const THEMES = [...PAID_THEMES, ...HUSTLE_THEMES];
 const DONE = THEMES.map((t) => t.id);
 
 it.each(DONE)('%s is imported by packs/index.css', (id) => {

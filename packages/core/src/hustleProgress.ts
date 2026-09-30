@@ -1,5 +1,6 @@
 import { ACHIEVEMENTS_EPOCH, type SolveEntry } from './achievements.ts';
-import { COSMETICS, type BadgeCosmetic } from './cosmetics.ts';
+import { COSMETICS } from './cosmetics.ts';
+import { hustleRun } from './hustle.ts';
 
 // Hustle progress is derived from the solves, like coins and flairs: `hustle:n` ids solved at or
 // after the epoch. The Hustle level is the highest stage of the unbroken run from 1 (a gap stops
@@ -11,22 +12,26 @@ export function hustleSolved(solves: readonly SolveEntry[], epoch: number = ACHI
     const m = /^hustle:(\d+)$/.exec(entry.id);
     if (m) done.add(Number(m[1]));
   }
-  let n = 0;
-  while (done.has(n + 1)) n++;
-  return n;
+  return hustleRun(done);
 }
 
 export function hustleNext(solves: readonly SolveEntry[], epoch: number = ACHIEVEMENTS_EPOCH): number {
   return hustleSolved(solves, epoch) + 1;
 }
 
-export function earnedHustleBadges(solves: readonly SolveEntry[], epoch: number = ACHIEVEMENTS_EPOCH): Set<string> {
+function earnedByHustle(kind: 'badge' | 'theme', solves: readonly SolveEntry[], epoch: number): Set<string> {
   const solved = hustleSolved(solves, epoch);
   const out = new Set<string>();
   for (const c of COSMETICS) {
-    if (c.kind !== 'badge') continue;
-    const req = (c as BadgeCosmetic).requires;
-    if (req && solved >= req.hustle) out.add(c.id);
+    if (c.kind === kind && c.requires && solved >= c.requires.hustle) out.add(c.id);
   }
   return out;
+}
+
+export function earnedHustleBadges(solves: readonly SolveEntry[], epoch: number = ACHIEVEMENTS_EPOCH): Set<string> {
+  return earnedByHustle('badge', solves, epoch);
+}
+
+export function earnedHustleThemes(solves: readonly SolveEntry[], epoch: number = ACHIEVEMENTS_EPOCH): Set<string> {
+  return earnedByHustle('theme', solves, epoch);
 }

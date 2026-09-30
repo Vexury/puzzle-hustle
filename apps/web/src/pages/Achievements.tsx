@@ -15,7 +15,7 @@ import { AchievementIcon } from '../components/AchievementIcon.tsx';
 import { CoinPill } from '../components/CoinPill.tsx';
 import { BackLink } from '../components/BackLink.tsx';
 
-type Filter = 'all' | 'general' | PuzzleTypeId;
+type Filter = 'all' | 'general' | 'hustle' | PuzzleTypeId;
 
 const FLAIR_OF = new Map(
   ACTIVITY_FLAIRS.flatMap((f) => ('achievement' in f.requires ? [[f.requires.achievement, f.title] as const] : [])),
@@ -23,7 +23,8 @@ const FLAIR_OF = new Map(
 
 function matches(a: Achievement, filter: Filter): boolean {
   if (filter === 'all') return true;
-  if (filter === 'general') return !a.type;
+  if (filter === 'general') return !a.type && a.group !== 'hustle';
+  if (filter === 'hustle') return a.group === 'hustle';
   return a.type === filter;
 }
 
@@ -39,6 +40,7 @@ export function Achievements() {
   const chips: { id: Filter; label: string }[] = [
     { id: 'all', label: 'All' },
     { id: 'general', label: 'General' },
+    { id: 'hustle', label: 'Hustle' },
     ...PUZZLE_TYPES.map((t) => ({ id: t, label: PUZZLE_META[t].name })),
   ];
 

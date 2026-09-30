@@ -1,0 +1,88 @@
+[data-theme][data-pack="ocean"] {
+  --frame-border: 10px;
+  color-scheme: light;
+  --bg: #e6f5f6;
+  --card-bg: #f7fdfd;
+  --text: #0f3440;
+  --text-muted: #56798a;
+  --border: #c3e1e7;
+  --border-mid: #9fcbd4;
+  --board-cell: #d9eef1;
+  --board-line: #b5d9e0;
+  --hover-bg: #0f3440;
+  --hover-text: #f7fdfd;
+  --accent: #1597a8;
+  --accent-text: #0b6674;
+  --accent-deep: #0b6674;
+  --on-accent: #022026;
+  --success: #2f9a5c;
+  --success-soft: rgba(47, 154, 92, 0.12);
+  --flame: #ff7a59;
+  --danger: #c2412c;
+  --shadow: 0 2px 8px rgba(15, 52, 64, 0.08);
+  --shadow-hover: 0 6px 16px rgba(15, 52, 64, 0.14);
+  --radius: 22px;
+  --radius-sm: 14px;
+  --nono-c2: #3f6fc4;
+  --nono-c3: #d4623f;
+  --pack-pattern-image: none;
+  --pack-pattern-size: auto;
+  /* --on-accent is dark on this pack's lagoon teal, since white reads at only ~3.5:1 there, so
+     mosaic clue text on filled cells must match it instead of mosaic.css's light default. */
+  --mosaic-clue-on-fill: #022026;
+}
+
+@font-face {
+  font-family: 'Baloo 2';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('../../../public/fonts/baloo-2-latin.woff2') format('woff2');
+}
+[data-pack="ocean"] body { --font-display: 'Baloo 2', var(--font-text); }
+[data-pack="ocean"] :is(h1, h2, h3, .row-title) { font-weight: 800; }
+
+/* The coin is a pearl; the gradient comes from the scene's defs, with a plain pearl grey until the
+   scene has loaded. */
+[data-pack="ocean"] .coin-pill svg { filter: drop-shadow(0 1px 1px rgba(15, 52, 64, 0.3)); }
+[data-pack="ocean"] .coin-pill svg circle:first-child { fill: url(#ocean-pearl) #dfeaf0; }
+[data-pack="ocean"] .coin-pill svg circle:last-child { display: none; }
+
+/* The empty-cell glyph from marks.ts, tinted: bubbles. */
+[data-pack="ocean"] :is(.nono-cell, .mosaic-cell, .regions-cell).x::before { background: #3b8fa1; }
+[data-pack="ocean"] .tracks-cross path { fill: #3b8fa1; }
+
+/* A twisted rope round the board with a line of foam outside it and a shell in the top left and
+   bottom right corners; the foam and the shells reach 6 px out past the frame. */
+[data-pack="ocean"] .board-frame {
+  border-radius: 0; background-clip: padding-box;
+  border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='52' height='52' viewBox='0 0 52 52'%3E%3Cdefs%3E%3Cpattern id='t' width='5' height='5' patternUnits='userSpaceOnUse'%3E%3Crect width='5' height='5' fill='%23dcbd8f'/%3E%3Cpath d='M-1 6 6-1M-1 1 1-1M4 6 6 4' stroke='%23b08650' stroke-width='1.6'/%3E%3C/pattern%3E%3C/defs%3E%3Crect x='7.8' y='7.8' width='36.4' height='36.4' rx='9' fill='none' stroke='%23fff' stroke-opacity='.9' stroke-width='2.4' stroke-dasharray='5 1.5 2 1.5'/%3E%3Crect x='13' y='13' width='26' height='26' rx='5' fill='none' stroke='%239a7443' stroke-width='5.6'/%3E%3Crect x='13' y='13' width='26' height='26' rx='5' fill='none' stroke='url(%23t)' stroke-width='4.4'/%3E%3Cg transform='translate(8 8) rotate(-25) scale(.64) translate(-12 -13)'%3E%3Cpath d='M12 21 3 9a10 10 0 0 1 18 0Z' fill='%23f6c9a8' stroke='%23d98d63' stroke-width='1'/%3E%3Cpath d='M12 21 7 6M12 21V4M12 21l5-15M12 21 3.5 9M12 21l8.5-12' stroke='%23d98d63' stroke-width='1.1' fill='none'/%3E%3C/g%3E%3Cg transform='rotate(180 26 26)'%3E%3Cg transform='translate(8 8) rotate(-25) scale(.64) translate(-12 -13)'%3E%3Cpath d='M12 21 3 9a10 10 0 0 1 18 0Z' fill='%23f6c9a8' stroke='%23d98d63' stroke-width='1'/%3E%3Cpath d='M12 21 7 6M12 21V4M12 21l5-15M12 21 3.5 9M12 21l8.5-12' stroke='%23d98d63' stroke-width='1.1' fill='none'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") 16 / 16px / 6px round;
+}
+
+/* Solved: a red and white lifebuoy drops in, bobs on the water and sinks away, with "Solved" on a
+   teal tag across its lower rim. The ring and the tag sit behind the word as two pseudo
+   elements; the span isolates them so they stay inside the stamp. */
+[data-pack="ocean"] .solved-stamp span {
+  position: relative; isolation: isolate; margin-top: 70px; padding: 2px 18px 0;
+  background: none; box-shadow: none; color: #fff; font-size: 30px; font-weight: 800;
+  animation: oc-buoy 2.4s ease-out forwards;
+}
+[data-pack="ocean"] .solved-stamp span::before {
+  content: ''; position: absolute; z-index: -1; left: 50%; bottom: calc(100% - 26px);
+  width: 100px; height: 100px; margin-left: -50px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='35' fill='none' stroke='%23e8483b' stroke-width='22'/%3E%3Ccircle cx='50' cy='50' r='35' fill='none' stroke='%23fff' stroke-width='22' stroke-dasharray='27.489 27.489' transform='rotate(-11 50 50)'/%3E%3Ccircle cx='50' cy='50' r='46' fill='none' stroke='%23b8322a' stroke-opacity='.55' stroke-width='1.2'/%3E%3Ccircle cx='50' cy='50' r='24' fill='none' stroke='%23b8322a' stroke-opacity='.55' stroke-width='1.2'/%3E%3Ccircle cx='50' cy='50' r='35' fill='none' stroke='%23f1e3c6' stroke-width='2' stroke-dasharray='22 5.489' stroke-dashoffset='-2.7' transform='rotate(-11 50 50)'/%3E%3C/svg%3E") no-repeat center / contain;
+  filter: drop-shadow(0 4px 5px rgba(15, 52, 64, 0.3));
+}
+[data-pack="ocean"] .solved-stamp span::after {
+  content: ''; position: absolute; z-index: -1; inset: 0; border-radius: 999px;
+  background: #0b6674; box-shadow: 0 3px 0 #07434c;
+}
+@keyframes oc-buoy {
+  0% { opacity: 0; transform: translateY(-120px) rotate(-20deg); }
+  18% { opacity: 1; transform: translateY(8px) rotate(6deg); }
+  28% { transform: translateY(-4px) rotate(-3deg); }
+  40%, 60% { transform: translateY(2px) rotate(2deg); }
+  50%, 70% { transform: translateY(-2px) rotate(-2deg); }
+  82% { opacity: 1; transform: translateY(0) rotate(0); }
+  100% { opacity: 0; transform: translateY(10px); }
+}

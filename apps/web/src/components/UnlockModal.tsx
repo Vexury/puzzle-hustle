@@ -1,11 +1,12 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import confetti from 'canvas-confetti';
-import { ACHIEVEMENTS, ACHIEVEMENT_COINS, STREAK_MIN, findCosmetic } from '@puzzle-hustle/core';
+import { ACHIEVEMENTS, ACHIEVEMENT_COINS, HUSTLE_THEMES, STREAK_MIN, findCosmetic } from '@puzzle-hustle/core';
 import { BadgeIcon } from './BadgeIcon.tsx';
 import { pushBackGuard } from '../lib/back.ts';
 import { equip, useEquipped } from '../lib/coins.ts';
 import { requirementText } from '../lib/flairs.ts';
 import * as haptics from '../lib/haptics.ts';
+import { equipPack } from '../lib/theme.ts';
 import { INTRO_SEEN_KEY, readSetting } from '../lib/storage.ts';
 import { Flame } from '../pages/Daily.tsx';
 
@@ -27,13 +28,15 @@ export interface UnlockRow {
   equipped: boolean;
   // A flair earned by this very achievement rides in its row instead of repeating it below.
   flair: { id: string; title: string; equipped: boolean } | null;
+  // A Hustle theme comes with the achievement of its stage and rides in that row the same way.
+  theme?: { id: string; title: string; equipped: boolean } | null;
 }
 
 // Pure: turns the queued unlocks into what the card shows, looking titles/descriptions up in
 // the catalogue itself rather than trusting whatever syncAchievements/syncFlairs pass along. An
 // id from a newer client build that this one does not recognise is dropped rather than shown
 // blank.
-export function buildUnlockRows(items: readonly UnlockItem[], equippedFlairId: string | null): UnlockRow[] {
+export function buildUnlockRows(items: readonly UnlockItem[], equippedFlairId: string | null, equippedThemeId: string | null = null): UnlockRow[] {
   const achievementIds = new Set(items.filter((i) => i.kind === 'achievement').map((i) => i.id));
   const riders = new Map<string, { id: string; title: string; equipped: boolean }>();
   for (const item of items) {
@@ -69,6 +72,7 @@ export function buildUnlockRows(items: readonly UnlockItem[], equippedFlairId: s
         coinsText: `+${ACHIEVEMENT_COINS} coins`,
         equipped: false,
         flair: riders.get(item.id) ?? null,
+        theme: themeRider(item.id, equippedThemeId),
       });
     } else if (item.kind === 'badge') {
       const badge = findCosmetic(item.id);
@@ -233,6 +237,11 @@ let cannon: confetti.CreateTypes | null = null;
 
 // zIndex one below .unlock-ask (62): the burst sits behind the card, showing through the
 // dimmed backdrop, rather than covering the card's own text.
+function themeRider(achievementId: string, equippedThemeId: string | null): { id: string; title: string; equipped: boolean } | null {
+  const theme = HUSTLE_THEMES.find((t) => `hustle-${t.requires!.hustle}` === achievementId);
+  return theme ? { id: theme.id, title: theme.title, equipped: equippedThemeId === theme.id } : null;
+}
+
 function fireConfetti() {
   const colors = accentTints(getComputedStyle(document.documentElement).getPropertyValue('--accent'));
   cannon ??= confetti.create(undefined, { resize: true, useWorker: false });
@@ -244,7 +253,7 @@ function fireConfetti() {
 export function UnlockModalHost() {
   const { items, open } = useSyncExternalStore(subscribe, unlockSnapshot);
   const equipped = useEquipped();
-  const rows = open ? buildUnlockRows(items, equipped.flair) : [];
+  const rows = open ? buildUnlockRows(items, equipped.flair, equipped.theme) : [];
   // open can be true with no rows to show when every queued id turns out unrecognised (e.g. a
   // newer client's ids reaching an older build); dismiss rather than sit open with nothing to
   // show and a back guard nobody can see.
@@ -281,6 +290,16 @@ export function UnlockModalHost() {
                 <li key={row.key}>
                   <button type="button" className="unlock-row" onClick={() => equip('badge', row.id)} aria-label={`${row.title}, badge, ${on ? 'equipped' : 'tap to wear'}`}>
                     <UnlockRowBody row={row} wearing={on} />
+                  </button>
+                </li>
+              );
+            }
+            if (row.theme) {
+              const theme = row.theme;
+              return (
+                <li key={row.key}>
+                  <button type="button" className="unlock-row" onClick={() => equipPack(theme.id)} aria-label={`${row.title}, theme ${theme.title}, ${theme.equipped ? 'equipped' : 'tap to wear'}`}>
+                    <UnlockRowBody row={row} />
                   </button>
                 </li>
               );
@@ -339,6 +358,11 @@ function UnlockRowBody({ row, wearing = false }: { row: UnlockRow; wearing?: boo
             {row.flair && (
               <span className="unlock-flair-action">
                 ♦ Flair <i>{row.flair.title}</i> · {row.flair.equipped ? '✓ Equipped' : 'Tap to wear'}
+              </span>
+            )}
+            {row.theme && (
+              <span className="unlock-flair-action">
+                ◆ Theme <i>{row.theme.title}</i> · {row.theme.equipped ? '✓ Equipped' : 'Tap to wear'}
               </span>
             )}
           </>

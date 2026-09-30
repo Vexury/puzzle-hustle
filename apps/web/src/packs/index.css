@@ -9,6 +9,9 @@
 @import './cat-cafe/pack.css';
 @import './terminal/pack.css';
 @import './synthwave/pack.css';
+@import './ocean/pack.css';
+@import './inferno/pack.css';
+@import './casino/pack.css';
 
 /* The two planes a scene draws on. Both are fixed to the viewport and never take input. The back
    plane sits behind all content, so cards cover it; the front plane is for short moments only

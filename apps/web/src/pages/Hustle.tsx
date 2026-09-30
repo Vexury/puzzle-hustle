@@ -7,6 +7,7 @@ import {
   HUSTLE_BADGES,
   HUSTLE_FLAIRS,
   HUSTLE_MILESTONE,
+  HUSTLE_THEMES,
   PUZZLE_META,
 } from '@puzzle-hustle/core';
 import { BadgeIcon } from '../components/BadgeIcon.tsx';
@@ -14,6 +15,7 @@ import { CoinPill } from '../components/CoinPill.tsx';
 import { Logo } from '../components/Logo.tsx';
 import { PuzzleIcon } from '../components/PuzzleIcon.tsx';
 import { CoinIcon } from '../components/SolvedCard.tsx';
+import { MiniBoard } from './Shop.tsx';
 import { ThemeToggle } from '../components/ThemeToggle.tsx';
 import { storedSolves } from '../lib/achievements.ts';
 import { href, onLinkClick } from '../lib/router.ts';
@@ -39,14 +41,17 @@ export function nextMilestones(solved: number, count: number): Milestone[] {
 const flairTitle = (id: string) => HUSTLE_FLAIRS.find((f) => f.id === id)!.title;
 const badgeTitle = (id: string) => HUSTLE_BADGES.find((b) => b.id === id)!.title;
 
-// Every badge and flair Hustle pays out, in the order they are earned.
+// Every badge, flair and theme Hustle pays out, in the order they are earned.
 const REWARDS = [
-  ...HUSTLE_BADGES.map((b) => ({ id: b.id, title: `${b.title} badge`, kind: 'Badge', badge: b.id, n: hustleNeeded(b) })),
-  ...HUSTLE_FLAIRS.map((f) => ({ id: f.id, title: f.title, kind: 'Flair', badge: undefined, n: hustleNeeded(f) })),
+  ...HUSTLE_BADGES.map((b) => ({ id: b.id, title: `${b.title} badge`, kind: 'Badge', badge: b.id, theme: undefined, n: hustleNeeded(b) })),
+  ...HUSTLE_FLAIRS.map((f) => ({ id: f.id, title: f.title, kind: 'Flair', badge: undefined, theme: undefined, n: hustleNeeded(f) })),
+  ...HUSTLE_THEMES.map((t) => ({ id: t.id, title: `${t.title} theme`, kind: 'Theme', badge: undefined, theme: t.id, n: hustleNeeded(t) })),
 ].sort((a, b) => a.n - b.n);
 
 // Sized by the font size of its box.
-function MilestoneIcon({ m }: { m: { badge?: string | undefined; flair?: string | undefined } }) {
+function MilestoneIcon({ m }: { m: { badge?: string | undefined; flair?: string | undefined; theme?: string | undefined } }) {
+  const theme = m.theme ? HUSTLE_THEMES.find((t) => t.id === m.theme) : undefined;
+  if (theme) return <MiniBoard pack={theme} />;
   if (m.badge) return <BadgeIcon id={m.badge} />;
   if (m.flair) return <span className="hustle-flair-mark">♦</span>;
   return <CoinIcon />;
@@ -128,7 +133,7 @@ export function Hustle() {
           {REWARDS.map((r) => (
             <li key={r.id} className={level >= r.n ? 'own' : undefined}>
               <span className="hustle-reward-icon">
-                <MilestoneIcon m={r.badge ? { badge: r.badge } : { flair: r.id }} />
+                <MilestoneIcon m={r.theme ? { theme: r.theme } : r.badge ? { badge: r.badge } : { flair: r.id }} />
               </span>
               <span className="row-text">
                 <b>{r.title}</b>

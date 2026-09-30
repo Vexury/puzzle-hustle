@@ -29,6 +29,12 @@ it('treats an unknown id as locked', () => {
   expect(itemState('nope', new Set(), none, 1000)).toBe('locked');
 });
 
+it('never offers a Hustle theme for coins, and owns it once earned', () => {
+  expect(itemState('ocean', new Set(), none, 1_000_000)).toBe('locked');
+  expect(itemState('ocean', new Set(['ocean']), none, 0)).toBe('owned');
+  expect(itemState('ocean', new Set(['ocean']), { ...none, theme: 'ocean' }, 0)).toBe('equipped');
+});
+
 it('names the state of each theme pack', () => {
   expect(itemState('paper', new Set(['paper']), { ...none, theme: 'paper' }, 0)).toBe('equipped');
   expect(itemState('paper', new Set(['paper']), none, 0)).toBe('owned');

@@ -1,0 +1,65 @@
+.inf-glow {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 45vh;
+  background: radial-gradient(120% 100% at 50% 110%, rgba(255, 90, 31, 0.28), transparent 70%);
+  animation: inf-breathe 5s ease-in-out infinite;
+}
+@keyframes inf-breathe { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+
+.inf-ember {
+  position: absolute; bottom: -10px; border-radius: 50%; opacity: 0;
+  background: #ffb13b; box-shadow: 0 0 6px #ff5a1f, 0 0 12px #ff5a1f;
+  animation: inf-rise linear infinite;
+}
+@keyframes inf-rise {
+  0% { opacity: 0; transform: translate(0, 0); }
+  10% { opacity: 0.9; }
+  70% { opacity: 0.6; }
+  100% { opacity: 0; transform: translate(var(--dx), -105vh); }
+}
+
+/* The ridge row runs past the page gutter; its rock ends in the floor colour and the floor in the
+   back plane carries on to the bottom of the screen. */
+.inf-bed { position: relative; height: 86px; margin: 8px -16px 0; overflow: hidden; }
+.inf-ridge { position: absolute; left: 0; bottom: 0; width: 100%; height: 86px; }
+
+/* Lava veins, sparse and in two tile sizes so no grid shows: bright ones pulse on top, dark ones
+   stay still underneath. The floor starts in the ridge colour, so the two meet without an edge. */
+.inf-floor {
+  --veins: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='230'%3E%3Cg fill='none' stroke='%23ff5a1f' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M34 0 44 34 36 60 50 92'/%3E%3Cpath d='M44 34 70 46'/%3E%3Cpath d='M168 110 160 138 176 164 168 196 180 230'/%3E%3Cpath d='M176 164 204 176 226 170'/%3E%3C/g%3E%3C/svg%3E");
+  position: absolute; left: 0; right: 0; top: 0; height: 100%;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='290'%3E%3Cg fill='none' stroke='%239c2a0c' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M250 0 242 30 256 58'/%3E%3Cpath d='M256 58 282 70'/%3E%3Cpath d='M90 150 98 180 88 206 100 240'/%3E%3Cpath d='M98 180 124 190'/%3E%3Cpath d='M300 220 306 250 296 290'/%3E%3C/g%3E%3C/svg%3E") 120px 70px / 340px 290px,
+    var(--veins) 0 40px / 260px 230px,
+    linear-gradient(#0b0605, #110806 50%, #180a07);
+}
+.inf-floor::after {
+  content: ''; position: absolute; inset: 0; opacity: 0.2;
+  background: var(--veins) 0 40px / 260px 230px;
+  filter: drop-shadow(0 0 3px #ff5a1f);
+  animation: inf-vein 3.2s ease-in-out infinite;
+}
+@keyframes inf-vein { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.6; } }
+.inf-lava { filter: drop-shadow(0 0 4px #ff5a1f); animation: inf-lava 2.4s ease-in-out infinite; }
+.inf-lava-late { animation-delay: -1.2s; }
+@keyframes inf-lava { 0%, 100% { opacity: 0.65; } 50% { opacity: 1; } }
+
+.inf-flash { position: absolute; inset: 0; opacity: 0; animation: inf-flash 0.9s ease-out forwards; }
+@keyframes inf-flash { from { opacity: 0.55; } to { opacity: 0; } }
+
+.inf-tongue { position: absolute; opacity: 0; transform-origin: 50% 100%; animation: inf-tongue 1.1s ease-out forwards; }
+@keyframes inf-tongue {
+  0% { opacity: 0; transform: scaleY(0.1); }
+  25% { opacity: 1; transform: scaleY(1.15); }
+  60% { opacity: 0.8; transform: scaleY(0.8); }
+  100% { opacity: 0; transform: translateY(-20px) scaleY(0.2); }
+}
+
+.inf-spark {
+  position: absolute; border-radius: 50%; opacity: 0;
+  background: #ffd27a; box-shadow: 0 0 6px #ff5a1f;
+  animation: inf-spark cubic-bezier(0.2, 0.6, 0.4, 1) forwards;
+}
+@keyframes inf-spark {
+  0% { opacity: 1; transform: translate(0, 0); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)); }
+}

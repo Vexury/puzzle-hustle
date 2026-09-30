@@ -40,6 +40,13 @@ export function hustleSlot(n: number): { type: PuzzleTypeId; difficulty: Difficu
   return { type, difficulty: balancedDifficulty(type, hustleDifficulty(n)) };
 }
 
+// The Hustle level: the highest stage of the unbroken run from 1. A gap stops the count there.
+export function hustleRun(stages: ReadonlySet<number>): number {
+  let n = 0;
+  while (stages.has(n + 1)) n++;
+  return n;
+}
+
 export const HUSTLE_MILESTONE = 10;
 
 export function hustleMilestoneCoins(n: number): number {
