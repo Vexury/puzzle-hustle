@@ -11,6 +11,7 @@ const CATALOG_ORDER = COSMETICS.filter((c) => c.kind === 'flair').map((c) => c.i
 export function requirementText(item: FlairCosmetic): string {
   const req = item.requires;
   if ('achievement' in req) return ACHIEVEMENTS.find((a) => a.id === req.achievement)?.description ?? '';
+  if ('hustle' in req) return `Reach Hustle level ${req.hustle}.`;
   const difficulty = req.difficulty.charAt(0).toUpperCase() + req.difficulty.slice(1);
   return `Finish all ${levelList(req.pack, req.difficulty).length} ${PUZZLE_META[req.pack].name} levels on ${difficulty}.`;
 }

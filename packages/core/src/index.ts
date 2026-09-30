@@ -3,6 +3,7 @@ export * from './rng.ts';
 export * from './schedule.ts';
 export * from './ref.ts';
 export * from './hustle.ts';
+export * from './hustleProgress.ts';
 export * from './puzzleId.ts';
 export * from './solveId.ts';
 export * from './streaks.ts';

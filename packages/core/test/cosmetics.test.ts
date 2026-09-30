@@ -9,8 +9,8 @@ const badges = COSMETICS.filter(isBadge);
 const flairs = COSMETICS.filter(isFlair);
 const achievementIds = new Set(ACHIEVEMENTS.map((a) => a.id));
 
-it('has thirty-two badges, the first eight unchanged, and fifty flairs, all with unique ids', () => {
-  expect(badges).toHaveLength(32);
+it('has thirty-seven badges (five earned in Hustle), the first eight unchanged, and fifty-five flairs, all with unique ids', () => {
+  expect(badges).toHaveLength(37);
   expect(badges.slice(0, 8).map((b) => [b.id, b.price])).toEqual([
     ['bolt', 100],
     ['leaf', 100],
@@ -21,12 +21,12 @@ it('has thirty-two badges, the first eight unchanged, and fifty flairs, all with
     ['rocket', 250],
     ['diamond', 300],
   ]);
-  expect(flairs).toHaveLength(50);
+  expect(flairs).toHaveLength(55);
   expect(new Set(COSMETICS.map((c) => c.id)).size).toBe(COSMETICS.length);
 });
 
-it('prices every badge as a positive whole number and gives no flair a price', () => {
-  for (const b of badges) expect(Number.isInteger(b.price) && b.price > 0).toBe(true);
+it('prices every bought badge as a positive whole number, every earned one at 0, and gives no flair a price', () => {
+  for (const b of badges) expect(b.requires ? b.price === 0 : Number.isInteger(b.price) && b.price > 0).toBe(true);
   for (const f of flairs) expect('price' in f).toBe(false);
 });
 
@@ -72,6 +72,8 @@ it('every flair requirement is well formed: a real achievement id, or a pack wit
     const req = f.requires;
     if ('achievement' in req) {
       expect(achievementIds.has(req.achievement)).toBe(true);
+    } else if ('hustle' in req) {
+      expect(Number.isInteger(req.hustle) && req.hustle > 0).toBe(true);
     } else {
       expect(levelList(req.pack, req.difficulty).length).toBeGreaterThan(0);
     }

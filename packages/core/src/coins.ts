@@ -1,5 +1,6 @@
 import { ACHIEVEMENTS_EPOCH, unlockedAchievements, type SolveEntry } from './achievements.ts';
 import { findCosmetic } from './cosmetics.ts';
+import { hustleMilestoneCoins } from './hustle.ts';
 import { DAILY_TYPES, periodKey } from './schedule.ts';
 import { parseSolveId } from './solveId.ts';
 import type { Difficulty, Period, PuzzleTypeId } from './types.ts';
@@ -19,7 +20,7 @@ const PERIOD_COINS: Record<Period, { base: number; noHints: number }> = {
 
 const LEVEL_COINS: Record<Difficulty, number> = { easy: 2, medium: 3, hard: 5, genius: 8 };
 
-export type CoinReason = Period | 'no-hints' | 'level' | 'random' | 'clean-sweep';
+export type CoinReason = Period | 'no-hints' | 'level' | 'random' | 'clean-sweep' | 'hustle';
 
 export interface CoinAward {
   reason: CoinReason;
@@ -62,7 +63,10 @@ function awardsBySolve(solves: readonly SolveEntry[], epoch: number): Map<string
       }
     } else if (parsed.mode === 'level') {
       awards.push({ reason: 'level', coins: LEVEL_COINS[parsed.difficulty] });
-    } else {
+    } else if (parsed.mode === 'hustle' && parsed.level !== undefined) {
+      const coins = hustleMilestoneCoins(parsed.level);
+      if (coins > 0) awards.push({ reason: 'hustle', coins });
+    } else if (parsed.mode === 'random') {
       const day = periodKey('daily', new Date(entry.solvedAt));
       const count = randomsByDay.get(day) ?? 0;
       if (count < RANDOM_DAILY_CAP) {

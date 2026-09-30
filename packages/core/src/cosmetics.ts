@@ -2,10 +2,10 @@ import { DIFFICULTIES, PUZZLE_TYPES, type Difficulty, type PuzzleTypeId } from '
 
 export type CosmeticKind = 'badge' | 'flair' | 'theme';
 
-export type FlairRequirement = { pack: PuzzleTypeId; difficulty: Difficulty } | { achievement: string };
+export type FlairRequirement = { pack: PuzzleTypeId; difficulty: Difficulty } | { achievement: string } | { hustle: number };
 
 export type Cosmetic =
-  | { id: string; kind: 'badge'; title: string; price: number }
+  | { id: string; kind: 'badge'; title: string; price: number; requires?: { hustle: number } }
   | { id: string; kind: 'flair'; title: string; requires: FlairRequirement }
   | { id: string; kind: 'theme'; title: string; price: number; mode: 'light' | 'dark' };
 
@@ -14,7 +14,7 @@ export type FlairCosmetic = Extract<Cosmetic, { kind: 'flair' }>;
 export type ThemeCosmetic = Extract<Cosmetic, { kind: 'theme' }>;
 
 // Ids are forever: a board row carries them to clients of every age, so an id may be added but
-// never renamed or removed. No crown (place 1 wears one) and no flame (the streak colour).
+// never renamed or removed. No crown (place 1 wears one; earned Hustle badges are the exception) and no flame (the streak colour).
 const BADGES: readonly Cosmetic[] = [
   { id: 'bolt', kind: 'badge', title: 'Bolt', price: 100 },
   { id: 'leaf', kind: 'badge', title: 'Leaf', price: 100 },
@@ -139,6 +139,23 @@ export const ACTIVITY_FLAIRS: readonly FlairCosmetic[] = [
   { id: 'regular', kind: 'flair', title: 'Regular', requires: { achievement: 'weekly-10' } },
 ];
 
+// Earned only by climbing Hustle, never bought: price 0 and a stage to reach.
+export const HUSTLE_BADGES: readonly BadgeCosmetic[] = [
+  { id: 'hustle-mountain', kind: 'badge', title: 'Mountain', price: 0, requires: { hustle: 50 } },
+  { id: 'hustle-ladder', kind: 'badge', title: 'Ladder', price: 0, requires: { hustle: 100 } },
+  { id: 'hustle-arrow', kind: 'badge', title: 'Flame Arrow', price: 0, requires: { hustle: 200 } },
+  { id: 'hustle-crown', kind: 'badge', title: 'Crown', price: 0, requires: { hustle: 400 } },
+  { id: 'hustle-summit', kind: 'badge', title: 'Summit', price: 0, requires: { hustle: 750 } },
+];
+
+export const HUSTLE_FLAIRS: readonly FlairCosmetic[] = [
+  { id: 'hustle-starter', kind: 'flair', title: 'Hustle Starter', requires: { hustle: 40 } },
+  { id: 'hustle-addict', kind: 'flair', title: 'Hustle Addict', requires: { hustle: 120 } },
+  { id: 'hustle-grinder', kind: 'flair', title: 'Hustle Grinder', requires: { hustle: 300 } },
+  { id: 'hustle-pro', kind: 'flair', title: 'Hustle Pro', requires: { hustle: 500 } },
+  { id: 'hustle-legend', kind: 'flair', title: 'Hustle Legend', requires: { hustle: 1000 } },
+];
+
 // Until launch every theme can be worn without buying it, so testers see them all; prices still
 // show. Turn off together with moving ACHIEVEMENTS_EPOCH, and unbought themes fall back to Vexury.
 export const THEMES_FREE = true;
@@ -155,8 +172,10 @@ export const THEMES: readonly ThemeCosmetic[] = [
 
 export const COSMETICS: readonly Cosmetic[] = [
   ...BADGES,
+  ...HUSTLE_BADGES,
   ...PUZZLE_TYPES.flatMap((type) => FLAIRS_BY_TYPE[type]),
   ...ACTIVITY_FLAIRS,
+  ...HUSTLE_FLAIRS,
   ...THEMES,
 ];
 

@@ -188,7 +188,7 @@ export function Shop() {
   const flairProgress = (item: FlairCosmetic): string | null => {
     if (itemState(item.id, ownedIds, equipped, balance) !== 'locked') return null;
     const req = item.requires;
-    if ('achievement' in req) return null;
+    if ('achievement' in req || 'hustle' in req) return null;
     const { solved, total } = packProgress(solves, req.pack, req.difficulty);
     return `${solved}/${total}`;
   };

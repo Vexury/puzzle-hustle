@@ -1,5 +1,6 @@
 import { ACHIEVEMENTS_EPOCH, unlockedAchievements, type SolveEntry } from './achievements.ts';
 import { COSMETICS } from './cosmetics.ts';
+import { hustleSolved } from './hustleProgress.ts';
 import { levelList } from './levels.ts';
 import { parseSolveId } from './solveId.ts';
 import type { Difficulty, PuzzleTypeId } from './types.ts';
@@ -46,12 +47,17 @@ export function packProgress(
 export function earnedFlairs(solves: readonly SolveEntry[], epoch: number = ACHIEVEMENTS_EPOCH): Set<string> {
   const levels = solvedLevelsByPack(solves, epoch);
   const unlocked = unlockedAchievements(solves, epoch);
+  const hustle = hustleSolved(solves, epoch);
   const out = new Set<string>();
   for (const cosmetic of COSMETICS) {
     if (cosmetic.kind !== 'flair') continue;
     const req = cosmetic.requires;
     if ('achievement' in req) {
       if (unlocked.has(req.achievement)) out.add(cosmetic.id);
+      continue;
+    }
+    if ('hustle' in req) {
+      if (hustle >= req.hustle) out.add(cosmetic.id);
       continue;
     }
     const total = levelList(req.pack, req.difficulty).length;
