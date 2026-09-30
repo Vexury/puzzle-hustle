@@ -1179,8 +1179,8 @@ button.unlock-row { cursor: pointer; }
 
 /* Hustle reuses the streak card of Daily: level instead of streak, tier instead of countdown,
    and the bar runs to the next milestone with its reward in the goal badge. */
-.hustle-mark { width: 40px; height: 40px; margin: 0 8px 0 -2px; fill: none; stroke: var(--border-mid); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.25s; }
-.hustle-hero.has-streak .hustle-mark { stroke: var(--accent); }
+.hustle-mark { width: 33px; height: 44px; margin: 0 10px 0 2px; fill: var(--border-mid); transition: fill 0.25s; }
+.hustle-hero.has-streak .hustle-mark { fill: var(--accent); }
 .hustle-hero .daily-progress .fill { background: var(--accent); }
 .hustle-hero .goal-badge { left: calc(100% - 15px); font-size: 17px; color: var(--accent-text); border-color: color-mix(in srgb, var(--accent) 55%, var(--border-mid)); }
 .hustle-caption .solved-coin { width: 1em; height: 1em; vertical-align: -0.15em; }

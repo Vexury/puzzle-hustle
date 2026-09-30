@@ -11,6 +11,7 @@ import {
 } from '@puzzle-hustle/core';
 import { BadgeIcon } from '../components/BadgeIcon.tsx';
 import { CoinPill } from '../components/CoinPill.tsx';
+import { Logo } from '../components/Logo.tsx';
 import { PuzzleIcon } from '../components/PuzzleIcon.tsx';
 import { CoinIcon } from '../components/SolvedCard.tsx';
 import { ThemeToggle } from '../components/ThemeToggle.tsx';
@@ -51,15 +52,6 @@ function MilestoneIcon({ m }: { m: { badge?: string | undefined; flair?: string 
   return <CoinIcon />;
 }
 
-function HustleMark() {
-  return (
-    <svg className="hustle-mark" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M3 20h4v-5h4v-5h4V5h6" />
-      <path d="M17 5h4v4" />
-    </svg>
-  );
-}
-
 export function Hustle() {
   useSolves();
   // The level is the highest solved stage; the one to play is above it.
@@ -87,7 +79,7 @@ export function Hustle() {
       <section className={`streak-hero hustle-hero${level > 0 ? ' has-streak' : ''}`}>
         <div className="streak-hero-top">
           <div className="streak-count">
-            <HustleMark />
+            <Logo className="hustle-mark" />
             <div>
               <b className="hustle-level">{level}</b>
               <span>hustle level</span>
