@@ -80,7 +80,7 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
           </a>
           {adsAvailable && privacy && (
             <button type="button" className="linklike" onClick={() => void showPrivacyOptions()}>
-              Ad privacy
+              Ad privacy settings
             </button>
           )}
           <a href="https://vexury.dev" target="_blank" rel="noreferrer">
