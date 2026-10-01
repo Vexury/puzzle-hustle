@@ -2,6 +2,7 @@ export interface BoardEntry {
   playerId: string;
   name: string;
   badge: string | null;
+  badges: string[] | null;
   flair: string | null;
   nameplate: string | null;
   hustle: number;
@@ -27,9 +28,9 @@ export async function readBoard(
     .first<{ ok: number }>();
   if (!member) return null;
 
-  const { results } = await db
+  const { results: rows } = await db
     .prepare(
-      `SELECT s.player_id AS playerId, p.name, p.badge, p.flair, p.nameplate, p.hustle, s.seconds, s.hints
+      `SELECT s.player_id AS playerId, p.name, p.badge, p.badges, p.flair, p.nameplate, p.hustle, s.seconds, s.hints
          FROM scores s
          JOIN members m ON m.player_id = s.player_id AND m.group_id = ?
          JOIN players p ON p.id = s.player_id
@@ -37,7 +38,8 @@ export async function readBoard(
         ORDER BY s.hints, s.seconds, s.created_at, s.player_id`,
     )
     .bind(groupId, puzzle)
-    .all<BoardEntry>();
+    .all<Omit<BoardEntry, 'badges'> & { badges: string | null }>();
+  const results: BoardEntry[] = rows.map((row) => ({ ...row, badges: parseBadges(row.badges) }));
 
   const index = results.findIndex((row) => row.playerId === playerId);
   const mine = results[index];
@@ -55,4 +57,15 @@ export async function readBoard(
   }
 
   return { entries: results, me: index >= 0 ? index + 1 : null, percentile };
+}
+
+// Stored as a JSON list by POST /cosmetics; anything else reads as no showcase.
+function parseBadges(raw: string | null): string[] | null {
+  if (!raw) return null;
+  try {
+    const list = JSON.parse(raw) as unknown;
+    return Array.isArray(list) && list.every((id) => typeof id === 'string') ? list : null;
+  } catch {
+    return null;
+  }
 }

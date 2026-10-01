@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { ApiError, readSession } from '../lib/api.ts';
 import {
   NATIVE_APPLE,
@@ -22,14 +22,15 @@ import { href, onLinkClick } from '../lib/router.ts';
 import { readSetting, useSolves, writeSetting } from '../lib/storage.ts';
 import { dailyStreaks, totalSolved } from '../lib/stats.ts';
 import { Flame } from '../pages/Daily.tsx';
-import { LOGO_PATH } from '../lib/logo.ts';
-import { BadgeAvatar } from './BadgeAvatar.tsx';
 import { BadgeIcon } from './BadgeIcon.tsx';
 import { rowCosmetics } from './Board.tsx';
 import { NameplateArt, plateClass } from './Nameplate.tsx';
 import { toast } from './Toast.tsx';
 
 export const PRIVACY_POLICY_URL = 'https://vexury.dev/puzzle-hustle-privacy/';
+
+// The width a standings row's time pill takes, which every plate's motif already keeps clear of.
+const TIME_PILL = 50;
 
 // How long the delete button stays armed before it falls back to asking again.
 const DELETE_CONFIRM_MS = 4000;
@@ -85,35 +86,11 @@ export function ProfileHero({ joinCode = null }: { joinCode?: string | null } = 
 
   return (
     <section className={`streak-hero profile-hero${streaks.current > 0 ? ' has-streak' : ''}`}>
-      <div className={`profile-banner${plateClass(equipped.nameplate)}`}>
+      {/* Plates leave room on the right for the time pill of a standings row; the showcase is wider,
+          so the art moves left by the difference and the badges never cover its motif. */}
+      <div className={`profile-row${plateClass(equipped.nameplate)}`} style={{ '--showcase-w': `${Math.max(0, equipped.badges.length * 24 + 26 - TIME_PILL)}px` } as CSSProperties}>
         <NameplateArt id={equipped.nameplate} />
-      </div>
-      <div className="profile-card">
-        <BadgeAvatar id={equipped.badge} name={name || '?'} className="lg profile-avatar" />
-        <div className="profile-side">
-          {equipped.badges.length > 0 && (
-            <span className="showcase-box">
-              {equipped.badges.map((id, i) => {
-                const item = findCosmetic(id);
-                return item?.kind === 'badge' ? (
-                  <span key={id} className={`showcase-cell rarity-${badgeRarity(item)}`} title={item.title}>
-                    <BadgeIcon id={id} className="showcase-icon" wave={i * 0.12} />
-                  </span>
-                ) : null;
-              })}
-            </span>
-          )}
-          {hustle > 0 && (
-            <span className="level-pill" title="Hustle level">
-              <svg viewBox="0 0 120 160" aria-hidden="true">
-                <path d={LOGO_PATH} />
-              </svg>
-              Lv {hustle}
-            </span>
-          )}
-        </div>
         <div className="profile-who">
-          <span className="small muted">{session ? 'How your groups see you' : 'Your name'}</span>
           {editing ? (
             <form
               className="name-form"
@@ -126,12 +103,28 @@ export function ProfileHero({ joinCode = null }: { joinCode?: string | null } = 
             </form>
           ) : (
             <button type="button" className="name-btn" onClick={() => setEditing(true)}>
-              <span className="name-text">{name || 'Add a name'}</span>
-              <span className="muted">✎</span>
+              <span className="name-text np-name">{name || 'Add a name'}</span>
+              {hustle > 0 && <span className="hustle-chip">Lv {hustle}</span>}
+              <span className="name-edit">✎</span>
             </button>
           )}
           {flair && <span className="leaderboard-flair">{flair.title}</span>}
         </div>
+        {equipped.badges.length > 0 && (
+          <span className="showcase-box">
+            {equipped.badges.map((id, i) => {
+              const item = findCosmetic(id);
+              return item?.kind === 'badge' ? (
+                <span key={id} className={`showcase-cell rarity-${badgeRarity(item)}`} title={item.title}>
+                  <BadgeIcon id={id} className="showcase-icon" wave={i * 0.12} />
+                </span>
+              ) : null;
+            })}
+          </span>
+        )}
+      </div>
+      <div className="profile-under">
+        <span className="small muted">{session ? 'How your groups see you' : 'Your name'}</span>
         <a href={href('/shop')} className="pill outline profile-customize" onClick={onLinkClick}>
           Customize ›
         </a>

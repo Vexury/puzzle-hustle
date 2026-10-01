@@ -84,17 +84,17 @@ it('counts the percentile over everybody and hides it without an own score', asy
   expect(withScore.percentile).toEqual({ total: 31, faster: 5 });
 });
 
-it('carries each player badge, flair and nameplate, null when unset', async () => {
+it('carries each player badge, showcase, flair and nameplate, null when unset', async () => {
   await player('a', 'Anna');
   await player('b', 'Ben');
-  await env.DB.prepare("UPDATE players SET badge = 'cat', flair = 'puzzler', nameplate = 'plate-zip' WHERE id = 'a'").run();
+  await env.DB.prepare(`UPDATE players SET badge = 'cat', badges = '["cat","owl"]', flair = 'puzzler', nameplate = 'plate-zip' WHERE id = 'a'`).run();
   await group('g1', ['a', 'b']);
   await score('a', 200);
   await score('b', 300);
 
   const board = (await readBoard(env.DB, 'a', 'g1', PUZZLE))!;
-  expect(board.entries.map((e) => [e.name, e.badge, e.flair, e.nameplate, e.hustle])).toEqual([
-    ['Anna', 'cat', 'puzzler', 'plate-zip', 0],
-    ['Ben', null, null, null, 0],
+  expect(board.entries.map((e) => [e.name, e.badge, e.badges, e.flair, e.nameplate, e.hustle])).toEqual([
+    ['Anna', 'cat', ['cat', 'owl'], 'puzzler', 'plate-zip', 0],
+    ['Ben', null, null, null, null, 0],
   ]);
 });

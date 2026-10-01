@@ -373,20 +373,26 @@ p { margin: 0; }
 /* Profile's hero reuses the streak card: the player as their groups see them, three headline
    numbers, and the bar towards all achievements with a trophy as its goal. */
 .profile-hero { display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; overflow: hidden; }
-/* The player card, Discord style: the nameplate as a banner across the top, the first showcase
-   badge as an avatar overlapping it, the showcase and the Hustle level on the right. */
-.profile-banner { height: 84px; margin: -14px -16px 0; }
-.profile-banner:not(.np) { background: color-mix(in srgb, var(--accent) 22%, var(--card-bg)); }
-.profile-card { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 8px 12px; }
-.badge-avatar.profile-avatar { position: absolute; top: -30px; left: 0; }
-.profile-side { grid-column: 2; grid-row: 1; align-self: start; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; margin-top: 10px; }
-.profile-who { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; padding-top: 38px; }
-.profile-customize { grid-column: 1 / -1; justify-self: end; flex: none; min-height: 34px; padding: 4px 14px; font-size: var(--fs-sm); }
-.showcase-box { display: flex; gap: 2px; padding: 3px 5px; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-sm); }
-.showcase-cell { width: 28px; height: 28px; display: grid; place-items: center; }
-.showcase-icon { width: 20px; height: 20px; color: var(--rarity-solo); }
-.level-pill { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px 4px 9px; border-radius: var(--radius-pill); background: var(--accent-soft); color: var(--text); font-family: var(--font-num); font-size: var(--fs-base); font-weight: 800; white-space: nowrap; }
-.level-pill svg { width: 13px; height: 17px; fill: var(--accent); }
+/* The player card: the player's own standings row across the top, nameplate behind it, the
+   first showcase badge as avatar and the whole showcase where the time would be. */
+.profile-row { display: flex; align-items: center; gap: 12px; min-height: 84px; margin: -14px -16px 0; padding: 0 16px; }
+.profile-row:not(.np) { background: color-mix(in srgb, var(--accent) 14%, var(--card-bg)); }
+.profile-row :is(.np-art, .np-train) { right: var(--showcase-w, 0px); }
+.profile-row .profile-who { flex: 1; }
+.profile-row .name-btn { color: inherit; }
+.name-edit { color: var(--text-muted); font-size: 0.7em; }
+.profile-row.np :is(.name-edit, .leaderboard-flair) { color: var(--np-muted); }
+.showcase-box { flex: none; display: flex; gap: 2px; padding: 4px 6px; border-radius: var(--radius-pill); background: var(--card-bg); border: 1px solid var(--border); }
+.np .showcase-box { background: var(--np-pill-bg); border-color: transparent; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.np-dark .showcase-box { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12); }
+.showcase-cell { width: 22px; height: 24px; display: grid; place-items: center; }
+.showcase-icon { width: 18px; height: 18px; color: var(--rarity-solo); }
+.row-badges { flex: none; display: inline-flex; gap: 1px; }
+.row-badge { width: 16px; height: 16px; color: var(--rarity-solo); }
+.np:not(.np-dark) :is(.showcase-icon, .row-badge) { color: var(--rarity-on-light); }
+.np-dark :is(.showcase-icon, .row-badge) { color: var(--rarity-on-dark); }
+.profile-under { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 4px; }
+.profile-customize { flex: none; min-height: 34px; padding: 4px 14px; font-size: var(--fs-sm); }
 .profile-who .name-btn { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; max-width: 100%; font-size: 1.45rem; font-weight: 800; line-height: 1.15; }
 /* The name keeps one line (a long one ends in an ellipsis); badge, level and pencil wrap below it. */
 .profile-who .name-text { min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -586,55 +592,23 @@ p { margin: 0; }
 .leaderboard-row.np .leaderboard-hints,
 .leaderboard-row.np .leaderboard-report { color: var(--np-muted); }
 .leaderboard-row.np.podium .leaderboard-rank { color: var(--on-medal); }
-.leaderboard-row.np .hustle-chip { background: var(--np-chip-bg); color: var(--np-chip-text); }
+.np .hustle-chip { background: var(--np-chip-bg); color: var(--np-chip-text); }
 .leaderboard-row.np .leaderboard-time { padding: 3px 9px; border-radius: var(--radius-pill); background: var(--np-pill-bg); color: var(--np-pill-text); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 
-/* A badge as avatar, framed by its rarity (badgeRarity, from the price). */
-.badge-avatar {
-  --rarity-plate: color-mix(in srgb, var(--text) 7%, var(--card-bg));
-  --rarity-ring: var(--border);
-  --rarity-ink: var(--text-muted);
-  position: relative;
-  flex: none;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  background: var(--rarity-plate);
-  box-shadow: 0 0 0 2px var(--rarity-ring);
-  color: var(--rarity-ink);
-  font-weight: 800;
-}
-.badge-avatar-icon { width: 21px; height: 21px; color: var(--rarity-ink); }
-.badge-avatar .badge-shine { color: color-mix(in srgb, var(--rarity-ink) 25%, white); }
-.badge-avatar.lg { width: 60px; height: 60px; box-shadow: 0 0 0 4px var(--card-bg), 0 0 0 6px var(--rarity-ring); font-size: 1.5rem; }
-.badge-avatar.lg .badge-avatar-icon { width: 32px; height: 32px; }
-.rarity-common { --rarity-plate: #f1ede6; --rarity-ring: #ddd5c8; --rarity-ink: #8a6a3f; --rarity-solo: #8a6a3f; }
-.rarity-uncommon { --rarity-plate: #e2f2e6; --rarity-ring: #b9dcc2; --rarity-ink: #2f7d47; --rarity-solo: #3d8a52; }
-.rarity-rare { --rarity-plate: #e2edfd; --rarity-ring: #b3cff6; --rarity-ink: #2a6cc4; --rarity-solo: #2f74d0; }
-.rarity-epic { --rarity-plate: #ede6ff; --rarity-ring: #cbbcfa; --rarity-ink: #6c45de; --rarity-solo: #7a55e8; }
-.rarity-legendary { --rarity-plate: linear-gradient(135deg, #fff3c9, #ffc94d 55%, #ffe39a); --rarity-ring: #e0a800; --rarity-ink: #6f4400; --rarity-solo: #c08a00; }
-.rarity-hustle { --rarity-plate: radial-gradient(circle at 50% 30%, #6a2f14, #1d110b 75%); --rarity-ring: #ff6a3d; --rarity-ink: #ffcf8f; --rarity-solo: #e4572e; }
+/* Badge tints by rarity (badgeRarity, from the price): in the theme's colours on cards, in the
+   plate's on a nameplate, which keeps its colours in every theme. */
+.rarity-common { --rarity-on-light: #8a6a3f; --rarity-on-dark: #e0c08a; --rarity-plate: #f1ede6; --rarity-ring: #ddd5c8; --rarity-ink: #8a6a3f; --rarity-solo: #8a6a3f; }
+.rarity-uncommon { --rarity-on-light: #3d8a52; --rarity-on-dark: #7fd39a; --rarity-plate: #e2f2e6; --rarity-ring: #b9dcc2; --rarity-ink: #2f7d47; --rarity-solo: #3d8a52; }
+.rarity-rare { --rarity-on-light: #2f74d0; --rarity-on-dark: #8fbaf5; --rarity-plate: #e2edfd; --rarity-ring: #b3cff6; --rarity-ink: #2a6cc4; --rarity-solo: #2f74d0; }
+.rarity-epic { --rarity-on-light: #7a55e8; --rarity-on-dark: #b9a2ff; --rarity-plate: #ede6ff; --rarity-ring: #cbbcfa; --rarity-ink: #6c45de; --rarity-solo: #7a55e8; }
+.rarity-legendary { --rarity-on-light: #c08a00; --rarity-on-dark: #f2c233; --rarity-plate: linear-gradient(135deg, #fff3c9, #ffc94d 55%, #ffe39a); --rarity-ring: #e0a800; --rarity-ink: #6f4400; --rarity-solo: #c08a00; }
+.rarity-hustle { --rarity-on-light: #e4572e; --rarity-on-dark: #ff7a4d; --rarity-plate: radial-gradient(circle at 50% 30%, #6a2f14, #1d110b 75%); --rarity-ring: #ff6a3d; --rarity-ink: #ffcf8f; --rarity-solo: #e4572e; }
 [data-theme="dark"] .rarity-common { --rarity-plate: #2a2620; --rarity-ring: #4a4237; --rarity-ink: #d9b98c; --rarity-solo: #d9b98c; }
 [data-theme="dark"] .rarity-uncommon { --rarity-plate: #1d2e22; --rarity-ring: #2f5a3c; --rarity-ink: #7fd39a; --rarity-solo: #7fd39a; }
 [data-theme="dark"] .rarity-rare { --rarity-plate: #1b2638; --rarity-ring: #2e4f80; --rarity-ink: #8fbaf5; --rarity-solo: #8fbaf5; }
 [data-theme="dark"] .rarity-epic { --rarity-plate: #261f3d; --rarity-ring: #4b3c86; --rarity-ink: #b9a2ff; --rarity-solo: #b9a2ff; }
 [data-theme="dark"] .rarity-legendary { --rarity-solo: #f2c233; }
 [data-theme="dark"] .rarity-hustle { --rarity-solo: #ff7a4d; }
-/* The two top rarities shine across the whole plate, like the badges do across their shape. */
-.badge-avatar:is(.rarity-legendary, .rarity-hustle)::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.75) 50%, transparent 65%) no-repeat;
-  background-size: 300% 100%;
-  animation: avatar-shine 5s ease-in-out infinite;
-  pointer-events: none;
-}
-@keyframes avatar-shine { 0% { background-position: 120% 0; } 30%, 100% { background-position: -20% 0; } }
-@media (prefers-reduced-motion: reduce) { .badge-avatar::after { animation: none; display: none; } }
 .leaderboard-time { flex: none; font-family: var(--font-num); font-weight: 700; }
 .leaderboard-report {
   flex: none;
@@ -1341,7 +1315,6 @@ button.unlock-row { cursor: pointer; }
 .showcase-edit { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .showcase-slots { display: flex; gap: 6px; }
 .showcase-slot { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--board-cell); color: var(--accent-text); padding: 0; cursor: pointer; }
-.showcase-slot.first { box-shadow: inset 0 0 0 2px var(--accent); }
 .showcase-slot.empty { border-style: dashed; background: none; cursor: default; }
 .showcase-slot .shop-badge { width: 24px; height: 24px; }
 .plate-list { display: flex; flex-direction: column; gap: 8px; }

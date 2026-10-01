@@ -234,7 +234,7 @@ function PlateArt({ id }: { id: string }): ReactNode {
         <Art width={440}>
           <path className="np-twinkle" d={STARS_A} fill="#fff" />
           <path className="np-twinkle np-late" d={STARS_B} fill="#fff" />
-          <path d={MOON} transform="translate(318 12) scale(1.8)" fill="#ffe7a3" />
+          <path d={MOON} transform="translate(345 12) scale(1.8)" fill="#ffe7a3" />
         </Art>
       );
     case 'plate-terminal':

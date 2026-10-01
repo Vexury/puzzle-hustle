@@ -250,7 +250,7 @@ export function Shop() {
             <StandingsRow entry={{ name, seconds: 24, hints: 0, ...equipped, nameplate: previewPlate, hustle: hustleSolved(solves) }} rank={1} me={false} />
           </ol>
           <div className="showcase-edit">
-            <span className="muted small">Showcase · the first one shows in standings</span>
+            <span className="muted small">Showcase · tap one to take it out</span>
             <div className="showcase-slots">
               {Array.from({ length: SHOWCASE_SIZE }, (_, i) => {
                 const id = equipped.badges[i];
@@ -259,9 +259,9 @@ export function Shop() {
                   <button
                     key={id}
                     type="button"
-                    className={`showcase-slot${i === 0 ? ' first' : ''}`}
-                    onClick={() => (i === 0 ? showcase(id) : equip('badge', id))}
-                    aria-label={i === 0 ? `${title}, shown first, tap to take out` : `${title}, tap to show first`}
+                    className="showcase-slot"
+                    onClick={() => showcase(id)}
+                    aria-label={`${title}, tap to take out`}
                   >
                     <BadgeIcon id={id} className="shop-badge" />
                   </button>

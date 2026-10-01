@@ -73,14 +73,17 @@ it('shows the Hustle chip only from level 1', () => {
   expect(html(undefined)).not.toContain('Lv');
 });
 
-it('puts the badge in front as an avatar framed by its rarity, and the nameplate behind the row', () => {
+it('shows the showcase behind the name, tinted by rarity, and the nameplate behind the row', () => {
   const row = (entry: Record<string, unknown>) =>
     renderToStaticMarkup(createElement(StandingsRow, { entry: { name: 'Mo', seconds: 24, hints: 0, ...entry }, rank: 4, me: false }));
-  const plated = row({ badge: 'owl', nameplate: 'plate-midnight' });
+  const plated = row({ badge: 'owl', badges: ['owl', 'hustle-crown', 'from-the-future'], nameplate: 'plate-midnight' });
   expect(plated).toContain('leaderboard-row np np-midnight np-dark');
-  expect(plated).toContain('badge-avatar rarity-legendary');
+  expect(plated).toContain('rarity-legendary');
+  expect(plated).toContain('rarity-hustle');
+  expect(plated.match(/class="row-badge"/g)).toHaveLength(2);
+  // A row from a server before the showcase carries only its badge.
+  expect(row({ badge: 'bolt' })).toContain('rarity-common');
   const plain = row({ badge: null, nameplate: 'from-the-future' });
   expect(plain).toContain('<li class="leaderboard-row">');
-  expect(plain).toContain('badge-avatar empty');
-  expect(plain).toContain('>M</span>');
+  expect(plain).not.toContain('row-badges');
 });
