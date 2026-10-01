@@ -1,17 +1,19 @@
 import { DIFFICULTIES, PUZZLE_TYPES, type Difficulty, type PuzzleTypeId } from './types.ts';
 
-export type CosmeticKind = 'badge' | 'flair' | 'theme';
+export type CosmeticKind = 'badge' | 'flair' | 'theme' | 'nameplate';
 
 export type FlairRequirement = { pack: PuzzleTypeId; difficulty: Difficulty } | { achievement: string } | { hustle: number };
 
 export type Cosmetic =
   | { id: string; kind: 'badge'; title: string; price: number; requires?: { hustle: number } }
   | { id: string; kind: 'flair'; title: string; requires: FlairRequirement }
-  | { id: string; kind: 'theme'; title: string; price: number; mode: 'light' | 'dark'; requires?: { hustle: number } };
+  | { id: string; kind: 'theme'; title: string; price: number; mode: 'light' | 'dark'; requires?: { hustle: number } }
+  | { id: string; kind: 'nameplate'; title: string; price: number; dark: boolean; requires?: { hustle: number } };
 
 export type BadgeCosmetic = Extract<Cosmetic, { kind: 'badge' }>;
 export type FlairCosmetic = Extract<Cosmetic, { kind: 'flair' }>;
 export type ThemeCosmetic = Extract<Cosmetic, { kind: 'theme' }>;
+export type NameplateCosmetic = Extract<Cosmetic, { kind: 'nameplate' }>;
 
 // Ids are forever: a board row carries them to clients of every age, so an id may be added but
 // never renamed or removed. No crown (place 1 wears one; earned Hustle badges are the exception) and no flame (the streak colour).
@@ -177,6 +179,42 @@ export const HUSTLE_THEMES: readonly ThemeCosmetic[] = [
   { id: 'casino', kind: 'theme', title: 'Casino', price: 0, mode: 'dark', requires: { hustle: 777 } },
 ];
 
+// The strip behind the name in every standings row and the banner of the player card. Ids are
+// forever, like the badges; `dark` says which text colour reads on it.
+export const NAMEPLATES: readonly NameplateCosmetic[] = [
+  { id: 'plate-paper', kind: 'nameplate', title: 'Paper Grid', price: 300, dark: false },
+  { id: 'plate-zip', kind: 'nameplate', title: 'Zip Trail', price: 400, dark: false },
+  { id: 'plate-pixel', kind: 'nameplate', title: 'Pixel Heart', price: 400, dark: false },
+  { id: 'plate-sakura', kind: 'nameplate', title: 'Sakura Drift', price: 500, dark: false },
+  { id: 'plate-cat-nap', kind: 'nameplate', title: 'Cat Nap', price: 600, dark: false },
+  { id: 'plate-midnight', kind: 'nameplate', title: 'Midnight Sky', price: 600, dark: true },
+  { id: 'plate-terminal', kind: 'nameplate', title: 'Terminal', price: 800, dark: true },
+];
+
+// Earned only by climbing Hustle, like HUSTLE_BADGES, on stages no other reward uses.
+export const HUSTLE_NAMEPLATES: readonly NameplateCosmetic[] = [
+  { id: 'plate-tracks', kind: 'nameplate', title: 'Tracks', price: 0, dark: false, requires: { hustle: 80 } },
+  { id: 'plate-mosaic', kind: 'nameplate', title: 'Mosaic', price: 0, dark: true, requires: { hustle: 150 } },
+  { id: 'plate-weaver', kind: 'nameplate', title: 'Thread Weaver', price: 0, dark: false, requires: { hustle: 250 } },
+  { id: 'plate-synthwave', kind: 'nameplate', title: 'Synthwave', price: 0, dark: true, requires: { hustle: 550 } },
+  { id: 'plate-gold', kind: 'nameplate', title: 'Genius Gold', price: 0, dark: true, requires: { hustle: 900 } },
+];
+
+export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'hustle';
+
+// The frame a badge wears as an avatar follows its price, so the catalogue needs no new field.
+export function badgeRarity(badge: BadgeCosmetic): Rarity {
+  if (badge.requires) return 'hustle';
+  if (badge.price >= 500) return 'legendary';
+  if (badge.price >= 400) return 'epic';
+  if (badge.price >= 250) return 'rare';
+  if (badge.price >= 150) return 'uncommon';
+  return 'common';
+}
+
+// How many badges the player card shows; the first is the one the standings show.
+export const SHOWCASE_SIZE = 4;
+
 export const COSMETICS: readonly Cosmetic[] = [
   ...BADGES,
   ...HUSTLE_BADGES,
@@ -185,6 +223,8 @@ export const COSMETICS: readonly Cosmetic[] = [
   ...HUSTLE_FLAIRS,
   ...THEMES,
   ...HUSTLE_THEMES,
+  ...NAMEPLATES,
+  ...HUSTLE_NAMEPLATES,
 ];
 
 const BY_ID = new Map(COSMETICS.map((c) => [c.id, c]));

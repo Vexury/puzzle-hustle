@@ -8,12 +8,14 @@ import {
   HUSTLE_BADGES,
   HUSTLE_FLAIRS,
   HUSTLE_MILESTONE,
+  HUSTLE_NAMEPLATES,
   HUSTLE_THEMES,
   PUZZLE_META,
 } from '@puzzle-hustle/core';
 import { BadgeIcon } from '../components/BadgeIcon.tsx';
 import { CoinPill } from '../components/CoinPill.tsx';
 import { Logo } from '../components/Logo.tsx';
+import { NameplateArt, plateClass } from '../components/Nameplate.tsx';
 import { PuzzleIcon } from '../components/PuzzleIcon.tsx';
 import { CoinIcon } from '../components/SolvedCard.tsx';
 import { MiniBoard } from './Shop.tsx';
@@ -26,7 +28,7 @@ import { useSolves } from '../lib/storage.ts';
 const TIER_END: Record<string, number | null> = { easy: 40, medium: 120, hard: 300, genius: null };
 const NEXT_TIER: Record<string, string> = { easy: 'Medium', medium: 'Hard', hard: 'Genius' };
 
-type Milestone = { n: number; coins: number; badge?: string; flair?: string };
+type Milestone = { n: number; coins: number; badge?: string; flair?: string; nameplate?: string };
 
 // The milestones above the highest solved stage.
 export function nextMilestones(solved: number, count: number): Milestone[] {
@@ -34,25 +36,36 @@ export function nextMilestones(solved: number, count: number): Milestone[] {
   for (let n = (Math.floor(solved / HUSTLE_MILESTONE) + 1) * HUSTLE_MILESTONE; out.length < count; n += HUSTLE_MILESTONE) {
     const badge = HUSTLE_BADGES.find((b) => b.requires!.hustle === n)?.id;
     const flair = HUSTLE_FLAIRS.find((f) => 'hustle' in f.requires && f.requires.hustle === n)?.id;
-    out.push({ n, coins: hustleMilestoneCoins(n), ...(badge ? { badge } : {}), ...(flair ? { flair } : {}) });
+    const nameplate = HUSTLE_NAMEPLATES.find((p) => p.requires!.hustle === n)?.id;
+    out.push({ n, coins: hustleMilestoneCoins(n), ...(badge ? { badge } : {}), ...(flair ? { flair } : {}), ...(nameplate ? { nameplate } : {}) });
   }
   return out;
 }
 
 const flairTitle = (id: string) => HUSTLE_FLAIRS.find((f) => f.id === id)!.title;
 const badgeTitle = (id: string) => HUSTLE_BADGES.find((b) => b.id === id)!.title;
+const nameplateTitle = (id: string) => HUSTLE_NAMEPLATES.find((p) => p.id === id)!.title;
 
-// Every badge, flair and theme Hustle pays out, in the order they are earned.
-const REWARDS = [
-  ...HUSTLE_BADGES.map((b) => ({ id: b.id, title: `${b.title} badge`, kind: 'Badge', badge: b.id, theme: undefined, n: hustleNeeded(b) })),
-  ...HUSTLE_FLAIRS.map((f) => ({ id: f.id, title: f.title, kind: 'Flair', badge: undefined, theme: undefined, n: hustleNeeded(f) })),
-  ...HUSTLE_THEMES.map((t) => ({ id: t.id, title: `${t.title} theme`, kind: 'Theme', badge: undefined, theme: t.id, n: hustleNeeded(t) })),
+type Reward = { id: string; title: string; kind: string; n: number; badge?: string; theme?: string; nameplate?: string };
+
+// Every badge, flair, theme and nameplate Hustle pays out, in the order they are earned.
+const REWARDS: Reward[] = [
+  ...HUSTLE_BADGES.map((b) => ({ id: b.id, title: `${b.title} badge`, kind: 'Badge', badge: b.id, n: hustleNeeded(b) })),
+  ...HUSTLE_FLAIRS.map((f) => ({ id: f.id, title: f.title, kind: 'Flair', n: hustleNeeded(f) })),
+  ...HUSTLE_THEMES.map((t) => ({ id: t.id, title: `${t.title} theme`, kind: 'Theme', theme: t.id, n: hustleNeeded(t) })),
+  ...HUSTLE_NAMEPLATES.map((p) => ({ id: p.id, title: `${p.title} nameplate`, kind: 'Nameplate', nameplate: p.id, n: hustleNeeded(p) })),
 ].sort((a, b) => a.n - b.n);
 
 // Sized by the font size of its box.
-function MilestoneIcon({ m }: { m: { badge?: string | undefined; flair?: string | undefined; theme?: string | undefined } }) {
+function MilestoneIcon({ m }: { m: { badge?: string | undefined; flair?: string | undefined; theme?: string | undefined; nameplate?: string | undefined } }) {
   const theme = m.theme ? HUSTLE_THEMES.find((t) => t.id === m.theme) : undefined;
   if (theme) return <MiniBoard pack={theme} />;
+  if (m.nameplate)
+    return (
+      <span className={`mini-plate${plateClass(m.nameplate)}`} aria-hidden="true">
+        <NameplateArt id={m.nameplate} />
+      </span>
+    );
   if (m.badge) return <BadgeIcon id={m.badge} />;
   if (m.flair) return <span className="hustle-flair-mark">♦</span>;
   return <CoinIcon />;
@@ -72,7 +85,7 @@ export function Hustle() {
   const tierEnd = TIER_END[tier];
   const filled = level % HUSTLE_MILESTONE;
   const owned = REWARDS.filter((r) => level >= r.n).length;
-  const nextName = next.badge ? `${badgeTitle(next.badge)} badge` : next.flair ? flairTitle(next.flair) : null;
+  const nextName = next.badge ? `${badgeTitle(next.badge)} badge` : next.nameplate ? `${nameplateTitle(next.nameplate)} nameplate` : next.flair ? flairTitle(next.flair) : null;
 
   return (
     <>
@@ -137,7 +150,7 @@ export function Hustle() {
           {REWARDS.map((r) => (
             <li key={r.id} className={level >= r.n ? 'own' : undefined}>
               <span className="hustle-reward-icon">
-                <MilestoneIcon m={r.theme ? { theme: r.theme } : r.badge ? { badge: r.badge } : { flair: r.id }} />
+                <MilestoneIcon m={r.kind === 'Flair' ? { flair: r.id } : r} />
               </span>
               <span className="row-text">
                 <b>{r.title}</b>

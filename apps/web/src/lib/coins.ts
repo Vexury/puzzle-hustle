@@ -4,10 +4,12 @@ import {
   coinsEarned,
   earnedFlairs,
   earnedHustleBadges,
+  earnedHustleNameplates,
   earnedHustleThemes,
   findCosmetic,
   HINT_PRICE,
   ownedItems,
+  SHOWCASE_SIZE,
   THEMES_FREE,
   type CosmeticKind,
   type SpendEntry,
@@ -84,29 +86,41 @@ export function spendHint(puzzle: string): boolean {
   return true;
 }
 
-// Bought badges and themes plus earned flairs, Hustle badges and Hustle themes: those are never
+// Bought badges, themes and nameplates plus earned flairs and Hustle rewards: those are never
 // in ph:coins:spent (buyItem refuses them), so the sources never overlap.
 export function owned(): Set<string> {
   const solves = storedSolves();
-  return new Set([...ownedItems(readSpent()), ...earnedFlairs(solves), ...earnedHustleBadges(solves), ...earnedHustleThemes(solves)]);
+  return new Set([
+    ...ownedItems(readSpent()),
+    ...earnedFlairs(solves),
+    ...earnedHustleBadges(solves),
+    ...earnedHustleThemes(solves),
+    ...earnedHustleNameplates(solves),
+  ]);
 }
 
 export function buyItem(id: string): boolean {
   const item = findCosmetic(id);
-  if (!item || (item.kind !== 'badge' && item.kind !== 'theme') || item.requires || owned().has(id) || balance() < item.price) return false;
+  if (!item || item.kind === 'flair' || item.requires || owned().has(id) || balance() < item.price) return false;
   appendSpent({ kind: 'item', item: id, coins: item.price, at: Date.now() });
   return true;
 }
 
+// `badges` is the showcase on the player card, at most SHOWCASE_SIZE; its first entry is `badge`,
+// the one the standings show. Stored before the showcase, a lone `badge` reads as a showcase of one.
 export interface Equipped {
   badge: string | null;
+  badges: string[];
   flair: string | null;
   theme: string | null;
+  nameplate: string | null;
 }
 
-// Owned, or a theme while THEMES_FREE holds before launch.
+const NOTHING: Equipped = { badge: null, badges: [], flair: null, theme: null, nameplate: null };
+
+// Owned, or a theme or nameplate while THEMES_FREE holds before launch.
 function wearable(kind: CosmeticKind, id: string, ownedIds: Set<string>): boolean {
-  return ownedIds.has(id) || (kind === 'theme' && THEMES_FREE);
+  return ownedIds.has(id) || ((kind === 'theme' || kind === 'nameplate') && THEMES_FREE);
 }
 
 export function readEquipped(): Equipped {
@@ -115,10 +129,13 @@ export function readEquipped(): Equipped {
     const parsed = raw ? (JSON.parse(raw) as unknown) : null;
     const v = parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
     const ownedIds = owned();
-    const pick = (kind: CosmeticKind) => (findCosmetic(v[kind])?.kind === kind && wearable(kind, v[kind] as string, ownedIds) ? (v[kind] as string) : null);
-    return { badge: pick('badge'), flair: pick('flair'), theme: pick('theme') };
+    const fits = (kind: CosmeticKind, id: unknown): id is string => findCosmetic(id)?.kind === kind && wearable(kind, id as string, ownedIds);
+    const pick = (kind: CosmeticKind) => (fits(kind, v[kind]) ? (v[kind] as string) : null);
+    const listed: unknown[] = Array.isArray(v.badges) ? v.badges : [v.badge];
+    const badges = [...new Set(listed.filter((id) => fits('badge', id)))].slice(0, SHOWCASE_SIZE);
+    return { badge: badges[0] ?? null, badges, flair: pick('flair'), theme: pick('theme'), nameplate: pick('nameplate') };
   } catch {
-    return { badge: null, flair: null, theme: null };
+    return NOTHING;
   }
 }
 
@@ -129,22 +146,50 @@ export function useEquipped(): Equipped {
   return readEquipped();
 }
 
+function writeEquipped(before: Equipped, next: Equipped) {
+  const { badges, flair, theme, nameplate } = next;
+  writeSetting(EQUIPPED_KEY, JSON.stringify({ badges, flair, theme, nameplate }));
+  changed();
+  // The server never holds the theme, so a theme change has nothing to send.
+  if (flair !== before.flair || nameplate !== before.nameplate || badges.join() !== before.badges.join()) void pushCosmetics();
+}
+
+// For a badge, equipping makes it the one the standings show: first in the showcase, which keeps
+// the others behind it. Null clears the showcase.
 export function equip(kind: CosmeticKind, id: string | null): boolean {
   if (id !== null && (findCosmetic(id)?.kind !== kind || !wearable(kind, id, owned()))) return false;
-  writeSetting(EQUIPPED_KEY, JSON.stringify({ ...readEquipped(), [kind]: id }));
-  changed();
-  // The server only ever holds badge and flair (pushCosmetics posts just those), so a theme
-  // change has nothing to send.
-  if (kind !== 'theme') void pushCosmetics();
+  const current = readEquipped();
+  if (kind === 'badge') {
+    const badges = id === null ? [] : [id, ...current.badges.filter((b) => b !== id)].slice(0, SHOWCASE_SIZE);
+    writeEquipped(current, { ...current, badge: badges[0] ?? null, badges });
+  } else {
+    writeEquipped(current, { ...current, [kind]: id });
+  }
   return true;
+}
+
+// Adds an owned badge to the end of the showcase or takes it out. 'full' when all slots are used.
+export function toggleShowcase(id: string): 'added' | 'removed' | 'full' | 'refused' {
+  if (findCosmetic(id)?.kind !== 'badge' || !owned().has(id)) return 'refused';
+  const current = readEquipped();
+  if (current.badges.includes(id)) {
+    const badges = current.badges.filter((b) => b !== id);
+    writeEquipped(current, { ...current, badge: badges[0] ?? null, badges });
+    return 'removed';
+  }
+  if (current.badges.length >= SHOWCASE_SIZE) return 'full';
+  const badges = [...current.badges, id];
+  writeEquipped(current, { ...current, badge: badges[0] ?? null, badges });
+  return 'added';
 }
 
 // Same path as the name: no queue. A failed push is simply repeated after the next sign-in.
 export async function pushCosmetics(): Promise<void> {
   if (!readSession()) return;
   try {
-    const { badge, flair } = readEquipped();
-    await apiFetch('/cosmetics', { method: 'POST', body: JSON.stringify({ badge, flair }), auth: true });
+    // `badge` too, for a server from before the showcase, which reads only that.
+    const { badge, badges, flair, nameplate } = readEquipped();
+    await apiFetch('/cosmetics', { method: 'POST', body: JSON.stringify({ badge, badges, flair, nameplate }), auth: true });
   } catch {
     /* next sign-in sends it again */
   }

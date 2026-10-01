@@ -29,6 +29,11 @@ it('shows an earned badge as its own row', () => {
   expect(rows).toMatchObject([{ kind: 'badge', id: 'hustle-mountain', title: 'Mountain', description: 'Reach Hustle level 50.' }]);
 });
 
+it('shows an earned Hustle nameplate as its own row, and drops one for sale', () => {
+  const rows = buildUnlockRows([{ kind: 'nameplate', id: 'plate-tracks' }, { kind: 'nameplate', id: 'plate-zip' }], null);
+  expect(rows).toMatchObject([{ kind: 'nameplate', id: 'plate-tracks', title: 'Tracks', description: 'Reach Hustle level 80.' }]);
+});
+
 it('drops a badge that is not earned-only', () => {
   expect(buildUnlockRows([{ kind: 'badge', id: 'bolt' }, { kind: 'badge', id: 'nope' }], null)).toEqual([]);
 });

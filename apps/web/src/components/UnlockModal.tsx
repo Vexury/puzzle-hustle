@@ -2,6 +2,7 @@ import { useEffect, useSyncExternalStore } from 'react';
 import confetti from 'canvas-confetti';
 import { ACHIEVEMENTS, ACHIEVEMENT_COINS, HUSTLE_THEMES, STREAK_MIN, findCosmetic } from '@puzzle-hustle/core';
 import { BadgeIcon } from './BadgeIcon.tsx';
+import { NameplateArt, plateClass } from './Nameplate.tsx';
 import { pushBackGuard } from '../lib/back.ts';
 import { equip, useEquipped } from '../lib/coins.ts';
 import { requirementText } from '../lib/flairs.ts';
@@ -10,17 +11,22 @@ import { equipPack } from '../lib/theme.ts';
 import { INTRO_SEEN_KEY, readSetting } from '../lib/storage.ts';
 import { Flame } from '../pages/Daily.tsx';
 
-export type UnlockItem = { kind: 'achievement'; id: string } | { kind: 'flair'; id: string } | { kind: 'streak'; id: string } | { kind: 'badge'; id: string };
+export type UnlockItem =
+  | { kind: 'achievement'; id: string }
+  | { kind: 'flair'; id: string }
+  | { kind: 'streak'; id: string }
+  | { kind: 'badge'; id: string }
+  | { kind: 'nameplate'; id: string };
 
 function isUnlockItem(value: unknown): value is UnlockItem {
   if (!value || typeof value !== 'object') return false;
   const v = value as Record<string, unknown>;
-  return (v.kind === 'achievement' || v.kind === 'flair' || v.kind === 'streak' || v.kind === 'badge') && typeof v.id === 'string';
+  return (v.kind === 'achievement' || v.kind === 'flair' || v.kind === 'streak' || v.kind === 'badge' || v.kind === 'nameplate') && typeof v.id === 'string';
 }
 
 export interface UnlockRow {
   key: string;
-  kind: 'achievement' | 'flair' | 'streak' | 'badge';
+  kind: 'achievement' | 'flair' | 'streak' | 'badge' | 'nameplate';
   id: string;
   title: string;
   description: string;
@@ -78,6 +84,10 @@ export function buildUnlockRows(items: readonly UnlockItem[], equippedFlairId: s
       const badge = findCosmetic(item.id);
       if (badge?.kind !== 'badge' || !badge.requires) continue;
       rows.push({ key: `badge:${item.id}`, kind: 'badge', id: item.id, title: badge.title, description: `Reach Hustle level ${badge.requires.hustle}.`, coinsText: null, equipped: false, flair: null });
+    } else if (item.kind === 'nameplate') {
+      const plate = findCosmetic(item.id);
+      if (plate?.kind !== 'nameplate' || !plate.requires) continue;
+      rows.push({ key: `nameplate:${item.id}`, kind: 'nameplate', id: item.id, title: plate.title, description: `Reach Hustle level ${plate.requires.hustle}.`, coinsText: null, equipped: false, flair: null });
     } else {
       if (riding.has(item.id)) continue;
       const flair = findCosmetic(item.id);
@@ -284,11 +294,11 @@ export function UnlockModalHost() {
       <div className={rows.length === 1 ? 'card-lg unlock-card unlock-single' : 'card-lg unlock-card'}>
         <ul className="unlock-list">
           {rows.map((row) => {
-            if (row.kind === 'badge') {
-              const on = equipped.badge === row.id;
+            if (row.kind === 'badge' || row.kind === 'nameplate') {
+              const on = row.kind === 'badge' ? equipped.badge === row.id : equipped.nameplate === row.id;
               return (
                 <li key={row.key}>
-                  <button type="button" className="unlock-row" onClick={() => equip('badge', row.id)} aria-label={`${row.title}, badge, ${on ? 'equipped' : 'tap to wear'}`}>
+                  <button type="button" className="unlock-row" onClick={() => equip(row.kind === 'badge' ? 'badge' : 'nameplate', row.id)} aria-label={`${row.title}, ${row.kind}, ${on ? 'equipped' : 'tap to wear'}`}>
                     <UnlockRowBody row={row} wearing={on} />
                   </button>
                 </li>
@@ -338,14 +348,21 @@ const EYEBROW: Record<UnlockRow['kind'], string> = {
   achievement: 'Achievement unlocked',
   flair: 'Flair unlocked',
   badge: 'New badge',
+  nameplate: 'New nameplate',
 };
 
 function UnlockRowBody({ row, wearing = false }: { row: UnlockRow; wearing?: boolean }) {
   return (
     <>
-      <span className="unlock-mark" aria-hidden="true">
-        {row.kind === 'streak' ? <Flame /> : row.kind === 'badge' ? <BadgeIcon id={row.id} /> : row.kind === 'achievement' ? '★' : '♦'}
-      </span>
+      {row.kind === 'nameplate' ? (
+        <span className={`unlock-mark unlock-plate${plateClass(row.id)}`} aria-hidden="true">
+          <NameplateArt id={row.id} />
+        </span>
+      ) : (
+        <span className="unlock-mark" aria-hidden="true">
+          {row.kind === 'streak' ? <Flame /> : row.kind === 'badge' ? <BadgeIcon id={row.id} /> : row.kind === 'achievement' ? '★' : '♦'}
+        </span>
+      )}
       <span className="unlock-text">
         <span className="unlock-eyebrow">{EYEBROW[row.kind]}</span>
         <b className={row.kind === 'flair' ? 'unlock-title unlock-flair-title' : 'unlock-title'}>{row.title}</b>
@@ -366,7 +383,7 @@ function UnlockRowBody({ row, wearing = false }: { row: UnlockRow; wearing?: boo
               </span>
             )}
           </>
-        ) : row.kind === 'badge' ? (
+        ) : row.kind === 'badge' || row.kind === 'nameplate' ? (
           <>
             <span className="muted unlock-desc">{row.description}</span>
             <span className="unlock-flair-action">{wearing ? '✓ Equipped' : 'Tap to wear'}</span>

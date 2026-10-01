@@ -19,7 +19,7 @@ export function hustleNext(solves: readonly SolveEntry[], epoch: number = ACHIEV
   return hustleSolved(solves, epoch) + 1;
 }
 
-function earnedByHustle(kind: 'badge' | 'theme', solves: readonly SolveEntry[], epoch: number): Set<string> {
+function earnedByHustle(kind: 'badge' | 'theme' | 'nameplate', solves: readonly SolveEntry[], epoch: number): Set<string> {
   const solved = hustleSolved(solves, epoch);
   const out = new Set<string>();
   for (const c of COSMETICS) {
@@ -34,4 +34,8 @@ export function earnedHustleBadges(solves: readonly SolveEntry[], epoch: number 
 
 export function earnedHustleThemes(solves: readonly SolveEntry[], epoch: number = ACHIEVEMENTS_EPOCH): Set<string> {
   return earnedByHustle('theme', solves, epoch);
+}
+
+export function earnedHustleNameplates(solves: readonly SolveEntry[], epoch: number = ACHIEVEMENTS_EPOCH): Set<string> {
+  return earnedByHustle('nameplate', solves, epoch);
 }

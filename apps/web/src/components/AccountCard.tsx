@@ -15,15 +15,18 @@ import {
   signOut,
   useSession,
 } from '../lib/auth.ts';
-import { hustleSolved } from '@puzzle-hustle/core';
+import { badgeRarity, findCosmetic, hustleSolved } from '@puzzle-hustle/core';
 import { storedSolves } from '../lib/achievements.ts';
 import { useEquipped } from '../lib/coins.ts';
 import { href, onLinkClick } from '../lib/router.ts';
 import { readSetting, useSolves, writeSetting } from '../lib/storage.ts';
 import { dailyStreaks, totalSolved } from '../lib/stats.ts';
 import { Flame } from '../pages/Daily.tsx';
+import { LOGO_PATH } from '../lib/logo.ts';
+import { BadgeAvatar } from './BadgeAvatar.tsx';
 import { BadgeIcon } from './BadgeIcon.tsx';
 import { rowCosmetics } from './Board.tsx';
+import { NameplateArt, plateClass } from './Nameplate.tsx';
 import { toast } from './Toast.tsx';
 
 export const PRIVACY_POLICY_URL = 'https://vexury.dev/puzzle-hustle-privacy/';
@@ -45,7 +48,8 @@ export function ProfileHero({ joinCode = null }: { joinCode?: string | null } = 
   const session = useSession();
   const [name, setName] = useState(readSetting('ph:name') ?? '');
   const [editing, setEditing] = useState(false);
-  const { badge, flair } = rowCosmetics(useEquipped());
+  const equipped = useEquipped();
+  const { flair } = rowCosmetics(equipped);
   const solves = useSolves();
   const streaks = dailyStreaks(solves);
   const hustle = hustleSolved(storedSolves());
@@ -81,7 +85,33 @@ export function ProfileHero({ joinCode = null }: { joinCode?: string | null } = 
 
   return (
     <section className={`streak-hero profile-hero${streaks.current > 0 ? ' has-streak' : ''}`}>
-      <div className="profile-top">
+      <div className={`profile-banner${plateClass(equipped.nameplate)}`}>
+        <NameplateArt id={equipped.nameplate} />
+      </div>
+      <div className="profile-card">
+        <BadgeAvatar id={equipped.badge} name={name || '?'} className="lg profile-avatar" />
+        <div className="profile-side">
+          {equipped.badges.length > 0 && (
+            <span className="showcase-box">
+              {equipped.badges.map((id, i) => {
+                const item = findCosmetic(id);
+                return item?.kind === 'badge' ? (
+                  <span key={id} className={`showcase-cell rarity-${badgeRarity(item)}`} title={item.title}>
+                    <BadgeIcon id={id} className="showcase-icon" wave={i * 0.12} />
+                  </span>
+                ) : null;
+              })}
+            </span>
+          )}
+          {hustle > 0 && (
+            <span className="level-pill" title="Hustle level">
+              <svg viewBox="0 0 120 160" aria-hidden="true">
+                <path d={LOGO_PATH} />
+              </svg>
+              Lv {hustle}
+            </span>
+          )}
+        </div>
         <div className="profile-who">
           <span className="small muted">{session ? 'How your groups see you' : 'Your name'}</span>
           {editing ? (
@@ -97,14 +127,12 @@ export function ProfileHero({ joinCode = null }: { joinCode?: string | null } = 
           ) : (
             <button type="button" className="name-btn" onClick={() => setEditing(true)}>
               <span className="name-text">{name || 'Add a name'}</span>
-              {badge && <BadgeIcon id={badge.id} />}
-              {hustle > 0 && <span className="hustle-chip">Lv {hustle}</span>}
               <span className="muted">✎</span>
             </button>
           )}
           {flair && <span className="leaderboard-flair">{flair.title}</span>}
         </div>
-        <a href={href('/shop')} className="pill outline" onClick={onLinkClick}>
+        <a href={href('/shop')} className="pill outline profile-customize" onClick={onLinkClick}>
           Customize ›
         </a>
       </div>

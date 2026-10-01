@@ -1,10 +1,10 @@
 import { expect, it } from 'vitest';
 import { itemState } from '../src/pages/Shop.tsx';
 
-const none = { badge: null, flair: null, theme: null };
+const none = { badge: null, badges: [], flair: null, theme: null, nameplate: null };
 
 it('names the state of each badge', () => {
-  expect(itemState('bolt', new Set(['bolt']), { badge: 'bolt', flair: null, theme: null }, 0)).toBe('equipped');
+  expect(itemState('bolt', new Set(['bolt']), { ...none, badge: 'bolt', badges: ['bolt'] }, 0)).toBe('equipped');
   expect(itemState('bolt', new Set(['bolt']), none, 0)).toBe('owned');
   expect(itemState('bolt', new Set(), none, 100)).toBe('buyable');
   expect(itemState('bolt', new Set(), none, 99)).toBe('locked');
@@ -22,7 +22,7 @@ it('never offers an earned-only badge for coins', () => {
 
 it('an earned flair is owned, and equips once worn', () => {
   expect(itemState('hustler', new Set(['hustler']), none, 0)).toBe('owned');
-  expect(itemState('hustler', new Set(['hustler']), { badge: null, flair: 'hustler', theme: null }, 0)).toBe('equipped');
+  expect(itemState('hustler', new Set(['hustler']), { ...none, flair: 'hustler' }, 0)).toBe('equipped');
 });
 
 it('treats an unknown id as locked', () => {
@@ -40,4 +40,17 @@ it('names the state of each theme pack', () => {
   expect(itemState('paper', new Set(['paper']), none, 0)).toBe('owned');
   expect(itemState('paper', new Set(), none, 400)).toBe('buyable');
   expect(itemState('paper', new Set(), none, 399)).toBe('locked');
+});
+
+it('counts every showcase badge as equipped, not only the first', () => {
+  const shown = { ...none, badge: 'bolt', badges: ['bolt', 'leaf'] };
+  expect(itemState('leaf', new Set(['bolt', 'leaf']), shown, 0)).toBe('equipped');
+});
+
+it('names the state of each nameplate, and never sells a Hustle one', () => {
+  expect(itemState('plate-zip', new Set(['plate-zip']), { ...none, nameplate: 'plate-zip' }, 0)).toBe('equipped');
+  expect(itemState('plate-zip', new Set(['plate-zip']), none, 0)).toBe('owned');
+  expect(itemState('plate-zip', new Set(), none, 400)).toBe('buyable');
+  expect(itemState('plate-zip', new Set(), none, 399)).toBe('locked');
+  expect(itemState('plate-gold', new Set(), none, 1_000_000)).toBe('locked');
 });

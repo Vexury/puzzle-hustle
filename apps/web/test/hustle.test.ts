@@ -30,12 +30,13 @@ it('shows the level, the progress to the next milestone and the next puzzle', ()
   expect(container.querySelector('.daily-progress')?.getAttribute('aria-valuenow')).toBe('6');
   expect(container.textContent).toContain('4 more for Mountain badge + 45');
   expect(container.querySelector('.streak-timer')?.textContent).toBe('74 stagesto Hard');
-  expect(container.textContent).toContain('1 of 13 earned');
+  expect(container.textContent).toContain('1 of 18 earned');
   expect(container.querySelector('.hustle-rewards .own')?.textContent).toContain('Hustle Starter');
-  expect(container.querySelectorAll('.hustle-rewards li').length).toBe(13);
+  expect(container.querySelectorAll('.hustle-rewards li').length).toBe(18);
   const titles = [...container.querySelectorAll('.hustle-rewards li b')].map((b) => b.textContent);
-  expect(titles.slice(6, 7)).toEqual(['Ocean theme']);
-  expect(titles.slice(-4)).toEqual(['Inferno theme', 'Summit badge', 'Casino theme', 'Hustle Legend']);
+  expect(titles.slice(2, 3)).toEqual(['Tracks nameplate']);
+  expect(titles.slice(9, 10)).toEqual(['Ocean theme']);
+  expect(titles.slice(-5)).toEqual(['Inferno theme', 'Summit badge', 'Casino theme', 'Genius Gold nameplate', 'Hustle Legend']);
   expect(container.querySelector('a.row-card')?.getAttribute('href')).toContain('h=47');
   act(() => root.unmount());
 });

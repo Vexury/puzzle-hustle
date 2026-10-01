@@ -1,13 +1,14 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react';
 import { findCosmetic, parsePuzzleId, type Cosmetic, type Period } from '@puzzle-hustle/core';
 import { apiFetch } from '../lib/api.ts';
 import { formatSeconds } from '../lib/share.ts';
 import { readSetting, writeSetting } from '../lib/storage.ts';
-import { BadgeIcon } from './BadgeIcon.tsx';
+import { BadgeAvatar } from './BadgeAvatar.tsx';
+import { NameplateArt, plateClass } from './Nameplate.tsx';
 import { toast } from './Toast.tsx';
 
 export interface BoardData {
-  entries: Array<{ playerId: string; name: string; seconds: number; hints: number; badge?: string | null; flair?: string | null; hustle?: number }>;
+  entries: Array<{ playerId: string; name: string; seconds: number; hints: number; badge?: string | null; flair?: string | null; nameplate?: string | null; hustle?: number }>;
   me: number | null;
   percentile: { total: number; faster: number } | null;
 }
@@ -109,23 +110,38 @@ export function rowCosmetics(entry: { badge?: string | null; flair?: string | nu
   return { badge: badge?.kind === 'badge' ? badge : undefined, flair: flair?.kind === 'flair' ? flair : undefined };
 }
 
-export function NameCell({
-  entry,
-  wave = 0,
-}: {
-  entry: { name: string; badge?: string | null; flair?: string | null; hustle?: number | undefined };
-  wave?: number;
-}) {
-  const { badge, flair } = rowCosmetics(entry);
+// The badge itself is the row's avatar (StandingsRow), so the name carries only the level.
+export function NameCell({ entry }: { entry: { name: string; flair?: string | null; hustle?: number | undefined } }) {
+  const { flair } = rowCosmetics(entry);
   return (
     <span className="leaderboard-who">
       <span className="leaderboard-name">
-        <span className="leaderboard-name-text">{entry.name}</span>
-        {badge && <BadgeIcon id={badge.id} wave={wave} />}
+        <span className="leaderboard-name-text np-name">{entry.name}</span>
         {entry.hustle ? <span className="hustle-chip">Lv {entry.hustle}</span> : null}
       </span>
       {flair && <span className="leaderboard-flair">{flair.title}</span>}
     </span>
+  );
+}
+
+type RowEntry = { name: string; seconds: number; hints: number; badge?: string | null; flair?: string | null; nameplate?: string | null; hustle?: number | undefined };
+
+// One standings row: medal or place, the badge as avatar, name, level and flair, the time; the
+// player's nameplate behind it all. The shop shows the same row as its preview.
+export function StandingsRow({ entry, rank, me, wave = 0, children }: { entry: RowEntry; rank: number; me: boolean; wave?: number; children?: ReactNode }) {
+  return (
+    <li className={`leaderboard-row${rank <= 3 ? ` podium ${MEDALS[rank - 1]}` : ''}${me ? ' me' : ''}${plateClass(entry.nameplate)}`}>
+      <NameplateArt id={entry.nameplate} />
+      <span className="leaderboard-rank">
+        {rank === 1 && <Crown />}
+        {rank}
+      </span>
+      <BadgeAvatar id={entry.badge} name={entry.name} wave={wave} />
+      <NameCell entry={entry} />
+      {entry.hints > 0 && <span className="leaderboard-hints small">{entry.hints} hint{entry.hints === 1 ? '' : 's'}</span>}
+      <span className="leaderboard-time">{formatSeconds(entry.seconds)}</span>
+      {children}
+    </li>
   );
 }
 
@@ -193,16 +209,7 @@ export function Board({
       <ol className="leaderboard">
         {shown.map((entry, i) => (
           <Fragment key={entry.playerId}>
-            <li
-              className={`leaderboard-row${entry.rank <= 3 ? ` podium ${MEDALS[entry.rank - 1]}` : ''}${entry.playerId === meId ? ' me' : ''}`}
-            >
-              <span className="leaderboard-rank">
-                {entry.rank === 1 && <Crown />}
-                {entry.rank}
-              </span>
-              <NameCell entry={entry} wave={i * 0.1} />
-              {entry.hints > 0 && <span className="muted small">{entry.hints} hint{entry.hints === 1 ? '' : 's'}</span>}
-              <span className="leaderboard-time">{formatSeconds(entry.seconds)}</span>
+            <StandingsRow entry={entry} rank={entry.rank} me={entry.playerId === meId} wave={i * 0.1}>
               {entry.playerId !== meId && (
                 <button
                   type="button"
@@ -218,7 +225,7 @@ export function Board({
                   ⚑
                 </button>
               )}
-            </li>
+            </StandingsRow>
             {open === entry.playerId && (
               <li className="pill-row">
                 <button type="button" className="pill outline" onClick={() => report(entry)}>

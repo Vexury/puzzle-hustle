@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { expect, it } from 'vitest';
-import { percentileText, readHidden, NameCell, rowCosmetics, splitHidden, writeHidden } from '../src/components/Board.tsx';
+import { percentileText, readHidden, NameCell, rowCosmetics, splitHidden, StandingsRow, writeHidden } from '../src/components/Board.tsx';
 
 it('hides the line when there is no percentile at all', () => {
   expect(percentileText(null, 'daily')).toBeNull();
@@ -71,4 +71,16 @@ it('shows the Hustle chip only from level 1', () => {
   expect(html(47)).toContain('Lv 47');
   expect(html(0)).not.toContain('Lv');
   expect(html(undefined)).not.toContain('Lv');
+});
+
+it('puts the badge in front as an avatar framed by its rarity, and the nameplate behind the row', () => {
+  const row = (entry: Record<string, unknown>) =>
+    renderToStaticMarkup(createElement(StandingsRow, { entry: { name: 'Mo', seconds: 24, hints: 0, ...entry }, rank: 4, me: false }));
+  const plated = row({ badge: 'owl', nameplate: 'plate-midnight' });
+  expect(plated).toContain('leaderboard-row np np-midnight np-dark');
+  expect(plated).toContain('badge-avatar rarity-legendary');
+  const plain = row({ badge: null, nameplate: 'from-the-future' });
+  expect(plain).toContain('<li class="leaderboard-row">');
+  expect(plain).toContain('badge-avatar empty');
+  expect(plain).toContain('>M</span>');
 });

@@ -3,26 +3,31 @@ import {
   ACTIVITY_FLAIRS,
   COSMETICS,
   FLAIRS_BY_TYPE,
+  HUSTLE_NAMEPLATES,
   HUSTLE_THEMES,
   hustleSolved,
+  NAMEPLATES,
   packProgress,
   PUZZLE_META,
   PUZZLE_TYPES,
+  SHOWCASE_SIZE,
   THEMES,
   THEMES_FREE,
   type BadgeCosmetic,
   type FlairCosmetic,
+  type NameplateCosmetic,
   type ThemeCosmetic,
 } from '@puzzle-hustle/core';
 import { BadgeIcon, badgeMotion } from '../components/BadgeIcon.tsx';
-import { NameCell } from '../components/Board.tsx';
+import { StandingsRow } from '../components/Board.tsx';
+import { NameplateArt, plateClass } from '../components/Nameplate.tsx';
 import { CoinPill } from '../components/CoinPill.tsx';
 import { toast } from '../components/Toast.tsx';
 import { useSession } from '../lib/auth.ts';
 import { ACCENTS, ACCENT_NAMES, storedAccent, useAccent } from '../lib/accent.ts';
 import { storedSolves } from '../lib/achievements.ts';
 import { pushBackGuard } from '../lib/back.ts';
-import { buyItem, equip, owned, useBalance, useEquipped, type Equipped } from '../lib/coins.ts';
+import { buyItem, equip, owned, toggleShowcase, useBalance, useEquipped, type Equipped } from '../lib/coins.ts';
 import { requirementText } from '../lib/flairs.ts';
 import { readSetting, writeSetting } from '../lib/storage.ts';
 import { THEME_PREFS, centerOf, equipPack, tryOnPack, usePack, useTheme, type ThemePref } from '../lib/theme.ts';
@@ -35,6 +40,7 @@ const BADGES: readonly BadgeCosmetic[] = COSMETICS.filter((c): c is BadgeCosmeti
 const FLAIRS: readonly FlairCosmetic[] = COSMETICS.filter((c): c is FlairCosmetic => c.kind === 'flair');
 // Bought packs first, then the ones only Hustle gives, in the order they are earned.
 const ALL_THEMES: readonly ThemeCosmetic[] = [...THEMES, ...HUSTLE_THEMES];
+const ALL_NAMEPLATES: readonly NameplateCosmetic[] = [...NAMEPLATES, ...HUSTLE_NAMEPLATES];
 
 // Badges and flairs fold away so the page stays short; themes stay open, the try-on is the point
 // of the page. Closed by default, and each section remembers how it was left.
@@ -68,7 +74,7 @@ function replayMotion(el: HTMLElement) {
 }
 
 export function itemState(id: string, ownedIds: Set<string>, equipped: Equipped, balance: number): 'equipped' | 'owned' | 'buyable' | 'locked' {
-  if (equipped.badge === id || equipped.flair === id || equipped.theme === id) return 'equipped';
+  if (equipped.badges.includes(id) || equipped.flair === id || equipped.theme === id || equipped.nameplate === id) return 'equipped';
   if (ownedIds.has(id)) return 'owned';
   const item = COSMETICS.find((c) => c.id === id);
   if (!item || item.kind === 'flair' || item.requires) return 'locked';
@@ -149,29 +155,57 @@ export function Shop() {
 
   const name = session?.player.name ?? readSetting('ph:name') ?? 'You';
 
+  // Owned badges go in and out of the showcase; the first one is the one the standings show.
+  const showcase = (id: string) => {
+    if (toggleShowcase(id) === 'full') toast(`The showcase holds ${SHOWCASE_SIZE}. Tap one there to take it out.`);
+  };
+
   const tapBadge = (item: BadgeCosmetic) => {
     const state = itemState(item.id, ownedIds, equipped, balance);
-    if (state === 'equipped') {
-      equip('badge', null);
-    } else if (state === 'owned') {
-      equip('badge', item.id);
+    if (state === 'equipped' || state === 'owned') {
+      showcase(item.id);
     } else if (state === 'locked') {
       toast(item.requires ? `Reach Hustle level ${item.requires.hustle}` : `${item.price - balance} more coins needed`);
     } else if (armed !== item.id) {
       setArmed(item.id);
     } else {
       setArmed(null);
-      if (buyItem(item.id)) equip('badge', item.id);
+      if (buyItem(item.id)) showcase(item.id);
     }
   };
 
   const badgeLabel = (item: BadgeCosmetic) => {
     const state = itemState(item.id, ownedIds, equipped, balance);
-    if (state === 'equipped') return 'Equipped';
+    if (state === 'equipped') return `Shown ${equipped.badges.indexOf(item.id) + 1}`;
     if (state === 'owned') return 'Owned';
     if (item.requires) return `Hustle ${item.requires.hustle}`;
     return armed === item.id ? 'Buy?' : `${item.price}`;
   };
+
+  // Like a badge: a first tap on one for sale arms it and shows it in the preview row above, a
+  // second buys and wears it. Before launch (THEMES_FREE) every plate can be worn straight away.
+  const tapNameplate = (item: NameplateCosmetic) => {
+    const state = itemState(item.id, ownedIds, equipped, balance);
+    if (state === 'equipped') equip('nameplate', null);
+    else if (state === 'owned' || THEMES_FREE) equip('nameplate', item.id);
+    else if (item.requires) toast(`Reach Hustle level ${item.requires.hustle}`);
+    else if (armed !== item.id) setArmed(item.id);
+    else if (state === 'locked') toast(`${item.price - balance} more coins needed`);
+    else {
+      setArmed(null);
+      if (buyItem(item.id)) equip('nameplate', item.id);
+    }
+  };
+
+  const nameplateLabel = (item: NameplateCosmetic) => {
+    const state = itemState(item.id, ownedIds, equipped, balance);
+    if (state === 'equipped') return 'Equipped';
+    if (state === 'owned') return 'Owned';
+    if (item.requires) return `Lv ${item.requires.hustle}`;
+    return armed === item.id && state === 'buyable' ? 'Buy?' : `${item.price}`;
+  };
+
+  const previewPlate = ALL_NAMEPLATES.some((n) => n.id === armed) ? armed : equipped.nameplate;
 
   // Flairs are never bought: earned equips or unequips on a single tap, locked only offers a
   // toast explaining how to earn it.
@@ -212,8 +246,32 @@ export function Shop() {
 
       <div className="stack">
         <section className="card-lg shop-preview">
-          <NameCell entry={{ name, ...equipped, hustle: hustleSolved(solves) }} />
-          {!session && <span className="muted small">Badges and flairs show in your groups once you sign in.</span>}
+          <ol className="leaderboard">
+            <StandingsRow entry={{ name, seconds: 24, hints: 0, ...equipped, nameplate: previewPlate, hustle: hustleSolved(solves) }} rank={1} me={false} />
+          </ol>
+          <div className="showcase-edit">
+            <span className="muted small">Showcase · the first one shows in standings</span>
+            <div className="showcase-slots">
+              {Array.from({ length: SHOWCASE_SIZE }, (_, i) => {
+                const id = equipped.badges[i];
+                const title = COSMETICS.find((c) => c.id === id)?.title;
+                return id ? (
+                  <button
+                    key={id}
+                    type="button"
+                    className={`showcase-slot${i === 0 ? ' first' : ''}`}
+                    onClick={() => (i === 0 ? showcase(id) : equip('badge', id))}
+                    aria-label={i === 0 ? `${title}, shown first, tap to take out` : `${title}, tap to show first`}
+                  >
+                    <BadgeIcon id={id} className="shop-badge" />
+                  </button>
+                ) : (
+                  <span key={`empty-${i}`} className="showcase-slot empty" aria-hidden="true" />
+                );
+              })}
+            </div>
+          </div>
+          {!session && <span className="muted small">Badges, flairs and nameplates show in your groups once you sign in.</span>}
         </section>
 
         {!active && (
@@ -272,6 +330,26 @@ export function Shop() {
                 <MiniBoard pack={item} />
                 <b className="small">{item.title}</b>
                 <span className="small">{themeLabel(item)}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="card-lg">
+          <h2>Nameplates</h2>
+          <span className="muted small">{HUSTLE_NAMEPLATES.map((n) => n.title).join(', ')}: earned in Hustle, never sold.</span>
+          <div className="plate-list">
+            {ALL_NAMEPLATES.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={`plate-tile ${itemState(item.id, ownedIds, equipped, balance)}${armed === item.id ? ' armed' : ''}${plateClass(item.id)}`}
+                onClick={() => tapNameplate(item)}
+                aria-label={`${item.title}, ${nameplateLabel(item)}`}
+              >
+                <NameplateArt id={item.id} />
+                <b className="np-name">{item.title}</b>
+                <span className="plate-tile-state">{nameplateLabel(item)}</span>
               </button>
             ))}
           </div>

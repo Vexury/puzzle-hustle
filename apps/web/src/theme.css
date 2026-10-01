@@ -372,10 +372,21 @@ p { margin: 0; }
 
 /* Profile's hero reuses the streak card: the player as their groups see them, three headline
    numbers, and the bar towards all achievements with a trophy as its goal. */
-.profile-hero { display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; }
-.profile-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.profile-top > .pill { flex: none; min-height: 34px; padding: 4px 14px; font-size: var(--fs-sm); }
-.profile-who { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.profile-hero { display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; overflow: hidden; }
+/* The player card, Discord style: the nameplate as a banner across the top, the first showcase
+   badge as an avatar overlapping it, the showcase and the Hustle level on the right. */
+.profile-banner { height: 84px; margin: -14px -16px 0; }
+.profile-banner:not(.np) { background: color-mix(in srgb, var(--accent) 22%, var(--card-bg)); }
+.profile-card { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 8px 12px; }
+.badge-avatar.profile-avatar { position: absolute; top: -30px; left: 0; }
+.profile-side { grid-column: 2; grid-row: 1; align-self: start; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; margin-top: 10px; }
+.profile-who { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; padding-top: 38px; }
+.profile-customize { grid-column: 1 / -1; justify-self: end; flex: none; min-height: 34px; padding: 4px 14px; font-size: var(--fs-sm); }
+.showcase-box { display: flex; gap: 2px; padding: 3px 5px; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.showcase-cell { width: 28px; height: 28px; display: grid; place-items: center; }
+.showcase-icon { width: 20px; height: 20px; color: var(--rarity-solo); }
+.level-pill { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px 4px 9px; border-radius: var(--radius-pill); background: var(--accent-soft); color: var(--text); font-family: var(--font-num); font-size: var(--fs-base); font-weight: 800; white-space: nowrap; }
+.level-pill svg { width: 13px; height: 17px; fill: var(--accent); }
 .profile-who .name-btn { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; max-width: 100%; font-size: 1.45rem; font-weight: 800; line-height: 1.15; }
 /* The name keeps one line (a long one ends in an ellipsis); badge, level and pencil wrap below it. */
 .profile-who .name-text { min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -535,12 +546,14 @@ p { margin: 0; }
    that has it. */
 .leaderboard { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .leaderboard-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: var(--radius-sm); }
-.leaderboard-row.me { background: var(--accent-soft); box-shadow: inset 0 0 0 2px var(--accent); }
+.leaderboard-row.me { box-shadow: inset 0 0 0 2px var(--accent); }
+.leaderboard-row.me:not(.np) { background: var(--accent-soft); }
 .leaderboard-rank { position: relative; flex: none; width: 1.6rem; color: var(--text-muted); font-family: var(--font-num); }
 /* The top three trade their plain number for a medal and take a wash of its colour, so the
    podium reads at a glance. The player's own row keeps its accent ring there, but the medal
    wash replaces the accent fill. */
-.leaderboard-row.podium { --medal: var(--gold); background: color-mix(in srgb, var(--medal) 14%, transparent); }
+.leaderboard-row.podium { --medal: var(--gold); }
+.leaderboard-row.podium:not(.np) { background: color-mix(in srgb, var(--medal) 14%, transparent); }
 .leaderboard-row.silver { --medal: var(--silver); }
 .leaderboard-row.bronze { --medal: var(--bronze); }
 .leaderboard-row.podium .leaderboard-rank {
@@ -564,6 +577,64 @@ p { margin: 0; }
 .leaderboard-name { min-width: 0; }
 .hustle-chip { font-family: var(--font-num); font-size: var(--fs-xs); font-weight: 800; color: var(--accent-text); background: var(--accent-soft); border-radius: var(--radius-pill); padding: 1px 7px; white-space: nowrap; }
 .leaderboard-name-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.leaderboard-hints { color: var(--text-muted); white-space: nowrap; }
+/* On a nameplate the row takes the plate's colours, and the time sits on a pill so the art can
+   run behind it. A podium row keeps its medal but trades the wash for the plate. */
+.leaderboard-row.np { min-height: 60px; }
+.leaderboard-row.np .leaderboard-rank,
+.leaderboard-row.np .leaderboard-flair,
+.leaderboard-row.np .leaderboard-hints,
+.leaderboard-row.np .leaderboard-report { color: var(--np-muted); }
+.leaderboard-row.np.podium .leaderboard-rank { color: var(--on-medal); }
+.leaderboard-row.np .hustle-chip { background: var(--np-chip-bg); color: var(--np-chip-text); }
+.leaderboard-row.np .leaderboard-time { padding: 3px 9px; border-radius: var(--radius-pill); background: var(--np-pill-bg); color: var(--np-pill-text); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+
+/* A badge as avatar, framed by its rarity (badgeRarity, from the price). */
+.badge-avatar {
+  --rarity-plate: color-mix(in srgb, var(--text) 7%, var(--card-bg));
+  --rarity-ring: var(--border);
+  --rarity-ink: var(--text-muted);
+  position: relative;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--rarity-plate);
+  box-shadow: 0 0 0 2px var(--rarity-ring);
+  color: var(--rarity-ink);
+  font-weight: 800;
+}
+.badge-avatar-icon { width: 21px; height: 21px; color: var(--rarity-ink); }
+.badge-avatar .badge-shine { color: color-mix(in srgb, var(--rarity-ink) 25%, white); }
+.badge-avatar.lg { width: 60px; height: 60px; box-shadow: 0 0 0 4px var(--card-bg), 0 0 0 6px var(--rarity-ring); font-size: 1.5rem; }
+.badge-avatar.lg .badge-avatar-icon { width: 32px; height: 32px; }
+.rarity-common { --rarity-plate: #f1ede6; --rarity-ring: #ddd5c8; --rarity-ink: #8a6a3f; --rarity-solo: #8a6a3f; }
+.rarity-uncommon { --rarity-plate: #e2f2e6; --rarity-ring: #b9dcc2; --rarity-ink: #2f7d47; --rarity-solo: #3d8a52; }
+.rarity-rare { --rarity-plate: #e2edfd; --rarity-ring: #b3cff6; --rarity-ink: #2a6cc4; --rarity-solo: #2f74d0; }
+.rarity-epic { --rarity-plate: #ede6ff; --rarity-ring: #cbbcfa; --rarity-ink: #6c45de; --rarity-solo: #7a55e8; }
+.rarity-legendary { --rarity-plate: linear-gradient(135deg, #fff3c9, #ffc94d 55%, #ffe39a); --rarity-ring: #e0a800; --rarity-ink: #6f4400; --rarity-solo: #c08a00; }
+.rarity-hustle { --rarity-plate: radial-gradient(circle at 50% 30%, #6a2f14, #1d110b 75%); --rarity-ring: #ff6a3d; --rarity-ink: #ffcf8f; --rarity-solo: #e4572e; }
+[data-theme="dark"] .rarity-common { --rarity-plate: #2a2620; --rarity-ring: #4a4237; --rarity-ink: #d9b98c; --rarity-solo: #d9b98c; }
+[data-theme="dark"] .rarity-uncommon { --rarity-plate: #1d2e22; --rarity-ring: #2f5a3c; --rarity-ink: #7fd39a; --rarity-solo: #7fd39a; }
+[data-theme="dark"] .rarity-rare { --rarity-plate: #1b2638; --rarity-ring: #2e4f80; --rarity-ink: #8fbaf5; --rarity-solo: #8fbaf5; }
+[data-theme="dark"] .rarity-epic { --rarity-plate: #261f3d; --rarity-ring: #4b3c86; --rarity-ink: #b9a2ff; --rarity-solo: #b9a2ff; }
+[data-theme="dark"] .rarity-legendary { --rarity-solo: #f2c233; }
+[data-theme="dark"] .rarity-hustle { --rarity-solo: #ff7a4d; }
+/* The two top rarities shine across the whole plate, like the badges do across their shape. */
+.badge-avatar:is(.rarity-legendary, .rarity-hustle)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.75) 50%, transparent 65%) no-repeat;
+  background-size: 300% 100%;
+  animation: avatar-shine 5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes avatar-shine { 0% { background-position: 120% 0; } 30%, 100% { background-position: -20% 0; } }
+@media (prefers-reduced-motion: reduce) { .badge-avatar::after { animation: none; display: none; } }
 .leaderboard-time { flex: none; font-family: var(--font-num); font-weight: 700; }
 .leaderboard-report {
   flex: none;
@@ -1089,6 +1160,8 @@ button.unlock-row { cursor: pointer; }
 .unlock-single .unlock-row { flex-direction: column; align-items: center; text-align: center; gap: 8px; }
 .unlock-single .unlock-mark { font-size: 2.6rem; }
 .unlock-single .unlock-title { font-size: var(--fs-xl); }
+.unlock-plate { width: 56px; height: 40px; border-radius: var(--radius-xs); }
+.unlock-single .unlock-plate { width: 72px; height: 52px; }
 
 /* Achievement badges: a round disc, filled with the accent when earned, muted when locked. A
    locked counter shows how far along it is as a ring (conic gradient in --share). */
@@ -1263,7 +1336,20 @@ button.unlock-row { cursor: pointer; }
 }
 @keyframes coin-bump { 40% { transform: scale(1.15); } }
 @keyframes coin-glint { from { background-position: 0 0; } to { background-position: 100% 0; } }
-.shop-preview { gap: 6px; }
+.shop-preview { gap: 10px; }
+.shop-preview .leaderboard-row { padding-inline: 8px; }
+.showcase-edit { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.showcase-slots { display: flex; gap: 6px; }
+.showcase-slot { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--board-cell); color: var(--accent-text); padding: 0; cursor: pointer; }
+.showcase-slot.first { box-shadow: inset 0 0 0 2px var(--accent); }
+.showcase-slot.empty { border-style: dashed; background: none; cursor: default; }
+.showcase-slot .shop-badge { width: 24px; height: 24px; }
+.plate-list { display: flex; flex-direction: column; gap: 8px; }
+.plate-tile { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 0 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--board-cell); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.plate-tile.np { border-color: transparent; }
+.plate-tile.equipped { box-shadow: inset 0 0 0 2px var(--accent); }
+.plate-tile.armed { box-shadow: inset 0 0 0 2px var(--accent-text); }
+.plate-tile-state { flex: none; font-family: var(--font-num); font-size: var(--fs-sm); font-weight: 800; padding: 3px 10px; border-radius: var(--radius-pill); background: var(--np-pill-bg, var(--card-bg)); color: var(--np-pill-text, var(--text)); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 .shop-section-head { display: flex; align-items: center; gap: 8px; width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .shop-section-title { flex: 1; }
 .shop-section-count { font-family: var(--font-num); font-weight: 400; color: var(--text-muted); }
@@ -1353,6 +1439,10 @@ button.unlock-row { cursor: pointer; }
 .hustle-rewards li.own .hustle-reward-icon { color: var(--accent-text); background: var(--accent-soft); }
 .hustle-reward-icon .mini-board { grid-template-columns: repeat(3, 8px); gap: 1px; padding: 3px; border-width: 1.5px; border-radius: 6px; }
 .hustle-reward-icon .mini-board i { width: 8px; height: 8px; border-radius: 2px; }
+/* A nameplate as a small swatch: the right-hand end of its art, where the motif sits. */
+.mini-plate { display: block; width: 100%; height: 100%; border-radius: inherit; }
+.hustle-reward-icon .mini-plate, .goal-badge .mini-plate { width: 40px; height: 40px; }
+.goal-badge .mini-plate { width: 100%; height: 100%; border-radius: 50%; }
 .hustle-owned { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--on-accent); }
 .hustle-owned svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
 

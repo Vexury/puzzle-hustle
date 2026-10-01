@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { coinsEarned, coinsForSolve } from '../src/coins.ts';
 import { earnedFlairs } from '../src/flairs.ts';
-import { earnedHustleBadges, earnedHustleThemes, hustleNext, hustleSolved } from '../src/hustleProgress.ts';
+import { earnedHustleBadges, earnedHustleNameplates, earnedHustleThemes, hustleNext, hustleSolved } from '../src/hustleProgress.ts';
 
 const EPOCH = 1_000;
 const solve = (n: number, at = 2_000) => ({ id: `hustle:${n}`, solvedAt: at, seconds: 60, hints: 0, moves: 10 });
@@ -40,5 +40,13 @@ describe('hustle progress', () => {
     expect(earnedHustleThemes(upTo(333), EPOCH)).toEqual(new Set(['ocean']));
     expect(earnedHustleThemes(upTo(777), EPOCH)).toEqual(new Set(['ocean', 'inferno', 'casino']));
     expect(earnedHustleBadges(upTo(777), EPOCH).has('ocean')).toBe(false);
+  });
+
+  it('earns the Hustle nameplates at 80, 150, 250, 550 and 900, apart from badges and themes', () => {
+    expect(earnedHustleNameplates(upTo(79), EPOCH).size).toBe(0);
+    expect(earnedHustleNameplates(upTo(80), EPOCH)).toEqual(new Set(['plate-tracks']));
+    expect(earnedHustleNameplates(upTo(900), EPOCH)).toEqual(new Set(['plate-tracks', 'plate-mosaic', 'plate-weaver', 'plate-synthwave', 'plate-gold']));
+    expect(earnedHustleBadges(upTo(900), EPOCH).has('plate-tracks')).toBe(false);
+    expect(earnedHustleThemes(upTo(900), EPOCH).has('plate-tracks')).toBe(false);
   });
 });

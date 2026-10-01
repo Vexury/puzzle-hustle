@@ -1,0 +1,89 @@
+/* Nameplates: the host element (a standings row, the profile banner, a shop tile) carries
+   `np np-<id>` and holds the art first. Plates keep their own colours in every theme and pack,
+   so text on them takes the plate's palette, set here as tokens. */
+.np {
+  --np-text: #2d2d2d;
+  --np-muted: #6b6560;
+  --np-chip-bg: rgba(0, 0, 0, 0.07);
+  --np-chip-text: #2d2d2d;
+  --np-pill-bg: rgba(255, 255, 255, 0.82);
+  --np-pill-text: #2d2d2d;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: var(--np-text);
+}
+.np.np-dark {
+  --np-text: #ffffff;
+  --np-muted: rgba(255, 255, 255, 0.72);
+  --np-chip-bg: rgba(255, 255, 255, 0.16);
+  --np-chip-text: #ffffff;
+  --np-pill-bg: rgba(0, 0, 0, 0.45);
+  --np-pill-text: #ffffff;
+}
+.np .np-art { position: absolute; top: 50%; right: 0; height: 68px; transform: translateY(-50%); z-index: -1; pointer-events: none; overflow: visible; }
+.np .np-pixels { shape-rendering: crispEdges; }
+.np .np-fade { -webkit-mask-image: linear-gradient(90deg, transparent, #000 36px); mask-image: linear-gradient(90deg, transparent, #000 36px); }
+.np .np-fade-wide { -webkit-mask-image: linear-gradient(90deg, transparent 18%, #000 60%); mask-image: linear-gradient(90deg, transparent 18%, #000 60%); }
+
+.np-paper {
+  background:
+    linear-gradient(90deg, #fbf8f1 30%, rgba(251, 248, 241, 0) 75%),
+    linear-gradient(#e4dccb 1px, transparent 1px) right center / 17px 17px,
+    linear-gradient(90deg, #e4dccb 1px, transparent 1px) right center / 17px 17px,
+    #fbf8f1;
+}
+.np-digits text { font: 700 13px var(--font-num); fill: #a8a08f; text-anchor: middle; dominant-baseline: central; }
+.np-digits .np-digit-hot { fill: #ffa833; }
+.np-zip { background: linear-gradient(90deg, #f4f8ff 30%, #d6e7ff); }
+.np-zip-num { font: 800 12px var(--font-num); fill: #fff; text-anchor: middle; }
+.np-pixel {
+  background:
+    linear-gradient(90deg, #f6f2ff 30%, rgba(246, 242, 255, 0.15) 90%),
+    conic-gradient(#d9cbff 25%, transparent 0 50%, #ebe3ff 0 75%, transparent 0) right center / 17px 17px,
+    #f6f2ff;
+}
+.np-sakura { background: linear-gradient(90deg, #fff6f9 30%, #ffd3e1); }
+.np-cat-nap { --np-text: #3b2a1e; --np-muted: #6f5a48; --np-chip-bg: rgba(192, 122, 58, 0.16); --np-chip-text: #8a4f1c; background: linear-gradient(90deg, #f8f1e8 30%, #efe4d6); }
+.np-midnight { background: linear-gradient(90deg, #121936 30%, #27326e); }
+.np-terminal { --np-text: #7dff9a; --np-muted: rgba(125, 255, 154, 0.62); --np-chip-bg: rgba(125, 255, 154, 0.14); --np-chip-text: #7dff9a; --np-pill-text: #7dff9a; background: repeating-linear-gradient(0deg, rgba(125, 255, 154, 0.06) 0 1px, transparent 1px 3px), #061006; }
+.np-terminal .np-name { font-family: var(--font-num); letter-spacing: 0.02em; }
+.np-term text { font: 700 13px var(--font-num); fill: #7dff9a; }
+.np-tracks { background: linear-gradient(90deg, #f0f8f0 30%, #dcefdd); }
+.np-mosaic { background: linear-gradient(90deg, #0b4f47 30%, #117a6d); }
+.np-weaver { background: repeating-linear-gradient(0deg, rgba(120, 96, 60, 0.06) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(120, 96, 60, 0.06) 0 1px, transparent 1px 3px), #f7f2e8; }
+.np-synthwave { background: linear-gradient(90deg, #1c0933 30%, #561070 68%, #b8297a); }
+.np-gold { --np-muted: rgba(255, 217, 122, 0.7); --np-chip-bg: rgba(217, 168, 62, 0.2); --np-chip-text: #ffd97a; --np-pill-text: #ffd97a; background: linear-gradient(110deg, #15100a 35%, #2b2010); box-shadow: inset 0 0 0 1.5px #d9a83e, inset 0 0 22px rgba(217, 168, 62, 0.22); }
+.np-gold .np-name { background: linear-gradient(90deg, #fff1b8, #e8b13f 50%, #fff1b8); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+/* Motion. Every loop stops for reduced motion; the train then waits off the plate. */
+.np-draw { stroke-dasharray: 260; animation: np-draw 3.2s ease-in-out infinite; }
+@keyframes np-draw { 0% { stroke-dashoffset: 260; } 55%, 100% { stroke-dashoffset: 0; } }
+.np-petal { position: absolute; top: 0; width: 10px; height: 8px; background: #ff8fb1; border-radius: 70% 0 70% 0; opacity: 0.85; z-index: -1; animation: np-petal 6s ease-in-out infinite; }
+@keyframes np-petal { 0% { transform: translate(0, -14px) rotate(0); } 100% { transform: translate(-70px, 84px) rotate(220deg); opacity: 0; } }
+.np-twinkle { animation: np-twinkle 3s ease-in-out infinite; }
+@keyframes np-twinkle { 50% { opacity: 0.2; } }
+.np-late { animation-delay: -1.5s; }
+.np-cursor { animation: np-blink 1s steps(1) infinite; }
+@keyframes np-blink { 50% { opacity: 0; } }
+.np-train { position: absolute; top: 50%; right: 0; width: 220px; height: 68px; transform: translateY(-50%); overflow: hidden; z-index: -1; pointer-events: none; }
+.np-car { position: absolute; top: 0; left: 0; box-sizing: border-box; border: 1px solid #2d2d2d; offset-anchor: center; offset-rotate: auto; offset-distance: 0%; animation: np-ride 7s linear infinite; }
+.np-loco { width: 15px; height: 10px; border-radius: 3px; background: linear-gradient(90deg, #9e5e00 0 36%, #ffa833 36%); }
+.np-loco::after { content: ''; position: absolute; left: 8px; top: 2.5px; width: 3px; height: 3px; border-radius: 50%; background: #2d2d2d; }
+.np-wagon { width: 13px; height: 9px; border-radius: 2.5px; background: #ffd08a; }
+@keyframes np-ride { 0% { offset-distance: 0%; } 50%, 100% { offset-distance: 100%; } }
+.np-drift { animation: np-drift 9s ease-in-out infinite alternate; }
+.np-drift.np-reverse { animation-duration: 12s; animation-delay: -4s; animation-direction: alternate-reverse; }
+@keyframes np-drift { to { transform: translateX(-18px); } }
+.np-foil { position: absolute; inset: 0; z-index: -1; background: linear-gradient(110deg, transparent 40%, rgba(255, 226, 140, 0.3) 50%, transparent 60%); background-size: 250% 100%; animation: np-foil 3.5s ease-in-out infinite; }
+@keyframes np-foil { 0% { background-position: 120% 0; } 60%, 100% { background-position: -20% 0; } }
+.np-breathe { transform-box: fill-box; transform-origin: 50% 100%; animation: np-breathe 2.6s ease-in-out infinite; }
+@keyframes np-breathe { 50% { transform: scaleY(1.06); } }
+.np-steam { animation: np-steam 2.4s ease-in-out infinite; }
+.np-steam.np-late { animation-delay: -1.2s; }
+@keyframes np-steam { 0% { transform: translateY(2px); opacity: 0; } 40% { opacity: 1; } 100% { transform: translateY(-4px); opacity: 0; } }
+.np-zz { font: 800 7px var(--font-num); fill: #8a4f1c; animation: np-zz 3s ease-out infinite; }
+@keyframes np-zz { 0% { transform: translate(0, 0); opacity: 0; } 25% { opacity: 1; } 100% { transform: translate(5px, -9px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .np *, .np *::after { animation: none !important; }
+}

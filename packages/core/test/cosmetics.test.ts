@@ -1,6 +1,19 @@
 import { expect, it } from 'vitest';
 import { ACHIEVEMENTS } from '../src/achievements.ts';
-import { COSMETICS, HUSTLE_THEMES, THEMES, findCosmetic, isCosmeticOf, type Cosmetic } from '../src/cosmetics.ts';
+import { HUSTLE_MILESTONE } from '../src/hustle.ts';
+import {
+  COSMETICS,
+  HUSTLE_BADGES,
+  HUSTLE_FLAIRS,
+  HUSTLE_NAMEPLATES,
+  HUSTLE_THEMES,
+  NAMEPLATES,
+  THEMES,
+  badgeRarity,
+  findCosmetic,
+  isCosmeticOf,
+  type Cosmetic,
+} from '../src/cosmetics.ts';
 import { levelList } from '../src/levels.ts';
 
 const isBadge = (c: Cosmetic): c is Extract<Cosmetic, { kind: 'badge' }> => c.kind === 'badge';
@@ -132,4 +145,47 @@ it('keeps theme ids apart from badge and flair ids', () => {
   expect(isCosmeticOf('paper', 'theme')).toBe(true);
   expect(isCosmeticOf('paper', 'badge')).toBe(false);
   expect(isCosmeticOf('bolt', 'theme')).toBe(false);
+});
+
+it('sells seven nameplates and gives five more in Hustle, never sold', () => {
+  expect(NAMEPLATES.map((n) => [n.id, n.price])).toEqual([
+    ['plate-paper', 300],
+    ['plate-zip', 400],
+    ['plate-pixel', 400],
+    ['plate-sakura', 500],
+    ['plate-cat-nap', 600],
+    ['plate-midnight', 600],
+    ['plate-terminal', 800],
+  ]);
+  expect(HUSTLE_NAMEPLATES.map((n) => [n.id, n.price, n.requires?.hustle])).toEqual([
+    ['plate-tracks', 0, 80],
+    ['plate-mosaic', 0, 150],
+    ['plate-weaver', 0, 250],
+    ['plate-synthwave', 0, 550],
+    ['plate-gold', 0, 900],
+  ]);
+  for (const n of [...NAMEPLATES, ...HUSTLE_NAMEPLATES]) expect(findCosmetic(n.id)).toBe(n);
+  expect(isCosmeticOf('plate-zip', 'nameplate')).toBe(true);
+  expect(isCosmeticOf('plate-zip', 'badge')).toBe(false);
+});
+
+it('puts each Hustle nameplate on a milestone stage that no other Hustle reward uses', () => {
+  const taken = new Set([...HUSTLE_BADGES, ...HUSTLE_THEMES].map((c) => c.requires!.hustle));
+  for (const f of HUSTLE_FLAIRS) if ('hustle' in f.requires) taken.add(f.requires.hustle);
+  for (const n of HUSTLE_NAMEPLATES) {
+    expect(n.requires!.hustle % HUSTLE_MILESTONE).toBe(0);
+    expect(taken.has(n.requires!.hustle), n.id).toBe(false);
+  }
+});
+
+it('derives a badge rarity from its price, and Hustle badges have their own', () => {
+  const rarity = (id: string) => badgeRarity(findCosmetic(id) as Extract<Cosmetic, { kind: 'badge' }>);
+  expect(rarity('bolt')).toBe('common');
+  expect(rarity('cat')).toBe('uncommon');
+  expect(rarity('ghost')).toBe('uncommon');
+  expect(rarity('rocket')).toBe('rare');
+  expect(rarity('diamond')).toBe('rare');
+  expect(rarity('fox')).toBe('epic');
+  expect(rarity('owl')).toBe('legendary');
+  expect(rarity('hustle-crown')).toBe('hustle');
 });

@@ -1,4 +1,4 @@
-import { HUSTLE_MAX_STAGE, isCosmeticOf } from '@puzzle-hustle/core';
+import { HUSTLE_MAX_STAGE, SHOWCASE_SIZE, isCosmeticOf } from '@puzzle-hustle/core';
 import { readBoard } from './board.ts';
 import { revokeAppleAuthorization, verifyAppleIdToken } from './apple.ts';
 import { verifyGoogleIdToken } from './google.ts';
@@ -92,15 +92,36 @@ async function postName(request: Request, env: Env, playerId: string): Promise<R
 }
 
 // Ownership lives in a local log the server cannot see, and a forged badge buys no rank, so
-// only the ids are checked against the catalogue.
+// only the ids are checked against the catalogue. Clients from before the showcase send only
+// `badge` and no `nameplate`: their badge becomes the whole showcase and the nameplate stays.
 async function postCosmetics(request: Request, env: Env, playerId: string): Promise<Response> {
   const input = await body(request);
-  const badge = input.badge ?? null;
   const flair = input.flair ?? null;
-  if (badge !== null && !isCosmeticOf(badge, 'badge')) return error(400, 'unknown_badge');
+  let badges: string[];
+  if (input.badges !== undefined) {
+    const list = input.badges;
+    if (!Array.isArray(list) || list.length > SHOWCASE_SIZE || new Set(list).size !== list.length) return error(400, 'bad_badges');
+    if (!list.every((id) => isCosmeticOf(id, 'badge'))) return error(400, 'unknown_badge');
+    badges = list as string[];
+  } else {
+    const badge = input.badge ?? null;
+    if (badge !== null && !isCosmeticOf(badge, 'badge')) return error(400, 'unknown_badge');
+    badges = badge === null ? [] : [badge as string];
+  }
+  const badge = badges[0] ?? null;
   if (flair !== null && !isCosmeticOf(flair, 'flair')) return error(400, 'unknown_flair');
-  await env.DB.prepare('UPDATE players SET badge = ?, flair = ? WHERE id = ?').bind(badge, flair, playerId).run();
-  return json({ badge, flair });
+  const setsNameplate = input.nameplate !== undefined;
+  const nameplate = input.nameplate ?? null;
+  if (nameplate !== null && !isCosmeticOf(nameplate, 'nameplate')) return error(400, 'unknown_nameplate');
+  const stored = badges.length ? JSON.stringify(badges) : null;
+  const row = setsNameplate
+    ? await env.DB.prepare('UPDATE players SET badge = ?, badges = ?, flair = ?, nameplate = ? WHERE id = ? RETURNING nameplate')
+        .bind(badge, stored, flair, nameplate, playerId)
+        .first<{ nameplate: string | null }>()
+    : await env.DB.prepare('UPDATE players SET badge = ?, badges = ?, flair = ? WHERE id = ? RETURNING nameplate')
+        .bind(badge, stored, flair, playerId)
+        .first<{ nameplate: string | null }>();
+  return json({ badge, badges, flair, nameplate: row?.nameplate ?? null });
 }
 
 // The level comes from the device, like badge and flair. MAX keeps a stale device from lowering it.

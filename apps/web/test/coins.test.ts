@@ -1,7 +1,9 @@
 import { beforeEach, expect, it, vi } from 'vitest';
 import { ACHIEVEMENTS_EPOCH, levelList } from '@puzzle-hustle/core';
 import { recordSolve, rehydrate, resetProgress } from '../src/lib/storage.ts';
-import { balance, buyItem, canAffordHint, equip, owned, readEquipped, readSpent, spendHint } from '../src/lib/coins.ts';
+import { balance, buyItem, canAffordHint, equip, owned, readEquipped, readSpent, spendHint, toggleShowcase } from '../src/lib/coins.ts';
+
+const NONE = { badge: null, badges: [], flair: null, theme: null, nameplate: null };
 
 // The paid path, as it will run after launch; themesFree.test.ts covers the beta switch.
 vi.mock('@puzzle-hustle/core', async (original) => ({ ...(await original<typeof import('@puzzle-hustle/core')>()), THEMES_FREE: false }));
@@ -37,20 +39,20 @@ it('reads a missing or malformed spend log as empty', () => {
 
 it('reads malformed equipped cosmetics as nothing equipped', () => {
   localStorage.setItem('ph:cosmetics', '"bolt"');
-  expect(readEquipped()).toEqual({ badge: null, flair: null, theme: null });
+  expect(readEquipped()).toEqual(NONE);
   earnBasicZipper();
   localStorage.setItem('ph:cosmetics', JSON.stringify({ badge: 'crown', flair: 'basic-zipper' }));
-  expect(readEquipped()).toEqual({ badge: null, flair: 'basic-zipper', theme: null });
+  expect(readEquipped()).toEqual({ ...NONE, flair: 'basic-zipper' });
 });
 
 it('unequips a cosmetic once it falls out of ownership because the epoch moved past its purchase', () => {
   earnSome(50);
   buyItem('bolt');
   equip('badge', 'bolt');
-  expect(readEquipped()).toEqual({ badge: 'bolt', flair: null, theme: null });
+  expect(readEquipped()).toEqual({ ...NONE, badge: 'bolt', badges: ['bolt'] });
   const rewritten = readSpent().map((e) => (e.kind === 'item' && e.item === 'bolt' ? { ...e, at: ACHIEVEMENTS_EPOCH - 1 } : e));
   localStorage.setItem('ph:coins:spent', JSON.stringify(rewritten));
-  expect(readEquipped()).toEqual({ badge: null, flair: null, theme: null });
+  expect(readEquipped()).toEqual(NONE);
 });
 
 it('spends 20 on a hint only when the balance covers it', () => {
@@ -126,9 +128,9 @@ it('equips only owned items of the right kind and unequips with null', () => {
   buyItem('bolt');
   expect(equip('flair', 'bolt')).toBe(false);
   expect(equip('badge', 'bolt')).toBe(true);
-  expect(readEquipped()).toEqual({ badge: 'bolt', flair: null, theme: null });
+  expect(readEquipped()).toEqual({ ...NONE, badge: 'bolt', badges: ['bolt'] });
   expect(equip('badge', null)).toBe(true);
-  expect(readEquipped()).toEqual({ badge: null, flair: null, theme: null });
+  expect(readEquipped()).toEqual(NONE);
 });
 
 it('drops a spend entry with a negative coin amount', () => {
@@ -148,7 +150,7 @@ it('forgets spending and equipped items on a progress reset', () => {
   equip('badge', 'bolt');
   resetProgress();
   expect(readSpent()).toEqual([]);
-  expect(readEquipped()).toEqual({ badge: null, flair: null, theme: null });
+  expect(readEquipped()).toEqual(NONE);
   expect(balance()).toBe(0);
 });
 
@@ -191,6 +193,52 @@ it('never sends the theme to the server', async () => {
   equip('badge', 'bolt');
   await vi.waitFor(() => expect(fetchMock).toHaveBeenCalled());
   const body = JSON.parse(String((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body));
-  expect(body).toEqual({ badge: 'bolt', flair: null });
+  expect(body).toEqual({ badge: 'bolt', badges: ['bolt'], flair: null, nameplate: null });
   vi.unstubAllGlobals();
+});
+
+it('reads a badge stored before the showcase as a showcase of one', () => {
+  earnSome(50);
+  buyItem('bolt');
+  localStorage.setItem('ph:cosmetics', JSON.stringify({ badge: 'bolt', flair: null }));
+  expect(readEquipped()).toEqual({ ...NONE, badge: 'bolt', badges: ['bolt'] });
+});
+
+it('fills the showcase up to four owned badges, the first one shown in the standings', () => {
+  earnSome(70);
+  for (const id of ['bolt', 'leaf', 'dice', 'note', 'wave']) expect(buyItem(id)).toBe(true);
+  expect(toggleShowcase('bolt')).toBe('added');
+  expect(toggleShowcase('leaf')).toBe('added');
+  expect(toggleShowcase('dice')).toBe('added');
+  expect(toggleShowcase('note')).toBe('added');
+  expect(toggleShowcase('wave')).toBe('full');
+  expect(toggleShowcase('cat')).toBe('refused');
+  expect(readEquipped().badges).toEqual(['bolt', 'leaf', 'dice', 'note']);
+  expect(toggleShowcase('bolt')).toBe('removed');
+  expect(readEquipped().badge).toBe('leaf');
+  // Equipping a badge makes it the one the standings show and keeps the others behind it.
+  expect(equip('badge', 'note')).toBe(true);
+  expect(readEquipped().badges).toEqual(['note', 'leaf', 'dice']);
+  expect(equip('badge', 'wave')).toBe(true);
+  expect(readEquipped().badges).toEqual(['wave', 'note', 'leaf', 'dice']);
+});
+
+it('buys a nameplate for its price and equips it, but never a Hustle one', () => {
+  earnSome(50);
+  const before = balance();
+  expect(equip('nameplate', 'plate-paper')).toBe(false);
+  expect(buyItem('plate-paper')).toBe(true);
+  expect(balance()).toBe(before - 300);
+  expect(equip('nameplate', 'plate-paper')).toBe(true);
+  expect(readEquipped().nameplate).toBe('plate-paper');
+  expect(buyItem('plate-tracks')).toBe(false);
+  expect(equip('nameplate', 'plate-tracks')).toBe(false);
+  expect(equip('nameplate', 'bolt')).toBe(false);
+});
+
+it('owns a Hustle nameplate from stage 80', () => {
+  for (let n = 1; n <= 80; n++) recordSolve(`hustle:${n}`, { solvedAt: '2026-09-30T10:00:00.000Z', seconds: 60, hints: 0, moves: 10 });
+  expect(owned().has('plate-tracks')).toBe(true);
+  expect(owned().has('plate-mosaic')).toBe(false);
+  expect(equip('nameplate', 'plate-tracks')).toBe(true);
 });
