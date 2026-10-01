@@ -1,0 +1,20 @@
+<en-US>
+Nameplates, a new player card and more to climb for in Hustle.
+
+- Your card is now your standings row: nameplate behind it, up to four badges, coloured by rarity
+- 12 nameplates: 7 for coins, 5 only from Hustle
+- Hustle: own achievements and three themes you can't buy (Ocean, Inferno, Casino); fairer difficulty per type
+- Zip marks cells your path can no longer reach
+- Flairs count every level you solved
+- Slabs: turn a slab while you drag it
+</en-US>
+<de-DE>
+Nameplates, eine neue Spielerkarte und mehr zu holen im Hustle.
+
+- Deine Karte ist jetzt deine Bestenlisten-Zeile: Nameplate dahinter, bis zu vier Badges, nach Seltenheit gefärbt
+- 12 Nameplates: 7 für Coins, 5 nur aus dem Hustle
+- Hustle: eigene Achievements und drei Themes, die man nicht kaufen kann (Ocean, Inferno, Casino); fairere Schwierigkeit je Typ
+- Zip markiert Felder, die dein Weg nicht mehr erreicht
+- Flairs zählen jedes gelöste Level
+- Slabs: Stein beim Ziehen drehen
+</de-DE>
