@@ -99,7 +99,7 @@ and only unlocks Social (groups and daily standings). All puzzles, hints and the
 without it. To test: open the Profile tab, tap Sign in and choose the Google account above, then
 tap the Social row on Profile. The account is already a member of the group "Review" with
 submitted times, so Social shows standings right away.
-The one-time purchase "No Ads · Free Hints" only replaces hint videos; no content requires it."
+The one-time purchase "No Ads · Free Hints" makes every hint free, so no video is needed; no content requires it."
 The box "credentials grant unrestricted access, including premium content" is ticked.
 
 **Data safety:** Data is collected, none is shared. Encrypted in transit: yes (HTTPS only). Users
@@ -110,8 +110,8 @@ can request deletion: yes. Collection of the account data is optional (only when
 | Personal info: Name | Display name, chosen or generated ("Player 1234") | App functionality |
 | Personal info: User IDs | Google or Apple subject ID and the internal player ID | App functionality, account management |
 | App activity: Other actions | Daily, Weekly and Monthly times with hints, moves and solve time; group memberships; Hustle level (highest stage reached) | App functionality |
-| App activity: Other user-generated content | Group names; equipped badge and flair ids from a fixed list; reports on names | App functionality |
-| App activity: App interactions | Anonymous usage events (`POST /events`): app opened on a day, intro finished or skipped, puzzle solved or left with type, difficulty, time, moves, hints. No ID, day granularity, deleted after about 13 months. Optional: "Anonymous stats" switch in Profile | Analytics |
+| App activity: Other user-generated content | Group names; showcase badges (up to four), equipped flair and nameplate as ids from a fixed list; reports on names | App functionality |
+| App activity: App interactions | Anonymous usage events (`POST /events`): app opened on a day, intro finished or skipped, puzzle solved or left with type, difficulty, mode (Daily, Weekly, Monthly, level, random, Hustle) with level number or Hustle stage, time, moves, hints, resumed, first of its type; each event also carries platform, build and an install-age bucket. No ID, day granularity, deleted after about 13 months. Optional: "Anonymous stats" switch in Profile | Analytics |
 | Device or other IDs | Advertising ID, processed by the AdMob SDK | Advertising or marketing |
 
 Not collected: email address (the server reads only `sub` from the Google token), purchase history
@@ -134,8 +134,8 @@ whole app, so a type counts as linked when any collector links it.
 
 | Data type | Source | Purposes | Linked | Tracking |
 | --- | --- | --- | --- | --- |
-| Gameplay Content | leaderboard times | App Functionality | yes | no |
-| Other User Content | display name, group names, badge/flair, reports | App Functionality | yes | no |
+| Gameplay Content | leaderboard times, Hustle level | App Functionality | yes | no |
+| Other User Content | display name, group names, badges/flair/nameplate, reports | App Functionality | yes | no |
 | User ID | Apple subject ID, player ID | App Functionality | yes | no |
 | Product Interaction | usage events (not linked) and AdMob (linked) | Analytics, Third-Party Advertising, Developer's Advertising | yes | no |
 | Coarse Location | AdMob, from the IP | Analytics, Third-Party Advertising, Developer's Advertising | yes | no |
