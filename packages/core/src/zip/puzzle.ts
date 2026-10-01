@@ -377,6 +377,35 @@ export function zipOrderBreak(spec: ZipSpec, state: ZipState): number | null {
   return null;
 }
 
+// Empty cells the path can no longer reach: not connected to its head through empty cells (walls
+// count), or every empty cell once the path has ended on the highest number. Any of them means
+// the path as drawn cannot fill the board.
+export function zipStranded(spec: ZipSpec, state: ZipState): number[] {
+  const n = spec.config.size;
+  const total = n * n;
+  if (state.length === 0 || state.length >= total) return [];
+  const inPath = new Uint8Array(total);
+  for (const cell of state) inPath[cell] = 1;
+  const head = state[state.length - 1]!;
+  const reached = new Uint8Array(total);
+  if (spec.numbers[head] !== zipNumberCount(spec)) {
+    const queue = [head];
+    while (queue.length > 0) {
+      const cell = queue.pop()!;
+      const r = Math.floor(cell / n);
+      const c = cell % n;
+      for (const next of [r > 0 ? cell - n : -1, c < n - 1 ? cell + 1 : -1, r < n - 1 ? cell + n : -1, c > 0 ? cell - 1 : -1]) {
+        if (next < 0 || inPath[next] || reached[next] || !zipStepAllowed(spec, cell, next)) continue;
+        reached[next] = 1;
+        queue.push(next);
+      }
+    }
+  }
+  const out: number[] = [];
+  for (let i = 0; i < total; i++) if (!inPath[i] && !reached[i]) out.push(i);
+  return out;
+}
+
 export function isZipSolved(spec: ZipSpec, state: ZipState): boolean {
   const total = spec.config.size * spec.config.size;
   if (state.length !== total) return false;

@@ -38,9 +38,9 @@ it('earns an activity flair once its achievement unlocks', () => {
   expect(earnedFlairs(solves, EPOCH).has('puzzler')).toBe(true);
 });
 
-it('ignores solves from before the epoch for both requirement kinds', () => {
+it('counts pack levels solved before the epoch, as the level grid does, but not achievements', () => {
   const earlyPack = fullPack('zip', 'easy', BEFORE);
-  expect(earnedFlairs(earlyPack, EPOCH).has('basic-zipper')).toBe(false);
+  expect(earnedFlairs(earlyPack, EPOCH).has('basic-zipper')).toBe(true);
 
   const earlyDaily = solve('zip:daily:2025-06-01', BEFORE);
   expect(earnedFlairs([earlyDaily], EPOCH).has('night-shift')).toBe(false);
@@ -64,12 +64,12 @@ it('level numbers outside the pack do not count towards completing it', () => {
 it('packProgress counts solved levels within the pack and reports the total', () => {
   const n = levelList('zip', 'easy').length;
   const half = Array.from({ length: Math.floor(n / 2) }, (_, i) => solve(`zip:level:easy:${i + 1}`));
-  expect(packProgress(half, 'zip', 'easy', EPOCH)).toEqual({ solved: half.length, total: n });
-  expect(packProgress([], 'zip', 'easy', EPOCH)).toEqual({ solved: 0, total: n });
+  expect(packProgress(half, 'zip', 'easy')).toEqual({ solved: half.length, total: n });
+  expect(packProgress([], 'zip', 'easy')).toEqual({ solved: 0, total: n });
 });
 
-it('packProgress does not count a level number outside the pack, or a pre-epoch solve', () => {
+it('packProgress does not count a level number outside the pack, but counts a pre-epoch solve', () => {
   const n = levelList('zip', 'easy').length;
   const solves = [solve('zip:level:easy:1'), solve(`zip:level:easy:${n + 1}`), solve('zip:level:easy:2', BEFORE)];
-  expect(packProgress(solves, 'zip', 'easy', EPOCH)).toEqual({ solved: 1, total: n });
+  expect(packProgress(solves, 'zip', 'easy')).toEqual({ solved: 2, total: n });
 });

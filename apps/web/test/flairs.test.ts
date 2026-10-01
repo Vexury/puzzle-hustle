@@ -4,6 +4,7 @@ import { ACHIEVEMENTS_EPOCH, levelList } from '@puzzle-hustle/core';
 vi.mock('../src/components/UnlockModal.tsx', () => ({ announceUnlock: vi.fn() }));
 
 import { syncFlairs } from '../src/lib/flairs.ts';
+import { owned } from '../src/lib/coins.ts';
 import { announceUnlock } from '../src/components/UnlockModal.tsx';
 import { recordSolve, rehydrate, resetProgress } from '../src/lib/storage.ts';
 
@@ -53,6 +54,17 @@ it('does not write ph:flairs on a sync that changes nothing, notably a clean ins
 it('resetProgress also clears the announced-flairs list', () => {
   localStorage.setItem('ph:flairs', JSON.stringify(['basic-zipper']));
   resetProgress();
+  expect(localStorage.getItem('ph:flairs')).toBeNull();
+});
+
+it('earns a pack flair for levels solved before the epoch, and loses it on a progress reset', () => {
+  const n = levelList('zip', 'easy').length;
+  const before = new Date(ACHIEVEMENTS_EPOCH - 86400000).toISOString();
+  for (let i = 1; i <= n; i++) recordSolve(`zip:level:easy:${i}`, { solvedAt: before, seconds: 60, hints: 0, moves: 10 });
+  expect(owned().has('basic-zipper')).toBe(true);
+  resetProgress();
+  expect(owned().has('basic-zipper')).toBe(false);
+  syncFlairs();
   expect(localStorage.getItem('ph:flairs')).toBeNull();
 });
 

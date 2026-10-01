@@ -1,4 +1,4 @@
-import { isZipSolved, zipOrderBreak, type ZipSpec, type ZipState } from '@puzzle-hustle/core';
+import { isZipSolved, zipOrderBreak, zipStranded, type ZipSpec, type ZipState } from '@puzzle-hustle/core';
 import { HintMark } from '../components/HintMark.tsx';
 import './zip.css';
 
@@ -21,6 +21,9 @@ export function ZipBoard({ spec, path, mistakes, flash = null, highlight, ...res
   const wrong = new Uint8Array(n * n);
   if (brk !== null) for (const cell of path.slice(brk + 1)) wrong[cell] = 1;
   const pointsOf = (cells: ZipState) => cells.map((cell) => `${(cell % n) + 0.5},${Math.floor(cell / n) + 0.5}`).join(' ');
+  // Cells the path can no longer reach, hatched like the wrong path is red: the drawn path cannot fill the board.
+  const stranded = new Uint8Array(n * n);
+  if (mistakes && !solved) for (const cell of zipStranded(spec, path)) stranded[cell] = 1;
   const good = brk === null ? path : path.slice(0, brk + 1);
   const bad = brk === null ? [] : path.slice(brk);
 
@@ -28,12 +31,14 @@ export function ZipBoard({ spec, path, mistakes, flash = null, highlight, ...res
   const walls: React.ReactNode[] = [];
   const numbers: React.ReactNode[] = [];
   const hl: React.ReactNode[] = [];
+  const cut: React.ReactNode[] = [];
   for (let i = 0; i < n * n; i++) {
     const r = Math.floor(i / n);
     const c = i % n;
     const cls = ['zip-cell'];
     if (inPath[i]) cls.push('filled');
     cells.push(<rect key={i} className={cls.join(' ')} x={c} y={r} width={1} height={1} data-i={i} />);
+    if (stranded[i]) cut.push(<rect key={`s${i}`} className="zip-stranded" x={c} y={r} width={1} height={1} />);
     if (highlight?.includes(i)) hl.push(<rect key={`h${i}`} className="zip-hl" x={c + 0.06} y={r + 0.06} width={0.88} height={0.88} rx={0.08} />);
     const w = spec.walls[i]!;
     if (w & 2) walls.push(<line key={`w${i}r`} className="zip-wall" x1={c + 1} y1={r} x2={c + 1} y2={r + 1} />);
@@ -54,7 +59,13 @@ export function ZipBoard({ spec, path, mistakes, flash = null, highlight, ...res
   return (
     <div className={solved ? 'zip-board board-frame solved' : 'zip-board board-frame'}>
       <svg className="zip-svg" viewBox={`0 0 ${n} ${n}`} {...rest}>
+        <defs>
+          <pattern id="zip-hatch" width={0.2} height={0.2} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <rect className="zip-hatch-line" width={0.07} height={0.2} />
+          </pattern>
+        </defs>
         <g className="zip-cells">{cells}</g>
+        {cut}
         {hl}
         {flash !== null && <HintMark x={flash % n} y={Math.floor(flash / n)} />}
         {good.length > 1 && <polyline className="zip-path" points={pointsOf(good)} />}

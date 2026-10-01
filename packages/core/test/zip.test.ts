@@ -13,6 +13,7 @@ import {
   zipProgress,
   zipStart,
   zipStepAllowed,
+  zipStranded,
   type ZipSpec,
 } from '../src/zip/puzzle.ts';
 import { countZipSolutions, isZipUnique, zipCanonicalKey, zipDifficultyReport, zipWallCount } from '../src/zip/solver.ts';
@@ -180,6 +181,28 @@ describe('state helpers', () => {
     expect(isZipSolved(spec, overrun)).toBe(false);
     expect(zipPathValid(spec, overrun.slice(0, 3))).toBe(true);
     expect(zipPathValid(spec, overrun.slice(0, 4))).toBe(false);
+  });
+
+  it('finds empty cells the path can no longer reach', () => {
+    const spec: ZipSpec = {
+      version: ZIP_VERSION,
+      seed: 0,
+      difficulty: 'easy',
+      config: { size: 3, numbers: 2, walls: 0 },
+      numbers: Uint8Array.from([1, 0, 0, 0, 0, 0, 0, 0, 2]),
+      walls: new Uint8Array(9),
+      solution: Uint16Array.from([0, 1, 2, 5, 4, 3, 6, 7, 8]),
+    };
+    expect(zipStranded(spec, [])).toEqual([]);
+    expect(zipStranded(spec, [0, 1, 2, 5, 4])).toEqual([]);
+    expect(zipStranded(spec, [...spec.solution])).toEqual([]);
+    // The head at 3 is boxed in by its own path; 2, 5 and 8 are cut off.
+    expect(zipStranded(spec, [0, 1, 4, 7, 6, 3])).toEqual([2, 5, 8]);
+    // Ended on the highest number with cells left: every empty cell is stranded.
+    expect(zipStranded(spec, [0, 3, 4, 5, 8])).toEqual([1, 2, 6, 7]);
+    // A wall below 2 leaves the head nowhere to go.
+    const walled = { ...spec, walls: Uint8Array.from([0, 0, 4, 0, 0, 1, 0, 0, 0]) };
+    expect(zipStranded(walled, [0, 1, 2])).toEqual([3, 4, 5, 6, 7, 8]);
   });
 
   it('finds where the order breaks, back to the last number reached rightly', () => {

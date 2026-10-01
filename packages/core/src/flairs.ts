@@ -8,11 +8,12 @@ import type { Difficulty, PuzzleTypeId } from './types.ts';
 // Distinct level numbers solved per type:difficulty pack, from `type:level:difficulty:n` solves
 // only. A number outside 1..levelList(type, difficulty).length is kept here (it is still a real
 // solve) but never counts towards completing or displaying the pack, since the pack only has
-// that many levels.
-function solvedLevelsByPack(solves: readonly SolveEntry[], epoch: number): Map<string, Set<number>> {
+// that many levels. No epoch here, unlike achievements: the level grid shows every solve as
+// solved, and a pack flair counts the same levels, so the two never disagree. A progress reset
+// removes the solves and with them the flair.
+function solvedLevelsByPack(solves: readonly SolveEntry[]): Map<string, Set<number>> {
   const out = new Map<string, Set<number>>();
   for (const entry of solves) {
-    if (entry.solvedAt < epoch) continue;
     const parsed = parseSolveId(entry.id);
     if (!parsed || parsed.mode !== 'level' || parsed.level === undefined) continue;
     const key = `${parsed.type}:${parsed.difficulty}`;
@@ -35,17 +36,16 @@ export function packProgress(
   solves: readonly SolveEntry[],
   type: PuzzleTypeId,
   difficulty: Difficulty,
-  epoch: number = ACHIEVEMENTS_EPOCH,
 ): { solved: number; total: number } {
   const total = levelList(type, difficulty).length;
-  const levels = solvedLevelsByPack(solves, epoch).get(`${type}:${difficulty}`);
+  const levels = solvedLevelsByPack(solves).get(`${type}:${difficulty}`);
   let solved = 0;
   if (levels) for (const n of levels) if (n >= 1 && n <= total) solved++;
   return { solved, total };
 }
 
 export function earnedFlairs(solves: readonly SolveEntry[], epoch: number = ACHIEVEMENTS_EPOCH): Set<string> {
-  const levels = solvedLevelsByPack(solves, epoch);
+  const levels = solvedLevelsByPack(solves);
   const unlocked = unlockedAchievements(solves, epoch);
   const hustle = hustleSolved(solves, epoch);
   const out = new Set<string>();
