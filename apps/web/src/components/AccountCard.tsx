@@ -88,7 +88,7 @@ export function ProfileHero({ joinCode = null }: { joinCode?: string | null } = 
     <section className={`streak-hero profile-hero${streaks.current > 0 ? ' has-streak' : ''}`}>
       {/* Plates leave room on the right for the time pill of a standings row; the showcase is wider,
           so the art moves left by the difference and the badges never cover its motif. */}
-      <div className={`profile-row${plateClass(equipped.nameplate)}`} style={{ '--showcase-w': `${Math.max(0, equipped.badges.length * 24 + 26 - TIME_PILL)}px` } as CSSProperties}>
+      <div className={`player-row${plateClass(equipped.nameplate)}`} style={{ '--showcase-w': `${Math.max(0, equipped.badges.length * 24 + 26 - TIME_PILL)}px` } as CSSProperties}>
         <NameplateArt id={equipped.nameplate} />
         <div className="profile-who">
           {editing ? (
