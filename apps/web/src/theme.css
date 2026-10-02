@@ -567,7 +567,7 @@ p { margin: 0; }
 .standings-dot.on { width: 34px; }
 .standings-dot.on::before { width: 26px; background: var(--dot-c); }
 .standings-viewport { margin-inline: -16px; overflow: hidden; touch-action: pan-y; }
-.standings-track { display: flex; gap: 10px; transform: translateX(calc(20px - var(--i) * (100% - 30px) + var(--drag))); transition: transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.standings-track { display: flex; align-items: flex-start; gap: 10px; transform: translateX(calc(20px - var(--i) * (100% - 30px) + var(--drag))); transition: transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .standings-track.dragging { transition: none; }
 .standings-card { flex: 0 0 calc(100% - 40px); min-width: 0; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; padding: 12px; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
 .standings-head { display: flex; flex-direction: column; padding: 2px 4px 4px; }
