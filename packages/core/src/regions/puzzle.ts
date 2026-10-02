@@ -5,8 +5,9 @@ import { REGIONS_MARKED_EMPTY, enumerateRegionsSolutions, regionsNeighbors, regi
 export { REGIONS_MARKED_EMPTY } from './solver.ts';
 
 export const REGIONS_VERSION = 1;
-// Stars (Hearts) apart from Crowns since 2026-10-02: version 2 keeps blind regions out of medium.
-export const STARS_VERSION = 2;
+// Stars (Hearts) apart from Crowns since 2026-10-02: version 2 keeps blind regions out of medium,
+// version 3 moves easy from 8x8 to 9x9.
+export const STARS_VERSION = 3;
 
 export interface RegionsConfig {
   size: number;
@@ -35,8 +36,10 @@ export const CROWNS_PRESETS: Record<Difficulty, RegionsConfig> = {
   genius: { size: 11, stars: 1 },
 };
 
+// Easy is 9x9 like medium (2026-10-02): an 8x8 with two stars allows only two layouts, the
+// same 4x4 lattice and its mirror on every board. Easy stays easier by keeping blind regions.
 export const STARS_PRESETS: Record<Difficulty, RegionsConfig> = {
-  easy: { size: 8, stars: 2 },
+  easy: { size: 9, stars: 2 },
   medium: { size: 9, stars: 2 },
   hard: { size: 10, stars: 2 },
   genius: { size: 12, stars: 2 },

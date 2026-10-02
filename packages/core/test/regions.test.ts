@@ -139,7 +139,13 @@ describe('solver', () => {
     const r = regionsDifficultyReport(generateStars(3, 'easy'));
     expect(r.score).toBeGreaterThan(0);
     expect(r.nodes).toBeGreaterThan(0);
-    expect(r.cells).toBe(64);
+    expect(r.cells).toBe(81);
+  });
+
+  // An 8x8 easy only ever had the same lattice of hearts and its mirror.
+  it('varies the hearts layout on easy', () => {
+    const layouts = new Set(Array.from({ length: 10 }, (_, i) => generateStars(i + 1, 'easy').solution.join('')));
+    expect(layouts.size).toBeGreaterThan(2);
   });
 });
 

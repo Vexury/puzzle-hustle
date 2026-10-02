@@ -5,7 +5,7 @@
     "nonogram": 3,
     "mosaic": 2,
     "crowns": 1,
-    "stars": 2,
+    "stars": 3,
     "sudoku": 1,
     "killer": 2,
     "zip": 1,
@@ -1976,124 +1976,124 @@
     "stars": {
       "easy": [
         {
-          "seed": 1035,
-          "score": 30.3
+          "seed": 1016,
+          "score": 42.4
         },
         {
-          "seed": 1012,
-          "score": 36.3
-        },
-        {
-          "seed": 1171,
-          "score": 38.3
-        },
-        {
-          "seed": 1062,
-          "score": 42.3
-        },
-        {
-          "seed": 1174,
-          "score": 42.3
-        },
-        {
-          "seed": 1072,
-          "score": 48.1
-        },
-        {
-          "seed": 1147,
-          "score": 50.8
-        },
-        {
-          "seed": 1094,
-          "score": 51.3
-        },
-        {
-          "seed": 1148,
-          "score": 51.9
-        },
-        {
-          "seed": 1160,
+          "seed": 1020,
           "score": 52.9
         },
         {
-          "seed": 1122,
+          "seed": 1024,
           "score": 53.8
         },
         {
-          "seed": 1067,
-          "score": 54.1
-        },
-        {
-          "seed": 1128,
-          "score": 54.4
-        },
-        {
-          "seed": 1138,
-          "score": 54.5
-        },
-        {
-          "seed": 1157,
-          "score": 55
-        },
-        {
-          "seed": 1135,
+          "seed": 1086,
           "score": 55.6
         },
         {
-          "seed": 1060,
-          "score": 56.3
+          "seed": 1053,
+          "score": 56.6
         },
         {
-          "seed": 1081,
-          "score": 56.9
+          "seed": 1041,
+          "score": 57.9
         },
         {
-          "seed": 1190,
-          "score": 56.9
-        },
-        {
-          "seed": 1043,
-          "score": 57.5
-        },
-        {
-          "seed": 1130,
+          "seed": 1062,
           "score": 58.1
         },
         {
-          "seed": 1065,
-          "score": 58.8
+          "seed": 1069,
+          "score": 60.2
         },
         {
-          "seed": 1123,
-          "score": 59.4
+          "seed": 1042,
+          "score": 60.7
         },
         {
-          "seed": 1113,
-          "score": 60
+          "seed": 1039,
+          "score": 61
         },
         {
-          "seed": 1049,
-          "score": 60.6
-        },
-        {
-          "seed": 1127,
+          "seed": 1073,
           "score": 61.2
         },
         {
-          "seed": 1097,
-          "score": 62.8
+          "seed": 1017,
+          "score": 61.6
         },
         {
-          "seed": 1084,
-          "score": 63.6
+          "seed": 1038,
+          "score": 62
         },
         {
-          "seed": 1149,
-          "score": 65.2
+          "seed": 1081,
+          "score": 63.9
         },
         {
-          "seed": 1117,
-          "score": 65.9
+          "seed": 1021,
+          "score": 64.3
+        },
+        {
+          "seed": 1033,
+          "score": 64.6
+        },
+        {
+          "seed": 1001,
+          "score": 65.8
+        },
+        {
+          "seed": 1077,
+          "score": 66.1
+        },
+        {
+          "seed": 1002,
+          "score": 66.6
+        },
+        {
+          "seed": 1006,
+          "score": 66.8
+        },
+        {
+          "seed": 1070,
+          "score": 67.5
+        },
+        {
+          "seed": 1034,
+          "score": 69.2
+        },
+        {
+          "seed": 1088,
+          "score": 70
+        },
+        {
+          "seed": 1087,
+          "score": 70.7
+        },
+        {
+          "seed": 1030,
+          "score": 71.4
+        },
+        {
+          "seed": 1027,
+          "score": 71.8
+        },
+        {
+          "seed": 1059,
+          "score": 73.4
+        },
+        {
+          "seed": 1014,
+          "score": 73.7
+        },
+        {
+          "seed": 1083,
+          "score": 74.9
+        },
+        {
+          "seed": 1065,
+          "score": 77.6
         }
       ],
       "medium": [
