@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { HAPTICS_KEY, hapticsAvailable, tap } from '../lib/haptics.ts';
+import * as sound from '../lib/sound.ts';
 import { MISTAKES_KEY, showMistakes } from '../lib/mistakes.ts';
 import { readSetting, writeSetting } from '../lib/storage.ts';
 import { SubpageHead } from '../components/SubpageHead.tsx';
 
 export function Gameplay() {
   const [numberHighlight, setNumberHighlight] = useState(readSetting('ph:sudokuHighlight') !== '0');
+  const [soundOn, setSoundOn] = useState(readSetting(sound.SOUND_KEY) !== '0');
   const [hapticsOn, setHapticsOn] = useState(readSetting(HAPTICS_KEY) !== '0');
   const [mistakes, setMistakes] = useState(showMistakes);
 
@@ -29,6 +31,16 @@ export function Gameplay() {
           onChange={(on) => {
             setMistakes(on);
             writeSetting(MISTAKES_KEY, on ? '1' : '0');
+          }}
+        />
+        <OnOff
+          title="Sound effects"
+          text="A soft click with every move and a chime when a puzzle is solved."
+          value={soundOn}
+          onChange={(on) => {
+            setSoundOn(on);
+            writeSetting(sound.SOUND_KEY, on ? '1' : '0');
+            sound.tap();
           }}
         />
         {hapticsAvailable && (

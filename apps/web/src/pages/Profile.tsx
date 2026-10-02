@@ -63,7 +63,7 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
       <h2 className="section-h">Settings</h2>
       <div className="stack section-body">
         <Row to="/shop" icon={<BrushIcon />} title="Customize" sub="Theme, nameplate, badges, flair" />
-        <Row to="/gameplay" icon={<GearIcon />} title="Gameplay" sub="Highlights, mistakes, haptics" />
+        <Row to="/gameplay" icon={<GearIcon />} title="Gameplay" sub="Highlights, mistakes, sound, haptics" />
         <Row to="/account" icon={<PersonIcon />} title="Account" sub={session ? `Signed in with ${isAppleSession() ? 'Apple' : 'Google'}` : 'Purchase, stats, reset'} />
       </div>
 

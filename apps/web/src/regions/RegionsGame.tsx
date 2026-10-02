@@ -4,6 +4,7 @@ import { RegionsBoard } from './RegionsBoard.tsx';
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import { press } from '../lib/haptics.ts';
+import * as sound from '../lib/sound.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
 import { showMistakes } from '../lib/mistakes.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
@@ -104,6 +105,7 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
         d.paint = toggleX(current);
         setCell(idx, d.paint);
         press();
+        sound.press();
       }, LONG_PRESS_MS);
     }
     drag.current = d;

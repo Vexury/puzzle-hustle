@@ -7,6 +7,7 @@ import { pushBackGuard } from '../lib/back.ts';
 import { equip, useEquipped } from '../lib/coins.ts';
 import { requirementText } from '../lib/flairs.ts';
 import * as haptics from '../lib/haptics.ts';
+import * as sound from '../lib/sound.ts';
 import { equipPack } from '../lib/theme.ts';
 import { INTRO_SEEN_KEY, readSetting } from '../lib/storage.ts';
 import { Flame } from '../pages/Daily.tsx';
@@ -284,6 +285,7 @@ export function UnlockModalHost() {
   useEffect(() => {
     if (!visible) return;
     haptics.solved();
+    sound.unlock();
     if (!reducedMotion()) fireConfetti();
   }, [visible]);
 

@@ -18,6 +18,7 @@ import {
   type TracksState,
 } from '@puzzle-hustle/core';
 import { press } from '../lib/haptics.ts';
+import * as sound from '../lib/sound.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
@@ -135,6 +136,7 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
       d.timer = setTimeout(() => {
         hold();
         press();
+        sound.press();
       }, LONG_PRESS_MS);
   }
 

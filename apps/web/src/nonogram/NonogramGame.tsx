@@ -5,6 +5,7 @@ import { NonogramBoard } from './NonogramBoard.tsx';
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import { press } from '../lib/haptics.ts';
+import * as sound from '../lib/sound.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
 import { showMistakes } from '../lib/mistakes.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
@@ -117,6 +118,7 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
         d.applied = true;
         setCells([idx], d.value);
         press();
+        sound.press();
       }, LONG_PRESS_MS);
     }
     drag.current = d;
