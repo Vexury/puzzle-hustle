@@ -11,6 +11,7 @@ import {
   slabsOccupancy,
   slabsPivotCell,
   slabsPlace,
+  slabsRegionStatus,
   slabsRotate,
   slabsToTray,
   validSlabsState,
@@ -23,6 +24,7 @@ import { ResetButton } from '../components/ResetButton.tsx';
 import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 import * as sound from '../lib/sound.ts';
 import type { Cue, CueOpts } from '../lib/sound.ts';
+import { playFeedback, type Units } from '../lib/feedback.ts';
 import { showMistakes } from '../lib/mistakes.ts';
 import { SlabShape, SlabsBoard, SlabsTray, trayCentres, type SlabsPending as Pending } from './SlabsBoard.tsx';
 
@@ -107,6 +109,10 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
   const trayRef = useRef<HTMLDivElement>(null);
   const history = useHistory<SlabsState>();
   const mistakes = useRef(showMistakes()).current;
+  const units = (s: SlabsState): Units => {
+    const status = slabsRegionStatus(spec, s);
+    return { done: status.map((v) => v === 'done'), broken: mistakes ? status.map((v) => v === 'broken') : [] };
+  };
   const solved = isSlabsSolved(spec, state);
 
   useEffect(() => {
@@ -140,9 +146,11 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
 
   function commit(next: SlabsState, cue?: Cue) {
     setPending(null);
+    const before = stateRef.current;
     stateRef.current = next;
     setState(next);
     onMove(cue);
+    playFeedback(cue, units, before, next, isSlabsSolved(spec, next));
     onStateChange?.([...next]);
   }
 

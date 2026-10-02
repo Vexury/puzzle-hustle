@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { emptyZipState, isZipSolved, zipHint, zipStart, zipStepAllowed, type ZipSpec, type ZipState } from '@puzzle-hustle/core';
+import { emptyZipState, isZipSolved, zipHint, zipOrderBreak, zipStart, zipStepAllowed, zipStranded, type ZipSpec, type ZipState } from '@puzzle-hustle/core';
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import { showMistakes } from '../lib/mistakes.ts';
 import type { Cue, CueOpts } from '../lib/sound.ts';
+import { playFeedback, type Units } from '../lib/feedback.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
 import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 import { ZipBoard } from './ZipBoard.tsx';
@@ -103,6 +104,14 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintA
   const svgRef = useRef<SVGSVGElement>(null);
   const history = useHistory<ZipState>();
   const mistakes = useRef(showMistakes()).current;
+  // Zip has no checkpoints: easy boards number most cells, and the step ladder already climbs.
+  const units = (p: ZipState): Units => {
+    if (!mistakes) return { done: [], broken: [] };
+    const broken = new Array<boolean>(n * n + 1).fill(false);
+    for (const cell of zipStranded(spec, p)) broken[cell] = true;
+    broken[n * n] = zipOrderBreak(spec, p) !== null;
+    return { done: [], broken };
+  };
   const solved = isZipSolved(spec, path);
 
   useEffect(() => {
@@ -110,9 +119,11 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintA
   }, [solved, onSolved]);
 
   function commit(next: ZipState, cue?: Cue, opts?: CueOpts) {
+    const before = pathRef.current;
     pathRef.current = next;
     setPath(next);
     onMove(cue, opts);
+    playFeedback(cue, units, before, next, isZipSolved(spec, next));
     onStateChange?.([...next]);
   }
 

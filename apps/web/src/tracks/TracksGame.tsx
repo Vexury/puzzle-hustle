@@ -8,6 +8,7 @@ import {
   tracksCycleMark,
   tracksHasEdge,
   tracksHint,
+  tracksLineCounts,
   tracksMask,
   tracksPaintMark,
   tracksReroute,
@@ -18,6 +19,7 @@ import {
   type TracksState,
 } from '@puzzle-hustle/core';
 import type { Cue, CueOpts } from '../lib/sound.ts';
+import { playFeedback, type Units } from '../lib/feedback.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
@@ -66,6 +68,12 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
   const svgRef = useRef<SVGSVGElement>(null);
   const history = useHistory<TracksState>();
   const mistakes = useRef(showMistakes()).current;
+  const units = (s: TracksState): Units => {
+    const counts = tracksLineCounts(spec, s);
+    const have = [...counts.rows, ...counts.cols];
+    const want = [...spec.rowCounts, ...spec.colCounts];
+    return { done: have.map((h, i) => h === want[i]), broken: mistakes ? have.map((h, i) => h > want[i]!) : [] };
+  };
   const solved = isTracksSolved(spec, state);
   // The train runs for a solve made here, not for a board that opened solved.
   const openedSolved = useRef(solved).current;
@@ -76,9 +84,11 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
   }, [solved, onSolved]);
 
   function commit(next: TracksState, cue?: Cue) {
+    const before = stateRef.current;
     stateRef.current = next;
     setState(next);
     onMove(cue);
+    playFeedback(cue, units, before, next, isTracksSolved(spec, next));
     onStateChange?.([...next]);
   }
 

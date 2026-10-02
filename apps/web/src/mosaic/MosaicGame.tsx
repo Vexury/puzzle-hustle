@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { MOSAIC_MARKED_EMPTY, emptyMosaicState, isMosaicSolved, mosaicHint, type MosaicSpec, type MosaicState } from '@puzzle-hustle/core';
+import { MOSAIC_MARKED_EMPTY, emptyMosaicState, isMosaicSolved, mosaicClueBroken, mosaicClueSatisfied, mosaicHint, type MosaicSpec, type MosaicState } from '@puzzle-hustle/core';
 import { useZoomViewport } from '../lib/useZoomViewport.ts';
 import { MosaicBoard } from './MosaicBoard.tsx';
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import type { Cue, CueOpts } from '../lib/sound.ts';
+import { playFeedback, type Units } from '../lib/feedback.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
 import { showMistakes } from '../lib/mistakes.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
@@ -62,6 +63,11 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
   const [hintBusy, setHintBusy] = useState(false);
   const history = useHistory<MosaicState>();
   const mistakes = useRef(showMistakes()).current;
+  const clued = [...spec.clues.keys()].filter((i) => spec.clues[i]! >= 0);
+  const units = (s: MosaicState): Units => ({
+    done: clued.map((i) => mosaicClueSatisfied(spec, s, Math.floor(i / cols), i % cols)),
+    broken: mistakes ? clued.map((i) => mosaicClueBroken(spec, s, Math.floor(i / cols), i % cols)) : [],
+  });
   const stateRef = useRef(state);
   const drag = useRef<Drag | null>(null);
   const solved = isMosaicSolved(spec, state);
@@ -72,9 +78,11 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
   }, [solved, onSolved]);
 
   function commit(next: MosaicState, cue?: Cue) {
+    const before = stateRef.current;
     stateRef.current = next;
     setState(next);
     onMove(cue);
+    playFeedback(cue, units, before, next, isMosaicSolved(spec, next));
     onStateChange?.([...next]);
   }
 
