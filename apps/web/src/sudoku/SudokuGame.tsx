@@ -175,12 +175,12 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
         <>
           <SudokuPad remaining={remaining} lit={highlight} locked={locked} markDigits={highlightEnabled} onDigit={tapDigit} />
           <div className="tools">
-            <ResetButton onReset={reset} disabled={locked} />
             <ToolButton icon="notes" label="Notes" className={notesMode ? 'active' : ''} onClick={() => setNotesMode((v) => !v)} disabled={locked} pressed={notesMode} />
             <ToolButton icon="erase" label="Erase" onClick={erase} disabled={locked} />
             <ToolButton icon="undo" label="Undo" onClick={undo} disabled={locked || !history.canUndo} />
             <ToolButton icon="redo" label="Redo" onClick={redo} disabled={locked || !history.canRedo(state)} />
             <ToolButton icon="hint" label="Hint" onClick={useHint} disabled={locked || hintBusy} badge={hintAd ? <AdBadge /> : null} />
+            <ResetButton onReset={reset} disabled={locked} />
           </div>
         </>
       )}

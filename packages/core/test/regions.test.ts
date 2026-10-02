@@ -223,6 +223,15 @@ describe('hint', () => {
     }
   });
 
+  it('places a star once nothing is wrong', () => {
+    for (const spec of [generateCrowns(7, 'medium'), generateStars(7, 'medium')]) {
+      const state = emptyRegionsState(spec);
+      const h = regionsHint(spec, state)!;
+      expect(h.value).toBe(1);
+      expect(spec.solution[h.r * spec.config.size + h.c]).toBe(1);
+    }
+  });
+
   it('fixes a wrong star first', () => {
     const spec = generateCrowns(5, 'medium');
     const state = emptyRegionsState(spec);

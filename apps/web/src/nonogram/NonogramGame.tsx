@@ -240,10 +240,10 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
 
       {!solved && (
         <div className="tools">
-          <ResetButton onReset={reset} disabled={locked} />
           <ToolButton icon="undo" label="Undo" onClick={undo} disabled={locked || !history.canUndo} />
           <ToolButton icon="redo" label="Redo" onClick={redo} disabled={locked || !history.canRedo(state)} />
           <ToolButton icon="hint" label="Hint" onClick={useHint} disabled={locked || hintBusy} badge={hintAd ? <AdBadge /> : null} />
+          <ResetButton onReset={reset} disabled={locked} />
         </div>
       )}
     </div>

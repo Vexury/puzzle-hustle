@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { DAILY_TYPES, PUZZLE_META, dailyRef, periodRef, refId } from '@puzzle-hustle/core';
 import { ApiError, apiFetch, readSession } from '../lib/api.ts';
 import { useSession } from '../lib/auth.ts';
@@ -85,10 +85,15 @@ export function activeGroup(groups: Group[], selected: string | null): Group | n
 // How long an armed Leave stays armed, as for Reset on Profile.
 const CONFIRM_MS = 2000;
 
+function socialPuzzles() {
+  return [...DAILY_TYPES.map((type) => dailyRef(type)), periodRef('weekly'), periodRef('monthly')];
+}
+
 // Groups and standings, a page under Profile. Only with a session: without an account there is
 // nothing here, and a player who just wants to solve never sees times to compare. An invitation
-// link (/join?c=CODE) lands here with the join field prefilled.
-export function Social({ code: initialCode = '' }: { code?: string } = {}) {
+// link (/join?c=CODE) lands here with the join field prefilled; the placement chip after a solve
+// (/social?g=GROUP&p=PUZZLE) opens those standings.
+export function Social({ code: initialCode = '', group = null, puzzle: initialPuzzle = null }: { code?: string; group?: string | null; puzzle?: string | null } = {}) {
   const session = useSession();
   const { groups, reload, loading, failed } = useGroups();
   const [name, setName] = useState('');
@@ -98,8 +103,10 @@ export function Social({ code: initialCode = '' }: { code?: string } = {}) {
   // the first one has come back.
   const [creating, setCreating] = useState(false);
   const [joining, setJoining] = useState(false);
-  const [groupId, setGroupId] = useState<string | null>(null);
-  const [puzzleIndex, setPuzzleIndex] = useState(0);
+  const [groupId, setGroupId] = useState<string | null>(group);
+  const [puzzleIndex, setPuzzleIndex] = useState(() => Math.max(0, socialPuzzles().findIndex((ref) => refId(ref) === initialPuzzle)));
+  const standings = useRef<HTMLElement>(null);
+  const jumped = useRef(!group);
   const [leaving, setLeaving] = useState<string | null>(null);
 
   useEffect(() => {
@@ -107,6 +114,13 @@ export function Social({ code: initialCode = '' }: { code?: string } = {}) {
     const timer = setTimeout(() => setLeaving(null), CONFIRM_MS);
     return () => clearTimeout(timer);
   }, [leaving]);
+
+  // Once the standings exist, bring them into view for a link that asked for them.
+  useEffect(() => {
+    if (jumped.current || !standings.current) return;
+    jumped.current = true;
+    standings.current.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  });
 
   if (!session) return null;
 
@@ -121,7 +135,7 @@ export function Social({ code: initialCode = '' }: { code?: string } = {}) {
 
   // Nine generator runs a signed-out (or still-loading) player never needs, so this stays below
   // both early returns above and only runs once we know it will actually be rendered.
-  const puzzles = [...DAILY_TYPES.map((type) => dailyRef(type)), periodRef('weekly'), periodRef('monthly')];
+  const puzzles = socialPuzzles();
 
   const create = async () => {
     setCreating(true);
@@ -205,7 +219,7 @@ export function Social({ code: initialCode = '' }: { code?: string } = {}) {
         </div>
 
         {active && (
-          <section className="card-lg">
+          <section className="card-lg" ref={standings}>
             <h2>Standings</h2>
             {groups.length > 1 && (
               <div className="pill-row">

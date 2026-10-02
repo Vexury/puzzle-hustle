@@ -966,6 +966,8 @@ p { margin: 0; }
 .solved-chip.sweep { background: color-mix(in srgb, var(--flame) 16%, transparent); color: var(--flame); }
 .solved-chip.sweep .flame { vertical-align: 0; }
 .solved-chip.place { background: color-mix(in srgb, var(--text) 7%, transparent); color: var(--text); animation: solved-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+a.solved-chip.place { text-decoration: none; }
+a.solved-chip.place::after { content: '›'; margin-left: 2px; opacity: 0.6; }
 .solved-chip.place.gold { --medal: var(--gold); }
 .solved-chip.place.silver { --medal: var(--silver); }
 .solved-chip.place.bronze { --medal: var(--bronze); }

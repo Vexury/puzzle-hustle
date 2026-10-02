@@ -739,7 +739,8 @@ function Placement({ puzzle }: { puzzle: string }) {
   const group = groups[0] ?? null;
   const { board } = useBoard(group?.id ?? null, puzzle);
   if (!session || !group || !board?.me) return null;
-  return <PlacementChip rank={board.me} of={board.entries.length} group={group.name} />;
+  const to = `/social?${new URLSearchParams({ g: group.id, p: puzzle })}`;
+  return <PlacementChip rank={board.me} of={board.entries.length} group={group.name} to={to} />;
 }
 
 function ShareIcon() {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hustleDifficulty, hustleMilestoneCoins, hustleSlot, hustleType, HUSTLE_ROUND } from '../src/hustle.ts';
+import { hustleBoss, hustleDifficulty, hustleMilestoneCoins, hustleSlot, hustleType, HUSTLE_ROUND } from '../src/hustle.ts';
 import { PUZZLE_TYPES } from '../src/types.ts';
 import { decodeRef, encodeRef, hustleRef, hustleSeed, refId } from '../src/ref.ts';
 import { parseSolveId } from '../src/solveId.ts';
@@ -11,17 +11,26 @@ describe('hustle sequence', () => {
     expect([1, 40, 41, 120, 121, 300, 301, 5000].map(hustleDifficulty)).toEqual(['easy', 'easy', 'medium', 'medium', 'hard', 'hard', 'genius', 'genius']);
   });
 
-  it('plays every type once per round and never the same type twice in a row', () => {
-    for (let round = 0; round < 100; round++) {
-      const types = Array.from({ length: HUSTLE_ROUND }, (_, i) => hustleType(round * HUSTLE_ROUND + i + 1));
-      expect(new Set(types).size).toBe(PUZZLE_TYPES.length);
+  it('plays every fast type once per round and never the same type twice in a row', () => {
+    const fast = PUZZLE_TYPES.length - 2;
+    const stages = Array.from({ length: 2000 }, (_, i) => i + 1).filter((n) => hustleBoss(n) === null);
+    for (let i = 0; i + fast <= stages.length; i += fast) {
+      const types = stages.slice(i, i + fast).map(hustleType);
+      expect(new Set(types).size).toBe(fast);
+      expect(types).not.toContain('sudoku');
+      expect(types).not.toContain('killer');
     }
     for (let n = 2; n <= 1000; n++) expect(hustleType(n), `stage ${n}`).not.toBe(hustleType(n - 1));
   });
 
+  it('brings Sudoku every 25th stage and Sumdoku every 50th as bosses', () => {
+    expect([25, 50, 75, 100, 125, 150].map(hustleType)).toEqual(['sudoku', 'killer', 'sudoku', 'killer', 'sudoku', 'killer']);
+    expect([24, 26, 49, 51].map(hustleBoss)).toEqual([null, null, null, null]);
+  });
+
   it('keeps stage types fixed, so every player climbs the same sequence', () => {
     // Snapshot of hustleType(1..12) to guard against silent RNG/seed changes that would reshuffle progression
-    const expected = ['zip', 'mosaic', 'crowns', 'killer', 'shapes', 'sudoku', 'tracks', 'slabs', 'stars', 'nonogram', 'sudoku', 'nonogram'] as const;
+    const expected = ['nonogram', 'stars', 'zip', 'mosaic', 'tracks', 'slabs', 'crowns', 'shapes', 'mosaic', 'shapes', 'crowns', 'tracks'] as const;
     const actual = Array.from({ length: 12 }, (_, i) => hustleType(i + 1));
     expect(actual).toEqual(expected);
   });
@@ -38,12 +47,12 @@ describe('hustle sequence', () => {
 
 describe('hustle refs', () => {
   it('names a stage by its number alone', () => {
-    const ref = hustleRef(47);
-    expect(ref).toMatchObject({ hustle: 47, ...{ type: ref.type, difficulty: 'medium' } });
-    expect(refId(ref)).toBe('hustle:47');
-    expect(encodeRef(ref)).toBe('h=47');
-    expect(decodeRef('h=47')).toEqual(ref);
-    expect(decodeRef('h=47&t=zip&d=genius&s=abc')).toEqual(ref);
+    const ref = hustleRef(48);
+    expect(ref).toMatchObject({ hustle: 48, ...{ type: ref.type, difficulty: 'medium' } });
+    expect(refId(ref)).toBe('hustle:48');
+    expect(encodeRef(ref)).toBe('h=48');
+    expect(decodeRef('h=48')).toEqual(ref);
+    expect(decodeRef('h=48&t=zip&d=genius&s=abc')).toEqual(ref);
     expect(decodeRef('h=0')).toBeNull();
     expect(decodeRef('h=x')).toBeNull();
   });

@@ -4,7 +4,7 @@ Quelle ist die WhatsApp-Gruppe "Puzzle Hustle" (seit 18.09.2026) und die Einzelc
 Neue Punkte kommen unter "Offen", erledigte wandern mit Datum nach "Erledigt". Ein Punkt gehoert
 in denselben Commit wie sein Fix.
 
-Stand: 2026-10-01
+Stand: 2026-10-02
 
 ## Offen
 
@@ -40,6 +40,14 @@ Stand: 2026-10-01
 
 ## Erledigt
 
+- [x] 2026-10-02 **Robert** Direkt zur Bestenliste: die Rang-Pille der Ergebniskarte ("7th of 8 · OGs")
+  oeffnet Social mit dieser Gruppe und diesem Raetsel und scrollt zur Bestenliste.
+- [x] 2026-10-02 **Pia** Reset ganz rechts neben Hint, in allen Typen (siehe decisions.md, Danis Wunsch
+  vom 30.09. bleibt erfuellt).
+- [x] 2026-10-02 **Michi** Hint bei Hearts verriet ein offensichtliches X. Hints bei Cats und Hearts
+  setzen jetzt immer ein Symbol.
+- [x] 2026-10-02 **Jonas, goldenloop** Hustle: Sudoku und Sumdoku bremsen den Flow. Beide kommen nur
+  noch als Boss-Level, Sudoku auf jeder 25., Sumdoku auf jeder 50. Stufe.
 - [x] 2026-10-01 **goldenloop** Slabs: ein gedrehter Slab, der so nicht passt, sprang zurueck, auch
   wenn man ihn gerade verschieben wollte. Wer den gedrehten Slab festhaelt, nimmt ihn jetzt in der
   neuen Drehung mit, auch in die Ablage. Tippen dreht wie bisher weiter, ohne Beruehrung springt er

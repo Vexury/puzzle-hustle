@@ -95,7 +95,7 @@ export function App() {
   else if (route.path === '/levels') page = <LevelsIndex />;
   else if (route.path.startsWith('/levels/')) page = <LevelsType type={route.path.slice('/levels/'.length)} />;
   else if (route.path === '/join' && session) page = <Social code={route.params.get('c') ?? ''} />;
-  else if (route.path === '/social' && session) page = <Social />;
+  else if (route.path === '/social' && session) page = <Social group={route.params.get('g')} puzzle={route.params.get('p')} />;
   else if (route.path === '/stats') page = <Stats />;
   else if (route.path === '/gameplay') page = <Gameplay />;
   else if (route.path === '/account') page = <Account />;

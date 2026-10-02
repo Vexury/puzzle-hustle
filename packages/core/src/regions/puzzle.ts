@@ -540,17 +540,10 @@ export function regionsHint(spec: RegionsSpec, state: RegionsState): RegionsHint
     const want = spec.solution[i] ? 1 : REGIONS_MARKED_EMPTY;
     if (v !== want) return cellHint(n, i, want);
   }
+  // A hint always places a star (2026-10-02: an X was often one the player could see anyway), the
+  // one the next deduction forces if there is one. With no wrong mark left, an open star exists.
   const next = regionsPropagate(spec, state, 1).state;
-  let empty: number | null = null;
-  for (let i = 0; i < state.length; i++) {
-    if (next[i] === state[i]) continue;
-    if (next[i] === 1 && spec.solution[i] === 1) return cellHint(n, i, 1);
-    if (next[i] === REGIONS_MARKED_EMPTY && spec.solution[i] === 0) empty ??= i;
-  }
-  if (empty !== null) return cellHint(n, empty, REGIONS_MARKED_EMPTY);
-  const star = spec.solution.findIndex((v, i) => v === 1 && state[i] === 0);
-  if (star >= 0) return cellHint(n, star, 1);
-  const unknown = state.findIndex((v) => v === 0);
-  if (unknown < 0) return null;
-  return cellHint(n, unknown, REGIONS_MARKED_EMPTY);
+  const forced = next.findIndex((v, i) => v === 1 && state[i] === 0 && spec.solution[i] === 1);
+  const star = forced >= 0 ? forced : spec.solution.findIndex((v, i) => v === 1 && state[i] === 0);
+  return cellHint(n, star, 1);
 }
