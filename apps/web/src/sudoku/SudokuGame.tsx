@@ -13,6 +13,7 @@ import {
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import { readSetting } from '../lib/storage.ts';
+import type { Cue, CueOpts } from '../lib/sound.ts';
 import { showMistakes } from '../lib/mistakes.ts';
 import { DIGITS, SudokuBoard, SudokuPad } from './SudokuBoard.tsx';
 import { ResetButton } from '../components/ResetButton.tsx';
@@ -20,7 +21,7 @@ import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 
 export interface SudokuGameProps {
   spec: SudokuSpec;
-  onMove(): void;
+  onMove(cue?: Cue, opts?: CueOpts): void;
   onSolved(): void;
   onHintUsed(): void;
   requestHint(): Promise<boolean>;
@@ -71,20 +72,20 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     if (solved) onSolved();
   }, [solved, onSolved]);
 
-  function commit(next: SudokuState, record = true) {
+  function commit(next: SudokuState, cue?: Cue, record = true) {
     if (record) history.remember(stateRef.current);
     stateRef.current = next;
     setState(next);
-    onMove();
+    onMove(cue);
     onStateChange?.(sudokuStateToArray(next));
   }
 
-  function setValue(i: number, d: number) {
+  function setValue(i: number, d: number, cue: Cue = d ? 'place' : 'clear') {
     const next = cloneState(stateRef.current);
     next.values[i] = d;
     next.notes[i] = 0;
     if (d) for (const p of sudokuPeers(i)) next.notes[p]! &= ~(1 << (d - 1));
-    commit(next);
+    commit(next, cue);
   }
 
   function enter(d: number) {
@@ -94,7 +95,7 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
       if (cur.values[selected]) return;
       const next = cloneState(cur);
       next.notes[selected]! ^= 1 << (d - 1);
-      commit(next);
+      commit(next, 'note');
       return;
     }
     setValue(selected, cur.values[selected] === d ? 0 : d);
@@ -130,7 +131,7 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     setHintBusy(false);
     if (!ok) return;
     onHintUsed();
-    setValue(h.cell, h.value);
+    setValue(h.cell, h.value, 'hint');
     setSelected(h.cell);
     setFlash(h.cell);
   }
@@ -143,13 +144,13 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
   function undo() {
     if (frozen) return;
     const prev = history.undo(stateRef.current);
-    if (prev) commit(prev, false);
+    if (prev) commit(prev, 'undo', false);
   }
 
   function redo() {
     if (frozen) return;
     const next = history.redo(stateRef.current);
-    if (next) commit(next, false);
+    if (next) commit(next, 'redo', false);
   }
 
   const remaining = DIGITS.map((d) => 9 - values.reduce((n, v) => n + (v === d ? 1 : 0), 0));

@@ -342,7 +342,8 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
   // A move is one gesture of the player's: a tap, a stroke, a drop or a key, however many
   // times the board changes during it. Games report every change; each touch or key opens a new
   // gesture here and only its first change counts. One that starts on reset, undo, redo, hint or
-  // the hint dialog never counts.
+  // the hint dialog never counts. Every change plays the cue the game names for it; the haptic
+  // goes with the first change of a counted move only.
   const gesture = useRef({ counted: false, notAMove: false });
   useEffect(() => {
     const open = (e: Event) => {
@@ -357,12 +358,12 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
     };
   }, []);
 
-  const onMove = () => {
+  const onMove = (cue?: sound.Cue, opts?: sound.CueOpts) => {
     const g = gesture.current;
+    if (cue) sound.play(cue, opts);
     if (!g.counted && !g.notAMove) {
       g.counted = true;
-      haptics.tap();
-      sound.play('place');
+      if (cue) haptics.forCue(cue);
       counters.current.moves++;
       setMoves(counters.current.moves);
     }

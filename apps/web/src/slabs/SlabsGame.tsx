@@ -21,13 +21,14 @@ import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
 import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
-import * as haptics from '../lib/haptics.ts';
+import * as sound from '../lib/sound.ts';
+import type { Cue, CueOpts } from '../lib/sound.ts';
 import { showMistakes } from '../lib/mistakes.ts';
 import { SlabShape, SlabsBoard, SlabsTray, trayCentres, type SlabsPending as Pending } from './SlabsBoard.tsx';
 
 export interface SlabsGameProps {
   spec: SlabsSpec;
-  onMove(): void;
+  onMove(cue?: Cue, opts?: CueOpts): void;
   onSolved(): void;
   onHintUsed(): void;
   requestHint(): Promise<boolean>;
@@ -137,11 +138,11 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     setPendingView(p);
   }
 
-  function commit(next: SlabsState) {
+  function commit(next: SlabsState, cue?: Cue) {
     setPending(null);
     stateRef.current = next;
     setState(next);
-    onMove();
+    onMove(cue);
     onStateChange?.([...next]);
   }
 
@@ -182,13 +183,14 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     const turns = (od - committed + 4) % 4;
     setPending(null);
     spin(slab, pivot, -90);
-    if (turns === 0) return;
-    const next = slabsRotate(spec, cur, slab, pivot, turns);
+    const next = turns === 0 ? null : slabsRotate(spec, cur, slab, pivot, turns);
     if (next) {
       history.remember(cur);
-      commit(next);
+      commit(next, 'rotate');
       return;
     }
+    sound.play('rotate');
+    if (turns === 0) return;
     setPending({ slab, pivot, od });
     revertTimer.current = window.setTimeout(revertPending, REVERT_MS);
   }
@@ -197,6 +199,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     const p = pendingRef.current;
     if (!p) return;
     setPending(null);
+    sound.play('blocked');
     const committed = otherDir(stateRef.current[p.slab * 2 + 1]!, p.pivot);
     let delta = (((p.od - committed) * 90) % 360 + 540) % 360 - 180;
     if (delta === -180) delta = 180;
@@ -269,6 +272,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
     const d = drag.current;
     if (!d || d.pointerId !== e.pointerId) return;
     if (!d.moved && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) < d.cell * 0.2) return;
+    if (!d.moved) sound.play('pickup');
     d.moved = true;
     setGhost({ slab: d.slab, pivot: d.pivot, dir: d.dir, x: e.clientX, y: e.clientY, grabX: d.grabX, grabY: d.grabY, cell: d.cell });
   }
@@ -295,7 +299,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
       if (d.from === 'tray') {
         const next = slabsRotate(spec, cur, d.slab, d.pivot)!;
         history.remember(cur);
-        commit(next);
+        commit(next, 'rotate');
         return;
       }
       tapTurn(d.slab, d.fromPending ? pendingRef.current!.pivot : d.pivot);
@@ -309,15 +313,17 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
       const next = slabsToTray(cur, d.slab);
       next[d.slab * 2 + 1] = d.dir;
       history.remember(cur);
-      commit(next);
+      commit(next, 'clear');
       return;
     }
     const pose = dropPose(d, e.clientX, e.clientY);
     const next = pose && slabsPlace(spec, cur, d.slab, pose.anchor, pose.dir);
-    if (!next) return;
+    if (!next) {
+      sound.play('blocked');
+      return;
+    }
     history.remember(cur);
-    commit(next);
-    haptics.tap();
+    commit(next, 'drop');
   }
 
   function pointerCancel(e: React.PointerEvent) {
@@ -344,7 +350,7 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
         : slabCells(spec, spec.solution[fresh.slab]!.anchor, spec.solution[fresh.slab]!.dir);
     onHintUsed();
     history.remember(before);
-    commit(applySlabsHint(spec, before, fresh));
+    commit(applySlabsHint(spec, before, fresh), 'hint');
     if (where) setFlash([...where]);
   }
 
@@ -358,13 +364,13 @@ export function SlabsGame({ spec, onMove, onSolved, onHintUsed, requestHint, hin
   function undo() {
     if (locked || solved) return;
     const prev = history.undo(stateRef.current);
-    if (prev) commit(prev);
+    if (prev) commit(prev, 'undo');
   }
 
   function redo() {
     if (locked || solved) return;
     const next = history.redo(stateRef.current);
-    if (next) commit(next);
+    if (next) commit(next, 'redo');
   }
 
   let preview: [number, number] | null = null;

@@ -3,8 +3,7 @@ import { REGIONS_MARKED_EMPTY, emptyRegionsState, isRegionsSolved, regionsHint, 
 import { RegionsBoard } from './RegionsBoard.tsx';
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
-import { press } from '../lib/haptics.ts';
-import * as sound from '../lib/sound.ts';
+import type { Cue, CueOpts } from '../lib/sound.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
 import { showMistakes } from '../lib/mistakes.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
@@ -21,7 +20,7 @@ interface Drag {
 export interface RegionsGameProps {
   spec: RegionsSpec;
   symbol: 'cat' | 'heart';
-  onMove(): void;
+  onMove(cue?: Cue, opts?: CueOpts): void;
   onSolved(): void;
   onHintUsed(): void;
   requestHint(): Promise<boolean>;
@@ -50,6 +49,10 @@ function paintValue(current: number): number | null {
   return null;
 }
 
+function valueCue(value: number): Cue {
+  return value === 0 ? 'clear' : value === REGIONS_MARKED_EMPTY ? 'cross' : 'place';
+}
+
 export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, requestHint, hintAd, locked, initialState, onStateChange }: RegionsGameProps) {
   const n = spec.config.size;
   const [state, setState] = useState<RegionsState>(() => (initialState && initialState.length === spec.config.size * spec.config.size ? Uint8Array.from(initialState) : emptyRegionsState(spec)));
@@ -65,19 +68,19 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
     if (solved) onSolved();
   }, [solved, onSolved]);
 
-  function commit(next: RegionsState) {
+  function commit(next: RegionsState, cue?: Cue) {
     stateRef.current = next;
     setState(next);
-    onMove();
+    onMove(cue);
     onStateChange?.([...next]);
   }
 
-  function setCell(idx: number, value: number) {
+  function setCell(idx: number, value: number, cue: Cue = valueCue(value)) {
     const cur = stateRef.current;
     if (cur[idx] === value) return;
     const next = Uint8Array.from(cur);
     next[idx] = value;
-    commit(next);
+    commit(next, cue);
   }
 
   function clearTimer(d: Drag) {
@@ -104,8 +107,6 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
         // Carry the written value into the drag so a long press can keep going.
         d.paint = toggleX(current);
         setCell(idx, d.paint);
-        press();
-        sound.play('cross');
       }, LONG_PRESS_MS);
     }
     drag.current = d;
@@ -128,7 +129,7 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
     }
     const current = stateRef.current[idx]!;
     if (current === 1) return;
-    if (d.paint === REGIONS_MARKED_EMPTY ? current === 0 : current === REGIONS_MARKED_EMPTY) setCell(idx, d.paint);
+    if (d.paint === REGIONS_MARKED_EMPTY ? current === 0 : current === REGIONS_MARKED_EMPTY) setCell(idx, d.paint, 'step');
   }
 
   function endDrag(e: React.PointerEvent<HTMLDivElement>) {
@@ -157,7 +158,7 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
     onHintUsed();
     const idx = h.r * n + h.c;
     history.remember(stateRef.current);
-    setCell(idx, h.value);
+    setCell(idx, h.value, 'hint');
     setFlash(idx);
   }
 
@@ -170,13 +171,13 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
   function undo() {
     if (locked || solved) return;
     const prev = history.undo(stateRef.current);
-    if (prev) commit(prev);
+    if (prev) commit(prev, 'undo');
   }
 
   function redo() {
     if (locked || solved) return;
     const next = history.redo(stateRef.current);
-    if (next) commit(next);
+    if (next) commit(next, 'redo');
   }
 
   return (

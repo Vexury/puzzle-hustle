@@ -17,8 +17,7 @@ import {
   type TracksSpec,
   type TracksState,
 } from '@puzzle-hustle/core';
-import { press } from '../lib/haptics.ts';
-import * as sound from '../lib/sound.ts';
+import type { Cue, CueOpts } from '../lib/sound.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
@@ -30,7 +29,7 @@ import './tracks.css';
 
 export interface TracksGameProps {
   spec: TracksSpec;
-  onMove(): void;
+  onMove(cue?: Cue, opts?: CueOpts): void;
   onSolved(): void;
   onHintUsed(): void;
   requestHint(): Promise<boolean>;
@@ -76,10 +75,10 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     if (solved) onSolved();
   }, [solved, onSolved]);
 
-  function commit(next: TracksState) {
+  function commit(next: TracksState, cue?: Cue) {
     stateRef.current = next;
     setState(next);
-    onMove();
+    onMove(cue);
     onStateChange?.([...next]);
   }
 
@@ -133,11 +132,7 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     };
     if (e.button === 2) hold();
     else if (e.pointerType !== 'mouse')
-      d.timer = setTimeout(() => {
-        hold();
-        press();
-        sound.play('cross');
-      }, LONG_PRESS_MS);
+      d.timer = setTimeout(hold, LONG_PRESS_MS);
   }
 
   function clearTimer(d: Drag) {
@@ -148,8 +143,9 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
   function paint(d: Drag, cells: number[]) {
     const next = tracksPaintMark(spec, stateRef.current, cells, d.paint.mark, d.paint.on);
     if (!next) return;
+    const cue: Cue = d.remembered ? 'step' : !d.paint.on ? 'clear' : d.paint.mark === TRACKS_STATE_X ? 'cross' : 'note';
     rememberOnce(d);
-    commit(next);
+    commit(next, cue);
   }
 
   function moveDrag(e: React.PointerEvent<SVGSVGElement>) {
@@ -186,8 +182,9 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
         ? null
         : (tracksSetEdge(spec, cur, d.last, step, d.mode === 'lay') ?? (d.mode === 'lay' ? tracksReroute(spec, cur, d.last, step, d.prev) : null));
       if (next) {
+        const cue: Cue = d.remembered ? (d.mode === 'lift' ? 'retract' : 'step') : d.mode === 'lift' ? 'clear' : 'place';
         rememberOnce(d);
-        commit(next);
+        commit(next, cue);
         // One fast pointermove can complete the track mid-loop; stop laying stray edges past B.
         if (isTracksSolved(spec, stateRef.current)) {
           drag.current = null;
@@ -208,8 +205,9 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     if (d.moved || d.held) return;
     const next = tracksCycleMark(spec, stateRef.current, d.start);
     if (!next) return;
+    const v = next[d.start]!;
     rememberOnce(d);
-    commit(next);
+    commit(next, v & TRACKS_STATE_X ? 'cross' : v & TRACKS_STATE_T ? 'note' : 'clear');
   }
 
   function cancelDrag(e: React.PointerEvent<SVGSVGElement>) {
@@ -231,7 +229,7 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     if (!fresh) return;
     onHintUsed();
     history.remember(stateRef.current);
-    commit(applyTracksHint(spec, stateRef.current, fresh));
+    commit(applyTracksHint(spec, stateRef.current, fresh), 'hint');
     const at = fresh.kind === 'remove-edge' ? fresh.a : fresh.cell;
     setFlash(at);
   }
@@ -246,13 +244,13 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
   function undo() {
     if (locked || solved) return;
     const prev = history.undo(stateRef.current);
-    if (prev) commit(prev);
+    if (prev) commit(prev, 'undo');
   }
 
   function redo() {
     if (locked || solved) return;
     const next = history.redo(stateRef.current);
-    if (next) commit(next);
+    if (next) commit(next, 'redo');
   }
 
   return (

@@ -3,6 +3,7 @@ import { emptyZipState, isZipSolved, zipHint, zipStart, zipStepAllowed, type Zip
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import { showMistakes } from '../lib/mistakes.ts';
+import type { Cue, CueOpts } from '../lib/sound.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
 import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 import { ZipBoard } from './ZipBoard.tsx';
@@ -10,7 +11,7 @@ import './zip.css';
 
 export interface ZipGameProps {
   spec: ZipSpec;
-  onMove(): void;
+  onMove(cue?: Cue, opts?: CueOpts): void;
   onSolved(): void;
   onHintUsed(): void;
   requestHint(): Promise<boolean>;
@@ -108,11 +109,17 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintA
     if (solved) onSolved();
   }, [solved, onSolved]);
 
-  function commit(next: ZipState) {
+  function commit(next: ZipState, cue?: Cue, opts?: CueOpts) {
     pathRef.current = next;
     setPath(next);
-    onMove();
+    onMove(cue, opts);
     onStateChange?.([...next]);
+  }
+
+  // A longer path is a step up the ladder, a shorter one a step back down, so a full path climbs
+  // into the solve.
+  function walk(next: ZipState) {
+    commit(next, next.length > pathRef.current.length ? 'step' : 'retract', { progress: (next.length - 1) / (n * n - 1) });
   }
 
   function rememberOnce(d: Drag | null) {
@@ -128,14 +135,14 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintA
     if (cur.length === 0) {
       if (cell !== start) return;
       rememberOnce(d);
-      commit([start]);
+      walk([start]);
       return;
     }
     const pos = cur.indexOf(cell);
     if (pos >= 0) {
       if (pos === cur.length - 1) return;
       rememberOnce(d);
-      commit(cur.slice(0, pos + 1));
+      walk(cur.slice(0, pos + 1));
       return;
     }
     const next = [...cur];
@@ -152,21 +159,21 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintA
     }
     if (!changed) return;
     rememberOnce(d);
-    commit(next);
+    walk(next);
   }
 
   function dragTo(cell: number, d: Drag): void {
     const next = zipDragPath(spec, pathRef.current, cell);
     if (!next) return;
     rememberOnce(d);
-    commit(next);
+    walk(next);
   }
 
   function retract(d: Drag | null): void {
     const cur = pathRef.current;
     if (cur.length === 0) return;
     rememberOnce(d);
-    commit(cur.slice(0, -1));
+    walk(cur.slice(0, -1));
   }
 
   function cellAt(e: React.PointerEvent): number | null {
@@ -253,7 +260,7 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintA
     history.remember(cur);
     const next = h.truncate === null ? [...cur] : cur.slice(0, h.truncate);
     next.push(h.index);
-    commit(next);
+    commit(next, 'hint');
     setFlash(h.index);
   }
 
@@ -266,13 +273,13 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintA
   function undo() {
     if (locked || solved) return;
     const prev = history.undo(pathRef.current);
-    if (prev) commit(prev);
+    if (prev) commit(prev, 'undo');
   }
 
   function redo() {
     if (locked || solved) return;
     const next = history.redo(pathRef.current);
-    if (next) commit(next);
+    if (next) commit(next, 'redo');
   }
 
   return (

@@ -4,8 +4,7 @@ import { useZoomViewport } from '../lib/useZoomViewport.ts';
 import { NonogramBoard } from './NonogramBoard.tsx';
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
-import { press } from '../lib/haptics.ts';
-import * as sound from '../lib/sound.ts';
+import type { Cue, CueOpts } from '../lib/sound.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
 import { showMistakes } from '../lib/mistakes.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
@@ -27,7 +26,7 @@ interface Drag {
 
 export interface NonogramGameProps {
   spec: NonogramSpec;
-  onMove(): void;
+  onMove(cue?: Cue, opts?: CueOpts): void;
   onSolved(): void;
   onHintUsed(): void;
   requestHint(): Promise<boolean>;
@@ -49,6 +48,10 @@ function nextValue(current: number, color: number, mark: boolean): number {
   if (current === 0) return color;
   if (current === MARKED_EMPTY) return 0;
   return current === color ? MARKED_EMPTY : color;
+}
+
+function valueCue(value: number): Cue {
+  return value === 0 ? 'clear' : value === MARKED_EMPTY ? 'cross' : 'place';
 }
 
 export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintAd, locked, initialState, onStateChange, viewKey }: NonogramGameProps) {
@@ -77,19 +80,19 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
     if (solved) onSolved();
   }, [solved, onSolved]);
 
-  function commit(next: NonogramState) {
+  function commit(next: NonogramState, cue?: Cue) {
     stateRef.current = next;
     setState(next);
-    onMove();
+    onMove(cue);
     onStateChange?.([...next]);
   }
 
-  function setCells(cells: number[], value: number) {
+  function setCells(cells: number[], value: number, cue: Cue = valueCue(value)) {
     const cur = stateRef.current;
     if (cells.every((i) => cur[i] === value)) return;
     const next = Uint8Array.from(cur);
     for (const i of cells) next[i] = value;
-    commit(next);
+    commit(next, cue);
   }
 
   function clearTimer(d: Drag) {
@@ -117,8 +120,6 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
         d.value = nextValue(current, color, true);
         d.applied = true;
         setCells([idx], d.value);
-        press();
-        sound.play('cross');
       }, LONG_PRESS_MS);
     }
     drag.current = d;
@@ -147,8 +148,10 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
       const cc = d.axis === 'col' ? d.c : d.c + Math.sign(c - d.c) * s;
       cells.push(rr * cols + cc);
     }
+    // The first change of a stroke says what it paints; every cell after that is a step.
+    const cue = d.applied ? 'step' : valueCue(d.value);
     d.applied = true;
-    setCells(cells.filter((i) => d.base[i] === d.from), d.value);
+    setCells(cells.filter((i) => d.base[i] === d.from), d.value, cue);
   }
 
   function endDrag(e: React.PointerEvent<HTMLDivElement>) {
@@ -183,7 +186,7 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
     onHintUsed();
     const idx = h.r * cols + h.c;
     history.remember(stateRef.current);
-    setCells([idx], h.value);
+    setCells([idx], h.value, 'hint');
     setFlash(idx);
   }
 
@@ -196,13 +199,13 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
   function undo() {
     if (locked || solved) return;
     const prev = history.undo(stateRef.current);
-    if (prev) commit(prev);
+    if (prev) commit(prev, 'undo');
   }
 
   function redo() {
     if (locked || solved) return;
     const next = history.redo(stateRef.current);
-    if (next) commit(next);
+    if (next) commit(next, 'redo');
   }
 
   return (

@@ -11,6 +11,8 @@ import { outlinePoints } from './PieceShape.tsx';
 import { ShapesBoard, ShapesTray } from './ShapesBoard.tsx';
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
+import * as sound from '../lib/sound.ts';
+import type { Cue, CueOpts } from '../lib/sound.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
 import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 
@@ -49,7 +51,7 @@ function moved(d: Drag): boolean {
 
 export interface ShapesGameProps {
   spec: ShapesSpec;
-  onMove(): void;
+  onMove(cue?: Cue, opts?: CueOpts): void;
   onSolved(): void;
   onHintUsed(): void;
   requestHint(): Promise<boolean>;
@@ -108,14 +110,14 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     setOrder((o) => [...o.filter((i) => i !== pieceId), pieceId]);
   }
 
-  function place(pieceId: number, placement: Placement | null) {
+  function place(pieceId: number, placement: Placement | null, cue: Cue = placement ? 'drop' : 'clear') {
     const cur = state[pieceId]!;
     if (cur === placement || (cur && placement && cur.r === placement.r && cur.c === placement.c)) return;
     const next = [...state];
     next[pieceId] = placement;
     history.remember(state);
     setState(next);
-    onMove();
+    onMove(cue);
     onStateChange?.(encode(next));
   }
 
@@ -145,7 +147,9 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
 
   function moveDrag(e: React.PointerEvent) {
     if (!drag) return;
-    setDrag({ ...drag, x: e.clientX, y: e.clientY });
+    const next = { ...drag, x: e.clientX, y: e.clientY };
+    if (!moved(drag) && moved(next)) sound.play('pickup');
+    setDrag(next);
   }
 
   function endDrag(e: React.PointerEvent) {
@@ -153,6 +157,7 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     const d = { ...drag, x: e.clientX, y: e.clientY };
     setDrag(null);
     if (!moved(d)) {
+      if (selected !== d.pieceId) sound.play('pickup');
       setSelected((cur) => (cur === d.pieceId ? null : d.pieceId));
       return;
     }
@@ -180,7 +185,7 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     setHintBusy(false);
     if (!ok) return;
     onHintUsed();
-    place(h.pieceId, h.placement);
+    place(h.pieceId, h.placement, 'hint');
     raise(h.pieceId);
     setFlash(h.pieceId);
   }
@@ -201,7 +206,7 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     if (!prev) return;
     setState(prev);
     setSelected(null);
-    onMove();
+    onMove('undo');
     onStateChange?.(encode(prev));
   }
 
@@ -211,7 +216,7 @@ export function ShapesGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     if (!next) return;
     setState(next);
     setSelected(null);
-    onMove();
+    onMove('redo');
     onStateChange?.(encode(next));
   }
 

@@ -4,8 +4,7 @@ import { useZoomViewport } from '../lib/useZoomViewport.ts';
 import { MosaicBoard } from './MosaicBoard.tsx';
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
-import { press } from '../lib/haptics.ts';
-import * as sound from '../lib/sound.ts';
+import type { Cue, CueOpts } from '../lib/sound.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
 import { showMistakes } from '../lib/mistakes.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
@@ -28,7 +27,7 @@ interface Drag {
 
 export interface MosaicGameProps {
   spec: MosaicSpec;
-  onMove(): void;
+  onMove(cue?: Cue, opts?: CueOpts): void;
   onSolved(): void;
   onHintUsed(): void;
   requestHint(): Promise<boolean>;
@@ -52,6 +51,10 @@ function nextValue(current: number, mark: boolean): number {
   return MOSAIC_MARKED_EMPTY;
 }
 
+function valueCue(value: number): Cue {
+  return value === 0 ? 'clear' : value === MOSAIC_MARKED_EMPTY ? 'cross' : 'place';
+}
+
 export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintAd, locked, initialState, onStateChange, viewKey }: MosaicGameProps) {
   const { rows, cols } = spec.config;
   const [state, setState] = useState<MosaicState>(() => (initialState && initialState.length === emptyMosaicState(spec).length ? Uint8Array.from(initialState) : emptyMosaicState(spec)));
@@ -68,19 +71,19 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     if (solved) onSolved();
   }, [solved, onSolved]);
 
-  function commit(next: MosaicState) {
+  function commit(next: MosaicState, cue?: Cue) {
     stateRef.current = next;
     setState(next);
-    onMove();
+    onMove(cue);
     onStateChange?.([...next]);
   }
 
-  function setCells(cells: number[], value: number) {
+  function setCells(cells: number[], value: number, cue: Cue = valueCue(value)) {
     const cur = stateRef.current;
     if (cells.every((i) => cur[i] === value)) return;
     const next = Uint8Array.from(cur);
     for (const i of cells) next[i] = value;
-    commit(next);
+    commit(next, cue);
   }
 
   function clearTimer(d: Drag) {
@@ -108,8 +111,6 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
         d.value = nextValue(current, true);
         d.applied = true;
         setCells([idx], d.value);
-        press();
-        sound.play('cross');
       }, LONG_PRESS_MS);
     }
     drag.current = d;
@@ -137,8 +138,10 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     }
     d.lastR = pos.r;
     d.lastC = pos.c;
+    // The first change of a stroke says what it paints; every cell after that is a step.
+    const cue = d.applied ? 'step' : valueCue(d.value);
     d.applied = true;
-    setCells(cells.filter((i) => d.base[i] === d.from), d.value);
+    setCells(cells.filter((i) => d.base[i] === d.from), d.value, cue);
   }
 
   function endDrag(e: React.PointerEvent<HTMLDivElement>) {
@@ -173,7 +176,7 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     onHintUsed();
     const idx = h.r * cols + h.c;
     history.remember(stateRef.current);
-    setCells([idx], h.value);
+    setCells([idx], h.value, 'hint');
     setFlash(idx);
   }
 
@@ -186,13 +189,13 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
   function undo() {
     if (locked || solved) return;
     const prev = history.undo(stateRef.current);
-    if (prev) commit(prev);
+    if (prev) commit(prev, 'undo');
   }
 
   function redo() {
     if (locked || solved) return;
     const next = history.redo(stateRef.current);
-    if (next) commit(next);
+    if (next) commit(next, 'redo');
   }
 
   return (
