@@ -1,4 +1,4 @@
-import { validateName } from './names.ts';
+import { GROUP_NAME_MAX, validateName } from './names.ts';
 
 export const MAX_MEMBERS = 50;
 export const MAX_GROUPS = 5;
@@ -51,7 +51,7 @@ export async function createGroup(
   ownerId: string,
   rawName: string,
 ): Promise<{ ok: true; group: GroupRow } | { ok: false; reason: 'name' | 'limit' | 'collision' }> {
-  const name = validateName(rawName);
+  const name = validateName(rawName, GROUP_NAME_MAX);
   if (!name.ok) return { ok: false, reason: 'name' };
 
   const owned = await db

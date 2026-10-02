@@ -164,8 +164,8 @@ and deletes the account, and offers deletion by email. It is the account and dat
 the data safety form.
 
 **User-generated content:** Display names and group names. Both pass `validateName` in the Worker:
-2 to 24 characters, letters, digits, space, `.`, `_`, `-`, no links, a short blocklist. Names are
-only visible to members of a shared group. Every standings row has a report flag (`POST /report`,
+2 to 14 characters for display names (until 2026-10-02: 24; longer ones stay until renamed), 2 to 24 for group names, letters, digits, space, `.`, `_`, `-`, no links, a short blocklist. Names are
+only visible to members of a shared group. Tapping another player's standings row offers Report (`POST /report`,
 stored in `reports`); reports are reviewed by hand, there is no automatic ban. Group owners can
 remove members, which also bars them from rejoining with the same code, and everyone can leave a
 group. Members cannot block each other individually.

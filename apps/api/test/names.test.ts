@@ -10,12 +10,14 @@ it('accepts an ordinary name and trims it', () => {
 
 it('refuses names that are too short or too long', () => {
   expect(validateName('a')).toEqual({ ok: false, reason: 'length' });
-  expect(validateName('x'.repeat(25))).toEqual({ ok: false, reason: 'length' });
+  expect(validateName('x'.repeat(15))).toEqual({ ok: false, reason: 'length' });
+  expect(validateName('x'.repeat(14))).toEqual({ ok: true, name: 'x'.repeat(14) });
+  expect(validateName('x'.repeat(24), 24)).toEqual({ ok: true, name: 'x'.repeat(24) });
 });
 
 it('refuses links and control characters', () => {
-  expect(validateName('http://x.example')).toEqual({ ok: false, reason: 'characters' });
-  expect(validateName('www.example.com')).toEqual({ ok: false, reason: 'characters' });
+  expect(validateName('http://x.example', 24)).toEqual({ ok: false, reason: 'characters' });
+  expect(validateName('www.example.com', 24)).toEqual({ ok: false, reason: 'characters' });
   expect(validateName('bad\nname')).toEqual({ ok: false, reason: 'characters' });
   expect(validateName('emoji 🎉')).toEqual({ ok: false, reason: 'characters' });
 });

@@ -15,7 +15,7 @@ import {
   signOut,
   useSession,
 } from '../lib/auth.ts';
-import { badgeRarity, findCosmetic, hustleSolved } from '@puzzle-hustle/core';
+import { badgeRarity, findCosmetic, hustleSolved, NAME_MAX, NAME_MIN } from '@puzzle-hustle/core';
 import { storedSolves } from '../lib/achievements.ts';
 import { useEquipped } from '../lib/coins.ts';
 import { href, onLinkClick } from '../lib/router.ts';
@@ -38,7 +38,7 @@ const DELETE_CONFIRM_MS = 4000;
 // Once signed in, the server's name is the source of truth. A rejected rename must not leave
 // the field showing a name the server never accepted.
 const NAME_REJECTION_MESSAGES: Record<string, string> = {
-  name_length: 'Names are 2 to 24 characters',
+  name_length: `Names are ${NAME_MIN} to ${NAME_MAX} characters`,
   name_characters: 'Letters, digits, spaces, dots, dashes and underscores only',
   name_blocked: 'Pick a different name',
 };
@@ -67,7 +67,7 @@ export function ProfileHero({ joinCode = null }: { joinCode?: string | null } = 
   }, [session?.player.name, session === null]);
 
   const commitName = () => {
-    const v = name.trim().slice(0, 24);
+    const v = name.trim().slice(0, NAME_MAX);
     setName(v);
     writeSetting('ph:name', v);
     if (readSession()) {
@@ -99,7 +99,7 @@ export function ProfileHero({ joinCode = null }: { joinCode?: string | null } = 
                 commitName();
               }}
             >
-              <input autoFocus value={name} onChange={(e) => setName(e.target.value)} onBlur={commitName} maxLength={24} placeholder="Your name" />
+              <input autoFocus value={name} onChange={(e) => setName(e.target.value)} onBlur={commitName} maxLength={NAME_MAX} placeholder="Your name" />
             </form>
           ) : (
             <button type="button" className="name-btn" onClick={() => setEditing(true)}>
