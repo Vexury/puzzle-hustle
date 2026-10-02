@@ -638,7 +638,11 @@ p { margin: 0; }
 .leaderboard-row.np .leaderboard-flair,
 .leaderboard-row.np .leaderboard-hints { color: var(--np-muted); }
 .leaderboard-row.np.podium .leaderboard-rank { color: var(--on-medal); }
-.np .hustle-chip { background: var(--np-chip-bg); color: var(--np-chip-text); }
+.np .hustle-chip { background: var(--np-pill-bg); color: var(--np-pill-text); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+/* On a nameplate the second line can run into the plate's motif, so it sits on the same frosted
+   pill as the time (2026-10-02, flairs over the tracks and the cat were unreadable). */
+.leaderboard-row.np .leaderboard-sub { align-self: flex-start; max-width: 100%; box-sizing: border-box; margin-left: -4px; padding: 1px 8px 1px 4px; border-radius: var(--radius-pill); background: var(--np-pill-bg); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.leaderboard-row.np .leaderboard-flair { color: var(--np-pill-text); opacity: 0.8; }
 .leaderboard-row.np .leaderboard-time { padding: 3px 9px; border-radius: var(--radius-pill); background: var(--np-pill-bg); color: var(--np-pill-text); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 
 /* Badge tints by rarity (badgeRarity, from the price): in the theme's colours on cards, in the
