@@ -1,0 +1,18 @@
+<en-US>
+Double coins and sound.
+
+- Double coins: after a Daily, Weekly or Monthly, watch a short video to double what it paid
+- No Ads · Free Hints now doubles those coins automatically
+- Sound: soft taps, a tick per cell as you drag, sounds for pieces, hints and undo, a quiet warning on mistakes; switch it off under Gameplay
+- Hearts Easy is a 9x9 board with fresh layouts; unfinished Hearts puzzles start over
+- Shop: themes and nameplates fold away like badges and flairs
+</en-US>
+<de-DE>
+Doppelte Coins und Sound.
+
+- Doppelte Coins: nach einem Daily, Weekly oder Monthly ein kurzes Video ansehen und die Coins verdoppeln
+- No Ads · Free Hints verdoppelt diese Coins jetzt automatisch
+- Sound: sanfte Taps, ein Tick pro Feld beim Ziehen, Töne für Teile, Hints und Undo, leiser Hinweis bei Fehlern; abschaltbar unter Gameplay
+- Hearts Easy ist ein 9x9-Brett mit neuen Mustern; angefangene Hearts beginnen neu
+- Shop: Themes und Nameplates lassen sich einklappen wie Badges und Flairs
+</de-DE>
