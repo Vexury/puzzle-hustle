@@ -636,8 +636,7 @@ p { margin: 0; }
 .leaderboard-row.np { min-height: 60px; }
 .leaderboard-row.np .leaderboard-rank,
 .leaderboard-row.np .leaderboard-flair,
-.leaderboard-row.np .leaderboard-hints,
-.leaderboard-row.np .leaderboard-report { color: var(--np-muted); }
+.leaderboard-row.np .leaderboard-hints { color: var(--np-muted); }
 .leaderboard-row.np.podium .leaderboard-rank { color: var(--on-medal); }
 .np .hustle-chip { background: var(--np-chip-bg); color: var(--np-chip-text); }
 .leaderboard-row.np .leaderboard-time { padding: 3px 9px; border-radius: var(--radius-pill); background: var(--np-pill-bg); color: var(--np-pill-text); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
@@ -657,17 +656,16 @@ p { margin: 0; }
 [data-theme="dark"] .rarity-legendary { --rarity-solo: #f2c233; }
 [data-theme="dark"] .rarity-hustle { --rarity-solo: #ff7a4d; }
 .leaderboard-time { flex: none; font-family: var(--font-num); font-weight: 700; }
-.leaderboard-report {
-  flex: none;
-  border: none;
-  background: none;
-  padding: 4px 6px;
-  border-radius: var(--radius-pill);
-  color: var(--text-muted);
-  font-size: 1rem;
-  line-height: 1;
-  cursor: pointer;
-}
+/* The whole row is the button for another player's actions (report, hide, remove), drawn over
+   the row so the name and the showcase keep the width the flag used to take. */
+.leaderboard-row:has(.leaderboard-hit) { position: relative; }
+.leaderboard-hit { position: absolute; inset: 0; z-index: 1; padding: 0; border: 0; border-radius: inherit; background: none; cursor: pointer; }
+.leaderboard-hit:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.leaderboard-hit[aria-expanded="true"] { box-shadow: inset 0 0 0 2px var(--border-mid); }
+.leaderboard-sub { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.leaderboard-sub .leaderboard-flair { min-width: 0; }
+.leaderboard-hints { flex: none; display: inline-flex; align-items: center; gap: 2px; font-family: var(--font-num); font-size: var(--fs-sm); font-weight: 700; }
+.leaderboard-hints .tool-icon { width: 15px; height: 15px; }
 
 .actions { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 10px; width: 100%; margin-top: 4px; }
 .tools { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; width: 100%; margin-top: 4px; }
@@ -1296,7 +1294,6 @@ button.unlock-row { cursor: pointer; }
   .tab:hover { color: var(--text); }
   .swatch:hover { transform: scale(1.08); }
   .icon-round:hover { background: var(--hover-bg); color: var(--hover-text); border-color: var(--hover-bg); }
-  .leaderboard-report:hover { color: var(--danger); }
 }
 
 .leaderboard-who { flex: 1; min-width: 0; display: flex; flex-direction: column; }

@@ -6,6 +6,7 @@ import { readSetting, writeSetting } from '../lib/storage.ts';
 import { BadgeIcon } from './BadgeIcon.tsx';
 import { NameplateArt, plateClass } from './Nameplate.tsx';
 import { toast } from './Toast.tsx';
+import { ToolGlyph } from './ToolButton.tsx';
 
 export interface BoardData {
   entries: Array<{ playerId: string; name: string; seconds: number; hints: number; badge?: string | null; badges?: string[] | null; flair?: string | null; nameplate?: string | null; hustle?: number }>;
@@ -127,26 +128,32 @@ export function NameCell({ entry, wave = 0 }: { entry: { name: string; badge?: s
     <span className="leaderboard-who">
       <span className="leaderboard-name">
         <span className="leaderboard-name-text np-name">{entry.name}</span>
-        {badges.length > 0 && (
-          <span className="row-badges">
-            {badges.map((b, i) => (
-              <span key={b.id} className={`rarity-${badgeRarity(b as Extract<Cosmetic, { kind: 'badge' }>)}`} title={b.title}>
-                <BadgeIcon id={b.id} className="row-badge" wave={wave + i * 0.08} />
-              </span>
-            ))}
-          </span>
-        )}
         {entry.hustle ? <span className="hustle-chip">Lv {entry.hustle}</span> : null}
       </span>
-      {flair && <span className="leaderboard-flair">{flair.title}</span>}
+      {(badges.length > 0 || flair) && (
+        <span className="leaderboard-sub">
+          {badges.length > 0 && (
+            <span className="row-badges">
+              {badges.map((b, i) => (
+                <span key={b.id} className={`rarity-${badgeRarity(b as Extract<Cosmetic, { kind: 'badge' }>)}`} title={b.title}>
+                  <BadgeIcon id={b.id} className="row-badge" wave={wave + i * 0.08} />
+                </span>
+              ))}
+            </span>
+          )}
+          {flair && <span className="leaderboard-flair">{flair.title}</span>}
+        </span>
+      )}
     </span>
   );
 }
 
 type RowEntry = { name: string; seconds: number; hints: number; badge?: string | null; badges?: string[] | null; flair?: string | null; nameplate?: string | null; hustle?: number | undefined };
 
-// One standings row: medal or place, name with the showcase badges and level, flair, the time;
-// the player's nameplate behind it all. The shop shows the same row as its preview.
+// One standings row: medal or place, the name with its level, below it the showcase and the
+// flair, then hints and the time; the player's nameplate behind it all. Since 2026-10-02 the
+// showcase sits on the second line so the name keeps its width. The shop shows the same row as
+// its preview. `children` is an overlay the row hands its taps to (Board's row actions).
 export function StandingsRow({ entry, rank, me, wave = 0, children }: { entry: RowEntry; rank: number; me: boolean; wave?: number; children?: ReactNode }) {
   return (
     <li className={`leaderboard-row${rank <= 3 ? ` podium ${MEDALS[rank - 1]}` : ''}${me ? ' me' : ''}${plateClass(entry.nameplate)}`}>
@@ -156,7 +163,12 @@ export function StandingsRow({ entry, rank, me, wave = 0, children }: { entry: R
         {rank}
       </span>
       <NameCell entry={entry} wave={wave} />
-      {entry.hints > 0 && <span className="leaderboard-hints small">{entry.hints} hint{entry.hints === 1 ? '' : 's'}</span>}
+      {entry.hints > 0 && (
+        <span className="leaderboard-hints" role="img" aria-label={`${entry.hints} hint${entry.hints === 1 ? '' : 's'}`}>
+          <ToolGlyph icon="hint" />
+          {entry.hints}
+        </span>
+      )}
       <span className="leaderboard-time">{formatSeconds(entry.seconds)}</span>
       {children}
     </li>
@@ -241,17 +253,14 @@ export function Board({
               {entry.playerId !== meId && (
                 <button
                   type="button"
-                  className="leaderboard-report"
+                  className="leaderboard-hit"
                   aria-label={`Report or hide ${entry.name}`}
                   aria-expanded={open === entry.playerId}
-                  title="Report or hide"
                   onClick={() => {
                     setOpen(open === entry.playerId ? null : entry.playerId);
                     setArmed(null);
                   }}
-                >
-                  ⚑
-                </button>
+                />
               )}
             </StandingsRow>
             {open === entry.playerId && (

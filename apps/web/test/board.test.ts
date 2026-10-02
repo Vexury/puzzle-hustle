@@ -87,3 +87,17 @@ it('shows the showcase behind the name, tinted by rarity, and the nameplate behi
   expect(plain).toContain('<li class="leaderboard-row">');
   expect(plain).not.toContain('row-badges');
 });
+
+it('keeps the name line to the name and level, the showcase and flair go below, hints as a count', () => {
+  const row = renderToStaticMarkup(
+    createElement(StandingsRow, { entry: { name: 'Michaela', seconds: 209, hints: 2, hustle: 140, badges: ['owl', 'bolt'], flair: 'night-shift' }, rank: 5, me: false }),
+  );
+  const nameLine = row.slice(row.indexOf('class="leaderboard-name"'), row.indexOf('class="leaderboard-sub"'));
+  expect(nameLine).toContain('Michaela');
+  expect(nameLine).toContain('Lv 140');
+  expect(nameLine).not.toContain('row-badge');
+  const sub = row.slice(row.indexOf('class="leaderboard-sub"'));
+  expect(sub.indexOf('row-badges')).toBeLessThan(sub.indexOf('leaderboard-flair'));
+  expect(row).toContain('aria-label="2 hints"');
+  expect(row).not.toContain('hints</span>');
+});

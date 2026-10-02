@@ -48,7 +48,7 @@ const names = () => [...container.querySelectorAll('.leaderboard-name-text')].ma
 
 it('offers Remove only to the owner', async () => {
   await mount(false);
-  act(() => container.querySelector<HTMLButtonElement>('.leaderboard-report')!.click());
+  act(() => container.querySelector<HTMLButtonElement>('.leaderboard-hit')!.click());
   expect(button('Hide')).toBeDefined();
   expect(button('Remove from group')).toBeUndefined();
 });
@@ -57,7 +57,7 @@ it('arms Remove, falls back after 2 s, and removes on the second tap', async () 
   const onRemoved = vi.fn();
   await mount(true, onRemoved);
   vi.useFakeTimers();
-  act(() => container.querySelector<HTMLButtonElement>('.leaderboard-report')!.click());
+  act(() => container.querySelector<HTMLButtonElement>('.leaderboard-hit')!.click());
   act(() => button('Remove from group')!.click());
   expect(button('Remove')?.className).toContain('danger');
   act(() => vi.advanceTimersByTime(2000));
@@ -75,7 +75,7 @@ it('arms Remove, falls back after 2 s, and removes on the second tap', async () 
 
 it('hides a player locally and shows them again', async () => {
   await mount(false);
-  act(() => container.querySelector<HTMLButtonElement>('.leaderboard-report')!.click());
+  act(() => container.querySelector<HTMLButtonElement>('.leaderboard-hit')!.click());
   act(() => button('Hide')!.click());
   expect(names()).toEqual(['Moritz']);
   expect(JSON.parse(localStorage.getItem('ph:hidden')!)).toEqual(['troll']);
