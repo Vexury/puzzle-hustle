@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { REGIONS_MARKED_EMPTY, emptyRegionsState, isRegionsSolved, regionsConflicts, regionsHint, regionsLineCounts, type RegionsSpec, type RegionsState } from '@puzzle-hustle/core';
+import { REGIONS_MARKED_EMPTY, emptyRegionsState, isRegionsSolved, regionsConflicts, regionsHint, type RegionsSpec, type RegionsState } from '@puzzle-hustle/core';
 import { RegionsBoard } from './RegionsBoard.tsx';
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import type { Cue, CueOpts } from '../lib/sound.ts';
-import { playFeedback, type Units } from '../lib/feedback.ts';
+import { playConflict } from '../lib/feedback.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
 import { showMistakes } from '../lib/mistakes.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
@@ -61,13 +61,7 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
   const [hintBusy, setHintBusy] = useState(false);
   const history = useHistory<RegionsState>();
   const mistakes = useRef(showMistakes()).current;
-  const units = (s: RegionsState): Units => {
-    const counts = regionsLineCounts(spec, s);
-    return {
-      done: [...counts.rows, ...counts.cols, ...counts.regions].map((v) => v === spec.config.stars),
-      broken: mistakes ? Array.from(regionsConflicts(spec, s), Boolean) : [],
-    };
-  };
+  const broken = (s: RegionsState) => (mistakes ? Array.from(regionsConflicts(spec, s), Boolean) : []);
   const stateRef = useRef(state);
   const drag = useRef<Drag | null>(null);
   const solved = isRegionsSolved(spec, state);
@@ -81,7 +75,7 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
     stateRef.current = next;
     setState(next);
     onMove(cue);
-    playFeedback(cue, units, before, next, isRegionsSolved(spec, next));
+    playConflict(cue, broken, before, next, isRegionsSolved(spec, next));
     onStateChange?.([...next]);
   }
 

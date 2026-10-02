@@ -65,7 +65,6 @@
         ['hint', 'Hint used'],
       ]],
       ['Feedback', [
-        ['checkpoint', 'Zip reaches the next number; a row, column or region is satisfied'],
         ['conflict', 'A rule just became broken'],
       ]],
       ['Success', [
@@ -76,12 +75,9 @@
 
     // Scripted runs that show how cues behave in sequence, as they would in play.
     const SEQUENCES = [
-      ['Zip path', '25 cells up the ladder, checkpoints at numbers, solved at the end', () => {
+      ['Zip path', '25 cells up the ladder, solved at the end', () => {
         const n = 25;
-        for (let i = 0; i < n; i++) at(i * 85, () => {
-          play('step', { progress: i / (n - 1) });
-          if (i === 8 || i === 16) play('checkpoint');
-        });
+        for (let i = 0; i < n; i++) at(i * 85, () => play('step', { progress: i / (n - 1) }));
         at(n * 85 + 60, () => play('solved'));
       }],
       ['Zip backtrack', 'Draw 10 cells, then drag 6 back', () => {
@@ -102,12 +98,11 @@
         at(900, () => play('rotate'));
         at(1350, () => play('blocked'));
       }],
-      ['Mistake, fixed', 'Wrong X, conflict, undo, correct fill, row satisfied', () => {
+      ['Mistake, fixed', 'Wrong X, conflict, undo, correct fill', () => {
         play('cross');
         at(120, () => play('conflict'));
         at(700, () => play('undo'));
         at(1100, () => play('place'));
-        at(1220, () => play('checkpoint'));
       }],
     ];
 

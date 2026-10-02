@@ -128,10 +128,6 @@ const CUES = {
   blocked: (a, t) => click(a, t, { band: 270, body: 54, gain: 0.9, len: 3, weight: 2 }),
   undo: (a, t) => click(a, t, { band: 900, body: 420, gain: 0.5, len: 1.4, glide: 0.85 }),
   redo: (a, t) => click(a, t, { band: 900, body: 420, gain: 0.5, len: 1.4, glide: 1.15 }),
-  checkpoint: (a, t) => {
-    note(a, t, 1047, 0.22, 0.3, BELL);
-    note(a, t + 0.06, 1319, 0.24, 0.45, BELL);
-  },
   conflict: (a, t) => note(a, t, 349, 0.3, 0.22, BELL, 0.9),
   hint: (a, t) => [2093, 2637, 3136].forEach((f, i) => note(a, t + i * 0.04, f, 0.12, 0.4, BELL)),
   solved: (a, t) => {

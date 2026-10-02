@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  SUDOKU_UNITS,
   emptySudokuState,
   isSudokuSolved,
   sudokuCellValues,
@@ -16,7 +15,7 @@ import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import { readSetting } from '../lib/storage.ts';
 import type { Cue, CueOpts } from '../lib/sound.ts';
-import { playFeedback, type Units } from '../lib/feedback.ts';
+import { playConflict } from '../lib/feedback.ts';
 import { showMistakes } from '../lib/mistakes.ts';
 import { DIGITS, SudokuBoard, SudokuPad } from './SudokuBoard.tsx';
 import { ResetButton } from '../components/ResetButton.tsx';
@@ -63,15 +62,7 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
   // board is.
   const highlightEnabled = useRef(readSetting('ph:sudokuHighlight') !== '0').current;
   const mistakes = useRef(showMistakes()).current;
-  // A unit counts once all nine are in; with mistakes shown, only without a clash in it.
-  const units = (s: SudokuState): Units => {
-    const values = sudokuCellValues(spec, s);
-    const conflicts = sudokuConflicts(spec, s);
-    return {
-      done: SUDOKU_UNITS.map((u) => u.every((i) => values[i] && !(mistakes && conflicts[i]))),
-      broken: mistakes ? Array.from(conflicts, Boolean) : [],
-    };
-  };
+  const broken = (s: SudokuState) => (mistakes ? Array.from(sudokuConflicts(spec, s), Boolean) : []);
   const [flash, setFlash] = useFlash<number>();
   const [hintBusy, setHintBusy] = useState(false);
   const history = useHistory<SudokuState>();
@@ -90,7 +81,7 @@ export function SudokuGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
     stateRef.current = next;
     setState(next);
     onMove(cue);
-    playFeedback(cue, units, before, next, isSudokuSolved(spec, next));
+    playConflict(cue, broken, before, next, isSudokuSolved(spec, next));
     onStateChange?.(sudokuStateToArray(next));
   }
 

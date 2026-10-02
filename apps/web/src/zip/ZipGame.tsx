@@ -4,7 +4,7 @@ import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import { showMistakes } from '../lib/mistakes.ts';
 import type { Cue, CueOpts } from '../lib/sound.ts';
-import { playFeedback, type Units } from '../lib/feedback.ts';
+import { playConflict } from '../lib/feedback.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
 import { AdBadge, ToolButton } from '../components/ToolButton.tsx';
 import { ZipBoard } from './ZipBoard.tsx';
@@ -104,13 +104,13 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintA
   const svgRef = useRef<SVGSVGElement>(null);
   const history = useHistory<ZipState>();
   const mistakes = useRef(showMistakes()).current;
-  // Zip has no checkpoints: easy boards number most cells, and the step ladder already climbs.
-  const units = (p: ZipState): Units => {
-    if (!mistakes) return { done: [], broken: [] };
-    const broken = new Array<boolean>(n * n + 1).fill(false);
-    for (const cell of zipStranded(spec, p)) broken[cell] = true;
-    broken[n * n] = zipOrderBreak(spec, p) !== null;
-    return { done: [], broken };
+  // One flag per cell that can no longer be reached, plus one for the order of the numbers.
+  const broken = (p: ZipState) => {
+    if (!mistakes) return [];
+    const out = new Array<boolean>(n * n + 1).fill(false);
+    for (const cell of zipStranded(spec, p)) out[cell] = true;
+    out[n * n] = zipOrderBreak(spec, p) !== null;
+    return out;
   };
   const solved = isZipSolved(spec, path);
 
@@ -123,7 +123,7 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintA
     pathRef.current = next;
     setPath(next);
     onMove(cue, opts);
-    playFeedback(cue, units, before, next, isZipSolved(spec, next));
+    playConflict(cue, broken, before, next, isZipSolved(spec, next));
     onStateChange?.([...next]);
   }
 

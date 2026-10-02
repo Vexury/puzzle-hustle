@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { MARKED_EMPTY, emptyState, isNonogramSolved, lineBroken, lineSatisfied, nonogramHint, type NonogramSpec, type NonogramState } from '@puzzle-hustle/core';
+import { MARKED_EMPTY, emptyState, isNonogramSolved, lineBroken, nonogramHint, type NonogramSpec, type NonogramState } from '@puzzle-hustle/core';
 import { useZoomViewport } from '../lib/useZoomViewport.ts';
 import { NonogramBoard } from './NonogramBoard.tsx';
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import type { Cue, CueOpts } from '../lib/sound.ts';
-import { playFeedback, type Units } from '../lib/feedback.ts';
+import { playConflict } from '../lib/feedback.ts';
 import { LONG_PRESS_MS } from '../lib/input.ts';
 import { showMistakes } from '../lib/mistakes.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
@@ -63,13 +63,8 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
   const [hintBusy, setHintBusy] = useState(false);
   const history = useHistory<NonogramState>();
   const mistakes = useRef(showMistakes()).current;
-  const units = (s: NonogramState): Units => {
-    const lines = [...Array.from({ length: rows }, (_, i) => ['row', i] as const), ...Array.from({ length: cols }, (_, i) => ['col', i] as const)];
-    return {
-      done: lines.map(([axis, i]) => lineSatisfied(spec, s, axis, i)),
-      broken: mistakes ? lines.map(([axis, i]) => lineBroken(spec, s, axis, i)) : [],
-    };
-  };
+  const lines = [...Array.from({ length: rows }, (_, i) => ['row', i] as const), ...Array.from({ length: cols }, (_, i) => ['col', i] as const)];
+  const broken = (s: NonogramState) => (mistakes ? lines.map(([axis, i]) => lineBroken(spec, s, axis, i)) : []);
   const stateRef = useRef(state);
   const drag = useRef<Drag | null>(null);
   const solved = isNonogramSolved(spec, state);
@@ -93,7 +88,7 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
     stateRef.current = next;
     setState(next);
     onMove(cue);
-    playFeedback(cue, units, before, next, isNonogramSolved(spec, next));
+    playConflict(cue, broken, before, next, isNonogramSolved(spec, next));
     onStateChange?.([...next]);
   }
 
