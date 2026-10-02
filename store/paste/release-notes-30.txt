@@ -1,0 +1,22 @@
+<en-US>
+A new Social page and fewer slow puzzles in Hustle.
+
+- Social: swipe through the puzzles, group actions sit in the group menu
+- Standings: your name first, up to three badges and your flair below it
+- Hustle: Sudoku comes every 25th stage, Sumdoku every 50th, as boss levels
+- Hints in Cats and Hearts always place a symbol
+- Hearts Medium: new levels without giveaway patterns; unfinished Hearts puzzles start over
+- Reset sits next to Hint
+- After a solve, your rank opens the standings
+</en-US>
+<de-DE>
+Eine neue Social-Seite und weniger zähe Rätsel im Hustle.
+
+- Social: durch die Rätsel wischen, Gruppen-Aktionen im Gruppen-Menü
+- Bestenliste: dein Name zuerst, darunter bis zu drei Badges und dein Flair
+- Hustle: Sudoku kommt alle 25 Stufen, Sumdoku alle 50, als Boss-Level
+- Hints bei Cats und Hearts setzen immer ein Symbol
+- Hearts Medium: neue Level ohne verräterische Muster; angefangene Hearts beginnen neu
+- Reset sitzt neben Hint
+- Nach dem Lösen führt dein Rang zur Bestenliste
+</de-DE>
