@@ -42,11 +42,11 @@ const FLAIRS: readonly FlairCosmetic[] = COSMETICS.filter((c): c is FlairCosmeti
 const ALL_THEMES: readonly ThemeCosmetic[] = [...THEMES, ...HUSTLE_THEMES];
 const ALL_NAMEPLATES: readonly NameplateCosmetic[] = [...NAMEPLATES, ...HUSTLE_NAMEPLATES];
 
-// Badges and flairs fold away so the page stays short; themes stay open, the try-on is the point
-// of the page. Closed by default, and each section remembers how it was left.
-function ShopSection({ id, title, count, children }: { id: string; title: string; count: string; children: React.ReactNode }) {
+// Every section folds away so the page stays short. Themes and nameplates start open, the try-on
+// is the point of the page; badges and flairs start closed. Each remembers how it was left.
+function ShopSection({ id, title, count, defaultOpen = false, children }: { id: string; title: string; count: string; defaultOpen?: boolean; children: React.ReactNode }) {
   const key = `ph:shop:${id}`;
-  const [open, setOpen] = useState(() => readSetting(key) === '1');
+  const [open, setOpen] = useState(() => (readSetting(key) ?? (defaultOpen ? '1' : '0')) === '1');
   const toggle = () => {
     writeSetting(key, open ? '0' : '1');
     setOpen(!open);
@@ -60,7 +60,7 @@ function ShopSection({ id, title, count, children }: { id: string; title: string
           <Chevron size={18} />
         </button>
       </h2>
-      {open && <div id={`shop-${id}`}>{children}</div>}
+      {open && <div id={`shop-${id}`} className="shop-section-body">{children}</div>}
     </section>
   );
 }
@@ -304,8 +304,7 @@ export function Shop() {
           </section>
         )}
 
-        <section className="card-lg">
-          <h2>Themes</h2>
+        <ShopSection id="themes" title="Themes" count={`${ALL_THEMES.filter((t) => ownedIds.has(t.id)).length}/${ALL_THEMES.length}`} defaultOpen>
           {THEMES_FREE && <span className="muted small">Free while in beta. Prices apply from launch.</span>}
           <span className="muted small">{HUSTLE_THEMES.map((t) => t.title).join(', ')}: earned in Hustle, never sold.</span>
           <div className="theme-grid">
@@ -333,10 +332,9 @@ export function Shop() {
               </button>
             ))}
           </div>
-        </section>
+        </ShopSection>
 
-        <section className="card-lg">
-          <h2>Nameplates</h2>
+        <ShopSection id="nameplates" title="Nameplates" count={`${ALL_NAMEPLATES.filter((n) => ownedIds.has(n.id)).length}/${ALL_NAMEPLATES.length}`} defaultOpen>
           <span className="muted small">{HUSTLE_NAMEPLATES.map((n) => n.title).join(', ')}: earned in Hustle, never sold.</span>
           <div className="plate-list">
             {ALL_NAMEPLATES.map((item) => (
@@ -353,7 +351,7 @@ export function Shop() {
               </button>
             ))}
           </div>
-        </section>
+        </ShopSection>
 
         <ShopSection id="badges" title="Badges" count={`${BADGES.filter((b) => ownedIds.has(b.id)).length}/${BADGES.length}`}>
           <div className="shop-grid">

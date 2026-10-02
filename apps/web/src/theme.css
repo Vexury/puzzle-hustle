@@ -1377,6 +1377,7 @@ button.unlock-row { cursor: pointer; }
 .plate-tile-state { flex: none; font-family: var(--font-num); font-size: var(--fs-sm); font-weight: 800; padding: 3px 10px; border-radius: var(--radius-pill); background: var(--np-pill-bg, var(--card-bg)); color: var(--np-pill-text, var(--text)); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 .shop-section-head { display: flex; align-items: center; gap: 8px; width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .shop-section-title { flex: 1; }
+.shop-section-body { display: contents; }
 .shop-section-count { font-family: var(--font-num); font-weight: 400; color: var(--text-muted); }
 .shop-section-head .chevron { color: var(--text-muted); transform: rotate(180deg); transition: transform 0.2s ease; }
 .shop-section-head[aria-expanded='true'] .chevron { transform: rotate(270deg); }.shop-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }

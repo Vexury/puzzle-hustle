@@ -74,9 +74,9 @@ Stand: 2026-10-02
 - [x] 2026-09-29 **Jonas** "Icons nicht nach Kosten sortiert" meinte die Badges; die sind seit
   27.09. nach Preis sortiert, er hatte noch einen aelteren Build.
 - [x] 2026-09-29 **Jonas, Dani** Customize-Seite zu lang: Badges und Flairs sind jetzt aufklappbar,
-  anfangs zu, mit Zaehler im Kopf (besessen/gesamt); Themes bleiben offen. Jeder Abschnitt merkt
-  sich seinen Zustand (`ph:shop:badges`, `ph:shop:flairs`). Zugeklappt ist die Seite rund 1000 px
-  hoch statt rund 4000 px.
+  anfangs zu, mit Zaehler im Kopf (besessen/gesamt). Seit 2026-10-02 auch Themes und Nameplates,
+  die anfangs offen sind (Try-on). Jeder Abschnitt merkt sich seinen Zustand (`ph:shop:<abschnitt>`).
+  Zugeklappt ist die Seite rund 1000 px hoch statt rund 4000 px.
 - [x] 2026-09-29 **Saskia** Nonogramm-Demo: "A 5 fills its whole row" und "The outer columns have
   their 2 already" waren fuer Neulinge unklar. Beide Schritte nennen jetzt die Schlussfolgerung:
   "These rows need 5 filled cells and have only 5, so all of them are filled" und "The outer columns
