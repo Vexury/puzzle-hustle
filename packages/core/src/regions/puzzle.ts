@@ -5,6 +5,8 @@ import { REGIONS_MARKED_EMPTY, enumerateRegionsSolutions, regionsNeighbors, regi
 export { REGIONS_MARKED_EMPTY } from './solver.ts';
 
 export const REGIONS_VERSION = 1;
+// Stars (Hearts) apart from Crowns since 2026-10-02: version 2 keeps blind regions out of medium.
+export const STARS_VERSION = 2;
 
 export interface RegionsConfig {
   size: number;
@@ -354,7 +356,38 @@ function refineUnique(spec: RegionsSpec, rng: Rng, maxSteps: number, work: Work)
 // lowering it changes which seeds later periods get.
 export const REGIONS_BUDGET = 500_000;
 
-export function generateRegions(seed: number, config: RegionsConfig, difficulty: Difficulty = 'medium', budget = Number.POSITIVE_INFINITY): RegionsSpec {
+// A region whose shape alone leaves one way to place its stars, such as three cells in a row
+// with two stars: players learn the shape and fill it without reading the board.
+function blindRegions(spec: RegionsSpec): number {
+  const n = spec.config.size;
+  const k = spec.config.stars;
+  const cells: number[][] = Array.from({ length: n }, () => []);
+  spec.regions.forEach((reg, i) => cells[reg]!.push(i));
+  const touch = (a: number, b: number) => Math.abs(Math.floor(a / n) - Math.floor(b / n)) <= 1 && Math.abs((a % n) - (b % n)) <= 1;
+  let blind = 0;
+  for (const region of cells) {
+    let ways = 0;
+    const place = (from: number, chosen: number[]): void => {
+      if (chosen.length === k) {
+        ways++;
+        return;
+      }
+      for (let i = from; i < region.length && ways < 2; i++) if (chosen.every((c) => !touch(c, region[i]!))) place(i + 1, [...chosen, region[i]!]);
+    };
+    place(0, []);
+    if (ways === 1) blind++;
+  }
+  return blind;
+}
+
+export function generateRegions(
+  seed: number,
+  config: RegionsConfig,
+  difficulty: Difficulty = 'medium',
+  budget = Number.POSITIVE_INFINITY,
+  version = REGIONS_VERSION,
+  maxBlind = Number.POSITIVE_INFINITY,
+): RegionsSpec {
   const { size, stars } = config;
   if (size < stars * 4) throw new Error(`regions grid ${size} too small for ${stars} stars`);
   const rng = new Rng(seed);
@@ -364,8 +397,8 @@ export function generateRegions(seed: number, config: RegionsConfig, difficulty:
     if (!solution) continue;
     const regions = buildRegions(size, stars, solution, rng);
     if (!regions) continue;
-    const spec: RegionsSpec = { version: REGIONS_VERSION, seed, difficulty, config, regions, solution };
-    if (refineUnique(spec, rng, 200, work)) return spec;
+    const spec: RegionsSpec = { version, seed, difficulty, config, regions, solution };
+    if (refineUnique(spec, rng, 200, work) && blindRegions(spec) <= maxBlind) return spec;
   }
   throw new Error(`could not generate regions puzzle for seed ${seed} / ${size}x${size} with ${stars} stars`);
 }
@@ -374,8 +407,13 @@ export function generateCrowns(seed: number, difficulty: Difficulty, options: Re
   return generateRegions(seed, crownsConfig(difficulty, options), difficulty, budget);
 }
 
+// Blind regions a Stars board may keep (2026-10-02, Frieder: on easy and medium two hearts
+// could be set blind from a recurring shape). Easy keeps them as a way in; hard and genius
+// were not part of the change.
+const STARS_MAX_BLIND: Partial<Record<Difficulty, number>> = { medium: 0 };
+
 export function generateStars(seed: number, difficulty: Difficulty, options: RegionsOptions = {}, budget?: number): RegionsSpec {
-  return generateRegions(seed, starsConfig(difficulty, options), difficulty, budget);
+  return generateRegions(seed, starsConfig(difficulty, options), difficulty, budget, STARS_VERSION, STARS_MAX_BLIND[difficulty]);
 }
 
 export function emptyRegionsState(spec: RegionsSpec): RegionsState {

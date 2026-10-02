@@ -24,7 +24,9 @@ for (const type of types) {
   const a = adapter(type);
   const keepOld = versions[type] === a.version;
   versions[type] = a.version;
-  levels[type] = { ...(keepOld ? levels[type] : {}) } as Record<Difficulty, LevelEntry[]>;
+  // With difficulties named after a version bump, the others keep their levels: the caller
+  // vouches that the bump left their boards alone.
+  levels[type] = { ...(keepOld || ONLY_DIFFS ? levels[type] : {}) } as Record<Difficulty, LevelEntry[]>;
   for (const difficulty of difficulties) {
     const kept = keepOld ? (levels[type][difficulty] ?? []) : [];
     if (kept.length === PER_DIFFICULTY) {
