@@ -387,7 +387,8 @@ p { margin: 0; }
 .np-dark .showcase-box { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12); }
 .showcase-cell { width: 22px; height: 24px; display: grid; place-items: center; }
 .showcase-icon { width: 18px; height: 18px; color: var(--rarity-solo); }
-.row-badges { flex: none; display: inline-flex; gap: 1px; }
+.row-badges { flex: none; display: inline-flex; align-items: center; gap: 1px; }
+.row-badges > span { display: flex; }
 .row-badge { width: 16px; height: 16px; color: var(--rarity-solo); }
 .np:not(.np-dark) :is(.showcase-icon, .row-badge) { color: var(--rarity-on-light); }
 .np-dark :is(.showcase-icon, .row-badge) { color: var(--rarity-on-dark); }
@@ -643,6 +644,7 @@ p { margin: 0; }
    pill as the time (2026-10-02, flairs over the tracks and the cat were unreadable). */
 .leaderboard-row.np .leaderboard-sub { align-self: flex-start; max-width: 100%; box-sizing: border-box; margin-left: -4px; padding: 1px 8px 1px 4px; border-radius: var(--radius-pill); background: var(--np-pill-bg); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 .leaderboard-row.np .leaderboard-flair { color: var(--np-pill-text); opacity: 0.8; }
+.leaderboard-row.np .leaderboard-hints { padding: 3px 8px; border-radius: var(--radius-pill); background: var(--np-pill-bg); color: var(--np-pill-text); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 .leaderboard-row.np .leaderboard-time { padding: 3px 9px; border-radius: var(--radius-pill); background: var(--np-pill-bg); color: var(--np-pill-text); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 
 /* Badge tints by rarity (badgeRarity, from the price): in the theme's colours on cards, in the
