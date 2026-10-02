@@ -109,7 +109,7 @@ export function MosaicGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
         d.applied = true;
         setCells([idx], d.value);
         press();
-        sound.press();
+        sound.play('cross');
       }, LONG_PRESS_MS);
     }
     drag.current = d;

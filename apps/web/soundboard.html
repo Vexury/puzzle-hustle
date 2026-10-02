@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soundboard</title>
+  <style>
+    :root { color-scheme: light dark; --bg: #faf9f8; --fg: #1c1b1a; --card: #fff; --line: #e4e1dd; --dim: #77726c; --accent: #c9821b; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #111110; --fg: #eeece9; --card: #1c1b1a; --line: #2e2c2a; --dim: #8f8a84; } }
+    body { margin: 0; padding: 24px 16px; background: var(--bg); color: var(--fg); font: 15px/1.4 system-ui, sans-serif; }
+    main { max-width: 720px; margin: 0 auto; }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--dim); margin: 24px 0 8px; }
+    p { color: var(--dim); margin: 0 0 8px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+    .pad { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+    .pad b { font-size: 15px; }
+    .pad small { color: var(--dim); font-size: 12.5px; flex: 1; }
+    .row { display: flex; gap: 6px; }
+    button { flex: 1; font: inherit; font-size: 14px; padding: 8px 0; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer; }
+    button:active, button.hit { border-color: var(--accent); color: var(--accent); }
+    kbd { font: 11px ui-monospace, monospace; color: var(--dim); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
+    .warn { color: var(--accent); }
+    .warn button { flex: none; padding: 2px 10px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Soundboard</h1>
+    <p>Dev only. Plays the live cues from <code>src/lib/sound.ts</code>; saving it reloads this page. Keys play the pads in order; Shift plays a run of 8.</p>
+    <p id="warn" class="warn" hidden>Sound effects are off in this browser (ph:sound = 0). <button id="on">Turn on</button></p>
+    <div id="board"></div>
+  </main>
+  <script type="module">
+    const sound = await import('/src/lib/sound.ts');
+    const { play, CUE_NAMES, SOUND_KEY } = sound;
+
+    const warn = document.getElementById('warn');
+    warn.hidden = localStorage.getItem(SOUND_KEY) !== '0';
+    document.getElementById('on').onclick = () => { localStorage.removeItem(SOUND_KEY); warn.hidden = true; };
+
+    const at = (ms, fn) => setTimeout(fn, ms);
+    const runOf = (cue) => () => { for (let i = 0; i < 8; i++) at(i * 140, () => play(cue)); };
+
+    const GROUPS = [
+      ['Cell edits', [
+        ['place', 'Fill a cell, place a symbol, enter a digit'],
+        ['cross', 'Set an X, whether by tap cycle, right-click or long-press'],
+        ['clear', 'Empty a cell, remove an X, erase, lift track'],
+        ['note', 'Sudoku pencil mark'],
+      ]],
+      ['Drag', [
+        ['step', 'Each cell of a drag: paint stroke, laid track (flat pitch here)'],
+        ['retract', 'Zip: drag back or jump back'],
+      ]],
+      ['Pieces', [
+        ['pickup', 'Slabs and Shapes: lift a piece'],
+        ['drop', 'Slabs and Shapes: set it down'],
+        ['rotate', 'Slabs: turn a slab'],
+        ['blocked', 'Turn or drop not possible'],
+      ]],
+      ['Tools', [
+        ['undo', 'Undo'],
+        ['redo', 'Redo'],
+        ['hint', 'Hint used'],
+      ]],
+      ['Feedback', [
+        ['checkpoint', 'Zip reaches the next number; a row, column or region is satisfied'],
+        ['conflict', 'A rule just became broken'],
+      ]],
+      ['Success', [
+        ['solved', 'Puzzle solved'],
+        ['unlock', 'Unlock card'],
+      ]],
+    ];
+
+    // Scripted runs that show how cues behave in sequence, as they would in play.
+    const SEQUENCES = [
+      ['Zip path', '25 cells up the ladder, checkpoints at numbers, solved at the end', () => {
+        const n = 25;
+        for (let i = 0; i < n; i++) at(i * 85, () => {
+          play('step', { progress: i / (n - 1) });
+          if (i === 8 || i === 16) play('checkpoint');
+        });
+        at(n * 85 + 60, () => play('solved'));
+      }],
+      ['Zip backtrack', 'Draw 10 cells, then drag 6 back', () => {
+        const n = 25;
+        for (let i = 0; i < 10; i++) at(i * 85, () => play('step', { progress: i / (n - 1) }));
+        for (let i = 0; i < 6; i++) at(1000 + i * 95, () => play('retract', { progress: (9 - i - 1) / (n - 1) }));
+      }],
+      ['Paint stroke', 'Nonogram or Mosaic: drag-fill 10 cells', () => {
+        play('place');
+        for (let i = 1; i < 10; i++) at(i * 55, () => play('step'));
+      }],
+      ['Fast drag', '20 steps in 200 ms; the 30 ms limiter thins them out', () => {
+        for (let i = 0; i < 20; i++) at(i * 10, () => play('step'));
+      }],
+      ['Slab move', 'Pick up, drop, rotate, then a blocked rotation', () => {
+        play('pickup');
+        at(450, () => play('drop'));
+        at(900, () => play('rotate'));
+        at(1350, () => play('blocked'));
+      }],
+      ['Mistake, fixed', 'Wrong X, conflict, undo, correct fill, row satisfied', () => {
+        play('cross');
+        at(120, () => play('conflict'));
+        at(700, () => play('undo'));
+        at(1100, () => play('place'));
+        at(1220, () => play('checkpoint'));
+      }],
+    ];
+
+    const KEYS = '1234567890qwertyuiopasdfghjkl';
+    const pads = [];
+    const board = document.getElementById('board');
+
+    function pad(container, title, desc, once, run) {
+      const el = document.createElement('div');
+      el.className = 'pad';
+      const key = KEYS[pads.length];
+      el.innerHTML = `<b></b><small></small><div class="row"><button>Play${key ? ` <kbd>${key}</kbd>` : ''}</button>${run ? '<button>×8</button>' : ''}</div>`;
+      el.querySelector('b').textContent = title;
+      el.querySelector('small').textContent = desc;
+      const [b1, b2] = el.querySelectorAll('button');
+      b1.onclick = once;
+      if (b2) b2.onclick = run;
+      pads.push({ key, b1, b2, once, run });
+      container.append(el);
+    }
+
+    function section(title) {
+      const h = document.createElement('h2');
+      h.textContent = title;
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+      board.append(h, grid);
+      return grid;
+    }
+
+    const listed = new Set();
+    for (const [title, cues] of GROUPS) {
+      const grid = section(title);
+      for (const [cue, desc] of cues) {
+        listed.add(cue);
+        pad(grid, cue, desc, () => play(cue), runOf(cue));
+      }
+    }
+    const rest = CUE_NAMES.filter((c) => !listed.has(c));
+    if (rest.length) {
+      const grid = section('Not grouped yet');
+      for (const cue of rest) pad(grid, cue, '', () => play(cue), runOf(cue));
+    }
+    const seq = section('Sequences');
+    for (const [title, desc, fn] of SEQUENCES) pad(seq, title, desc, fn);
+
+    addEventListener('keydown', (e) => {
+      if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+      const p = pads.find((p) => p.key === e.key.toLowerCase() || (e.shiftKey && p.key === e.code.replace(/^(Digit|Key)/, '').toLowerCase()));
+      if (!p) return;
+      const useRun = e.shiftKey && p.run;
+      const btn = useRun ? p.b2 : p.b1;
+      btn.classList.add('hit');
+      setTimeout(() => btn.classList.remove('hit'), 120);
+      (useRun ? p.run : p.once)();
+    });
+  </script>
+</body>
+</html>

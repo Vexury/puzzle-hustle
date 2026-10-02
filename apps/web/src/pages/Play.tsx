@@ -362,7 +362,7 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
     if (!g.counted && !g.notAMove) {
       g.counted = true;
       haptics.tap();
-      sound.tap();
+      sound.play('place');
       counters.current.moves++;
       setMoves(counters.current.moves);
     }
@@ -439,7 +439,7 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
     if (result) return;
     setRunning(false);
     haptics.solved();
-    sound.solved();
+    sound.play('solved');
     const elapsed = elapsedNow();
     emitAppEvent({ type: 'solved', seconds: elapsed });
     report('solved', elapsed);

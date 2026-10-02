@@ -285,7 +285,7 @@ export function UnlockModalHost() {
   useEffect(() => {
     if (!visible) return;
     haptics.solved();
-    sound.unlock();
+    sound.play('unlock');
     if (!reducedMotion()) fireConfetti();
   }, [visible]);
 

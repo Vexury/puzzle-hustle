@@ -40,7 +40,7 @@ export function Gameplay() {
           onChange={(on) => {
             setSoundOn(on);
             writeSetting(sound.SOUND_KEY, on ? '1' : '0');
-            sound.tap();
+            sound.play('place');
           }}
         />
         {hapticsAvailable && (

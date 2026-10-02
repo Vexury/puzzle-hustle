@@ -118,7 +118,7 @@ export function NonogramGame({ spec, onMove, onSolved, onHintUsed, requestHint, 
         d.applied = true;
         setCells([idx], d.value);
         press();
-        sound.press();
+        sound.play('cross');
       }, LONG_PRESS_MS);
     }
     drag.current = d;

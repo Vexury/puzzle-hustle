@@ -105,7 +105,7 @@ export function RegionsGame({ spec, symbol, onMove, onSolved, onHintUsed, reques
         d.paint = toggleX(current);
         setCell(idx, d.paint);
         press();
-        sound.press();
+        sound.play('cross');
       }, LONG_PRESS_MS);
     }
     drag.current = d;

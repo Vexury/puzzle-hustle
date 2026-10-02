@@ -136,7 +136,7 @@ export function TracksGame({ spec, onMove, onSolved, onHintUsed, requestHint, hi
       d.timer = setTimeout(() => {
         hold();
         press();
-        sound.press();
+        sound.play('cross');
       }, LONG_PRESS_MS);
   }
 
