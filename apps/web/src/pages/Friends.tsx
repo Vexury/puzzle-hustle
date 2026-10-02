@@ -7,6 +7,7 @@ import { SubpageHead } from '../components/SubpageHead.tsx';
 import { toast } from '../components/Toast.tsx';
 import { Board } from '../components/Board.tsx';
 import { GroupMenu } from '../components/GroupMenu.tsx';
+import { pushBackGuard } from '../lib/back.ts';
 import { StandingsCarousel } from '../components/StandingsCarousel.tsx';
 import { dailyNumber, monthlyNumber, weeklyNumber } from '../lib/stats.ts';
 
@@ -85,9 +86,6 @@ export function activeGroup(groups: Group[], selected: string | null): Group | n
   return groups.find((g) => g.id === selected) ?? groups[0] ?? null;
 }
 
-// How long an armed Leave stays armed, as for Reset on Profile.
-const CONFIRM_MS = 2000;
-
 function socialPuzzles() {
   return [...DAILY_TYPES.map((type) => dailyRef(type)), periodRef('weekly'), periodRef('monthly')];
 }
@@ -99,10 +97,14 @@ export function pageLabel(ref: PuzzleRef): string {
   return `${name} · Daily #${dailyNumber(ref.key!)}`;
 }
 
+type Dialog = 'new' | 'join' | 'leave' | null;
+
 // Groups and standings, a page under Profile. Only with a session: without an account there is
-// nothing here, and a player who just wants to solve never sees times to compare. An invitation
-// link (/join?c=CODE) lands here with the join field prefilled; the placement chip after a solve
-// (/social?g=GROUP&p=PUZZLE) opens those standings.
+// nothing here, and a player who just wants to solve never sees times to compare. The standings
+// are the last thing on the page, so a card of another height never moves anything below it;
+// group actions live in the group menu (2026-10-02). Without a group the create and join cards
+// stand in their place. An invitation link (/join?c=CODE) opens the join dialog prefilled; the
+// placement chip after a solve (/social?g=GROUP&p=PUZZLE) opens those standings.
 export function Social({ code: initialCode = '', group = null, puzzle: initialPuzzle = null }: { code?: string; group?: string | null; puzzle?: string | null } = {}) {
   const session = useSession();
   const { groups, reload, loading, failed } = useGroups();
@@ -115,13 +117,15 @@ export function Social({ code: initialCode = '', group = null, puzzle: initialPu
   const [joining, setJoining] = useState(false);
   const [groupId, setGroupId] = useState<string | null>(group);
   const [puzzleIndex, setPuzzleIndex] = useState(() => Math.max(0, socialPuzzles().findIndex((ref) => refId(ref) === initialPuzzle)));
-  const [leaving, setLeaving] = useState<string | null>(null);
+  const [dialog, setDialog] = useState<Dialog>(initialCode ? 'join' : null);
 
   useEffect(() => {
-    if (!leaving) return;
-    const timer = setTimeout(() => setLeaving(null), CONFIRM_MS);
-    return () => clearTimeout(timer);
-  }, [leaving]);
+    if (!dialog) return;
+    return pushBackGuard(() => {
+      setDialog(null);
+      return true;
+    });
+  }, [dialog]);
 
   if (!session) return null;
 
@@ -141,8 +145,10 @@ export function Social({ code: initialCode = '', group = null, puzzle: initialPu
   const create = async () => {
     setCreating(true);
     try {
-      await apiFetch<Group>('/groups', { method: 'POST', body: JSON.stringify({ name }), auth: true });
+      const created = await apiFetch<Group>('/groups', { method: 'POST', body: JSON.stringify({ name }), auth: true });
       setName('');
+      setDialog(null);
+      setGroupId(created.id);
       reload();
     } catch (err) {
       toast(explain(err));
@@ -154,10 +160,12 @@ export function Social({ code: initialCode = '', group = null, puzzle: initialPu
   const join = async () => {
     setJoining(true);
     try {
-      const group = await apiFetch<Group>('/groups/join', { method: 'POST', body: JSON.stringify({ code }), auth: true });
+      const joined = await apiFetch<Group>('/groups/join', { method: 'POST', body: JSON.stringify({ code }), auth: true });
       setCode('');
+      setDialog(null);
+      setGroupId(joined.id);
       reload();
-      toast(`Joined ${group.name}`);
+      toast(`Joined ${joined.name}`);
     } catch (err) {
       toast(explain(err));
     } finally {
@@ -166,18 +174,40 @@ export function Social({ code: initialCode = '', group = null, puzzle: initialPu
   };
 
   const leave = async (group: Group) => {
-    setLeaving(null);
+    setDialog(null);
     try {
       await apiFetch('/groups/leave', { method: 'POST', body: JSON.stringify({ id: group.id }), auth: true });
+      setGroupId(null);
       reload();
     } catch (err) {
       toast(explain(err));
     }
   };
 
+  const invite = (group: Group) =>
+    void share(`Join my Puzzle Hustle group "${group.name}"\nCode ${group.code}\n${joinUrl(group.code)}`).then((outcome) => {
+      if (outcome === 'copied') toast('Link copied');
+      else if (outcome === 'failed') toast('Could not share');
+    });
+
   const current = activeGroup(groups, groupId);
   const active = current?.id ?? null;
   const pages = puzzles.map((ref) => ({ key: refId(ref), label: pageLabel(ref), color: `var(--type-${ref.type})` }));
+
+  const nameInput = <input value={name} onChange={(e) => setName(e.target.value)} maxLength={24} placeholder="Group name" aria-label="Group name" />;
+  const createButton = (
+    <button type="button" className="pill" onClick={() => void create()} disabled={name.trim().length < 2 || creating}>
+      Create
+    </button>
+  );
+  const codeInput = (
+    <input value={code} onChange={(e) => setCode(normalizeCode(e.target.value))} maxLength={6} placeholder="CODE" aria-label="Group code" className="num" />
+  );
+  const joinButton = (
+    <button type="button" className="pill" onClick={() => void join()} disabled={code.length !== 6 || joining}>
+      Join
+    </button>
+  );
 
   return (
     <>
@@ -191,15 +221,16 @@ export function Social({ code: initialCode = '', group = null, puzzle: initialPu
             </button>
           </section>
         )}
-        {active && current && (
+        {active && current ? (
           <section className="standings" aria-label="Standings">
             <div className="standings-top">
               <h2>Standings</h2>
-              {groups.length > 1 ? (
-                <GroupMenu groups={groups} active={active} onPick={setGroupId} />
-              ) : (
-                <span className="muted">{current.name}</span>
-              )}
+              <GroupMenu
+                groups={groups}
+                active={active}
+                onPick={setGroupId}
+                onAction={(action) => (action === 'invite' ? invite(current) : setDialog(action))}
+              />
             </div>
             <StandingsCarousel
               pages={pages}
@@ -217,72 +248,71 @@ export function Social({ code: initialCode = '', group = null, puzzle: initialPu
               )}
             />
           </section>
+        ) : (
+          !failed && (
+            <div className="card-row">
+              <section className="card-lg">
+                <h2>New group</h2>
+                <div className="friends-actions stacked">
+                  {nameInput}
+                  {createButton}
+                </div>
+              </section>
+              <section className="card-lg">
+                <h2>Join a group</h2>
+                <div className="friends-actions stacked">
+                  {codeInput}
+                  {joinButton}
+                </div>
+              </section>
+            </div>
+          )
         )}
-        <div className="card-row">
-          <section className="card-lg">
-            <h2>New group</h2>
-            <div className="friends-actions stacked">
-              <input value={name} onChange={(e) => setName(e.target.value)} maxLength={24} placeholder="Group name" />
-              <button type="button" className="pill" onClick={() => void create()} disabled={name.trim().length < 2 || creating}>
-                Create
+      </div>
+      {current && dialog && (
+        <div
+          className="ad-ask"
+          role="dialog"
+          aria-modal="true"
+          aria-label={dialog === 'new' ? 'New group' : dialog === 'join' ? 'Join a group' : 'Leave group'}
+          onClick={(e) => e.target === e.currentTarget && setDialog(null)}
+        >
+          <div className="card-lg">
+            {dialog === 'new' && (
+              <>
+                <b>New group</b>
+                <div className="friends-actions stacked">{nameInput}</div>
+              </>
+            )}
+            {dialog === 'join' && (
+              <>
+                <b>Join a group</b>
+                <div className="friends-actions stacked">{codeInput}</div>
+              </>
+            )}
+            {dialog === 'leave' && (
+              <>
+                <b>{current.members === 1 ? `Delete ${current.name}?` : `Leave ${current.name}?`}</b>
+                <span className="muted small">
+                  {current.members === 1 ? 'You are the last member, so the group and its standings go away.' : 'You can come back any time with the code.'}
+                </span>
+              </>
+            )}
+            <div className="ad-ask-row">
+              <button type="button" className="pill outline" onClick={() => setDialog(null)}>
+                {dialog === 'leave' ? 'Not now' : 'Cancel'}
               </button>
-            </div>
-          </section>
-
-          <section className="card-lg">
-            <h2>Join a group</h2>
-            <div className="friends-actions stacked">
-              <input
-                value={code}
-                onChange={(e) => setCode(normalizeCode(e.target.value))}
-                maxLength={6}
-                placeholder="CODE"
-                className="num"
-              />
-              <button type="button" className="pill" onClick={() => void join()} disabled={code.length !== 6 || joining}>
-                Join
-              </button>
-            </div>
-          </section>
-        </div>
-
-
-        {groups.map((group) => (
-          <div key={group.id} className="row-card friends-row">
-            <span className="row-text">
-              <span className="row-title">{group.name}</span>
-              <span className="row-sub">
-                {group.members} member{group.members === 1 ? '' : 's'} · code <b className="num">{group.code}</b>
-              </span>
-            </span>
-            <span className="friends-row-actions">
-              <button
-                type="button"
-                className="pill outline"
-                onClick={() =>
-                  void share(`Join my Puzzle Hustle group "${group.name}"\nCode ${group.code}\n${joinUrl(group.code)}`).then(
-                    (outcome) => {
-                      if (outcome === 'copied') toast('Link copied');
-                      else if (outcome === 'failed') toast('Could not share');
-                    },
-                  )
-                }
-              >
-                Invite
-              </button>
-              {leaving === group.id ? (
-                <button type="button" className="pill danger" onClick={() => void leave(group)}>
-                  {group.members === 1 ? 'Delete group' : 'Leave'}
-                </button>
-              ) : (
-                <button type="button" className="pill outline" onClick={() => setLeaving(group.id)}>
-                  Leave
+              {dialog === 'new' && createButton}
+              {dialog === 'join' && joinButton}
+              {dialog === 'leave' && (
+                <button type="button" className="pill danger" onClick={() => void leave(current)}>
+                  {current.members === 1 ? 'Delete' : 'Leave'}
                 </button>
               )}
-            </span>
+            </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </>
   );
 }

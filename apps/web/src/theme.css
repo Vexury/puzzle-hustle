@@ -566,22 +566,25 @@ p { margin: 0; }
 .group-menu-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .group-menu-button svg { flex: none; width: 12px; height: 8px; fill: none; stroke: var(--text-muted); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.2s; }
 .group-menu-button[aria-expanded="true"] svg { transform: rotate(180deg); }
-.group-menu-list {
-  position: absolute; z-index: 20; top: calc(100% + 8px); right: 0; min-width: 220px; max-width: 80vw; margin: 0; padding: 6px; list-style: none;
+.group-menu-pop {
+  position: absolute; z-index: 20; top: calc(100% + 8px); right: 0; min-width: 240px; max-width: 80vw; padding: 6px;
   background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-hover);
   animation: group-menu-in 0.16s ease-out;
 }
-.group-menu-list button {
+.group-menu-pop ul { margin: 0; padding: 0; list-style: none; }
+.group-menu-pop .group-menu-actions { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border); }
+.group-menu-pop button {
   display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 6px 10px; border: 0; border-radius: var(--radius-sm);
   background: none; color: var(--text); font: inherit; text-align: left; cursor: pointer;
 }
-.group-menu-list button:hover, .group-menu-list button:focus-visible { background: color-mix(in srgb, var(--text) 6%, transparent); outline: none; }
-.group-menu-list button[aria-selected="true"] { background: var(--accent-soft); }
+.group-menu-pop button:hover, .group-menu-pop button:focus-visible { background: color-mix(in srgb, var(--text) 6%, transparent); outline: none; }
+.group-menu-pop button[aria-selected="true"] { background: var(--accent-soft); }
+.group-menu-pop button.danger { color: var(--danger); }
 .group-menu-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .group-menu-text b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .group-menu-check { flex: none; width: 20px; height: 20px; fill: none; stroke: var(--accent-text); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 @keyframes group-menu-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .group-menu-list { animation: none; } .group-menu-button svg { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .group-menu-pop { animation: none; } .group-menu-button svg { transition: none; } }
 .standings-dots { display: flex; justify-content: center; flex-wrap: wrap; }
 .standings-dot { width: 22px; height: 28px; padding: 0; border: 0; background: none; display: grid; place-items: center; cursor: pointer; }
 .standings-dot::before { content: ''; width: 10px; height: 10px; border-radius: var(--radius-pill); background: color-mix(in srgb, var(--dot-c) 40%, var(--border)); transition: width 0.25s, background 0.25s; }
