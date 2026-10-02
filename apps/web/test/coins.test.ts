@@ -204,23 +204,22 @@ it('reads a badge stored before the showcase as a showcase of one', () => {
   expect(readEquipped()).toEqual({ ...NONE, badge: 'bolt', badges: ['bolt'] });
 });
 
-it('fills the showcase up to four owned badges, the first one shown in the standings', () => {
+it('fills the showcase up to three owned badges, the first one shown in the standings', () => {
   earnSome(70);
   for (const id of ['bolt', 'leaf', 'dice', 'note', 'wave']) expect(buyItem(id)).toBe(true);
   expect(toggleShowcase('bolt')).toBe('added');
   expect(toggleShowcase('leaf')).toBe('added');
   expect(toggleShowcase('dice')).toBe('added');
-  expect(toggleShowcase('note')).toBe('added');
-  expect(toggleShowcase('wave')).toBe('full');
+  expect(toggleShowcase('note')).toBe('full');
   expect(toggleShowcase('cat')).toBe('refused');
-  expect(readEquipped().badges).toEqual(['bolt', 'leaf', 'dice', 'note']);
+  expect(readEquipped().badges).toEqual(['bolt', 'leaf', 'dice']);
   expect(toggleShowcase('bolt')).toBe('removed');
   expect(readEquipped().badge).toBe('leaf');
   // Equipping a badge makes it the one the standings show and keeps the others behind it.
   expect(equip('badge', 'note')).toBe(true);
   expect(readEquipped().badges).toEqual(['note', 'leaf', 'dice']);
   expect(equip('badge', 'wave')).toBe(true);
-  expect(readEquipped().badges).toEqual(['wave', 'note', 'leaf', 'dice']);
+  expect(readEquipped().badges).toEqual(['wave', 'note', 'leaf']);
 });
 
 it('buys a nameplate for its price and equips it, but never a Hustle one', () => {

@@ -110,7 +110,7 @@ can request deletion: yes. Collection of the account data is optional (only when
 | Personal info: Name | Display name, chosen or generated ("Player 1234") | App functionality |
 | Personal info: User IDs | Google or Apple subject ID and the internal player ID | App functionality, account management |
 | App activity: Other actions | Daily, Weekly and Monthly times with hints, moves and solve time; group memberships; Hustle level (highest stage reached) | App functionality |
-| App activity: Other user-generated content | Group names; showcase badges (up to four), equipped flair and nameplate as ids from a fixed list; reports on names | App functionality |
+| App activity: Other user-generated content | Group names; showcase badges (up to three), equipped flair and nameplate as ids from a fixed list; reports on names | App functionality |
 | App activity: App interactions | Anonymous usage events (`POST /events`): app opened on a day, intro finished or skipped, puzzle solved or left with type, difficulty, mode (Daily, Weekly, Monthly, level, random, Hustle) with level number or Hustle stage, time, moves, hints, resumed, first of its type; each event also carries platform, build and an install-age bucket. No ID, day granularity, deleted after about 13 months. Optional: "Anonymous stats" switch in Profile | Analytics |
 | Device or other IDs | Advertising ID, processed by the AdMob SDK | Advertising or marketing |
 

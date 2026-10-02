@@ -94,15 +94,18 @@ async function postName(request: Request, env: Env, playerId: string): Promise<R
 // Ownership lives in a local log the server cannot see, and a forged badge buys no rank, so
 // only the ids are checked against the catalogue. Clients from before the showcase send only
 // `badge` and no `nameplate`: their badge becomes the whole showcase and the nameplate stays.
+// Apps before 2026-10-02 still send a showcase of four; the extra one is dropped, not refused.
+const SHOWCASE_LEGACY = 4;
+
 async function postCosmetics(request: Request, env: Env, playerId: string): Promise<Response> {
   const input = await body(request);
   const flair = input.flair ?? null;
   let badges: string[];
   if (input.badges !== undefined) {
     const list = input.badges;
-    if (!Array.isArray(list) || list.length > SHOWCASE_SIZE || new Set(list).size !== list.length) return error(400, 'bad_badges');
+    if (!Array.isArray(list) || list.length > SHOWCASE_LEGACY || new Set(list).size !== list.length) return error(400, 'bad_badges');
     if (!list.every((id) => isCosmeticOf(id, 'badge'))) return error(400, 'unknown_badge');
-    badges = list as string[];
+    badges = (list as string[]).slice(0, SHOWCASE_SIZE);
   } else {
     const badge = input.badge ?? null;
     if (badge !== null && !isCosmeticOf(badge, 'badge')) return error(400, 'unknown_badge');

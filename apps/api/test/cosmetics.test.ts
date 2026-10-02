@@ -77,6 +77,12 @@ it('keeps the nameplate when an older client sends only a badge', async () => {
   expect(await showcase(me.player.id)).toEqual({ badge: null, badges: null, nameplate: null });
 });
 
+it('keeps the first three of the four an older app sends', async () => {
+  const me = await signIn('s1', 'Moritz');
+  const response = await post(me.token, { badges: ['bolt', 'leaf', 'cat', 'moon'], flair: null });
+  expect(await response.json()).toEqual({ badge: 'bolt', badges: ['bolt', 'leaf', 'cat'], flair: null, nameplate: null });
+});
+
 it('refuses too many, repeated or unknown showcase badges and an unknown nameplate', async () => {
   const me = await signIn('s1', 'Moritz');
   expect(await (await post(me.token, { badges: ['bolt', 'leaf', 'cat', 'moon', 'sun'] })).json()).toEqual({ error: 'bad_badges' });

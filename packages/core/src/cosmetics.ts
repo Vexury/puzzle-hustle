@@ -213,7 +213,8 @@ export function badgeRarity(badge: BadgeCosmetic): Rarity {
 }
 
 // How many badges the player card shows; the first is the one the standings show.
-export const SHOWCASE_SIZE = 4;
+// Three since 2026-10-02 (four crowded the name out of a standings row).
+export const SHOWCASE_SIZE = 3;
 
 // A display name must fit the first line of a standings row on a phone, podium included
 // (2026-10-02: 14 of mixed letters measured fit there; before, 24 were allowed).
