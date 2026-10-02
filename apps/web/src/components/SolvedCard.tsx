@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import type { CoinAward } from '@puzzle-hustle/core';
 import { href, onLinkClick } from '../lib/router.ts';
-import { formatSeconds } from '../lib/share.ts';
+import { formatSeconds, ordinal } from '../lib/share.ts';
 import { Flame } from '../pages/Daily.tsx';
 
 export interface SolvedCardProps {
@@ -110,14 +110,12 @@ function Tile({ icon, value, label, className, style }: { icon: ReactNode; value
 
 // With `to`, the chip opens the standings it summarises (2026-10-02, Robert).
 export function PlacementChip({ rank, of, group, to }: { rank: number; of: number; group: string; to?: string }) {
-  const suffix = rank % 100 >= 11 && rank % 100 <= 13 ? 'th' : rank % 10 === 1 ? 'st' : rank % 10 === 2 ? 'nd' : rank % 10 === 3 ? 'rd' : 'th';
   const medal = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : null;
   const className = medal ? `solved-chip place ${medal}` : 'solved-chip place';
   const content = (
     <>
       {medal && <span className="solved-medal" aria-hidden="true" />}
-      {rank}
-      {suffix} of {of} · {group}
+      {ordinal(rank)} of {of} · {group}
     </>
   );
   return to ? (

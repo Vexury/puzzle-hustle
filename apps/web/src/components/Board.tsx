@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react';
 import { badgeRarity, findCosmetic, parsePuzzleId, SHOWCASE_SIZE, type Cosmetic, type Period } from '@puzzle-hustle/core';
 import { apiFetch } from '../lib/api.ts';
-import { formatSeconds } from '../lib/share.ts';
+import { formatSeconds, ordinal } from '../lib/share.ts';
 import { readSetting, writeSetting } from '../lib/storage.ts';
 import { BadgeIcon } from './BadgeIcon.tsx';
 import { NameplateArt, plateClass } from './Nameplate.tsx';
@@ -169,12 +169,14 @@ export function Board({
   meId,
   owner = false,
   onRemoved,
+  title,
 }: {
   groupId: string;
   puzzle: string;
   meId: string;
   owner?: boolean;
   onRemoved?: () => void;
+  title?: string;
 }) {
   const { board, loading, reload } = useBoard(groupId, puzzle);
   const [hiddenIds, setHiddenIds] = useState(readHidden);
@@ -187,9 +189,16 @@ export function Board({
     return () => clearTimeout(timer);
   }, [armed]);
 
-  if (loading && !board) return <p className="muted small">Loading…</p>;
-  if (!board) return <p className="muted small">Standings are unavailable right now.</p>;
-  if (board.entries.length === 0) return <p className="muted small">Nobody in this group has solved it yet.</p>;
+  const solved = board?.entries.length ?? 0;
+  const head = title && (
+    <div className="standings-head">
+      <b>{title}</b>
+      {solved > 0 && <span className="muted small">{board?.me ? `you ${ordinal(board.me)} of ${solved}` : `${solved} solved`}</span>}
+    </div>
+  );
+  if (loading && !board) return <>{head}<p className="muted small">Loading…</p></>;
+  if (!board) return <>{head}<p className="muted small">Standings are unavailable right now.</p></>;
+  if (board.entries.length === 0) return <>{head}<p className="muted small">Nobody in this group has solved it yet.</p></>;
 
   const { shown, hidden } = splitHidden(board.entries, hiddenIds, meId);
   const percentile = percentileText(board.percentile, parsePuzzleId(puzzle)?.period ?? 'daily');
@@ -224,6 +233,7 @@ export function Board({
 
   return (
     <>
+      {head}
       <ol className="leaderboard">
         {shown.map((entry, i) => (
           <Fragment key={entry.playerId}>

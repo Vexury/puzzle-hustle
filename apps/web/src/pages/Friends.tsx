@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { DAILY_TYPES, PUZZLE_META, dailyRef, periodRef, refId } from '@puzzle-hustle/core';
+import { useCallback, useEffect, useState } from 'react';
+import { DAILY_TYPES, PUZZLE_META, dailyRef, periodRef, refId, type PuzzleRef } from '@puzzle-hustle/core';
 import { ApiError, apiFetch, readSession } from '../lib/api.ts';
 import { useSession } from '../lib/auth.ts';
-import { capitalize, joinUrl, share } from '../lib/share.ts';
+import { joinUrl, share } from '../lib/share.ts';
 import { SubpageHead } from '../components/SubpageHead.tsx';
 import { toast } from '../components/Toast.tsx';
 import { Board } from '../components/Board.tsx';
+import { StandingsCarousel } from '../components/StandingsCarousel.tsx';
+import { dailyNumber, monthlyNumber, weeklyNumber } from '../lib/stats.ts';
 
 export interface Group {
   id: string;
@@ -89,6 +91,13 @@ function socialPuzzles() {
   return [...DAILY_TYPES.map((type) => dailyRef(type)), periodRef('weekly'), periodRef('monthly')];
 }
 
+export function pageLabel(ref: PuzzleRef): string {
+  const name = PUZZLE_META[ref.type].name;
+  if (ref.period === 'weekly') return `Weekly #${weeklyNumber(ref.key!)} · ${name}`;
+  if (ref.period === 'monthly') return `Monthly #${monthlyNumber(ref.key!)} · ${name}`;
+  return `${name} · Daily #${dailyNumber(ref.key!)}`;
+}
+
 // Groups and standings, a page under Profile. Only with a session: without an account there is
 // nothing here, and a player who just wants to solve never sees times to compare. An invitation
 // link (/join?c=CODE) lands here with the join field prefilled; the placement chip after a solve
@@ -105,8 +114,6 @@ export function Social({ code: initialCode = '', group = null, puzzle: initialPu
   const [joining, setJoining] = useState(false);
   const [groupId, setGroupId] = useState<string | null>(group);
   const [puzzleIndex, setPuzzleIndex] = useState(() => Math.max(0, socialPuzzles().findIndex((ref) => refId(ref) === initialPuzzle)));
-  const standings = useRef<HTMLElement>(null);
-  const jumped = useRef(!group);
   const [leaving, setLeaving] = useState<string | null>(null);
 
   useEffect(() => {
@@ -114,13 +121,6 @@ export function Social({ code: initialCode = '', group = null, puzzle: initialPu
     const timer = setTimeout(() => setLeaving(null), CONFIRM_MS);
     return () => clearTimeout(timer);
   }, [leaving]);
-
-  // Once the standings exist, bring them into view for a link that asked for them.
-  useEffect(() => {
-    if (jumped.current || !standings.current) return;
-    jumped.current = true;
-    standings.current.scrollIntoView({ block: 'start', behavior: 'smooth' });
-  });
 
   if (!session) return null;
 
@@ -176,7 +176,7 @@ export function Social({ code: initialCode = '', group = null, puzzle: initialPu
 
   const current = activeGroup(groups, groupId);
   const active = current?.id ?? null;
-  const puzzle = puzzles[puzzleIndex]!;
+  const pages = puzzles.map((ref) => ({ key: refId(ref), label: pageLabel(ref), color: `var(--type-${ref.type})` }));
 
   return (
     <>
@@ -188,6 +188,39 @@ export function Social({ code: initialCode = '', group = null, puzzle: initialPu
             <button type="button" className="pill" onClick={reload} disabled={loading}>
               Retry
             </button>
+          </section>
+        )}
+        {active && current && (
+          <section className="standings" aria-label="Standings">
+            <div className="standings-top">
+              <h2>Standings</h2>
+              {groups.length > 1 ? (
+                <select className="group-select" aria-label="Group" value={active} onChange={(e) => setGroupId(e.target.value)}>
+                  {groups.map((group) => (
+                    <option key={group.id} value={group.id}>
+                      {group.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span className="muted">{current.name}</span>
+              )}
+            </div>
+            <StandingsCarousel
+              pages={pages}
+              index={puzzleIndex}
+              onIndex={setPuzzleIndex}
+              render={(page) => (
+                <Board
+                  groupId={active}
+                  puzzle={page.key}
+                  meId={session.player.id}
+                  owner={current.owner}
+                  onRemoved={reload}
+                  title={page.label}
+                />
+              )}
+            />
           </section>
         )}
         <div className="card-row">
@@ -218,44 +251,6 @@ export function Social({ code: initialCode = '', group = null, puzzle: initialPu
           </section>
         </div>
 
-        {active && (
-          <section className="card-lg" ref={standings}>
-            <h2>Standings</h2>
-            {groups.length > 1 && (
-              <div className="pill-row">
-                {groups.map((group) => (
-                  <button
-                    key={group.id}
-                    type="button"
-                    className={group.id === active ? 'pill' : 'pill outline'}
-                    onClick={() => setGroupId(group.id)}
-                  >
-                    {group.name}
-                  </button>
-                ))}
-              </div>
-            )}
-            <div className="pill-row">
-              {puzzles.map((ref, index) => (
-                <button
-                  key={refId(ref)}
-                  type="button"
-                  className={index === puzzleIndex ? 'pill' : 'pill outline'}
-                  onClick={() => setPuzzleIndex(index)}
-                >
-                  {ref.period === 'daily' ? PUZZLE_META[ref.type].name : capitalize(ref.period!)}
-                </button>
-              ))}
-            </div>
-            <Board
-              groupId={active}
-              puzzle={refId(puzzle)}
-              meId={session.player.id}
-              owner={current?.owner ?? false}
-              onRemoved={reload}
-            />
-          </section>
-        )}
 
         {groups.map((group) => (
           <div key={group.id} className="row-card friends-row">
