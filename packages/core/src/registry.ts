@@ -2,7 +2,7 @@ import { generateMosaic, MOSAIC_VERSION, type MosaicOptions } from './mosaic/puz
 import { mosaicCanonicalKey, mosaicDifficultyReport, mosaicFamilyKey } from './mosaic/solver.ts';
 import { generateNonogram, NONOGRAM_VERSION, type NonogramOptions } from './nonogram/puzzle.ts';
 import { nonogramCanonicalKey, nonogramDifficultyReport, nonogramFamilyKey } from './nonogram/solver.ts';
-import { generateCrowns, generateStars, REGIONS_BUDGET, REGIONS_VERSION, type RegionsOptions, type RegionsSpec } from './regions/puzzle.ts';
+import { generateCrowns, generateStars, REGIONS_BUDGET, REGIONS_VERSION, STARS_VERSION, type RegionsOptions, type RegionsSpec } from './regions/puzzle.ts';
 import { regionsCanonicalKey, regionsDifficultyReport, regionsFamilyKey } from './regions/solver.ts';
 import { generateShapes, SHAPES_VERSION, type ShapesOptions } from './shapes/puzzle.ts';
 import { generateKiller, generateSudoku, KILLER_VERSION, SUDOKU_VERSION, type SudokuOptions, type SudokuSpec } from './sudoku/puzzle.ts';
@@ -180,10 +180,10 @@ export interface RegionsAdapter extends PuzzleAdapter<RegionsOptions> {
   spec(seed: number, difficulty: Difficulty, options: RegionsOptions): RegionsSpec;
 }
 
-function regionsAdapter(generate: typeof generateCrowns, options: PuzzleAdapter<RegionsOptions>['options']): RegionsAdapter {
+function regionsAdapter(generate: typeof generateCrowns, version: number, options: PuzzleAdapter<RegionsOptions>['options']): RegionsAdapter {
   const build = reuse(generate);
   return {
-    version: REGIONS_VERSION,
+    version,
     options,
     // Always REGIONS_BUDGET, whatever the caller passes: the budget is part of which seed a
     // period gets. key, score, family and spec serve seeds already picked, such as level
@@ -211,7 +211,7 @@ function regionsAdapter(generate: typeof generateCrowns, options: PuzzleAdapter<
   };
 }
 
-export const crownsAdapter = regionsAdapter(generateCrowns, (period) => {
+export const crownsAdapter = regionsAdapter(generateCrowns, REGIONS_VERSION, (period) => {
   switch (period) {
     case 'weekly':
       return { sizeDelta: 1 };
@@ -221,7 +221,7 @@ export const crownsAdapter = regionsAdapter(generateCrowns, (period) => {
       return {};
   }
 });
-export const starsAdapter = regionsAdapter(generateStars, () => ({}));
+export const starsAdapter = regionsAdapter(generateStars, STARS_VERSION, () => ({}));
 
 export const sudokuAdapter = sudokuLikeAdapter(generateSudoku, SUDOKU_VERSION);
 export const killerAdapter = sudokuLikeAdapter(generateKiller, KILLER_VERSION, killerFamilyKey);

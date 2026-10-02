@@ -9,7 +9,7 @@ import { MOSAIC_VERSION, generateMosaic } from '../src/mosaic/puzzle.ts';
 import { isMosaicLogicSolvable, mosaicCanonicalKey } from '../src/mosaic/solver.ts';
 import { KILLER_VERSION, SUDOKU_VERSION, generateKiller, generateSudoku } from '../src/sudoku/puzzle.ts';
 import { isSudokuUnique, sudokuCanonicalKey } from '../src/sudoku/solver.ts';
-import { REGIONS_VERSION, generateCrowns, generateStars } from '../src/regions/puzzle.ts';
+import { REGIONS_VERSION, STARS_VERSION, generateCrowns, generateStars } from '../src/regions/puzzle.ts';
 import { isRegionsUnique, regionsCanonicalKey } from '../src/regions/solver.ts';
 import { ZIP_VERSION, generateZip } from '../src/zip/puzzle.ts';
 import { isZipUnique, zipCanonicalKey } from '../src/zip/solver.ts';
@@ -29,7 +29,7 @@ describe('level pack', () => {
     expect(LEVEL_PACK.versions.sudoku).toBe(SUDOKU_VERSION);
     expect(LEVEL_PACK.versions.killer).toBe(KILLER_VERSION);
     expect(LEVEL_PACK.versions.crowns).toBe(REGIONS_VERSION);
-    expect(LEVEL_PACK.versions.stars).toBe(REGIONS_VERSION);
+    expect(LEVEL_PACK.versions.stars).toBe(STARS_VERSION);
     expect(LEVEL_PACK.versions.zip).toBe(ZIP_VERSION);
     expect(LEVEL_PACK.versions.tracks).toBe(TRACKS_VERSION);
     expect(LEVEL_PACK.versions.slabs).toBe(SLABS_VERSION);

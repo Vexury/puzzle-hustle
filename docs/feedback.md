@@ -40,6 +40,9 @@ Stand: 2026-10-02
 
 ## Erledigt
 
+- [x] 2026-10-02 **Frieder** Hearts: dieselben Kombinationen (drei Zellen in einer Reihe, Herzen an
+  den Enden) kamen so oft, dass man blind setzen konnte. Medium hat keine solchen Bereiche mehr
+  (`STARS_VERSION` 2, vorher 17 % der Bereiche); Easy bleibt bewusst wie es ist (Daily, Einstieg).
 - [x] 2026-10-02 **Robert** Direkt zur Bestenliste: die Rang-Pille der Ergebniskarte ("7th of 8 · OGs")
   oeffnet Social mit dieser Gruppe und diesem Raetsel und scrollt zur Bestenliste.
 - [x] 2026-10-02 **Pia** Reset ganz rechts neben Hint, in allen Typen (siehe decisions.md, Danis Wunsch
