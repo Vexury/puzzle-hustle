@@ -5,6 +5,7 @@ import {
   decodeRef,
   encodeRef,
   coinsForSolve,
+  isDoublable,
   adapter,
   levelRef,
   hustleDifficulty,
@@ -30,6 +31,9 @@ import { loadBoard, prefetchBoard, randomBoardRef } from '../lib/boards.ts';
 import { syncFlairs } from '../lib/flairs.ts';
 import { pushHustle, syncHustleRewards } from '../lib/hustle.ts';
 import { requestHint, useHintBadge, type HintChoice, type HintOffer } from '../lib/hints.ts';
+import { adsAvailable, playRewardedAd } from '../lib/ads.ts';
+import { doubleOffer, markDoubled, readDoubled } from '../lib/coins.ts';
+import { hasUnlimitedHints } from '../lib/entitlement.ts';
 import { enqueue, flush } from '../lib/queue.ts';
 import { DEMOS } from '../demo/index.ts';
 import { DemoPlayer } from '../demo/DemoPlayer.tsx';
@@ -177,6 +181,7 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<SolveRecord | undefined>(replayable ? undefined : existing);
   const [awards, setAwards] = useState<CoinAward[] | null>(null);
+  const [doubled, setDoubled] = useState(() => readDoubled().has(id));
   const [freshSolve, setFreshSolve] = useState(false);
   const [stamp, setStamp] = useState(0);
   // An unsolved board sweeps in once as it opens; the class comes off again so the mask it
@@ -227,6 +232,27 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
     setAdWait(on);
     if (on) pauseClock();
     else resumeClock();
+  };
+
+  // The puzzle is already solved, so the clock stays out of it; the overlay only covers the load.
+  const doubleCoins = async () => {
+    adWaitRef.current = true;
+    setAdWait(true);
+    let outcome;
+    try {
+      outcome = await playRewardedAd();
+    } finally {
+      adWaitRef.current = false;
+      setAdWait(false);
+    }
+    if (outcome === 'rewarded') {
+      markDoubled(id);
+      setDoubled(true);
+      setAwards((shown) => shown ?? coinsForSolve(id, storedSolves()));
+      haptics.solved();
+    } else {
+      toast(outcome === 'unavailable' ? 'No video right now, try again later' : 'The video gave no reward');
+    }
   };
 
   const hintBadge = useHintBadge();
@@ -427,6 +453,11 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
     try {
       const earned = firstSolve ? coinsForSolve(id, storedSolves()) : [];
       setAwards(earned.length ? earned : null);
+      // The purchase doubles every new period solve at once, so buying never loses the video's bonus.
+      if (earned.length && hasUnlimitedHints() && isDoublable(id)) {
+        markDoubled(id);
+        setDoubled(true);
+      }
     } catch {
       /* coins never cost a player the solved screen */
     }
@@ -483,6 +514,8 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
   // unsolved challenge, or another random board.
   const nextRef = nextHustle ?? nextLevel ?? nextChallenge;
   const random = !puzzleRef.period && !puzzleRef.level && !puzzleRef.hustle;
+  // Read with `result` in the expression, so the compiler looks again once the solve is stored.
+  const doubleGain = result && puzzleRef.period && adsAvailable && !doubled && !hasUnlimitedHints() ? doubleOffer(id) : 0;
   const goNext = () => {
     if (nextRef) navigate(href(`/play?${encodeRef(nextRef)}`), true);
     else another();
@@ -641,6 +674,8 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
           hints={result.hints}
           bestBefore={replayable ? bestBefore : null}
           awards={awards}
+          doubled={doubled}
+          double={doubleGain > 0 ? { coins: doubleGain, onDouble: () => void doubleCoins() } : null}
           animate={freshSolve}
           placement={puzzleRef.period && scoreSettled ? <Placement puzzle={id} /> : null}
           actions={

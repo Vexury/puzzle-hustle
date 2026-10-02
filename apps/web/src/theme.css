@@ -1012,6 +1012,9 @@ p { margin: 0; }
 }
 .solved-chip.coins { background: var(--accent-soft); color: var(--accent-text); font-family: var(--font-num); font-size: var(--fs-md); }
 .solved-coin { width: 1.1em; height: 1.1em; }
+.solved-x2 { font-size: var(--fs-xs); opacity: 0.75; }
+button.solved-chip.double { border: 1.5px solid var(--accent); background: transparent; color: var(--accent-text); font: inherit; font-weight: 800; cursor: pointer; }
+.solved-chip.double svg { width: 1em; height: 1em; fill: currentColor; }
 .solved-chip.best { background: var(--success-soft); color: var(--success); }
 .solved-chip.best svg { width: 1.1em; height: 1.1em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .solved-chip.sweep { background: color-mix(in srgb, var(--flame) 16%, transparent); color: var(--flame); }

@@ -177,6 +177,7 @@ export function resetProgress() {
           k === 'ph:achievements' ||
           k === 'ph:flairs' ||
           k === 'ph:coins:spent' ||
+          k === 'ph:coins:doubled' ||
           k === 'ph:cosmetics' ||
           (k.startsWith(PROGRESS_PREFIX) && !kept[k.slice(PROGRESS_PREFIX.length)]) ||
           k.startsWith('ph:howto:') ||

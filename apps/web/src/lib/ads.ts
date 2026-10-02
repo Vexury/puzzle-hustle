@@ -45,7 +45,12 @@ function prepare(): Promise<boolean> {
     });
     let info = await AdMob.requestConsentInfo();
     if (info.isConsentFormAvailable && info.status === AdmobConsentStatus.REQUIRED) {
-      info = await AdMob.showConsentForm();
+      consentFormOpen = true;
+      try {
+        info = await AdMob.showConsentForm();
+      } finally {
+        consentFormOpen = false;
+      }
     }
     // The plugin types this as an enum it never exports, hence the string compare.
     privacyOptions = String(info.privacyOptionsRequirementStatus) === 'REQUIRED';
@@ -60,12 +65,18 @@ function prepare(): Promise<boolean> {
 }
 
 // A network that is there but lets nothing through leaves the consent SDK in its own long
-// timeout while the player stares at a dead hint button. Give up after three seconds.
+// timeout while the player stares at a dead hint button. Give up after three seconds, unless the
+// consent form is what takes the time: the player is reading it, and the answer decides the video.
 const PREPARE_TIMEOUT_MS = 3000;
+let consentFormOpen = false;
 
 function prepareOrGiveUp(): Promise<boolean> {
   return new Promise((resolve) => {
-    const timer = setTimeout(() => resolve(false), PREPARE_TIMEOUT_MS);
+    const giveUp = () => {
+      if (consentFormOpen) timer = setTimeout(giveUp, PREPARE_TIMEOUT_MS);
+      else resolve(false);
+    };
+    let timer = setTimeout(giveUp, PREPARE_TIMEOUT_MS);
     void prepare().then((ok) => {
       clearTimeout(timer);
       resolve(ok);
@@ -84,22 +95,25 @@ const LOAD_TIMEOUT_MS = 8000;
 // shown only fires an event, and one that fires neither must not keep the overlay up for good.
 const SHOW_TIMEOUT_MS = 120_000;
 
-// Returns true when no ad could be delivered: the hint is granted anyway. That is
-// deliberate, not a missing error path.
-export async function showRewardedAd(): Promise<boolean> {
-  if (!native) return false;
-  if (!(await prepareOrGiveUp())) return true;
+// 'unavailable' covers every way no video reached the screen: no consent SDK, no fill, a load that
+// hangs, a show that fails. A video that reports neither reward nor end within the limit counts
+// as watched.
+export type AdOutcome = 'rewarded' | 'skipped' | 'unavailable';
+
+export async function playRewardedAd(): Promise<AdOutcome> {
+  if (!native) return 'unavailable';
+  if (!(await prepareOrGiveUp())) return 'unavailable';
 
   let rewarded = false;
-  let closed: (reward: boolean) => void = () => {};
-  const shown = new Promise<boolean>((resolve) => (closed = resolve));
+  let closed: (outcome: AdOutcome) => void = () => {};
+  const shown = new Promise<AdOutcome>((resolve) => (closed = resolve));
   const handles = await Promise.all(
     [
       AdMob.addListener(RewardAdPluginEvents.Rewarded, () => {
         rewarded = true;
       }),
-      AdMob.addListener(RewardAdPluginEvents.Dismissed, () => closed(rewarded)),
-      AdMob.addListener(RewardAdPluginEvents.FailedToShow, () => closed(true)),
+      AdMob.addListener(RewardAdPluginEvents.Dismissed, () => closed(rewarded ? 'rewarded' : 'skipped')),
+      AdMob.addListener(RewardAdPluginEvents.FailedToShow, () => closed('unavailable')),
     ].map((h) => h.catch(() => null)),
   );
 
@@ -113,14 +127,21 @@ export async function showRewardedAd(): Promise<boolean> {
       new Promise((_, reject) => (timer = window.setTimeout(() => reject(new Error('ad load timeout')), LOAD_TIMEOUT_MS))),
     ]).finally(() => clearTimeout(timer));
     return await Promise.race([
-      AdMob.showRewardVideoAd().then((reward) => rewarded || (!!reward && reward.amount > 0)),
+      AdMob.showRewardVideoAd().then((reward): AdOutcome => (rewarded || (!!reward && reward.amount > 0) ? 'rewarded' : 'skipped')),
       shown,
-      new Promise<boolean>((resolve) => (timer = window.setTimeout(() => resolve(true), SHOW_TIMEOUT_MS))),
+      new Promise<AdOutcome>((resolve) => (timer = window.setTimeout(() => resolve('rewarded'), SHOW_TIMEOUT_MS))),
     ]);
   } catch {
-    return true;
+    return 'unavailable';
   } finally {
     clearTimeout(timer);
     await Promise.all(handles.map((h) => h?.remove().catch(() => {})));
   }
+}
+
+// For a hint, no video means the hint anyway: the player must never wait on the network to go on.
+// That is deliberate, not a missing error path. The web has no videos and offers none.
+export async function showRewardedAd(): Promise<boolean> {
+  if (!native) return false;
+  return (await playRewardedAd()) !== 'skipped';
 }

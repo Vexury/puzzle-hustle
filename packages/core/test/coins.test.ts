@@ -6,6 +6,7 @@ import {
   coinBalance,
   coinsEarned,
   coinsForSolve,
+  isDoublable,
   ownedItems,
   RANDOM_DAILY_CAP,
   type CoinAward,
@@ -116,4 +117,27 @@ it('refunds a flair spend entry: it never counts against the balance and never g
   ];
   expect(coinBalance(600, spent, EPOCH)).toBe(500);
   expect([...ownedItems(spent, EPOCH)]).toEqual(['bolt']);
+});
+
+it('counts a doubled period solve twice, sweep included', () => {
+  const days = DAILY_TYPES.map((type, i) => solve(`${type}:daily:2026-06-01`, `2026-06-01T1${i}:00:00+02:00`));
+  const last = days[days.length - 1]!;
+  const single = coinsEarned(days, EPOCH);
+  const lastCoins = total(coinsForSolve(last.id, days, EPOCH));
+  expect(coinsEarned(days, EPOCH, new Set([last.id]))).toBe(single + lastCoins);
+  expect(lastCoins).toBe(35);
+});
+
+it('never doubles a level, random or hustle solve', () => {
+  const solves = [solve('zip:level:genius:1'), solve('zip:medium:abc'), solve('hustle:10')];
+  const ids = new Set(solves.map((s) => s.id));
+  expect(coinsEarned(solves, EPOCH, ids)).toBe(coinsEarned(solves, EPOCH));
+  expect(solves.some((s) => isDoublable(s.id))).toBe(false);
+  expect(isDoublable('zip:daily:2026-06-01')).toBe(true);
+  expect(isDoublable('shapes:weekly:2026-W23')).toBe(true);
+});
+
+it('ignores doubled ids that were never solved', () => {
+  const s = solve('zip:daily:2026-06-01');
+  expect(coinsEarned([s], EPOCH, new Set(['crowns:daily:2026-06-01']))).toBe(coinsEarned([s], EPOCH));
 });

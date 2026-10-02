@@ -84,9 +84,18 @@ export function coinsForSolve(id: string, solves: readonly SolveEntry[], epoch: 
   return awardsBySolve(solves, epoch).get(id) ?? [];
 }
 
-export function coinsEarned(solves: readonly SolveEntry[], epoch: number = ACHIEVEMENTS_EPOCH): number {
+// Only a daily, weekly or monthly can be doubled: by a rewarded video on its solved card, or at
+// once with the purchase.
+export function isDoublable(id: string): boolean {
+  return parseSolveId(id)?.mode === 'period';
+}
+
+export function coinsEarned(solves: readonly SolveEntry[], epoch: number = ACHIEVEMENTS_EPOCH, doubled: ReadonlySet<string> = new Set()): number {
   let sum = 0;
-  for (const awards of awardsBySolve(solves, epoch).values()) for (const a of awards) sum += a.coins;
+  for (const [id, awards] of awardsBySolve(solves, epoch)) {
+    const factor = doubled.has(id) && isDoublable(id) ? 2 : 1;
+    for (const a of awards) sum += a.coins * factor;
+  }
   return sum + unlockedAchievements(solves, epoch).size * ACHIEVEMENT_COINS;
 }
 

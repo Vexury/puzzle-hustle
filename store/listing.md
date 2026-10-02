@@ -78,13 +78,15 @@ or against Google's current form wording.
 **App or game:** Game, category Puzzle.
 
 **Contains ads:** Yes. AdMob rewarded videos in the native builds, only after the player taps
-"Watch video" for a hint. The web build has none.
+"Watch video" for a hint, or "Watch video · double" on the result card of a solved Daily, Weekly or
+Monthly to double its coins. The web build has none.
 
 **Advertising ID:** Yes, single purpose "Advertising or marketing". The Google Mobile Ads SDK merges
 `com.google.android.gms.permission.AD_ID` into the manifest.
 
 **In-app purchases:** Yes. One non-consumable, "No Ads · Free Hints" (product id `unlimited_hints`, kept from before the rename), through Play
-Billing. Coins are earned by solving and are never sold.
+Billing. Coins are earned by solving and cannot be bought directly; the purchase doubles the coins
+of every new Daily, Weekly and Monthly solve (since 2026-10-02).
 
 **Target audience:** 13 and over. The content suits every age, but declaring under-13 pulls the
 app into the Families policy with extra requirements on ads, content and data handling.
@@ -99,7 +101,7 @@ and only unlocks Social (groups and daily standings). All puzzles, hints and the
 without it. To test: open the Profile tab, tap Sign in and choose the Google account above, then
 tap the Social row on Profile. The account is already a member of the group "Review" with
 submitted times, so Social shows standings right away.
-The one-time purchase "No Ads · Free Hints" makes every hint free, so no video is needed; no content requires it."
+The one-time purchase "No Ads · Free Hints" makes every hint free and doubles the coins of every new Daily, Weekly and Monthly solve, so no video is needed; no content requires it. A rewarded video is also offered on the result card of a solved Daily, Weekly or Monthly ("Watch video · double"), only after the player taps it."
 The box "credentials grant unrestricted access, including premium content" is ticked.
 
 **Data safety:** Data is collected, none is shared. Encrypted in transit: yes (HTTPS only). Users
@@ -124,6 +126,7 @@ account). Paste as is:
 No demo account needed. Every puzzle works without an account.
 Sign-in is optional (Profile tab, Sign in with Apple) and only unlocks private friend groups with Daily/Weekly/Monthly standings: after signing in, tap the "Social" row on the Profile tab. Any Apple ID works.
 Hints: one free hint a day across all puzzles. After that a hint costs 20 coins or a rewarded video; the video plays only after the player confirms on a prompt.
+Double coins: the result card of a solved Daily, Weekly or Monthly offers "Watch video · double +N"; the rewarded video plays only after that tap and doubles the coins of that solve. With the purchase the coins are doubled automatically and no video is offered.
 In-app purchase "No Ads · Free Hints" (unlimited_hints, non-consumable): Profile tab, row "Account", card "No ads · Free hints", button "Unlock"; "Restore purchase" on the same card.
 Account deletion: Profile tab, row "Account", "Delete account" (shown when signed in).
 ```

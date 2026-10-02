@@ -1,7 +1,7 @@
 import { beforeEach, expect, it, vi } from 'vitest';
 import { ACHIEVEMENTS_EPOCH, levelList } from '@puzzle-hustle/core';
 import { recordSolve, rehydrate, resetProgress } from '../src/lib/storage.ts';
-import { balance, buyItem, canAffordHint, equip, owned, readEquipped, readSpent, spendHint, toggleShowcase } from '../src/lib/coins.ts';
+import { balance, buyItem, canAffordHint, doubleOffer, equip, markDoubled, owned, readDoubled, readEquipped, readSpent, spendHint, toggleShowcase } from '../src/lib/coins.ts';
 
 const NONE = { badge: null, badges: [], flair: null, theme: null, nameplate: null };
 
@@ -240,4 +240,30 @@ it('owns a Hustle nameplate from stage 80', () => {
   expect(owned().has('plate-tracks')).toBe(true);
   expect(owned().has('plate-mosaic')).toBe(false);
   expect(equip('nameplate', 'plate-tracks')).toBe(true);
+});
+
+it('doubles a running daily once, adds it to the balance and forgets it on reset', () => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-10-02T12:00:00+02:00'));
+  const id = 'zip:daily:2026-10-02';
+  recordSolve(id, { solvedAt: new Date().toISOString(), seconds: 30, hints: 0, moves: 10 });
+  const before = balance();
+  expect(doubleOffer(id)).toBe(15);
+  markDoubled(id);
+  expect(balance()).toBe(before + 15);
+  expect(doubleOffer(id)).toBe(0);
+  resetProgress();
+  expect(readDoubled().size).toBe(0);
+});
+
+it('offers nothing for a past daily, a level or an unsolved puzzle', () => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-10-02T12:00:00+02:00'));
+  recordSolve('zip:daily:2026-10-01', { solvedAt: '2026-10-01T12:00:00+02:00', seconds: 30, hints: 0, moves: 10 });
+  recordSolve('zip:level:easy:1', { solvedAt: new Date().toISOString(), seconds: 30, hints: 0, moves: 10 });
+  expect(doubleOffer('zip:daily:2026-10-01')).toBe(0);
+  expect(doubleOffer('zip:level:easy:1')).toBe(0);
+  expect(doubleOffer('crowns:daily:2026-10-02')).toBe(0);
+  markDoubled('zip:level:easy:1');
+  expect(readDoubled().size).toBe(0);
 });

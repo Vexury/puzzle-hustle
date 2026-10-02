@@ -12,6 +12,10 @@ export interface SolvedCardProps {
   bestBefore: number | null;
   // Only on the solve that earned them; a revisit earns nothing and shows no chip.
   awards: CoinAward[] | null;
+  // The awards count twice: a video was watched for them, or the purchase doubles every period solve.
+  doubled?: boolean;
+  // A rewarded video that would double this solve's coins, with what it would add.
+  double?: { coins: number; onDouble(): void } | null;
   // Off when an already solved puzzle is reopened: the card is simply there.
   animate: boolean;
   placement?: ReactNode;
@@ -45,9 +49,9 @@ function useCountUp(target: number, animate: boolean): number {
   return value;
 }
 
-export function SolvedCard({ seconds, moves, hints, bestBefore, awards, animate, placement, actions }: SolvedCardProps) {
+export function SolvedCard({ seconds, moves, hints, bestBefore, awards, doubled = false, double, animate, placement, actions }: SolvedCardProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const coins = awards ? awards.reduce((n, a) => n + a.coins, 0) : 0;
+  const coins = awards ? awards.reduce((n, a) => n + a.coins, 0) * (doubled ? 2 : 1) : 0;
   const shownCoins = useCountUp(coins, animate);
   const sweep = awards?.some((a) => a.reason === 'clean-sweep') ?? false;
   const newBest = bestBefore !== null && seconds < bestBefore;
@@ -73,12 +77,18 @@ export function SolvedCard({ seconds, moves, hints, bestBefore, awards, animate,
         )}
       </div>
 
-      {(coins > 0 || newBest || sweep || placement) && (
+      {(coins > 0 || double || newBest || sweep || placement) && (
         <div className="solved-chips">
           {coins > 0 && (
             <span className="solved-chip coins" style={next()} aria-label={`plus ${coins} coins`}>
               <CoinIcon />+{shownCoins}
+              {doubled && <span className="solved-x2">×2</span>}
             </span>
+          )}
+          {double && (
+            <button type="button" className="solved-chip double" style={next()} onClick={double.onDouble} aria-label={`Watch a video to double your coins, plus ${double.coins}`}>
+              <PlayIcon /> Watch video · double +{double.coins}
+            </button>
           )}
           {newBest && (
             <span className="solved-chip best" style={next()} title={`was ${formatSeconds(bestBefore!)}`}>
@@ -124,6 +134,14 @@ export function PlacementChip({ rank, of, group, to }: { rank: number; of: numbe
     </a>
   ) : (
     <span className={className}>{content}</span>
+  );
+}
+
+function PlayIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M8 5.5v13l10.5-6.5z" />
+    </svg>
   );
 }
 

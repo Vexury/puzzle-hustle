@@ -40,7 +40,7 @@ export function Account() {
             <span>
               <b>No ads · Free hints</b>
               <span className="muted small">
-                {unlimited ? 'Bought. No ads, every hint free.' : 'No videos, every hint free. Pay once, keep it for good.'}
+                {unlimited ? 'Bought. No ads, every hint free, double coins.' : 'No videos, every hint free, double coins on every Daily, Weekly and Monthly. Pay once, keep it for good.'}
               </span>
               {!unlimited && (
                 <span>

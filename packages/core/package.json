@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "levels": "node --experimental-strip-types scripts/generate-levels.ts",
     "boards": "node --experimental-strip-types scripts/generate-boards.ts",
-    "hustle-check": "node --experimental-strip-types scripts/hustle-check.ts"
+    "hustle-check": "node --experimental-strip-types scripts/hustle-check.ts",
+    "economy-sim": "node --experimental-strip-types scripts/economy-sim.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.1"

@@ -111,3 +111,20 @@ it('remembers across starts that ad privacy settings are needed', async () => {
   ads = await load();
   expect(ads.privacyOptionsAvailable()).toBe(false);
 });
+
+it('tells a watched, a skipped and a missing video apart for the coin bonus', async () => {
+  const ads = await load();
+  admob.show = async () => ({ amount: 1 });
+  expect(await ads.playRewardedAd()).toBe('rewarded');
+  admob.show = () => {
+    queueMicrotask(() => emit('dismissed'));
+    return never();
+  };
+  expect(await ads.playRewardedAd()).toBe('skipped');
+  admob.show = () => {
+    queueMicrotask(() => emit('failedToShow'));
+    return never();
+  };
+  expect(await ads.playRewardedAd()).toBe('unavailable');
+  expect(admob.listeners.size).toBe(0);
+});

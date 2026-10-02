@@ -83,3 +83,17 @@ it('labels the placement with an ordinal and a medal on the podium only', () => 
   expect(place(11)).toEqual(['11th of 23 · Family', '']);
   expect(place(22)).toEqual(['22nd of 23 · Family', '']);
 });
+
+it('shows doubled coins with a mark and offers the video only when asked to', () => {
+  const awards = [
+    { reason: 'daily' as const, coins: 10 },
+    { reason: 'no-hints' as const, coins: 5 },
+  ];
+  render({ awards, doubled: true });
+  expect(chips()).toEqual(['+30×2']);
+  const onDouble = vi.fn();
+  render({ awards, double: { coins: 15, onDouble } });
+  expect(chips()).toEqual(['+15', ' Watch video · double +15']);
+  act(() => (container.querySelector('button.solved-chip.double') as HTMLButtonElement).click());
+  expect(onDouble).toHaveBeenCalledOnce();
+});

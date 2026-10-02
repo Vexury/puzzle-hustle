@@ -20,10 +20,10 @@ export function HintCard({ offer, onAnswer }: { offer: HintOffer; onAnswer(choic
   } else {
     title = 'One more hint?';
     text = offer.video
-      ? `Today's free hint is used. Pay ${HINT_PRICE} coins or watch a short video.`
+      ? `Today's free hint is used. Watch a short video or pay ${HINT_PRICE} coins.`
       : `Today's free hint is used. A hint costs ${HINT_PRICE} coins, the next free one comes tomorrow.`;
-    if (offer.canPay) actions.push(['coins', `Use ${HINT_PRICE} coins`]);
     if (offer.video) actions.push(['video', 'Watch video']);
+    if (offer.canPay) actions.push(['coins', `Use ${HINT_PRICE} coins`]);
   }
   const short = !offer.unlimited && !offer.free && !offer.canPay;
 

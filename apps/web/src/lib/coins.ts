@@ -2,13 +2,17 @@ import { useSyncExternalStore } from 'react';
 import {
   coinBalance,
   coinsEarned,
+  coinsForSolve,
   earnedFlairs,
   earnedHustleBadges,
   earnedHustleNameplates,
   earnedHustleThemes,
   findCosmetic,
   HINT_PRICE,
+  isDoublable,
   ownedItems,
+  parsePuzzleId,
+  periodKey,
   SHOWCASE_SIZE,
   THEMES_FREE,
   type CosmeticKind,
@@ -20,6 +24,7 @@ import { readSetting, useSolves, writeSetting } from './storage.ts';
 
 const SPENT_KEY = 'ph:coins:spent';
 const EQUIPPED_KEY = 'ph:cosmetics';
+const DOUBLED_KEY = 'ph:coins:doubled';
 
 // No cache: every read goes to storage, so a progress reset or a restored backup can never
 // leave a stale balance behind. The version only tells React to look again after a write.
@@ -58,9 +63,38 @@ function appendSpent(entry: SpendEntry) {
   changed();
 }
 
+export function readDoubled(): Set<string> {
+  try {
+    const raw = readSetting(DOUBLED_KEY);
+    const parsed = raw ? (JSON.parse(raw) as unknown) : [];
+    return new Set(Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : []);
+  } catch {
+    return new Set();
+  }
+}
+
+export function markDoubled(id: string) {
+  const doubled = readDoubled();
+  if (doubled.has(id) || !isDoublable(id)) return;
+  writeSetting(DOUBLED_KEY, JSON.stringify([...doubled, id]));
+  changed();
+}
+
+// The coins a video would add to this solve: its own award, once, while its period runs, so
+// nobody hunts back through old dailies. 0 when there is nothing to offer.
+export function doubleOffer(id: string): number {
+  try {
+    const parsed = parsePuzzleId(id);
+    if (!parsed || parsed.key !== periodKey(parsed.period) || readDoubled().has(id)) return 0;
+    return coinsForSolve(id, storedSolves()).reduce((n, a) => n + a.coins, 0);
+  } catch {
+    return 0;
+  }
+}
+
 export function balance(): number {
   try {
-    return coinBalance(coinsEarned(storedSolves()), readSpent());
+    return coinBalance(coinsEarned(storedSolves(), undefined, readDoubled()), readSpent());
   } catch {
     return 0;
   }
