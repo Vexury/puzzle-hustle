@@ -277,7 +277,6 @@ export function Shop() {
         {!active && (
           <section className="card-lg">
             <h2>Appearance</h2>
-            <span className="muted small">System follows your device setting.</span>
             <div className="segmented three" role="radiogroup" aria-label="Appearance">
               {THEME_PREFS.map((p: ThemePref) => (
                 <button key={p} type="button" role="radio" aria-checked={pref === p} className={pref === p ? 'seg active' : 'seg'} onClick={(e) => setPref(p, centerOf(e.currentTarget))}>
@@ -306,7 +305,6 @@ export function Shop() {
 
         <ShopSection id="themes" title="Themes" count={`${ALL_THEMES.filter((t) => ownedIds.has(t.id)).length}/${ALL_THEMES.length}`} defaultOpen>
           {THEMES_FREE && <span className="muted small">Free while in beta. Prices apply from launch.</span>}
-          <span className="muted small">{HUSTLE_THEMES.map((t) => t.title).join(', ')}: earned in Hustle, never sold.</span>
           <div className="theme-grid">
             <button
               type="button"
@@ -335,7 +333,6 @@ export function Shop() {
         </ShopSection>
 
         <ShopSection id="nameplates" title="Nameplates" count={`${ALL_NAMEPLATES.filter((n) => ownedIds.has(n.id)).length}/${ALL_NAMEPLATES.length}`} defaultOpen>
-          <span className="muted small">{HUSTLE_NAMEPLATES.map((n) => n.title).join(', ')}: earned in Hustle, never sold.</span>
           <div className="plate-list">
             {ALL_NAMEPLATES.map((item) => (
               <button
