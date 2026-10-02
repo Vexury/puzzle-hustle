@@ -6,6 +6,7 @@ import { joinUrl, share } from '../lib/share.ts';
 import { SubpageHead } from '../components/SubpageHead.tsx';
 import { toast } from '../components/Toast.tsx';
 import { Board } from '../components/Board.tsx';
+import { GroupMenu } from '../components/GroupMenu.tsx';
 import { StandingsCarousel } from '../components/StandingsCarousel.tsx';
 import { dailyNumber, monthlyNumber, weeklyNumber } from '../lib/stats.ts';
 
@@ -195,13 +196,7 @@ export function Social({ code: initialCode = '', group = null, puzzle: initialPu
             <div className="standings-top">
               <h2>Standings</h2>
               {groups.length > 1 ? (
-                <select className="group-select" aria-label="Group" value={active} onChange={(e) => setGroupId(e.target.value)}>
-                  {groups.map((group) => (
-                    <option key={group.id} value={group.id}>
-                      {group.name}
-                    </option>
-                  ))}
-                </select>
+                <GroupMenu groups={groups} active={active} onPick={setGroupId} />
               ) : (
                 <span className="muted">{current.name}</span>
               )}

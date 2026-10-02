@@ -555,12 +555,33 @@ p { margin: 0; }
 .standings { display: flex; flex-direction: column; gap: 6px; }
 .standings-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .standings-top h2 { font-size: var(--fs-md); }
-.group-select {
-  min-height: 40px; max-width: 60%; padding: 6px 34px 6px 14px; border-radius: var(--radius-pill); border: 2px solid var(--border-mid);
-  background: var(--card-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 14px center / 12px 8px;
-  color: var(--text); font: inherit; font-weight: 800; appearance: none; text-overflow: ellipsis;
-  box-shadow: 0 3px 0 color-mix(in srgb, var(--border-mid) 55%, transparent);
+.group-menu { position: relative; max-width: 60%; }
+.group-menu-button {
+  display: inline-flex; align-items: center; gap: 10px; max-width: 100%; min-height: 40px; padding: 6px 14px 6px 16px;
+  border-radius: var(--radius-pill); border: 2px solid var(--border-mid); background: var(--card-bg); color: var(--text);
+  font: inherit; font-weight: 800; cursor: pointer; box-shadow: 0 3px 0 color-mix(in srgb, var(--border-mid) 55%, transparent);
+  transition: transform 0.08s, box-shadow 0.08s;
 }
+.group-menu-button:active { transform: translateY(3px); box-shadow: none; }
+.group-menu-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.group-menu-button svg { flex: none; width: 12px; height: 8px; fill: none; stroke: var(--text-muted); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.2s; }
+.group-menu-button[aria-expanded="true"] svg { transform: rotate(180deg); }
+.group-menu-list {
+  position: absolute; z-index: 20; top: calc(100% + 8px); right: 0; min-width: 220px; max-width: 80vw; margin: 0; padding: 6px; list-style: none;
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-hover);
+  animation: group-menu-in 0.16s ease-out;
+}
+.group-menu-list button {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 6px 10px; border: 0; border-radius: var(--radius-sm);
+  background: none; color: var(--text); font: inherit; text-align: left; cursor: pointer;
+}
+.group-menu-list button:hover, .group-menu-list button:focus-visible { background: color-mix(in srgb, var(--text) 6%, transparent); outline: none; }
+.group-menu-list button[aria-selected="true"] { background: var(--accent-soft); }
+.group-menu-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.group-menu-text b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.group-menu-check { flex: none; width: 20px; height: 20px; fill: none; stroke: var(--accent-text); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+@keyframes group-menu-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .group-menu-list { animation: none; } .group-menu-button svg { transition: none; } }
 .standings-dots { display: flex; justify-content: center; flex-wrap: wrap; }
 .standings-dot { width: 22px; height: 28px; padding: 0; border: 0; background: none; display: grid; place-items: center; cursor: pointer; }
 .standings-dot::before { content: ''; width: 10px; height: 10px; border-radius: var(--radius-pill); background: color-mix(in srgb, var(--dot-c) 40%, var(--border)); transition: width 0.25s, background 0.25s; }
