@@ -1,6 +1,6 @@
 .sw-sun {
   position: absolute; left: 50%; bottom: 22vh; width: min(48vw, 260px); aspect-ratio: 1;
-  transform: translate(-50%, 50%); border-radius: 50%;
+  transform: translateX(-50%); border-radius: 50%;
   background: linear-gradient(to bottom, #ffd36e, #ff7a9c 55%, #ff4fd8);
   /* Bands cut into the lower half, wider toward the horizon. */
   mask: linear-gradient(to bottom, #000 50%, transparent 50%),
@@ -8,6 +8,9 @@
   mask-composite: add;
   opacity: 0.2;
 }
+/* Pyramids on the horizon in front of the sun, as on the nameplate. Each has an opaque silhouette
+   under its faces, so the sun ends behind them instead of showing through. */
+.sw-peaks { position: absolute; left: 50%; bottom: 22vh; width: min(100vw, 540px); transform: translateX(-50%); }
 .sw-floor {
   position: absolute; left: -50%; right: -50%; bottom: 0; height: 22vh; overflow: hidden;
   transform-origin: 50% 0; transform: perspective(18vh) rotateX(58deg);

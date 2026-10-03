@@ -55,10 +55,11 @@
   100% { opacity: 0; transform: translateY(-4px); }
 }
 
-/* A striped awning in pixel art over the top of the screen, just below the status bar: red and
-   cream stripes four art pixels wide, each ending in a scallop. */
+/* A striped awning in pixel art over the top of the page, just below the status bar: red and
+   cream stripes four art pixels wide, each ending in a scallop. It hangs on the page and scrolls
+   away with it; fixed to the screen it ran over the cards (2026-10-03). */
 .cc-awning {
-  position: absolute; left: 0; right: 0; top: env(safe-area-inset-top); height: 15px;
+  position: absolute; left: 0; right: 0; top: env(safe-area-inset-top); z-index: 45; height: 15px; pointer-events: none;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 5' shape-rendering='crispEdges'%3E%3Crect width='4' height='4' fill='%23c8553d'/%3E%3Crect x='4' width='4' height='4' fill='%23f8efe2'/%3E%3Crect x='1' y='4' width='2' height='1' fill='%23c8553d'/%3E%3Crect x='5' y='4' width='2' height='1' fill='%23f8efe2'/%3E%3Crect width='8' height='1' fill='%23000' fill-opacity='.12'/%3E%3C/svg%3E") repeat-x 0 0 / 24px 15px;
   image-rendering: pixelated;
   filter: drop-shadow(0 2px 0 rgba(90, 60, 30, 0.14));

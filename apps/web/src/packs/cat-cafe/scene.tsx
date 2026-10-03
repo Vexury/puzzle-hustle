@@ -66,16 +66,14 @@ function Shelves({ path }: { path: string }) {
   );
 }
 
-// A little café with kittens in it: a striped awning over the top of the screen, coffee beans on
+// A little café with kittens in it: a striped awning over the top of the page, coffee beans on
 // the wall, and at the end of every page a shelf with a kitten. The shelves take a row of their
 // own in the page flow, so they never cover a control.
 export default function CatCafeScene() {
   const route = useRoute();
   return (
     <>
-      <div className="pack-front">
-        <div className="cc-awning" />
-      </div>
+      <div className="cc-awning" />
       <InAnchor name="page-end">
         <Shelves path={route.path} />
       </InAnchor>
