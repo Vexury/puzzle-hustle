@@ -4,7 +4,8 @@ import { apiFetch, ApiError } from './api.ts';
 import { allSolves, readSetting, removeSetting, writeSetting } from './storage.ts';
 import { BUILD } from './version.ts';
 
-// Anonymous usage events for tuning the puzzles. Nothing sent tells two devices apart: see
+// Pseudonymous usage events for tuning the puzzles: no account ID, device ID or IP in them, but for
+// signed-in players they could in principle be matched to the synced progress copy. See
 // parseTelemetryEvent in core for the exact shape the server accepts.
 export const TELEMETRY_KEY = 'ph:telemetry';
 export const EVENTS_KEY = 'ph:events';

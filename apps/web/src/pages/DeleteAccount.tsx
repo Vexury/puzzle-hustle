@@ -44,7 +44,7 @@ export function DeleteAccount() {
         <div className="card-lg">
           <h2>What is deleted</h2>
           <ul className="plain-list small">
-            <li>your account and display name, badge and flair</li>
+            <li>your account, display name, showcase badges, flair, nameplate and Hustle level</li>
             <li>all your submitted times</li>
             <li>the copy of your progress, coins and items kept for sync</li>
             <li>every report you made or that was made about you</li>

@@ -97,7 +97,7 @@ reviewers may neither create accounts nor use their own. Credentials entry "Goog
 (Social)": user `review@vexury.dev` (a Google account on a Cloudflare Email Routing address that
 forwards to vexury.dev@gmail.com, no 2-step verification), password in the password manager. The
 account is a member of the group "Review" with submitted times. Reviewer note: "Sign-in is optional
-and only unlocks Social (groups and daily standings). All puzzles, hints and the purchase work
+and unlocks Social (groups and daily standings) and keeps progress in sync across devices. All puzzles, hints and the purchase work
 without it. To test: open the Profile tab, tap Sign in and choose the Google account above, then
 tap the Social row on Profile. The account is already a member of the group "Review" with
 submitted times, so Social shows standings right away.
@@ -113,18 +113,18 @@ can request deletion: yes. Collection of the account data is optional (only when
 | Personal info: User IDs | Google or Apple subject ID and the internal player ID | App functionality, account management |
 | App activity: Other actions | Daily, Weekly and Monthly times with hints, moves and solve time; group memberships; Hustle level (highest stage reached); solved puzzles with time, hints, moves and date; coin spending; equipped items (progress sync) | App functionality |
 | App activity: Other user-generated content | Group names; showcase badges (up to three), equipped flair and nameplate as ids from a fixed list; reports on names | App functionality |
-| App activity: App interactions | Anonymous usage events (`POST /events`): app opened on a day, intro finished or skipped, puzzle solved or left with type, difficulty, mode (Daily, Weekly, Monthly, level, random, Hustle) with level number or Hustle stage, time, moves, hints, resumed, first of its type; each event also carries platform, build and an install-age bucket. No ID, day granularity, deleted after about 13 months. Optional: "Anonymous stats" switch in Profile | Analytics |
+| App activity: App interactions | Pseudonymous usage events (`POST /events`): app opened on a day, intro finished or skipped, puzzle solved or left with type, difficulty, mode (Daily, Weekly, Monthly, level, random, Hustle) with level number or Hustle stage, time, moves, hints, resumed, first of its type; each event also carries platform, build and an install-age bucket. No account, device or advertising ID, no IP stored, day granularity, deleted after about 13 months; for signed-in players they could in principle be matched to the progress copy, which we do not do. Optional: "Anonymous stats" switch in Profile | Analytics |
 | Device or other IDs | Advertising ID, processed by the AdMob SDK | Advertising or marketing |
 
 Not collected: email address (the server reads only `sub` from the Google token), purchase history
-(Play Billing handles it, the server keeps no record), location, contacts, crash logs.
+(Play Billing handles it, the server records no purchases; the progress copy lists doubled solves, whether doubled by a video or by the purchase), location, contacts, crash logs.
 The IP address reaches Cloudflare and the `/session` and `/events` rate limiters, but is not stored.
 **App Store review notes** (App Review Information of the version, set by API 2026-09-30, no demo
 account). Paste as is:
 
 ```
 No demo account needed. Every puzzle works without an account.
-Sign-in is optional (Profile tab, Sign in with Apple) and only unlocks private friend groups with Daily/Weekly/Monthly standings: after signing in, tap the "Social" row on the Profile tab. Any Apple ID works.
+Sign-in is optional (Profile tab, Sign in with Apple) and unlocks private friend groups with Daily/Weekly/Monthly standings and progress sync across devices: after signing in, tap the "Social" row on the Profile tab. Any Apple ID works.
 Hints: one free hint a day across all puzzles. After that a hint costs 20 coins or a rewarded video; the video plays only after the player confirms on a prompt.
 Double coins: the result card of a solved Daily, Weekly or Monthly offers "Watch video · double +N"; the rewarded video plays only after that tap and doubles the coins of that solve. With the purchase the coins are doubled automatically and no video is offered.
 In-app purchase "No Ads · Free Hints" (unlimited_hints, non-consumable): Profile tab, row "Account", card "No ads · Free hints", button "Unlock"; "Restore purchase" on the same card.
@@ -140,7 +140,7 @@ whole app, so a type counts as linked when any collector links it.
 | Gameplay Content | leaderboard times, Hustle level, synced progress | App Functionality | yes | no |
 | Other User Content | display name, group names, badges/flair/nameplate, reports | App Functionality | yes | no |
 | User ID | Apple subject ID, player ID | App Functionality | yes | no |
-| Product Interaction | usage events (not linked) and AdMob (linked) | Analytics, Third-Party Advertising, Developer's Advertising | yes | no |
+| Product Interaction | usage events (carry no ID, but matchable to the progress copy for signed-in players) and AdMob (linked) | Analytics, Third-Party Advertising, Developer's Advertising | yes | no |
 | Coarse Location | AdMob, from the IP | Analytics, Third-Party Advertising, Developer's Advertising | yes | no |
 | Advertising Data | AdMob | Analytics, Third-Party Advertising, Developer's Advertising | yes | no |
 | Device ID | AdMob | Analytics, Third-Party Advertising, Developer's Advertising | yes | no |

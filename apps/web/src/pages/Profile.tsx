@@ -73,7 +73,7 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
           <b>Puzzle Hustle</b>
           {version && <span className="muted"> · {version}</span>}
         </p>
-        <p className="muted">Your progress stays on this device.</p>
+        <p className="muted">{session ? 'Your progress is synced with your account.' : 'Your progress stays on this device.'}</p>
         <nav className="footer-links" aria-label="About">
           <a href={PRIVACY_POLICY_URL} target="_blank" rel="noreferrer">
             Privacy policy
