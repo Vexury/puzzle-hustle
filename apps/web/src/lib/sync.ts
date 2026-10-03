@@ -5,7 +5,7 @@ import { coinsChanged, pushCosmetics, readDoubled, readSpent } from './coins.ts'
 import { syncFlairs } from './flairs.ts';
 import { syncHustleRewards } from './hustle.ts';
 import { allSolves, clearUnsynced, onSyncedWrite, readSetting, removeSetting, replaceSolves, writeSetting } from './storage.ts';
-import { resetProgressAndAppearance } from './theme.ts';
+import { refreshAppearance, resetProgressAndAppearance } from './theme.ts';
 
 const RESET_KEY = 'ph:sync:resetAt';
 const PLAYER_KEY = 'ph:sync:player';
@@ -45,6 +45,7 @@ function applySave(save: SaveData, before: SaveData) {
     writeSetting(RESET_KEY, String(save.resetAt));
     if (save.resetAt > before.resetAt) clearUnsynced(save.solves);
     coinsChanged();
+    refreshAppearance();
   } finally {
     applying = false;
   }
@@ -71,7 +72,8 @@ async function run(keepalive: boolean): Promise<void> {
   syncAchievements();
   syncFlairs();
   syncHustleRewards();
-  const current = readLocalSave() ?? local;
+  const current = readLocalSave();
+  if (!current) return;
   const next = replace ? answer : mergeSave(answer, current);
   if (JSON.stringify(next) !== JSON.stringify(answer)) again = true;
   applySave(next, current);
@@ -107,9 +109,11 @@ export function resetAccount(): void {
   void syncNow();
 }
 
-// After deleting the account: the progress stays here and merges into whichever account comes next.
+// After deleting the account: the progress stays here and merges into whichever account comes next,
+// without the old account's reset, which would otherwise drop the next account's older progress.
 export function forgetSyncedPlayer(): void {
   removeSetting(PLAYER_KEY);
+  removeSetting(RESET_KEY);
 }
 
 function scheduleSync() {

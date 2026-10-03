@@ -3,7 +3,7 @@ vi.mock('../src/components/UnlockModal.tsx', () => ({ announceUnlock: vi.fn() })
 import { ACHIEVEMENTS_EPOCH, emptySave, mergeSave, parseSaveData, periodKey, type SaveData } from '@puzzle-hustle/core';
 import { announceUnlock } from '../src/components/UnlockModal.tsx';
 import { allSolves, readProgress, recordSolve, rehydrate, writeProgress } from '../src/lib/storage.ts';
-import { readLocalSave, resetAccount, syncNow } from '../src/lib/sync.ts';
+import { forgetSyncedPlayer, readLocalSave, resetAccount, syncNow } from '../src/lib/sync.ts';
 
 const when = (minutes: number) => new Date(Math.max(Date.now(), ACHIEVEMENTS_EPOCH) + minutes * 60_000).toISOString();
 const rec = (solvedAt: string) => ({ solvedAt, seconds: 60, hints: 0, moves: 20 });
@@ -126,6 +126,48 @@ it('skips a snapshot over the limits', async () => {
   await syncNow();
   expect(fetch).not.toHaveBeenCalled();
   expect(Object.keys(allSolves())).toHaveLength(20_001);
+});
+
+it('forgets the reset of a deleted account, so it cannot filter the next one', async () => {
+  localStorage.setItem('ph:sync:player', 'p1');
+  localStorage.setItem('ph:sync:resetAt', String(Date.parse(when(5))));
+  forgetSyncedPlayer();
+  expect(localStorage.getItem('ph:sync:player')).toBeNull();
+  expect(localStorage.getItem('ph:sync:resetAt')).toBeNull();
+  signIn('p2');
+  server = { ...emptySave(), solves: { 'hustle:1': rec(when(1)) } };
+  recordSolve('zip:level:easy:1', rec(when(1)));
+  await syncNow();
+  expect(Object.keys(server.solves).sort()).toEqual(['hustle:1', 'zip:level:easy:1']);
+  expect(server.resetAt).toBe(0);
+});
+
+it('puts on a theme pack that another device equipped', async () => {
+  signIn();
+  localStorage.setItem('ph:sync:player', 'p1');
+  const now = Date.now();
+  server = {
+    ...emptySave(),
+    spent: [{ kind: 'item', item: 'paper', coins: 400, at: now }],
+    equipped: { badges: [], flair: null, theme: 'paper', nameplate: null, at: now },
+  };
+  delete document.documentElement.dataset['pack'];
+  await syncNow();
+  expect(document.documentElement.dataset['pack']).toBe('paper');
+});
+
+it('applies nothing when the device became unreadable while the request was out', async () => {
+  signIn();
+  recordSolve('zip:level:easy:1', rec(when(1)));
+  const solves: Record<string, unknown> = {};
+  for (let i = 0; i <= 20_000; i++) solves[`zip:level:easy:${i}`] = rec(when(1));
+  onRequest = () => {
+    localStorage.setItem('ph:solves', JSON.stringify(solves));
+    rehydrate();
+  };
+  await syncNow();
+  expect(Object.keys(allSolves())).toHaveLength(20_001);
+  expect(localStorage.getItem('ph:sync:player')).toBeNull();
 });
 
 it('does nothing signed out', async () => {
