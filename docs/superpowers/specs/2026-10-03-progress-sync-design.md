@@ -53,8 +53,9 @@ interface SaveData {
 }
 ```
 
-`SolveRecord` (heute `apps/web/src/lib/storage.ts`) und `Equipped` (`apps/web/src/lib/coins.ts`)
-wandern dafuer in die Core, `apps/web` importiert sie von dort. `parseSaveData(unknown)` prueft Form, Id-Laenge (hoechstens 64), Obergrenzen (20 000
+`SolveRecord` (heute `apps/web/src/lib/storage.ts`) wandert in die Core. Fuer die Ausruestung
+definiert die Core die gespeicherte Form `SavedEquipment` (`{ badges, flair, theme, nameplate, at }`,
+liest auch das alte `{ badge }`); `Equipped` in `apps/web` bleibt die abgeleitete Form mit `badge`. `parseSaveData(unknown)` prueft Form, Id-Laenge (hoechstens 64), Obergrenzen (20 000
 Loesungen, 5 000 Ausgaben) und verwirft ungueltige Eintraege einzeln, wie `isSpendEntry` heute.
 
 `mergeSave(a, b)`:
@@ -129,9 +130,10 @@ Loesungen, 5 000 Ausgaben) und verwirft ungueltige Eintraege einzeln, wie `isSpe
 - Angemeldet setzt "Reset progress" zusaetzlich `ph:sync:resetAt = Date.now()` und synct sofort.
   Offline geht der Zeitstempel mit dem naechsten Sync. Der Dialog sagt dann "on all devices".
 - Empfaengt ein Geraet ein neueres `resetAt`, raeumt es auch seine nicht gesyncten Teile ab wie
-  `resetProgress`: angefangene Bretter (ausser denen der laufenden Periode), Ankuendigungslisten
-  (`ph:achievements`, `ph:flairs`, `ph:hustle-nameplates`), `ph:howto:*`, `ph:difficulty:*`.
-  Sonst bekaemen wieder verdiente Achievements dort keine Karte.
+  `resetProgress`: angefangene Bretter (ausser denen behaltener Loesungen), `ph:achievements`,
+  `ph:flairs`, `ph:howto:*`, `ph:difficulty:*`. Die Hustle-Ankuendigungslisten raeumt
+  `pendingAnnouncements` von selbst auf, weil es nicht mehr Aktuelles aus der Liste wirft; wieder
+  Verdientes bekommt so seine Karte.
 - Abgemeldet bleibt Reset lokal und setzt kein `resetAt`; nach dem Anmelden kommt der Serverstand
   zurueck. Ein Reset ohne Anmeldung loescht nie ein Konto.
 - Bestenlistenzeiten (`scores`) bleiben unberuehrt, wie heute.
