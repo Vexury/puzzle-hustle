@@ -127,7 +127,7 @@ No demo account needed. Every puzzle works without an account.
 Sign-in is optional (Profile tab, Sign in with Apple) and unlocks private friend groups with Daily/Weekly/Monthly standings and progress sync across devices: after signing in, tap the "Social" row on the Profile tab. Any Apple ID works.
 Hints: one free hint a day across all puzzles. After that a hint costs 20 coins or a rewarded video; the video plays only after the player confirms on a prompt.
 Double coins: the result card of a solved Daily, Weekly or Monthly offers "Watch video · double +N"; the rewarded video plays only after that tap and doubles the coins of that solve. With the purchase the coins are doubled automatically and no video is offered.
-In-app purchase "No Ads · Free Hints" (unlimited_hints, non-consumable): Profile tab, row "Account", card "No ads · Free hints", button "Unlock"; "Restore purchase" on the same card.
+In-app purchase "No Ads · Free Hints" (unlimited_hints, non-consumable): Profile tab, card "No ads · Free hints" (shown until bought), button "Unlock"; "Restore purchase" on the same card. Also reachable from the hint prompt via "Skip the videos for good".
 Account deletion: Profile tab, row "Account", "Delete account" (shown when signed in).
 ```
 

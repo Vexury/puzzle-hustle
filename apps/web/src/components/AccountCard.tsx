@@ -123,12 +123,9 @@ export function ProfileHero({ joinCode = null }: { joinCode?: string | null } = 
           </span>
         )}
       </div>
-      <div className="profile-under">
-        <span className="small muted">{session ? 'How your groups see you' : 'Your name'}</span>
-        <a href={href('/shop')} className="pill outline profile-customize" onClick={onLinkClick}>
-          Customize ›
-        </a>
-      </div>
+      <a href={href('/shop')} className="pill outline profile-customize" onClick={onLinkClick}>
+        Customize ›
+      </a>
       {!session && (
         <>
           <span className="muted small">{SIGN_IN_AVAILABLE ? 'Sign in to compare times with friends.' : "Sign-in isn't set up on this build yet."}</span>

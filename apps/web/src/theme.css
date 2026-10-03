@@ -182,6 +182,7 @@ button { font: inherit; color: inherit; }
 .ad-ask > .card-lg { max-width: 22rem; gap: 12px; }
 .ad-ask-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
 .ad-ask-row.stack { flex-direction: column; align-items: stretch; }
+.hint-upsell { align-self: center; color: var(--text-muted); text-decoration: underline; }
 .ad-wait { flex-direction: row; align-items: center; gap: 14px; }
 .spinner { width: 22px; height: 22px; flex: none; border-radius: 50%; border: 3px solid var(--border-mid); border-top-color: var(--accent); animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -375,7 +376,7 @@ p { margin: 0; }
 .profile-hero { display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; overflow: hidden; }
 /* The player card: the player's own standings row across the top, nameplate behind it, the
    first showcase badge as avatar and the whole showcase where the time would be. */
-.player-row { display: flex; align-items: center; gap: 12px; min-height: 84px; margin: -14px -16px 0; padding: 0 16px; }
+.player-row { display: flex; align-items: center; gap: 12px; min-height: 60px; margin: -14px -16px 0; padding: 0 16px; }
 .player-row:not(.np) { background: color-mix(in srgb, var(--accent) 14%, var(--card-bg)); }
 .player-row :is(.np-art, .np-train) { right: var(--showcase-w, 0px); }
 .player-row .profile-who { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
@@ -392,12 +393,12 @@ p { margin: 0; }
 .row-badge { width: 16px; height: 16px; color: var(--rarity-solo); }
 .np:not(.np-dark) :is(.showcase-icon, .row-badge) { color: var(--rarity-on-light); }
 .np-dark :is(.showcase-icon, .row-badge) { color: var(--rarity-on-dark); }
-.profile-under { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 4px; }
-.profile-customize { flex: none; min-height: 34px; padding: 4px 14px; font-size: var(--fs-sm); }
-.profile-who .name-btn { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; max-width: 100%; font-size: 1.45rem; font-weight: 800; line-height: 1.15; }
-/* The name keeps one line (a long one ends in an ellipsis); badge, level and pencil wrap below it. */
+.profile-customize { min-height: 34px; margin-top: 4px; padding: 4px 14px; font-size: var(--fs-sm); }
+.profile-who .name-btn { display: flex; align-items: center; gap: 6px; max-width: 100%; font-size: 1.45rem; font-weight: 800; line-height: 1.15; }
+/* Name, level and pencil keep one line and a long name ends in an ellipsis, so the card stays as
+   tall as a standings row and its nameplate looks the same in both (2026-10-03). */
 .profile-who .name-text { min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-/* Signed out, the sign-in spans the card, so its right edge lines up with Customize above. */
+/* Signed out, the sign-in spans the card like Customize above. */
 .profile-signin :is(.friends-actions, .signin-options) { width: 100%; }
 .profile-signin .pill { flex: 1; width: 100%; }
 .profile-who .leaderboard-flair { font-size: var(--fs-sm); }

@@ -1,30 +1,19 @@
 import { useEffect, useState } from 'react';
 import { OnOff } from './Gameplay.tsx';
-import { adsAvailable } from '../lib/ads.ts';
 import { pushCosmetics } from '../lib/coins.ts';
-import { buyUnlimitedHints, hasUnlimitedHints, onEntitlement, restoreUnlimitedHints, type PurchaseOutcome } from '../lib/entitlement.ts';
 import { setTelemetryEnabled, telemetryEnabled } from '../lib/telemetry.ts';
 import { useSession } from '../lib/auth.ts';
 import { resetAccount } from '../lib/sync.ts';
 import { AccountActions } from '../components/AccountCard.tsx';
+import { useUnlimited } from '../components/PurchaseCard.tsx';
 import { SubpageHead } from '../components/SubpageHead.tsx';
-import { toast } from '../components/Toast.tsx';
-
-const PURCHASE_TOASTS: Record<PurchaseOutcome, string | null> = {
-  owned: 'Unlocked. No ads, every hint free.',
-  pending: 'Payment pending. It unlocks once it goes through.',
-  cancelled: null,
-  failed: 'No purchase was made',
-};
 
 export function Account() {
   const signedIn = useSession() !== null;
   const [statsOn, setStatsOn] = useState(telemetryEnabled);
   const [confirmReset, setConfirmReset] = useState(false);
-  const [unlimited, setUnlimited] = useState(hasUnlimitedHints);
-  const [buying, setBuying] = useState(false);
+  const unlimited = useUnlimited();
 
-  useEffect(() => onEntitlement(() => setUnlimited(hasUnlimitedHints())), []);
   useEffect(() => {
     if (!confirmReset) return;
     const t = setTimeout(() => setConfirmReset(false), 2000);
@@ -37,54 +26,15 @@ export function Account() {
       <div className="stack">
         <AccountActions />
 
-        {adsAvailable ? (
+        {unlimited && (
           <div className="card-lg row-between">
             <span>
               <b>No ads · Free hints</b>
-              <span className="muted small">
-                {unlimited ? 'Bought. No ads, every hint free, double coins.' : 'No videos, every hint free, double coins on every Daily, Weekly and Monthly. Pay once, keep it for good.'}
-              </span>
-              {!unlimited && (
-                <span>
-                  <button
-                    type="button"
-                    className="linklike muted small"
-                    disabled={buying}
-                    onClick={() => {
-                      setBuying(true);
-                      void restoreUnlimitedHints()
-                        .then((found) => toast(found ? 'Purchase restored. No ads, every hint free.' : 'No purchase found for this store account'))
-                        .catch(() => toast('The store is not reachable right now'))
-                        .finally(() => setBuying(false));
-                    }}
-                  >
-                    Restore purchase
-                  </button>
-                </span>
-              )}
+              <span className="muted small">Bought. No ads, every hint free, double coins.</span>
             </span>
-            {unlimited ? (
-              <span className="muted small">Unlocked</span>
-            ) : (
-              <button
-                type="button"
-                className="pill"
-                disabled={buying}
-                onClick={() => {
-                  setBuying(true);
-                  void buyUnlimitedHints()
-                    .then((outcome) => {
-                      const message = PURCHASE_TOASTS[outcome];
-                      if (message) toast(message);
-                    })
-                    .finally(() => setBuying(false));
-                }}
-              >
-                {buying ? 'One moment' : 'Unlock'}
-              </button>
-            )}
+            <span className="muted small">Unlocked</span>
           </div>
-        ) : null}
+        )}
 
         <OnOff
           title="Anonymous stats"

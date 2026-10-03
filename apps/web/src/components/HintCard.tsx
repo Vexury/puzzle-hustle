@@ -1,6 +1,7 @@
 import { HINT_PRICE } from '@puzzle-hustle/core';
 import { balance } from '../lib/coins.ts';
 import type { HintChoice, HintOffer } from '../lib/hints.ts';
+import { href, onLinkClick } from '../lib/router.ts';
 
 // Opens on every tap on Hint, so a stray tap never spends anything. It offers what applies:
 // with the purchase a plain yes, otherwise the day's free hint, and once that is gone coins
@@ -26,6 +27,8 @@ export function HintCard({ offer, onAnswer }: { offer: HintOffer; onAnswer(choic
     if (offer.canPay) actions.push(['coins', `Use ${HINT_PRICE} coins`]);
   }
   const short = !offer.unlimited && !offer.free && !offer.canPay;
+  // In the apps, once the free hint is gone, a quiet way to the purchase on Profile (2026-10-03).
+  const upsell = offer.video && !offer.unlimited && !offer.free;
 
   return (
     <div className="ad-ask" role="dialog" aria-modal="true" aria-label={title}>
@@ -59,6 +62,18 @@ export function HintCard({ offer, onAnswer }: { offer: HintOffer; onAnswer(choic
               </button>
             ))}
           </div>
+        )}
+        {upsell && (
+          <a
+            href={href('/profile')}
+            className="muted small hint-upsell"
+            onClick={(e) => {
+              onAnswer(null);
+              onLinkClick(e);
+            }}
+          >
+            Skip the videos for good ›
+          </a>
         )}
       </div>
     </div>

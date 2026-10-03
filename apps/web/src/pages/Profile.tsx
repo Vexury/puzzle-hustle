@@ -12,6 +12,7 @@ import { PRIVACY_POLICY_URL, ProfileHero, TrophyIcon } from '../components/Accou
 import { Chevron } from '../components/Chevron.tsx';
 import { CoinPill } from '../components/CoinPill.tsx';
 import { Logo } from '../components/Logo.tsx';
+import { PurchaseCard } from '../components/PurchaseCard.tsx';
 import { ThemeToggle } from '../components/ThemeToggle.tsx';
 
 // Profile is a hub: the hero on top, then one row per page. Something new gets a row, so the
@@ -48,6 +49,7 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
       <ProfileHero joinCode={joinCode} />
 
       <div className="stack">
+        <PurchaseCard />
         {session && (
           <Row
             to="/social"
@@ -62,9 +64,8 @@ export function Profile({ joinCode = null }: { joinCode?: string | null } = {}) 
 
       <h2 className="section-h">Settings</h2>
       <div className="stack section-body">
-        <Row to="/shop" icon={<BrushIcon />} title="Customize" sub="Theme, nameplate, badges, flair" />
         <Row to="/gameplay" icon={<GearIcon />} title="Gameplay" sub="Highlights, mistakes, sound, haptics" />
-        <Row to="/account" icon={<PersonIcon />} title="Account" sub={session ? `Signed in with ${isAppleSession() ? 'Apple' : 'Google'}` : 'Purchase, stats, reset'} />
+        <Row to="/account" icon={<PersonIcon />} title="Account" sub={session ? `Signed in with ${isAppleSession() ? 'Apple' : 'Google'}` : 'Stats, reset'} />
       </div>
 
       <footer className="profile-footer">
@@ -120,15 +121,6 @@ function StatsIcon() {
   return (
     <svg className="glyph" viewBox="0 0 24 24" aria-hidden="true">
       <path d="M5 20V11M11 20V5M17 20v-6M3 20h18" />
-    </svg>
-  );
-}
-
-function BrushIcon() {
-  return (
-    <svg className="glyph" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M14 4l6 6-8.5 8.5a3 3 0 0 1-4.2 0l-1.8-1.8a3 3 0 0 1 0-4.2z" />
-      <path d="M4 20l3-3" />
     </svg>
   );
 }
