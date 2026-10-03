@@ -20,9 +20,13 @@ export async function syncSave(db: D1Database, playerId: string, incoming: SaveD
       : db.prepare('INSERT INTO saves (player_id, data, updated_at) VALUES (?, ?, ?) ON CONFLICT(player_id) DO NOTHING').bind(playerId, data, now);
     const result = await write.run();
     if (result.meta.changes !== 1) continue;
-    // Exact, not MAX like POST /hustle: the save is the whole truth, so a reset lowers the chip.
+    // MAX like POST /hustle: an app without sync may know stages the save does not have yet.
+    // Only a reset that this sync brings in may lower the chip.
     const level = Math.min(HUSTLE_MAX_STAGE, hustleSolved(saveSolveEntries(merged.solves)));
-    await db.prepare('UPDATE players SET hustle = ? WHERE id = ?').bind(level, playerId).run();
+    const lowers = merged.resetAt > stored.resetAt;
+    await db.prepare(lowers ? 'UPDATE players SET hustle = ? WHERE id = ?' : 'UPDATE players SET hustle = MAX(hustle, ?) WHERE id = ?')
+      .bind(level, playerId)
+      .run();
     return merged;
   }
   return 'conflict';

@@ -93,10 +93,10 @@ Loesungen, 5 000 Ausgaben) und verwirft ungueltige Eintraege einzeln, wie `isSpe
   Client versucht es beim naechsten Ausloeser. Antwort: der zusammengefuehrte Save.
   Den gespeicherten Stand liest der Server ohne Groessengrenzen; liegt der Merge ueber
   `SAVE_LIMITS`, antwortet er 413 `too_large` und schreibt nichts (2026-10-03).
-- `/sync` setzt `players.hustle` exakt aus dem zusammengefuehrten Stand (`hustleSolved` aus
-  `packages/core/src/hustleProgress.ts`), ohne
-  `MAX`. Damit senkt ein Konto-Reset auch den Chip in der Bestenliste, und der Epochenwechsel zum
-  Release korrigiert sich beim naechsten Sync selbst (Falle in `docs/pitfalls.md`).
+- `/sync` hebt `players.hustle` auf das Maximum aus altem Wert und zusammengefuehrtem Stand
+  (`hustleSolved` aus `packages/core/src/hustleProgress.ts`); nur ein Konto-Reset, den dieser Sync
+  mitbringt, setzt es exakt und senkt so den Chip. Geaendert am 2026-10-03: exakt ohne Reset liess
+  den Chip fallen, solange eine App ohne Sync mehr Stufen kannte als der Save.
   `POST /hustle` bleibt fuer alte App-Versionen.
 - `DELETE /account` loescht die `saves`-Zeile mit.
 

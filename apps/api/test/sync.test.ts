@@ -47,6 +47,13 @@ it('merges a second device into what is stored', async () => {
   expect(await hustleOf(me.player.id)).toBe(49);
 });
 
+it('keeps a higher level that an app without sync pushed through /hustle', async () => {
+  const me = await signIn('s1', 'Moritz');
+  await worker.fetch(new Request('https://api.test/hustle', { method: 'POST', headers: { Authorization: `Bearer ${me.token}` }, body: JSON.stringify({ level: 49 }) }), env);
+  await sync(me.token, JSON.stringify(save({ solves: hustle(1, 4, after(1)) })));
+  expect(await hustleOf(me.player.id)).toBe(49);
+});
+
 it('lowers the Hustle level after an account-wide reset', async () => {
   const me = await signIn('s1', 'Moritz');
   await sync(me.token, JSON.stringify(save({ solves: hustle(1, 49, after(1)) })));
