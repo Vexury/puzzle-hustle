@@ -44,7 +44,7 @@ const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v =
 
 export function isSpendEntry(value: unknown): value is SpendEntry {
   if (!isObject(value)) return false;
-  if (typeof value.coins !== 'number' || !Number.isInteger(value.coins) || value.coins < 0 || typeof value.at !== 'number') return false;
+  if (!Number.isInteger(value.coins) || (value.coins as number) < 0 || typeof value.at !== 'number' || !Number.isFinite(value.at)) return false;
   if (value.kind === 'hint') return typeof value.puzzle === 'string';
   if (value.kind === 'item') return typeof value.item === 'string';
   return false;
@@ -53,7 +53,7 @@ export function isSpendEntry(value: unknown): value is SpendEntry {
 function parseSolve(value: unknown): SolveRecord | null {
   if (!isObject(value) || typeof value.solvedAt !== 'string' || !Number.isFinite(Date.parse(value.solvedAt))) return null;
   if (!isCount(value.seconds) || !isCount(value.hints) || !isCount(value.moves)) return null;
-  return { solvedAt: value.solvedAt, seconds: value.seconds, hints: value.hints, moves: value.moves };
+  return { solvedAt: new Date(value.solvedAt).toISOString(), seconds: value.seconds, hints: value.hints, moves: value.moves };
 }
 
 // Reads ph:cosmetics as stored today, with or without `at`, and the older lone `badge`.
@@ -97,6 +97,7 @@ function pick<T>(a: T, b: T, order: number): T {
 }
 
 const time = (r: SolveRecord) => Date.parse(r.solvedAt);
+const earlier = (a: SolveRecord, b: SolveRecord) => time(a) < time(b) || (time(a) === time(b) && a.solvedAt <= b.solvedAt);
 const counts = (id: string, r: SolveRecord) => !(id.startsWith('hustle:') && time(r) < ACHIEVEMENTS_EPOCH);
 
 // Periods keep their first run, which is the one on the leaderboard. Everything else keeps the
@@ -108,7 +109,7 @@ function mergeSolve(id: string, a: SolveRecord, b: SolveRecord): SolveRecord {
   const countB = counts(id, b);
   if (countA !== countB) return countA ? a : b;
   const best = pick(a, b, a.hints - b.hints || a.seconds - b.seconds || a.moves - b.moves);
-  return { ...best, solvedAt: time(a) <= time(b) ? a.solvedAt : b.solvedAt };
+  return { ...best, solvedAt: earlier(a, b) ? a.solvedAt : b.solvedAt };
 }
 
 function since(save: SaveData, from: number): SaveData {
@@ -122,6 +123,12 @@ function since(save: SaveData, from: number): SaveData {
 }
 
 const spendKey = (e: SpendEntry) => (e.kind === 'item' ? `item:${e.item}` : `hint:${e.puzzle}@${e.at}`);
+
+// Newer wins; on a tie the lexicographically larger JSON wins.
+function newerEquipment(a: SavedEquipment, b: SavedEquipment): SavedEquipment {
+  if (a.at !== b.at) return a.at > b.at ? a : b;
+  return JSON.stringify(a) >= JSON.stringify(b) ? a : b;
+}
 
 export function mergeSave(a: SaveData, b: SaveData): SaveData {
   const resetAt = Math.max(a.resetAt, b.resetAt);
@@ -140,7 +147,7 @@ export function mergeSave(a: SaveData, b: SaveData): SaveData {
   const spent = [...spentByKey.values()].sort((x, y) => x.at - y.at || (JSON.stringify(x) < JSON.stringify(y) ? -1 : 1));
 
   const doubled = [...new Set([...left.doubled, ...right.doubled])].filter((id) => solves[id]).sort();
-  const equipped = pick(left.equipped, right.equipped, right.equipped.at - left.equipped.at);
+  const equipped = newerEquipment(left.equipped, right.equipped);
   return { solves: sortKeys(solves), spent, doubled, equipped, resetAt };
 }
 

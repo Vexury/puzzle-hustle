@@ -75,6 +75,7 @@ it('takes the newer equipment, and a fixed one on a tie', () => {
   const x = save({ equipped: { ...noEquipment(7), flair: 'puzzler' } });
   const y = save({ equipped: { ...noEquipment(7), flair: 'hustler' } });
   expect(mergeSave(x, y).equipped).toEqual(mergeSave(y, x).equipped);
+  expect(mergeSave(x, y).equipped.flair).toBe('puzzler');
 });
 
 it('drops everything older than a reset from the side that did not reset', () => {
@@ -123,4 +124,30 @@ it('turns solves into entries for the derived values', () => {
   expect(saveSolveEntries({ 'hustle:1': rec('2026-10-01T10:00:00.000Z', 5, 1, 9) })).toEqual([
     { id: 'hustle:1', solvedAt: at('2026-10-01T10:00:00.000Z'), seconds: 5, hints: 1, moves: 9 },
   ]);
+});
+
+it('stays commutative on ties', () => {
+  const items = [
+    save({ spent: [{ kind: 'item', item: 'a', coins: 100, at: 5 }] }),
+    save({ spent: [{ kind: 'item', item: 'a', coins: 50, at: 5 }] }),
+  ];
+  expect(mergeSave(items[0]!, items[1]!)).toEqual(mergeSave(items[1]!, items[0]!));
+  const periods = [
+    save({ solves: { 'zip:daily:2026-10-01': rec('2026-10-01T08:00:00.000Z', 90) } }),
+    save({ solves: { 'zip:daily:2026-10-01': rec('2026-10-01T08:00:00.000Z', 80) } }),
+  ];
+  expect(mergeSave(periods[0]!, periods[1]!)).toEqual(mergeSave(periods[1]!, periods[0]!));
+  const spelled = [
+    parseSaveData({ solves: { 'zip:daily:2026-10-01': rec('2026-10-01T08:00:00Z') } })!,
+    parseSaveData({ solves: { 'zip:daily:2026-10-01': rec('2026-10-01T08:00:00.000Z') } })!,
+  ];
+  expect(mergeSave(spelled[0]!, spelled[1]!)).toEqual(mergeSave(spelled[1]!, spelled[0]!));
+  const raw = { 'zip:level:easy:1': rec('2026-10-01T08:00:00Z') };
+  const other = { 'zip:level:easy:1': rec('2026-10-01T08:00:00.000Z') };
+  expect(mergeSave(save({ solves: raw }), save({ solves: other }))).toEqual(mergeSave(save({ solves: other }), save({ solves: raw })));
+});
+
+it('drops spend entries with a non-finite time', () => {
+  const parsed = parseSaveData(JSON.parse('{"spent":[{"kind":"item","item":"a","coins":1,"at":1e400}]}'));
+  expect(parsed?.spent).toEqual([]);
 });
