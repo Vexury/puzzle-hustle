@@ -1,6 +1,6 @@
 import { beforeEach, expect, it } from 'vitest';
-import { adapter } from '@puzzle-hustle/core';
-import { getSolve, keepFinalBoard, readCurrentProgress, readProgress, recordSolve, rehydrate, startedIds, writeProgress } from '../src/lib/storage.ts';
+import { adapter, periodKey } from '@puzzle-hustle/core';
+import { allSolves, clearUnsynced, getSolve, keepFinalBoard, onSyncedWrite, readCurrentProgress, readProgress, readSetting, recordSolve, rehydrate, replaceSolves, startedIds, writeProgress, writeSetting } from '../src/lib/storage.ts';
 
 beforeEach(() => {
   localStorage.clear();
@@ -62,4 +62,41 @@ it('replaces a pre-epoch Hustle solve with the new one, even a slower one', () =
   recordSolve('hustle:1', record(20, '2026-09-20T10:00:00.000Z'));
   recordSolve('hustle:1', record(90, '2026-09-30T10:00:00.000Z'));
   expect(getSolve('hustle:1')).toEqual({ solvedAt: '2026-09-30T10:00:00.000Z', seconds: 90, hints: 0, moves: 20 });
+});
+
+it('tells listeners about writes to synced stores only', () => {
+  let calls = 0;
+  const off = onSyncedWrite(() => calls++);
+  recordSolve('zip:level:easy:1', { solvedAt: new Date().toISOString(), seconds: 60, hints: 0, moves: 10 });
+  writeSetting('ph:coins:spent', '[]');
+  writeSetting('ph:sound', 'off');
+  off();
+  writeSetting('ph:cosmetics', '{}');
+  expect(calls).toBe(2);
+});
+
+it('replaces all solves without telling the sync', () => {
+  let calls = 0;
+  const off = onSyncedWrite(() => calls++);
+  replaceSolves({ 'zip:level:easy:2': { solvedAt: '2026-10-01T08:00:00.000Z', seconds: 5, hints: 0, moves: 3 } });
+  off();
+  expect(calls).toBe(0);
+  expect(Object.keys(allSolves())).toEqual(['zip:level:easy:2']);
+  rehydrate();
+  expect(Object.keys(allSolves())).toEqual(['zip:level:easy:2']);
+});
+
+it('clears boards and markers but keeps boards of kept solves', () => {
+  const daily = `stars:daily:${periodKey('daily')}`;
+  writeProgress(daily, { state: [1], seconds: 1, moves: 1, hints: 0 });
+  writeProgress('zip:level:easy:1', { state: [1], seconds: 1, moves: 1, hints: 0 });
+  writeSetting('ph:howto:zip', '1');
+  writeSetting('ph:difficulty:zip', 'hard');
+  writeSetting('ph:achievements', '["first-solve"]');
+  clearUnsynced({ [daily]: {} });
+  expect(readProgress(daily)).not.toBeNull();
+  expect(readProgress('zip:level:easy:1')).toBeNull();
+  expect(readSetting('ph:howto:zip')).toBeNull();
+  expect(readSetting('ph:difficulty:zip')).toBeNull();
+  expect(readSetting('ph:achievements')).toBeNull();
 });

@@ -1,4 +1,4 @@
-import { HUSTLE_MAX_STAGE, SHOWCASE_SIZE, isCosmeticOf } from '@puzzle-hustle/core';
+import { HUSTLE_MAX_STAGE, SHOWCASE_SIZE, isCosmeticOf, parseSaveData } from '@puzzle-hustle/core';
 import { readBoard } from './board.ts';
 import { revokeAppleAuthorization, verifyAppleIdToken } from './apple.ts';
 import { verifyGoogleIdToken } from './google.ts';
@@ -9,6 +9,7 @@ import { JwksUnavailable } from './idtoken.ts';
 import { generatedName, validateName } from './names.ts';
 import { requirePlayer, upsertPlayer } from './players.ts';
 import { MAX_BATCH, submitScores } from './scores.ts';
+import { MAX_SAVE_CHARS, syncSave } from './sync.ts';
 import { renewSession, signSession } from './token.ts';
 
 async function body(request: Request): Promise<Record<string, unknown>> {
@@ -137,6 +138,23 @@ async function postHustle(request: Request, env: Env, playerId: string): Promise
   return json({ hustle: row?.hustle ?? level });
 }
 
+async function postSync(request: Request, env: Env, playerId: string): Promise<Response> {
+  const text = await request.text();
+  if (text.length > MAX_SAVE_CHARS) return error(413, 'too_large');
+  let raw: unknown;
+  try {
+    raw = JSON.parse(text);
+  } catch {
+    return error(400, 'bad_save');
+  }
+  const incoming = parseSaveData(raw);
+  if (!incoming) return error(400, 'bad_save');
+  const merged = await syncSave(env.DB, playerId, incoming);
+  if (merged === 'conflict') return error(409, 'conflict');
+  if (merged === 'too_large') return error(413, 'too_large');
+  return json(merged);
+}
+
 // Anonymous by design: no token, and the IP only keys the rate limiter, it is never stored.
 async function postEvents(request: Request, env: Env): Promise<Response> {
   if (env.EVENTS_LIMIT) {
@@ -166,6 +184,7 @@ async function route(request: Request, env: Env): Promise<Response> {
   if (method === 'POST' && path === '/name') return postName(request, env, playerId);
   if (method === 'POST' && path === '/cosmetics') return postCosmetics(request, env, playerId);
   if (method === 'POST' && path === '/hustle') return postHustle(request, env, playerId);
+  if (method === 'POST' && path === '/sync') return postSync(request, env, playerId);
 
   if (method === 'GET' && path === '/groups') return json({ groups: await listGroups(env.DB, playerId) });
 
@@ -252,6 +271,7 @@ async function route(request: Request, env: Env): Promise<Response> {
     await env.DB.batch([
       env.DB.prepare('DELETE FROM scores WHERE player_id = ?').bind(playerId),
       env.DB.prepare('DELETE FROM reports WHERE reporter_id = ? OR target_id = ?').bind(playerId, playerId),
+      env.DB.prepare('DELETE FROM saves WHERE player_id = ?').bind(playerId),
       env.DB.prepare('DELETE FROM players WHERE id = ?').bind(playerId),
     ]);
     return json({});

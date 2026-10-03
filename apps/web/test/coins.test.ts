@@ -1,6 +1,6 @@
 import { beforeEach, expect, it, vi } from 'vitest';
 import { ACHIEVEMENTS_EPOCH, levelList } from '@puzzle-hustle/core';
-import { recordSolve, rehydrate, resetProgress } from '../src/lib/storage.ts';
+import { readSetting, recordSolve, rehydrate, resetProgress } from '../src/lib/storage.ts';
 import { balance, buyItem, canAffordHint, doubleOffer, equip, markDoubled, owned, readDoubled, readEquipped, readSpent, spendHint, toggleShowcase } from '../src/lib/coins.ts';
 
 const NONE = { badge: null, badges: [], flair: null, theme: null, nameplate: null };
@@ -266,4 +266,13 @@ it('offers nothing for a past daily, a level or an unsolved puzzle', () => {
   expect(doubleOffer('crowns:daily:2026-10-02')).toBe(0);
   markDoubled('zip:level:easy:1');
   expect(readDoubled().size).toBe(0);
+});
+
+it('stamps the equipment with the time it was chosen', () => {
+  earnSome(50);
+  expect(buyItem('plate-paper')).toBe(true);
+  const before = Date.now();
+  expect(equip('nameplate', 'plate-paper')).toBe(true);
+  const stored = JSON.parse(readSetting('ph:cosmetics') ?? '{}') as { at?: number };
+  expect(stored.at).toBeGreaterThanOrEqual(before);
 });

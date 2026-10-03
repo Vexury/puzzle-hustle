@@ -1,21 +1,41 @@
 import { useSyncExternalStore } from 'react';
 import { ACHIEVEMENTS_EPOCH, adapter, isPuzzleTypeId, parsePuzzleId, periodKey } from '@puzzle-hustle/core';
+import type { SolveRecord } from '@puzzle-hustle/core';
 import { isBackedUp, scheduleBackup } from './backup.ts';
+export type { SolveRecord };
 
 // Shared by Intro.tsx and UnlockModal.tsx: neither component imports the other, so either can
 // read this without creating a circular import between the two.
 export const INTRO_SEEN_KEY = 'ph:intro';
 
-export interface SolveRecord {
-  solvedAt: string;
-  seconds: number;
-  hints: number;
-  moves: number;
-}
-
 const KEY = 'ph:solves';
 const listeners = new Set<() => void>();
 let cache: Record<string, SolveRecord> = load();
+
+// The four stores the profile is derived from; sync.ts sends them to the server.
+export const SYNCED_KEYS: ReadonlySet<string> = new Set([KEY, 'ph:coins:spent', 'ph:coins:doubled', 'ph:cosmetics']);
+const writeListeners = new Set<() => void>();
+
+export function onSyncedWrite(listener: () => void): () => void {
+  writeListeners.add(listener);
+  return () => writeListeners.delete(listener);
+}
+
+function syncedWrite() {
+  for (const l of writeListeners) l();
+}
+
+// For sync.ts: takes a merged set as it is, without telling the sync about its own write.
+export function replaceSolves(solves: Record<string, SolveRecord>) {
+  cache = solves;
+  try {
+    localStorage.setItem(KEY, JSON.stringify(cache));
+    scheduleBackup();
+  } catch {
+    /* storage unavailable */
+  }
+  for (const l of listeners) l();
+}
 
 function load(): Record<string, SolveRecord> {
   try {
@@ -58,6 +78,7 @@ export function recordSolve(id: string, record: SolveRecord) {
   try {
     localStorage.setItem(KEY, JSON.stringify(cache));
     scheduleBackup();
+    syncedWrite();
   } catch {
     /* storage unavailable */
   }
@@ -160,25 +181,17 @@ export function clearProgress(id: string) {
   }
 }
 
-// Deliberately leaves ph:queue untouched: those are solves the player genuinely earned, often
-// while offline, and dropping them to honour a local reset would destroy real data to avoid
-// mild surprise. Decided, not an oversight.
-// Solves of the running daily, weekly and monthly survive: the leaderboard already holds their
-// first time, so replaying them could never count.
-export function resetProgress() {
-  const kept = Object.fromEntries(Object.entries(cache).filter(([id]) => isRunningPeriod(id)));
+// What a reset clears besides the synced stores: boards (except those of `kept` solves),
+// announcement lists, how-to and difficulty markers. sync.ts calls it when another device reset.
+export function clearUnsynced(kept: Record<string, unknown>) {
   try {
     const doomed: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
       if (
         k &&
-        (k === KEY ||
-          k === 'ph:achievements' ||
+        (k === 'ph:achievements' ||
           k === 'ph:flairs' ||
-          k === 'ph:coins:spent' ||
-          k === 'ph:coins:doubled' ||
-          k === 'ph:cosmetics' ||
           (k.startsWith(PROGRESS_PREFIX) && !kept[k.slice(PROGRESS_PREFIX.length)]) ||
           k.startsWith('ph:howto:') ||
           k.startsWith('ph:difficulty:'))
@@ -186,6 +199,22 @@ export function resetProgress() {
         doomed.push(k);
     }
     for (const k of doomed) localStorage.removeItem(k);
+    scheduleBackup();
+  } catch {
+    /* storage unavailable */
+  }
+}
+
+// Deliberately leaves ph:queue untouched: those are solves the player genuinely earned, often
+// while offline, and dropping them to honour a local reset would destroy real data to avoid
+// mild surprise. Decided, not an oversight.
+// Solves of the running daily, weekly and monthly survive: the leaderboard already holds their
+// first time, so replaying them could never count.
+export function resetProgress() {
+  const kept = Object.fromEntries(Object.entries(cache).filter(([id]) => isRunningPeriod(id)));
+  clearUnsynced(kept);
+  try {
+    for (const k of SYNCED_KEYS) localStorage.removeItem(k);
     if (Object.keys(kept).length > 0) localStorage.setItem(KEY, JSON.stringify(kept));
     scheduleBackup();
   } catch {
@@ -212,6 +241,7 @@ export function writeSetting(key: string, value: string) {
   try {
     localStorage.setItem(key, value);
     if (isBackedUp(key)) scheduleBackup();
+    if (SYNCED_KEYS.has(key)) syncedWrite();
   } catch {
     /* storage unavailable */
   }
@@ -221,6 +251,7 @@ export function removeSetting(key: string) {
   try {
     localStorage.removeItem(key);
     if (isBackedUp(key)) scheduleBackup();
+    if (SYNCED_KEYS.has(key)) syncedWrite();
   } catch {
     /* storage unavailable */
   }

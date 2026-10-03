@@ -1,5 +1,5 @@
 import { beforeEach, expect, it, vi } from 'vitest';
-import { ACHIEVEMENTS, ACHIEVEMENTS_EPOCH, type AchievementProgress } from '@puzzle-hustle/core';
+import { ACHIEVEMENTS, ACHIEVEMENTS_EPOCH, periodKey, type AchievementProgress } from '@puzzle-hustle/core';
 
 vi.mock('../src/components/UnlockModal.tsx', () => ({ announceUnlock: vi.fn() }));
 
@@ -184,4 +184,15 @@ it('a faster replay with no more hints still replaces the level time', () => {
   recordSolve('zip:level:easy:1', { solvedAt: at, seconds: 60, hints: 1, moves: 10 });
   recordSolve('zip:level:easy:1', { solvedAt: at, seconds: 40, hints: 1, moves: 10 });
   expect(storedSolves().find((s) => s.id === 'zip:level:easy:1')?.seconds).toBe(40);
+});
+
+it('marks unlocks as seen without announcing them when silent', () => {
+  localStorage.setItem('ph:solves', JSON.stringify({ [`zip:daily:${periodKey('daily')}`]: { solvedAt: new Date(Math.max(Date.now(), ACHIEVEMENTS_EPOCH + 1000)).toISOString(), seconds: 60, hints: 0, moves: 10 } }));
+  rehydrate();
+  vi.mocked(announceUnlock).mockClear();
+  syncAchievements(true);
+  expect(announceUnlock).not.toHaveBeenCalled();
+  syncAchievements();
+  expect(announceUnlock).not.toHaveBeenCalled();
+  expect(JSON.parse(localStorage.getItem('ph:achievements') ?? '[]')).not.toEqual([]);
 });

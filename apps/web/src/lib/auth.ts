@@ -6,6 +6,7 @@ import { SESSION_KEY, apiFetch, readSession, subscribeSession, writeSession, typ
 import { pushCosmetics } from './coins.ts';
 import { pushHustle } from './hustle.ts';
 import { flush, resetBackoff } from './queue.ts';
+import { forgetSyncedPlayer, syncNow } from './sync.ts';
 import { readSetting, removeSetting, writeSetting } from './storage.ts';
 import { toast } from '../components/Toast.tsx';
 
@@ -51,6 +52,7 @@ async function startSession(provider: 'google' | 'apple', idToken: string): Prom
   // player, or to anyone when nobody was signed in on this device before.
   const previous = readSetting(PREVIOUS_PLAYER_KEY);
   removeSetting(PREVIOUS_PLAYER_KEY);
+  void syncNow();
   if (previous === null || previous === session.player.id) {
     void pushCosmetics();
     void pushHustle();
@@ -282,7 +284,12 @@ export function isAppleSession(): boolean {
   return NATIVE_APPLE || (!Capacitor.isNativePlatform() && lastProvider() === 'apple');
 }
 
+// Takes no arguments: it is bound straight to a button's onClick.
 export function signOut() {
+  endSession(true);
+}
+
+function endSession(sendProgress: boolean) {
   // The native counterpart: on Android it clears Credential Manager's remembered choice so the
   // next sign-in asks for an account again, on iOS it drops the plugin's stored Apple tokens.
   if (NATIVE_GOOGLE || NATIVE_APPLE) {
@@ -295,6 +302,10 @@ export function signOut() {
   const player = readSession()?.player.id;
   if (player) writeSetting(PREVIOUS_PLAYER_KEY, player);
   removeSetting(NAME_KEY);
+  // Best effort: solves not yet synced would otherwise be lost if another account signs in next.
+  // The request takes the session and the snapshot before its first await, so it still goes out
+  // under this player's token after the session is gone below.
+  if (sendProgress) void syncNow();
   writeSession(null);
 }
 
@@ -333,6 +344,8 @@ export async function deleteAccount(): Promise<boolean> {
     toast('Could not delete your account. Try again.');
     return false;
   }
-  signOut();
+  forgetSyncedPlayer();
+  // The account is gone; a sync would only earn a 401, which signs out whoever is signed in by then.
+  endSession(false);
   return true;
 }

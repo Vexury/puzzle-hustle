@@ -4,7 +4,8 @@ import { adsAvailable } from '../lib/ads.ts';
 import { pushCosmetics } from '../lib/coins.ts';
 import { buyUnlimitedHints, hasUnlimitedHints, onEntitlement, restoreUnlimitedHints, type PurchaseOutcome } from '../lib/entitlement.ts';
 import { setTelemetryEnabled, telemetryEnabled } from '../lib/telemetry.ts';
-import { resetProgressAndAppearance } from '../lib/theme.ts';
+import { useSession } from '../lib/auth.ts';
+import { resetAccount } from '../lib/sync.ts';
 import { AccountActions } from '../components/AccountCard.tsx';
 import { SubpageHead } from '../components/SubpageHead.tsx';
 import { toast } from '../components/Toast.tsx';
@@ -17,6 +18,7 @@ const PURCHASE_TOASTS: Record<PurchaseOutcome, string | null> = {
 };
 
 export function Account() {
+  const signedIn = useSession() !== null;
   const [statsOn, setStatsOn] = useState(telemetryEnabled);
   const [confirmReset, setConfirmReset] = useState(false);
   const [unlimited, setUnlimited] = useState(hasUnlimitedHints);
@@ -97,14 +99,20 @@ export function Account() {
         <div className="card-lg row-between">
           <span>
             <b>Reset progress</b>
-            <span className="muted small">{confirmReset ? 'Deletes all solves and streaks on this device. Current dailies, weeklies and monthlies stay solved.' : 'Start over from zero.'}</span>
+            <span className="muted small">
+              {confirmReset
+                ? signedIn
+                  ? 'Deletes all solves, streaks, coins and items on all your devices. Current dailies, weeklies and monthlies stay solved.'
+                  : 'Deletes all solves and streaks on this device. Current dailies, weeklies and monthlies stay solved.'
+                : 'Start over from zero.'}
+            </span>
           </span>
           {confirmReset ? (
             <button
               type="button"
               className="pill danger"
               onClick={() => {
-                resetProgressAndAppearance();
+                resetAccount();
                 void pushCosmetics();
                 setConfirmReset(false);
               }}

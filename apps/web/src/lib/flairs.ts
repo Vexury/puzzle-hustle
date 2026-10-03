@@ -19,6 +19,6 @@ export function requirementText(item: FlairCosmetic): string {
 // Called after a solve and on app start, same as syncAchievements, and for the same reason:
 // must never throw, or a player loses their finished-puzzle screen or their session start over
 // a collectible.
-export function syncFlairs(): void {
-  syncAnnouncements(KEY, () => earnedFlairs(storedSolves()), CATALOG_ORDER, (id) => announceUnlock({ kind: 'flair', id }));
+export function syncFlairs(silent = false): void {
+  syncAnnouncements(KEY, () => earnedFlairs(storedSolves()), CATALOG_ORDER, silent ? () => undefined : (id) => announceUnlock({ kind: 'flair', id }));
 }

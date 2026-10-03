@@ -7,10 +7,12 @@ import { syncAnnouncements } from './announce.ts';
 const BADGES_KEY = 'ph:hustle-badges';
 const NAMEPLATES_KEY = 'ph:hustle-nameplates';
 
-// Like syncFlairs: after a solve and on app start, never throws.
-export function syncHustleRewards(): void {
-  syncAnnouncements(BADGES_KEY, () => earnedHustleBadges(storedSolves()), HUSTLE_BADGES.map((b) => b.id), (id) => announceUnlock({ kind: 'badge', id }));
-  syncAnnouncements(NAMEPLATES_KEY, () => earnedHustleNameplates(storedSolves()), HUSTLE_NAMEPLATES.map((n) => n.id), (id) => announceUnlock({ kind: 'nameplate', id }));
+// Like syncFlairs: after a solve and on app start, never throws. Silent after a sync, so what
+// another device earned does not open a stack of cards here.
+export function syncHustleRewards(silent = false): void {
+  const quiet = () => undefined;
+  syncAnnouncements(BADGES_KEY, () => earnedHustleBadges(storedSolves()), HUSTLE_BADGES.map((b) => b.id), silent ? quiet : (id) => announceUnlock({ kind: 'badge', id }));
+  syncAnnouncements(NAMEPLATES_KEY, () => earnedHustleNameplates(storedSolves()), HUSTLE_NAMEPLATES.map((n) => n.id), silent ? quiet : (id) => announceUnlock({ kind: 'nameplate', id }));
 }
 
 // Same path as the cosmetics: no queue. The server keeps the highest value it saw, so a failed

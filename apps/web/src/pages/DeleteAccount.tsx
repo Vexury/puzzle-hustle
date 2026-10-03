@@ -44,8 +44,9 @@ export function DeleteAccount() {
         <div className="card-lg">
           <h2>What is deleted</h2>
           <ul className="plain-list small">
-            <li>your account and display name, badge and flair</li>
+            <li>your account, display name, showcase badges, flair, nameplate and Hustle level</li>
             <li>all your submitted times</li>
+            <li>the copy of your progress, coins and items kept for sync</li>
             <li>every report you made or that was made about you</li>
             <li>your group memberships; a group you created passes to its longest-standing member, or is deleted if you were the last one</li>
           </ul>
@@ -55,7 +56,7 @@ export function DeleteAccount() {
         <div className="card-lg">
           <h2>What stays on your device</h2>
           <span className="muted small">
-            Your progress, coins, achievements and settings never leave the device, so deleting the account does not touch them. Uninstalling the
+            The progress, coins, achievements and settings on your device are not touched by deleting the account. Uninstalling the
             app removes them; Reset progress in the Profile screen erases your solves and streaks.
           </span>
         </div>
