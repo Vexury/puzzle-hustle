@@ -1,0 +1,20 @@
+<en-US>
+Your progress follows you.
+
+- Signed in, your level, coins, items and stats sync between app and web
+- Standings show your whole group, who hasn't solved yet sits below a line
+- Your group place appears after solving, even on weak reception
+- Profile: your player card looks just like in the standings, No Ads · Free Hints sits right below it
+- Synthwave: pyramids on the horizon
+- Cat Café: the awning stays at the top of the page
+</en-US>
+<de-DE>
+Dein Fortschritt kommt mit.
+
+- Angemeldet synchronisieren sich Level, Coins, Items und Statistik zwischen App und Web
+- Die Bestenliste zeigt die ganze Gruppe, wer noch fehlt, steht unter einem Strich
+- Dein Gruppenplatz erscheint nach dem Lösen, auch bei schwachem Empfang
+- Profil: Deine Karte sieht aus wie in der Bestenliste, No Ads · Free Hints steht direkt darunter
+- Synthwave: Pyramiden am Horizont
+- Cat Café: Die Markise bleibt oben auf der Seite
+</de-DE>
