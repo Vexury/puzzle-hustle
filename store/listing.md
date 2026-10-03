@@ -111,7 +111,7 @@ can request deletion: yes. Collection of the account data is optional (only when
 | --- | --- | --- |
 | Personal info: Name | Display name, chosen or generated ("Player 1234") | App functionality |
 | Personal info: User IDs | Google or Apple subject ID and the internal player ID | App functionality, account management |
-| App activity: Other actions | Daily, Weekly and Monthly times with hints, moves and solve time; group memberships; Hustle level (highest stage reached) | App functionality |
+| App activity: Other actions | Daily, Weekly and Monthly times with hints, moves and solve time; group memberships; Hustle level (highest stage reached); solved puzzles with time, hints, moves and date; coin spending; equipped items (progress sync) | App functionality |
 | App activity: Other user-generated content | Group names; showcase badges (up to three), equipped flair and nameplate as ids from a fixed list; reports on names | App functionality |
 | App activity: App interactions | Anonymous usage events (`POST /events`): app opened on a day, intro finished or skipped, puzzle solved or left with type, difficulty, mode (Daily, Weekly, Monthly, level, random, Hustle) with level number or Hustle stage, time, moves, hints, resumed, first of its type; each event also carries platform, build and an install-age bucket. No ID, day granularity, deleted after about 13 months. Optional: "Anonymous stats" switch in Profile | Analytics |
 | Device or other IDs | Advertising ID, processed by the AdMob SDK | Advertising or marketing |
@@ -137,7 +137,7 @@ whole app, so a type counts as linked when any collector links it.
 
 | Data type | Source | Purposes | Linked | Tracking |
 | --- | --- | --- | --- | --- |
-| Gameplay Content | leaderboard times, Hustle level | App Functionality | yes | no |
+| Gameplay Content | leaderboard times, Hustle level, synced progress | App Functionality | yes | no |
 | Other User Content | display name, group names, badges/flair/nameplate, reports | App Functionality | yes | no |
 | User ID | Apple subject ID, player ID | App Functionality | yes | no |
 | Product Interaction | usage events (not linked) and AdMob (linked) | Analytics, Third-Party Advertising, Developer's Advertising | yes | no |
@@ -155,11 +155,12 @@ whether AdMob's own disclosure adds further types (app interactions, diagnostics
 expects the app to declare, and whether the 2026-09-21 answer "advertising ID collected, not
 shared" still matches Google's guidance for AdMob.
 
-Progress, settings, coins, achievements and unfinished boards stay on the device (WebView local
-storage plus a Preferences backup copy) and are not collected.
+For signed-in players, progress, coins and equipped items are also copied to the server for sync;
+unfinished boards and settings stay on the device (WebView local storage plus a Preferences backup
+copy) and are not collected. Without an account no progress leaves the device.
 
 **Account deletion:** In the app: Profile, Delete account, confirm. The Worker (`DELETE /account`)
-removes the player row, all scores, every report by or about the player and all memberships; owned
+removes the player row, the synced save, all scores, every report by or about the player and all memberships; owned
 groups pass to the longest member or are deleted when empty. Play also requires a web URL:
 https://puzzles.vexury.dev/delete-account/ (since 2026-09-29), a page of the web app that names the
 app and developer, lists what is deleted and what stays on the device, signs in with Google or Apple
