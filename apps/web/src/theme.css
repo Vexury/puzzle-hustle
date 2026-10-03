@@ -743,6 +743,10 @@ p { margin: 0; }
 .seg small { font-weight: 400; color: var(--text-muted); font-size: var(--fs-xs); }
 .seg.active { background: var(--card-bg); box-shadow: var(--shadow); color: var(--accent-deep); }
 
+.volume { display: grid; grid-template-columns: 5.5rem 1fr 3rem; align-items: center; gap: 10px; font-size: var(--fs-sm); font-weight: 700; }
+.volume input { width: 100%; margin: 0; accent-color: var(--accent); }
+.volume-value { text-align: right; font-weight: 400; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
 .swatches { display: flex; flex-wrap: wrap; gap: 12px; margin: 10px 0 2px; }
 .swatch {
   width: 34px;

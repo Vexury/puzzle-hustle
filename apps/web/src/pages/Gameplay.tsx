@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { HAPTICS_KEY, hapticsAvailable, tap } from '../lib/haptics.ts';
 import * as sound from '../lib/sound.ts';
 import { MISTAKES_KEY, showMistakes } from '../lib/mistakes.ts';
@@ -42,7 +42,10 @@ export function Gameplay() {
             writeSetting(sound.SOUND_KEY, on ? '1' : '0');
             sound.play('place');
           }}
-        />
+        >
+          <Volume label="Moves" bus="moves" preview="place" disabled={!soundOn} />
+          <Volume label="Feedback" bus="feedback" preview="unlock" disabled={!soundOn} />
+        </OnOff>
         {hapticsAvailable && (
           <OnOff
             title="Haptic feedback"
@@ -60,7 +63,33 @@ export function Gameplay() {
   );
 }
 
-export function OnOff({ title, text, value, onChange }: { title: string; text: string; value: boolean; onChange: (on: boolean) => void }) {
+// The preview plays on release, not while dragging: a chime per step would pile up.
+function Volume({ label, bus, preview, disabled }: { label: string; bus: sound.Bus; preview: sound.Cue; disabled: boolean }) {
+  const [value, setValue] = useState(() => sound.volume(bus));
+  return (
+    <label className={disabled ? 'volume muted' : 'volume'}>
+      <span>{label}</span>
+      <input
+        type="range"
+        min={0}
+        max={100}
+        step={5}
+        value={value}
+        disabled={disabled}
+        onChange={(e) => {
+          const v = Number(e.target.value);
+          setValue(v);
+          sound.setVolume(bus, v);
+        }}
+        onPointerUp={() => sound.play(preview)}
+        onKeyUp={(e) => e.key !== 'Tab' && sound.play(preview)}
+      />
+      <span className="volume-value">{value} %</span>
+    </label>
+  );
+}
+
+export function OnOff({ title, text, value, onChange, children }: { title: string; text: string; value: boolean; onChange: (on: boolean) => void; children?: ReactNode }) {
   return (
     <div className="card-lg">
       <b>{title}</b>
@@ -72,6 +101,7 @@ export function OnOff({ title, text, value, onChange }: { title: string; text: s
           </button>
         ))}
       </div>
+      {children}
     </div>
   );
 }

@@ -1,6 +1,25 @@
-import { readSetting } from './storage.ts';
+import { readSetting, writeSetting } from './storage.ts';
 
 export const SOUND_KEY = 'ph:sound';
+
+// Moves click with nearly every touch, feedback chimes now and then; each has its own level so
+// the clicks can go quiet without losing the solve.
+export type Bus = 'moves' | 'feedback';
+const VOLUME_KEYS: Record<Bus, string> = { moves: 'ph:volMoves', feedback: 'ph:volFeedback' };
+const FEEDBACK: ReadonlySet<Cue> = new Set<Cue>(['conflict', 'hint', 'solved', 'unlock']);
+
+export function volume(bus: Bus): number {
+  const v = Number(readSetting(VOLUME_KEYS[bus]) ?? 100);
+  return Number.isFinite(v) ? Math.min(100, Math.max(0, Math.round(v))) : 100;
+}
+
+// Squared so the slider feels even to the ear instead of crowding all the change near zero.
+const level = (bus: Bus) => (volume(bus) / 100) ** 2;
+
+export function setVolume(bus: Bus, v: number) {
+  writeSetting(VOLUME_KEYS[bus], String(v));
+  if (buses) buses[bus].gain.value = level(bus);
+}
 
 type Overtone = [ratio: number, amp: number, decay: number];
 
@@ -19,6 +38,7 @@ const IDLE_MS = 4000;
 
 let ctx: AudioContext | null = null;
 let out: GainNode | null = null;
+let buses: Record<Bus, GainNode> | null = null;
 let idle: ReturnType<typeof setTimeout> | undefined;
 
 const enabled = () => readSetting(SOUND_KEY) !== '0';
@@ -38,6 +58,13 @@ function audio(): Out | null {
     out = ctx.createGain();
     out.gain.value = MASTER;
     out.connect(ctx.destination);
+    const bus = (b: Bus) => {
+      const g = ctx!.createGain();
+      g.gain.value = level(b);
+      g.connect(out!);
+      return g;
+    };
+    buses = { moves: bus('moves'), feedback: bus('feedback') };
   }
   if (ctx.state !== 'running') void ctx.resume().catch(() => {});
   // A running context keeps the audio thread awake; let it sleep between bursts of play.
@@ -150,8 +177,10 @@ const last = new Map<Cue, number>();
 export function play(cue: Cue, opts: CueOpts = {}) {
   const now = performance.now();
   if (now - (last.get(cue) ?? -Infinity) < MIN_GAP_MS) return;
+  const bus: Bus = FEEDBACK.has(cue) ? 'feedback' : 'moves';
+  if (volume(bus) === 0) return;
   const a = audio();
   if (!a) return;
   last.set(cue, now);
-  CUES[cue](a, a.ctx.currentTime, opts);
+  CUES[cue]({ ctx: a.ctx, out: buses![bus] }, a.ctx.currentTime, opts);
 }
