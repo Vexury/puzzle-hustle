@@ -69,6 +69,6 @@ const CATALOG_ORDER = ACHIEVEMENTS.map((a) => a.id);
 
 // Called after a solve and on app start. Must never throw: a player does not lose their
 // finished-puzzle screen, or their session start, over a collectible.
-export function syncAchievements(): void {
-  syncAnnouncements(KEY, currentUnlocked, CATALOG_ORDER, (id) => announceUnlock({ kind: 'achievement', id }));
+export function syncAchievements(silent = false): void {
+  syncAnnouncements(KEY, currentUnlocked, CATALOG_ORDER, silent ? () => undefined : (id) => announceUnlock({ kind: 'achievement', id }));
 }

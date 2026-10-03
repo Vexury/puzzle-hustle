@@ -10,6 +10,7 @@ import {
   findCosmetic,
   HINT_PRICE,
   isDoublable,
+  isSpendEntry,
   ownedItems,
   parsePuzzleId,
   periodKey,
@@ -34,18 +35,13 @@ function changed() {
   version++;
   for (const l of listeners) l();
 }
+// sync.ts writes the spend log and equipment through writeSetting and must refresh the balance after.
+export function coinsChanged() {
+  changed();
+}
 function subscribe(l: () => void) {
   listeners.add(l);
   return () => listeners.delete(l);
-}
-
-function isSpendEntry(value: unknown): value is SpendEntry {
-  if (!value || typeof value !== 'object') return false;
-  const v = value as Record<string, unknown>;
-  if (typeof v.coins !== 'number' || !Number.isInteger(v.coins) || v.coins < 0 || typeof v.at !== 'number') return false;
-  if (v.kind === 'hint') return typeof v.puzzle === 'string';
-  if (v.kind === 'item') return typeof v.item === 'string';
-  return false;
 }
 
 export function readSpent(): SpendEntry[] {
@@ -182,7 +178,7 @@ export function useEquipped(): Equipped {
 
 function writeEquipped(before: Equipped, next: Equipped) {
   const { badges, flair, theme, nameplate } = next;
-  writeSetting(EQUIPPED_KEY, JSON.stringify({ badges, flair, theme, nameplate }));
+  writeSetting(EQUIPPED_KEY, JSON.stringify({ badges, flair, theme, nameplate, at: Date.now() }));
   changed();
   // The server never holds the theme, so a theme change has nothing to send.
   if (flair !== before.flair || nameplate !== before.nameplate || badges.join() !== before.badges.join()) void pushCosmetics();
