@@ -6,6 +6,7 @@ import { SESSION_KEY, apiFetch, readSession, subscribeSession, writeSession, typ
 import { pushCosmetics } from './coins.ts';
 import { pushHustle } from './hustle.ts';
 import { flush, resetBackoff } from './queue.ts';
+import { forgetSyncedPlayer, syncNow } from './sync.ts';
 import { readSetting, removeSetting, writeSetting } from './storage.ts';
 import { toast } from '../components/Toast.tsx';
 
@@ -51,6 +52,7 @@ async function startSession(provider: 'google' | 'apple', idToken: string): Prom
   // player, or to anyone when nobody was signed in on this device before.
   const previous = readSetting(PREVIOUS_PLAYER_KEY);
   removeSetting(PREVIOUS_PLAYER_KEY);
+  void syncNow();
   if (previous === null || previous === session.player.id) {
     void pushCosmetics();
     void pushHustle();
@@ -333,6 +335,7 @@ export async function deleteAccount(): Promise<boolean> {
     toast('Could not delete your account. Try again.');
     return false;
   }
+  forgetSyncedPlayer();
   signOut();
   return true;
 }

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { writeSession } from '../src/lib/api.ts';
-import { sessionSnapshot, signOut } from '../src/lib/auth.ts';
+import { deleteAccount, sessionSnapshot, signOut } from '../src/lib/auth.ts';
 
 beforeEach(() => {
   localStorage.clear();
@@ -24,4 +24,12 @@ it('forgets the local name on sign-out so the next account does not inherit it',
   expect(localStorage.getItem('ph:name')).toBeNull();
   expect(localStorage.getItem('ph:previousPlayer')).toBe('p');
   expect(sessionSnapshot()).toBeNull();
+});
+
+it('forgets the synced player when the account is deleted', async () => {
+  writeSession({ token: 't', player: { id: 'p', name: 'Moritz' } });
+  localStorage.setItem('ph:sync:player', 'p');
+  vi.stubGlobal('fetch', async () => new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } }));
+  expect(await deleteAccount()).toBe(true);
+  expect(localStorage.getItem('ph:sync:player')).toBeNull();
 });
