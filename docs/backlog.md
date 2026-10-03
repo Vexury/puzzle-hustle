@@ -48,6 +48,7 @@ Aus dem Hub-Wiki ausgelagert am 2026-10-01.
 
 - [ ] Vor dem Launch `THEMES_FREE` in `packages/core/src/cosmetics.ts` auf false, sonst sind alle Theme-Pakete und Nameplates gratis.
 - [ ] Echte Ads vor dem Production-Build: `initializeForTesting: true` in `apps/web/src/lib/ads.ts` abschalten, `isTesting` auf iOS entfernen und dafuer die iPhones in `TEST_DEVICES` eintragen, SKAdNetwork-Liste in der `Info.plist` vervollstaendigen. Das S23 bekommt danach weiter Testanzeigen, es ist auf beiden Wegen als Testgeraet registriert.
+- [ ] Board-Packs voll gegen den Generator pruefen: `$env:FULL_PACKS=1; pnpm --filter @puzzle-hustle/core test` (der normale Lauf vergleicht nur erstes und letztes Level je Typ und Schwierigkeit).
 - [ ] `ACHIEVEMENTS_EPOCH` auf das Produktionsrelease-Datum setzen, mit dem Berliner Offset dieses Datums (im Sommer +02:00, im Winter +01:00). Danach sind die Achievements der Testphase weg, ebenso das Hustle-Level: im selben Zug `UPDATE players SET hustle = 0` auf der Remote-D1 ausfuehren (Befehl in `docs/pitfalls.md`), sonst zeigen die Chips weiter die Testphasen-Level; vorher in den Release-Notes ankuendigen. Das Profil zeigt dann eine Weile "1000 solved" ueber "0 of 40 earned", das braucht ein Wort auf der Seite selbst.
 
 ## Groessere Vorhaben und Ideen

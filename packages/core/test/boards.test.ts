@@ -10,8 +10,10 @@ const packs = Object.fromEntries(
 ) as Record<PuzzleTypeId, BoardPack>;
 const read = (type: PuzzleTypeId): BoardPack => packs[type];
 
-// Rebuilding these from their seeds takes seconds each, minutes for the whole set; the first
-// level stands in for the rest, the way levels.test.ts treats them.
+// Rebuilding every board takes over a minute. A generator change without a version bump moves
+// practically every seed, so the first and last level stand in for the rest; FULL_PACKS=1 checks
+// them all. Zip hard and genius take seconds per board, there the first level alone stands in.
+const FULL = process.env.FULL_PACKS === '1';
 const SLOW: Partial<Record<PuzzleTypeId, Difficulty[]>> = { zip: ['hard', 'genius'] };
 
 describe('board packs', () => {
@@ -43,7 +45,7 @@ describe('board packs', () => {
       const pack = read(type);
       for (const difficulty of DIFFICULTIES) {
         const list = levelList(type, difficulty);
-        const check = SLOW[type]?.includes(difficulty) ? list.slice(0, 1) : list;
+        const check = FULL ? list : SLOW[type]?.includes(difficulty) ? list.slice(0, 1) : [list[0]!, list.at(-1)!];
         for (const { seed } of check) {
           expect(decodeBoard(pack.boards[boardKey(difficulty, seed)]!), `${type} ${difficulty} ${seed}`).toEqual(generateBoard({ type, seed, difficulty }));
         }
