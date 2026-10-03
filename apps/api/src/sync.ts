@@ -1,16 +1,18 @@
-import { emptySave, HUSTLE_MAX_STAGE, hustleSolved, mergeSave, parseSaveData, saveSolveEntries, type SaveData } from '@puzzle-hustle/core';
+import { emptySave, HUSTLE_MAX_STAGE, hustleSolved, mergeSave, parseSaveData, saveSolveEntries, withinSaveLimits, type SaveData } from '@puzzle-hustle/core';
 
 export const MAX_SAVE_CHARS = 1_000_000;
 
 // Read, merge, write only if nobody wrote in between. A second device that got there first just
 // means one more merge, which costs nothing because the merge does not care about order.
-export async function syncSave(db: D1Database, playerId: string, incoming: SaveData): Promise<SaveData | null> {
+// A merge over the limits is refused, not stored: the next sync could not read it back.
+export async function syncSave(db: D1Database, playerId: string, incoming: SaveData): Promise<SaveData | 'conflict' | 'too_large'> {
   for (let attempt = 0; attempt < 2; attempt++) {
     const row = await db.prepare('SELECT data, updated_at AS updatedAt FROM saves WHERE player_id = ?')
       .bind(playerId)
       .first<{ data: string; updatedAt: number }>();
-    const stored = row ? (parseSaveData(JSON.parse(row.data)) ?? emptySave()) : emptySave();
+    const stored = row ? (parseSaveData(JSON.parse(row.data), { trusted: true }) ?? emptySave()) : emptySave();
     const merged = mergeSave(stored, incoming);
+    if (!withinSaveLimits(merged)) return 'too_large';
     const data = JSON.stringify(merged);
     const now = Math.max(Date.now(), (row?.updatedAt ?? 0) + 1);
     const write = row
@@ -23,5 +25,5 @@ export async function syncSave(db: D1Database, playerId: string, incoming: SaveD
     await db.prepare('UPDATE players SET hustle = ? WHERE id = ?').bind(level, playerId).run();
     return merged;
   }
-  return null;
+  return 'conflict';
 }

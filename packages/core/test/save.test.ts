@@ -1,7 +1,7 @@
 // packages/core/test/save.test.ts
 import { expect, it } from 'vitest';
 import { ACHIEVEMENTS_EPOCH } from '../src/achievements.ts';
-import { emptySave, mergeSave, noEquipment, parseEquipment, parseSaveData, saveSolveEntries, type SaveData, type SolveRecord } from '../src/save.ts';
+import { emptySave, mergeSave, noEquipment, parseEquipment, parseSaveData, saveSolveEntries, withinSaveLimits, type SaveData, type SolveRecord } from '../src/save.ts';
 
 const at = (iso: string) => Date.parse(iso);
 const rec = (solvedAt: string, seconds = 60, hints = 0, moves = 20): SolveRecord => ({ solvedAt, seconds, hints, moves });
@@ -78,6 +78,36 @@ it('takes the newer equipment, and a fixed one on a tie', () => {
   expect(mergeSave(x, y).equipped.flair).toBe('puzzler');
 });
 
+it('keeps a loadout from before sync against a device that never chose one', () => {
+  const legacy = save({ equipped: parseEquipment({ badges: ['badge-star'], flair: 'puzzler', theme: 'theme-sakura', nameplate: null }) });
+  expect(mergeSave(legacy, emptySave()).equipped).toEqual(legacy.equipped);
+  expect(mergeSave(emptySave(), legacy).equipped).toEqual(legacy.equipped);
+  const none = save({ equipped: parseEquipment(null) });
+  expect(mergeSave(none, legacy).equipped).toEqual(legacy.equipped);
+  expect(mergeSave(legacy, none).equipped).toEqual(legacy.equipped);
+});
+
+it('lets a reset unequip a stale loadout', () => {
+  const R = at('2026-10-01T10:02:00Z');
+  const stale = save({ equipped: { badges: ['badge-star'], flair: 'puzzler', theme: null, nameplate: null, at: R - 1 } });
+  const reset = save({ resetAt: R, equipped: noEquipment(R) });
+  expect(mergeSave(stale, reset).equipped).toEqual(noEquipment(R));
+  expect(mergeSave(reset, stale).equipped).toEqual(noEquipment(R));
+  const legacy = save({ equipped: parseEquipment({ badges: ['badge-star'] }) });
+  expect(mergeSave(legacy, reset).equipped).toEqual(noEquipment(R));
+  expect(mergeSave(reset, legacy).equipped).toEqual(noEquipment(R));
+});
+
+it('prefers the fuller loadout on a tie, whichever side comes first', () => {
+  const one = save({ equipped: { ...noEquipment(7), flair: 'puzzler' } });
+  const two = save({ equipped: { ...noEquipment(7), badges: ['a'], nameplate: 'plate-paper' } });
+  expect(mergeSave(one, two).equipped).toEqual(two.equipped);
+  expect(mergeSave(two, one).equipped).toEqual(two.equipped);
+  const empty = save({ equipped: noEquipment(7) });
+  expect(mergeSave(empty, one).equipped).toEqual(one.equipped);
+  expect(mergeSave(one, empty).equipped).toEqual(one.equipped);
+});
+
 it('drops everything older than a reset from the side that did not reset', () => {
   const R = at('2026-10-01T10:02:00Z');
   const resetter = save({ resetAt: R, solves: { 'zip:daily:2026-10-01': rec('2026-10-01T08:00:00.000Z') }, equipped: noEquipment(R) });
@@ -98,7 +128,9 @@ it("keeps a stale side's solves at or after the reset", () => {
 it('reads legacy equipment', () => {
   expect(parseEquipment({ badge: 'badge-star' })).toEqual({ ...noEquipment(0), badges: ['badge-star'] });
   expect(parseEquipment({ badges: ['a', 'b'], flair: 'puzzler', theme: null, nameplate: 7 })).toEqual({ badges: ['a', 'b'], flair: 'puzzler', theme: null, nameplate: null, at: 0 });
-  expect(parseEquipment(null)).toEqual(noEquipment(0));
+  expect(parseEquipment(null)).toEqual(noEquipment(-1));
+  expect(parseEquipment({ ...noEquipment(-1) })).toEqual(noEquipment(-1));
+  expect(emptySave().equipped.at).toBe(-1);
 });
 
 it('drops bad entries one by one', () => {
@@ -118,6 +150,9 @@ it('refuses non-objects and oversized saves', () => {
   const solves: Record<string, SolveRecord> = {};
   for (let i = 0; i <= 20_000; i++) solves[`zip:level:easy:${i}`] = rec('2026-10-01T08:00:00.000Z');
   expect(parseSaveData({ solves })).toBeNull();
+  expect(Object.keys(parseSaveData({ solves }, { trusted: true })!.solves)).toHaveLength(20_001);
+  expect(withinSaveLimits(parseSaveData({ solves }, { trusted: true })!)).toBe(false);
+  expect(withinSaveLimits(emptySave())).toBe(true);
 });
 
 it('turns solves into entries for the derived values', () => {

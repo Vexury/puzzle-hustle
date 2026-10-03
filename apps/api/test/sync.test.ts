@@ -83,6 +83,31 @@ it('refuses junk and oversized bodies', async () => {
   expect((await sync(me.token, JSON.stringify({ pad: 'x'.repeat(1_000_001) }))).status).toBe(413);
 });
 
+const hints = (from: number, count: number) =>
+  Array.from({ length: count }, (_, i) => ({ kind: 'hint' as const, puzzle: 'zip:level:easy:1', coins: 20, at: from + i }));
+const storedData = async (id: string) =>
+  JSON.parse((await env.DB.prepare('SELECT data FROM saves WHERE player_id = ?').bind(id).first<{ data: string }>())!.data) as SaveData;
+
+it('keeps a stored save that is over the limits instead of overwriting it', async () => {
+  const me = await signIn('s1', 'Moritz');
+  const big = save({ solves: hustle(1, 2, after(1)), spent: hints(1, 5_001) });
+  await env.DB.prepare('INSERT INTO saves (player_id, data, updated_at) VALUES (?, ?, ?)').bind(me.player.id, JSON.stringify(big), 1).run();
+  const response = await sync(me.token, JSON.stringify(save({ solves: hustle(3, 3, after(2)) })));
+  expect(response.status).toBe(413);
+  expect(await response.json()).toEqual({ error: 'too_large' });
+  const stored = await storedData(me.player.id);
+  expect(stored.spent).toHaveLength(5_001);
+  expect(Object.keys(stored.solves)).toEqual(['hustle:1', 'hustle:2']);
+});
+
+it('refuses a merge that would go over the limits, without writing', async () => {
+  const me = await signIn('s1', 'Moritz');
+  await sync(me.token, JSON.stringify(save({ spent: hints(1, 4_000) })));
+  const response = await sync(me.token, JSON.stringify(save({ spent: hints(10_000, 1_500) })));
+  expect(response.status).toBe(413);
+  expect((await storedData(me.player.id)).spent).toHaveLength(4_000);
+});
+
 it('needs a session', async () => {
   expect((await worker.fetch(new Request('https://api.test/sync', { method: 'POST', body: '{}' }), env)).status).toBe(401);
 });

@@ -10,7 +10,8 @@ export interface SolveRecord {
   moves: number;
 }
 
-// The stored form of ph:cosmetics. `at` orders two devices' choices; 0 means "before sync existed".
+// The stored form of ph:cosmetics. `at` orders two devices' choices; 0 means "chosen before sync
+// existed", -1 "never chosen", so a device that never chose anything cannot unequip a real loadout.
 export interface SavedEquipment {
   badges: string[];
   flair: string | null;
@@ -30,7 +31,7 @@ export interface SaveData {
 
 export const SAVE_LIMITS = { solves: 20_000, spent: 5_000, doubled: 20_000, idLength: 64 } as const;
 
-export function noEquipment(at = 0): SavedEquipment {
+export function noEquipment(at = -1): SavedEquipment {
   return { badges: [], flair: null, theme: null, nameplate: null, at };
 }
 
@@ -66,16 +67,25 @@ export function parseEquipment(value: unknown): SavedEquipment {
     flair: one(value.flair),
     theme: one(value.theme),
     nameplate: one(value.nameplate),
-    at: isCount(value.at) ? value.at : 0,
+    at: isCount(value.at) || value.at === -1 ? value.at : 0,
   };
 }
 
-export function parseSaveData(value: unknown): SaveData | null {
+const fits = (solves: object, spent: unknown[], doubled: unknown[]) =>
+  Object.keys(solves).length <= SAVE_LIMITS.solves && spent.length <= SAVE_LIMITS.spent && doubled.length <= SAVE_LIMITS.doubled;
+
+export function withinSaveLimits(save: SaveData): boolean {
+  return fits(save.solves, save.spent, save.doubled);
+}
+
+// `trusted` skips the size limits, for a save this side wrote itself (the server's stored row):
+// refusing it would read as empty and the next write would overwrite it.
+export function parseSaveData(value: unknown, options: { trusted?: boolean } = {}): SaveData | null {
   if (!isObject(value)) return null;
   const rawSolves = isObject(value.solves) ? value.solves : {};
   const rawSpent = Array.isArray(value.spent) ? value.spent : [];
   const rawDoubled = Array.isArray(value.doubled) ? value.doubled : [];
-  if (Object.keys(rawSolves).length > SAVE_LIMITS.solves || rawSpent.length > SAVE_LIMITS.spent || rawDoubled.length > SAVE_LIMITS.doubled) return null;
+  if (!options.trusted && !fits(rawSolves, rawSpent, rawDoubled)) return null;
   const solves: Record<string, SolveRecord> = {};
   for (const [id, raw] of Object.entries(rawSolves)) {
     const record = isId(id) ? parseSolve(raw) : null;
@@ -124,9 +134,12 @@ function since(save: SaveData, from: number): SaveData {
 
 const spendKey = (e: SpendEntry) => (e.kind === 'item' ? `item:${e.item}` : `hint:${e.puzzle}@${e.at}`);
 
-// Newer wins; on a tie the lexicographically larger JSON wins.
+const slots = (e: SavedEquipment) => e.badges.length + [e.flair, e.theme, e.nameplate].filter((v) => v !== null).length;
+
+// Newer wins; on a tie the fuller loadout, then the lexicographically larger JSON.
 function newerEquipment(a: SavedEquipment, b: SavedEquipment): SavedEquipment {
   if (a.at !== b.at) return a.at > b.at ? a : b;
+  if (slots(a) !== slots(b)) return slots(a) > slots(b) ? a : b;
   return JSON.stringify(a) >= JSON.stringify(b) ? a : b;
 }
 

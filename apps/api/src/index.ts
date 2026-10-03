@@ -150,7 +150,9 @@ async function postSync(request: Request, env: Env, playerId: string): Promise<R
   const incoming = parseSaveData(raw);
   if (!incoming) return error(400, 'bad_save');
   const merged = await syncSave(env.DB, playerId, incoming);
-  return merged ? json(merged) : error(409, 'conflict');
+  if (merged === 'conflict') return error(409, 'conflict');
+  if (merged === 'too_large') return error(413, 'too_large');
+  return json(merged);
 }
 
 // Anonymous by design: no token, and the IP only keys the rate limiter, it is never stored.

@@ -75,8 +75,10 @@ Loesungen, 5 000 Ausgaben) und verwirft ungueltige Eintraege einzeln, wie `isSpe
 - **Ausgaben:** Vereinigung. Item-Kaeufe einmal je Item, der frueheste bleibt (kaufen zwei
   Geraete offline dasselbe Item, zahlt der Spieler einmal). Hint-Kaeufe je `(puzzle, at)`.
 - **Verdopplungen:** Vereinigung, ohne Ids, deren Loesung nach dem Merge fehlt.
-- **Ausruestung:** das hoehere `at` gewinnt, bei Gleichstand der lexikografisch groessere
-  JSON-Wert (damit der Merge kommutativ bleibt). Ausgeruestet zaehlt wie heute nur, was man
+- **Ausruestung:** das hoehere `at` gewinnt, bei Gleichstand die vollere Ausruestung (Badges plus
+  gesetzte Flair/Theme/Nameplate), dann der lexikografisch groessere JSON-Wert (damit der Merge
+  kommutativ bleibt). Nie gewaehlt hat `at` -1 (Aenderung 2026-10-03: sonst schlug ein leerer
+  Stand beim ersten Sync jede Ausruestung von vor dem Sync). Ausgeruestet zaehlt wie heute nur, was man
   besitzt; das prueft weiter der Client.
 - `resetAt` des Ergebnisses ist `R`.
 
@@ -89,6 +91,8 @@ Loesungen, 5 000 Ausgaben) und verwirft ungueltige Eintraege einzeln, wie `isSpe
   Bedingung `updated_at` unveraendert; hat ein anderes Geraet dazwischen geschrieben, einmal neu
   lesen und mergen (kostet dank kommutativem Merge nichts); scheitert auch das, 409, und der
   Client versucht es beim naechsten Ausloeser. Antwort: der zusammengefuehrte Save.
+  Den gespeicherten Stand liest der Server ohne Groessengrenzen; liegt der Merge ueber
+  `SAVE_LIMITS`, antwortet er 413 `too_large` und schreibt nichts (2026-10-03).
 - `/sync` setzt `players.hustle` exakt aus dem zusammengefuehrten Stand (`hustleSolved` aus
   `packages/core/src/hustleProgress.ts`), ohne
   `MAX`. Damit senkt ein Konto-Reset auch den Chip in der Bestenliste, und der Epochenwechsel zum
@@ -104,7 +108,7 @@ Loesungen, 5 000 Ausgaben) und verwirft ungueltige Eintraege einzeln, wie `isSpe
 - Die Antwort wird als `mergeSave(antwort, readLocalSave())` angewendet, nicht blind uebernommen:
   was waehrend der Anfrage geloest oder gekauft wurde, bleibt.
 - Ausruestung bekommt einen Zeitstempel in `ph:cosmetics` (`at`), gesetzt von `equip` und
-  `toggleShowcase`. Ein alter Eintrag ohne `at` zaehlt als 0.
+  `toggleShowcase`. Ein alter Eintrag ohne `at` zaehlt als 0, gar kein Eintrag als -1.
 - Kontowechsel: passt `ph:sync:player` nicht zur Sitzung, schickt der Client einen leeren Save
   (nur `resetAt` 0) und ersetzt den lokalen Stand durch die Antwort, statt fremden Fortschritt
   ins neue Konto zu mischen. Fehlt der Schluessel (Geraet hat nie gesynct), wird zusammengefuehrt.
