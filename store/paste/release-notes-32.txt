@@ -1,0 +1,16 @@
+<en-US>
+More sound.
+
+- Volume: separate sliders for move sounds and feedback under Gameplay
+- Every theme now has its own sounds, from pencil on paper to coins in the Casino
+- Tracks: the train makes itself heard when it runs your finished line
+- Zip: the solved path plays its notes once more as it lights up
+</en-US>
+<de-DE>
+Mehr Sound.
+
+- Lautstärke: getrennte Regler für Zug-Töne und Rückmeldungen unter Gameplay
+- Jedes Theme klingt jetzt eigen, vom Bleistift auf Papier bis zu den Münzen im Casino
+- Tracks: Der Zug ist zu hören, wenn er über deine fertige Strecke fährt
+- Zip: Der gelöste Pfad spielt beim Aufleuchten seine Töne noch einmal
+</de-DE>
