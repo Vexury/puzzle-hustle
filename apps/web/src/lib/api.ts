@@ -84,7 +84,8 @@ export async function apiFetch<T>(path: string, init: RequestInit & { auth?: boo
   clearTimeout(timer);
 
   if (!response.ok) {
-    if (response.status === 401) writeSession(null);
+    // Only the session that sent the request is invalid; a sign-in since then must survive.
+    if (response.status === 401 && readSession()?.token === sent) writeSession(null);
     throw new ApiError(data.error ?? 'failed', response.status);
   }
   if (!parsed) throw new ApiError('bad_response', response.status);

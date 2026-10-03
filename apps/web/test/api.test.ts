@@ -47,6 +47,17 @@ it('drops the session on a 401 so the app stops pretending to be signed in', asy
   expect(readSession()).toBeNull();
 });
 
+it('keeps a newer session when a 401 answers a request sent with an older token', async () => {
+  writeSession({ token: 'old', player: { id: 'p1', name: 'Moritz' } });
+  let answer: (r: Response) => void = () => undefined;
+  vi.stubGlobal('fetch', () => new Promise<Response>((resolve) => (answer = resolve)));
+  const pending = apiFetch('/sync', { method: 'POST', body: '{}', auth: true });
+  writeSession({ token: 'new', player: { id: 'p2', name: 'Dani' } });
+  answer(new Response('{"error":"unauthorized"}', { status: 401 }));
+  await expect(pending).rejects.toMatchObject({ code: 'unauthorized' });
+  expect(readSession()?.token).toBe('new');
+});
+
 it('turns an unparseable 200 body into a bad_response error', async () => {
   vi.stubGlobal('fetch', async () => new Response('not json', { status: 200 }));
   await expect(apiFetch('/health')).rejects.toMatchObject({ code: 'bad_response', status: 200 });
