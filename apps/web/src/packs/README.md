@@ -36,6 +36,19 @@ in `marks.ts`. Nonogram, Mosaic and Cats/Hearts get it as a CSS mask through `--
 
 The list grows only when a pack needs a new place, and every addition goes here.
 
+## Sounds
+
+A pack may replace single cues of `lib/sound.ts` in `<id>/sound.ts`: a default export of
+`PackSounds` (cue name to voice), registered in `PACK_SOUNDS` in `registry.ts` and loaded with
+the pack. Build voices from the exported blocks (`click`, `note`, `snap`, `ride` for the train)
+so the pack follows the volume sliders.
+
+- Move cues (`place`, `cross`, `step`, ...) change their timbre only: keep their length and
+  loudness close to the base, a player hears them hundreds of times a session.
+- Leave `conflict` and `blocked` alone; their meaning is learnt and must not change with a pack.
+- `solved`, `unlock`, `hint`, `train` and `trail` are where a pack can show its character.
+- Try a pack on `/soundboard.html` in the dev server, it has a pack picker.
+
 ## Scenes
 
 - Draw on `.pack-back` (behind all content) or `.pack-front` (above it, for moments that end on

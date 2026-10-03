@@ -29,11 +29,17 @@
     <h1>Soundboard</h1>
     <p>Dev only. Plays the live cues from <code>src/lib/sound.ts</code>; saving it reloads this page. Keys play the pads in order; Shift plays a run of 8.</p>
     <p id="warn" class="warn" hidden>Sound effects are off in this browser (ph:sound = 0). <button id="on">Turn on</button></p>
+    <p>Pack: <select id="pack"><option value="">Base</option></select> <small>Cues a pack leaves alone play the base sound.</small></p>
     <div id="board"></div>
   </main>
   <script type="module">
     const sound = await import('/src/lib/sound.ts');
-    const { play, CUE_NAMES, SOUND_KEY } = sound;
+    const { PACK_SOUNDS } = await import('/src/packs/registry.ts');
+    const { play, CUE_NAMES, SOUND_KEY, setPackSounds } = sound;
+
+    const packSelect = document.getElementById('pack');
+    for (const id of Object.keys(PACK_SOUNDS)) packSelect.add(new Option(id, id));
+    packSelect.onchange = () => setPackSounds(packSelect.value || null, PACK_SOUNDS[packSelect.value]);
 
     const warn = document.getElementById('warn');
     warn.hidden = localStorage.getItem(SOUND_KEY) !== '0';
@@ -71,6 +77,10 @@
         ['solved', 'Puzzle solved'],
         ['unlock', 'Unlock card'],
       ]],
+      ['Solve moments', [
+        ['train', 'Tracks: the train runs the line (4 s here, up to about 7 s in play)'],
+        ['trail', 'Zip: the solved path glows'],
+      ]],
     ];
 
     // Scripted runs that show how cues behave in sequence, as they would in play.
@@ -79,6 +89,17 @@
         const n = 25;
         for (let i = 0; i < n; i++) at(i * 85, () => play('step', { progress: i / (n - 1) }));
         at(n * 85 + 60, () => play('solved'));
+        at(n * 85 + 60, () => play('trail'));
+      }],
+      ['Tracks solve, small board', 'Last piece, solved chime, then a 2.5 s train', () => {
+        play('place');
+        at(60, () => play('solved'));
+        at(80, () => play('train', { duration: 2.5 }));
+      }],
+      ['Tracks solve, big board', 'Last piece, solved chime, then a 6.5 s train', () => {
+        play('place');
+        at(60, () => play('solved'));
+        at(80, () => play('train', { duration: 6.5 }));
       }],
       ['Zip backtrack', 'Draw 10 cells, then drag 6 back', () => {
         const n = 25;

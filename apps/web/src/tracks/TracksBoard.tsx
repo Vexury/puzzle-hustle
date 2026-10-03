@@ -16,6 +16,7 @@ import {
   type TracksState,
 } from '@puzzle-hustle/core';
 import { HintMark } from '../components/HintMark.tsx';
+import * as sound from '../lib/sound.ts';
 import { markVariant, usePackMark } from '../packs/marks.ts';
 import './tracks.css';
 
@@ -156,6 +157,7 @@ function TracksTrain({ spec }: { spec: TracksSpec }) {
     const frame = requestAnimationFrame(() => {
       for (const m of motions.current) (m as SVGAnimationElement | null)?.beginElement?.();
       setRunning(true);
+      sound.play('train', { duration: (length + (CARS - 1) * CAR_GAP) / speed });
     });
     return () => cancelAnimationFrame(frame);
   }, []);

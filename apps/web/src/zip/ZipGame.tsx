@@ -3,6 +3,7 @@ import { emptyZipState, isZipSolved, zipHint, zipOrderBreak, zipStart, zipStepAl
 import { useHistory } from '../lib/useHistory.ts';
 import { useFlash } from '../lib/useFlash.ts';
 import { showMistakes } from '../lib/mistakes.ts';
+import * as sound from '../lib/sound.ts';
 import type { Cue, CueOpts } from '../lib/sound.ts';
 import { playConflict } from '../lib/feedback.ts';
 import { ResetButton } from '../components/ResetButton.tsx';
@@ -113,10 +114,17 @@ export function ZipGame({ spec, onMove, onSolved, onHintUsed, requestHint, hintA
     return out;
   };
   const solved = isZipSolved(spec, path);
+  // The path runs up its ladder with the glow, so only for a solve made here and only while it glows.
+  const openedSolved = useRef(solved).current;
+  const calm = useRef(matchMedia('(prefers-reduced-motion: reduce)').matches).current;
 
   useEffect(() => {
     if (solved) onSolved();
   }, [solved, onSolved]);
+
+  useEffect(() => {
+    if (solved && !openedSolved && !calm) sound.play('trail');
+  }, [solved, openedSolved, calm]);
 
   function commit(next: ZipState, cue?: Cue, opts?: CueOpts) {
     const before = pathRef.current;
