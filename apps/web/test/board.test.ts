@@ -18,20 +18,20 @@ it('shows the line right at the 20-submission floor', () => {
 it('excludes the player from both sides of the fraction', () => {
   // 21 submissions total, 5 faster than the player: the other 20 players are the field,
   // 15 of them the player beat, so 15/20 = 75%, not 15/21 or 16/21.
-  expect(percentileText({ total: 21, faster: 5 }, 'daily')).toBe('Faster than 75% of all players today');
+  expect(percentileText({ total: 21, faster: 5 }, 'daily')).toBe('beat 75% of players today');
 });
 
 it('reads 0% for the slowest run in a field of exactly 20', () => {
-  expect(percentileText({ total: 20, faster: 19 }, 'daily')).toBe('Faster than 0% of all players today');
+  expect(percentileText({ total: 20, faster: 19 }, 'daily')).toBe('beat 0% of players today');
 });
 
 it('reads 100% for the fastest run once the field passes 20', () => {
-  expect(percentileText({ total: 21, faster: 0 }, 'daily')).toBe('Faster than 100% of all players today');
+  expect(percentileText({ total: 21, faster: 0 }, 'daily')).toBe('beat 100% of players today');
 });
 
 it('says "this week" for a weekly board and "this month" for a monthly one', () => {
-  expect(percentileText({ total: 21, faster: 5 }, 'weekly')).toBe('Faster than 75% of all players this week');
-  expect(percentileText({ total: 21, faster: 5 }, 'monthly')).toBe('Faster than 75% of all players this month');
+  expect(percentileText({ total: 21, faster: 5 }, 'weekly')).toBe('beat 75% of players this week');
+  expect(percentileText({ total: 21, faster: 5 }, 'monthly')).toBe('beat 75% of players this month');
 });
 
 it('resolves known cosmetics and hides unknown ones, missing fields and wrong kinds', () => {

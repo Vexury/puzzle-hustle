@@ -82,7 +82,7 @@ export function splitHidden<T extends { playerId: string }>(
 // How long an armed Remove stays armed, as for Reset on Profile.
 const CONFIRM_MS = 2000;
 
-// "Faster than N%" compares against everybody else who solved this puzzle, so the player
+// "Beat N%" compares against everybody else who solved this puzzle, so the player
 // themselves is out of both sides of the fraction. Below 20 submissions the number says
 // more about the size of the field than about the player, so it stays hidden.
 export function percentileText(percentile: BoardData['percentile'], period: Period): string | null {
@@ -90,7 +90,7 @@ export function percentileText(percentile: BoardData['percentile'], period: Peri
   const others = percentile.total - 1;
   const beaten = others - percentile.faster;
   const when = period === 'weekly' ? 'this week' : period === 'monthly' ? 'this month' : 'today';
-  return `Faster than ${Math.round((beaten / others) * 100)}% of all players ${when}`;
+  return `beat ${Math.round((beaten / others) * 100)}% of players ${when}`;
 }
 
 const MEDALS = ['gold', 'silver', 'bronze'] as const;
@@ -221,11 +221,19 @@ export function Board({
     return () => clearTimeout(timer);
   }, [armed]);
 
+  // Both head lines always stand, the percentile included, so every card of a group is as tall
+  // as its member count makes it and swiping never changes the height (2026-10-03).
   const solved = board?.entries.length ?? 0;
+  const percentile = board && percentileText(board.percentile, parsePuzzleId(puzzle)?.period ?? 'daily');
+  const status = !board
+    ? ' '
+    : board.me
+      ? `you ${ordinal(board.me)} of ${solved}${percentile ? ` · ${percentile}` : ''}`
+      : `${solved} of ${solved + (board.open?.length ?? 0)} solved`;
   const head = title && (
     <div className="standings-head">
       <b>{title}</b>
-      {solved > 0 && <span className="muted small">{board?.me ? `you ${ordinal(board.me)} of ${solved}` : `${solved} solved`}</span>}
+      <span className="muted small">{status}</span>
     </div>
   );
   if (loading && !board) return <>{head}<p className="muted small">Loading…</p></>;
@@ -236,7 +244,6 @@ export function Board({
   if (shown.length === 0 && unsolved.shown.length === 0 && hiddenAll.length === 0) {
     return <>{head}<p className="muted small">Nobody in this group has solved it yet.</p></>;
   }
-  const percentile = percentileText(board.percentile, parsePuzzleId(puzzle)?.period ?? 'daily');
 
   const updateHidden = (ids: string[]) => {
     writeHidden(ids);
@@ -323,10 +330,8 @@ export function Board({
             {actionRow(entry)}
           </Fragment>
         ))}
-        {unsolved.shown.length > 0 && (
-          <li className="leaderboard-divider">
-            Not solved yet · {unsolved.shown.length}
-          </li>
+        {board.open && (
+          <li className="leaderboard-divider">{unsolved.shown.length > 0 ? `Not solved yet · ${unsolved.shown.length}` : 'Everyone solved it'}</li>
         )}
         {unsolved.shown.map((entry) => (
           <Fragment key={entry.playerId}>
@@ -348,7 +353,6 @@ export function Board({
           </button>
         </div>
       )}
-      {percentile && <p className="muted small">{percentile}</p>}
     </>
   );
 }

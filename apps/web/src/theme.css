@@ -677,7 +677,11 @@ p { margin: 0; }
 .leaderboard-divider { display: flex; align-items: center; gap: 8px; margin: 6px 0 2px; color: var(--text-muted); font-size: var(--fs-xs); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
 .leaderboard-divider::before,
 .leaderboard-divider::after { content: ""; flex: 1; height: 1px; background: var(--border-mid); }
-.leaderboard-row.open { padding-block: 4px; color: var(--text-muted); }
+.leaderboard-row.open { color: var(--text-muted); }
+/* On a standings card every row is as tall as a nameplate row, so a card's height follows from
+   the member count alone and swiping keeps it (2026-10-03). The head's second line stays one line. */
+.standings-card .leaderboard-row { box-sizing: border-box; height: 60px; padding-block: 0; }
+.standings-head .small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .leaderboard-row.open .leaderboard-time { font-weight: 400; }
 
 .actions { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 10px; width: 100%; margin-top: 4px; }
