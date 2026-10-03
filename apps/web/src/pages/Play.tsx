@@ -34,7 +34,7 @@ import { requestHint, useHintBadge, type HintChoice, type HintOffer } from '../l
 import { adsAvailable, playRewardedAd } from '../lib/ads.ts';
 import { doubleOffer, markDoubled, readDoubled } from '../lib/coins.ts';
 import { hasUnlimitedHints } from '../lib/entitlement.ts';
-import { enqueue, flush } from '../lib/queue.ts';
+import { enqueue, flush, onScoresAnswered, resetBackoff } from '../lib/queue.ts';
 import { DEMOS } from '../demo/index.ts';
 import { DemoPlayer } from '../demo/DemoPlayer.tsx';
 import { dailyNumber, streakNews } from '../lib/stats.ts';
@@ -469,6 +469,9 @@ function PlayBoard({ puzzleRef, spec, onReplay }: { puzzleRef: PuzzleRef; spec: 
     const scheduled = puzzleRef.period && puzzleRef.key ? scheduledRef(puzzleRef.type, puzzleRef.period, puzzleRef.key) : null;
     if (scheduled && scheduled.seed === puzzleRef.seed && scheduled.difficulty === puzzleRef.difficulty) {
       enqueue(id, record);
+      // The player is looking at the result and waiting for the place, so the solve goes out now
+      // even while an earlier failure has the queue backing off.
+      resetBackoff();
       void flush().finally(() => setScoreSettled(true));
     }
     if (firstSolve) {
@@ -772,11 +775,39 @@ function slideIn() {
   );
 }
 
-function Placement({ puzzle }: { puzzle: string }) {
+// Bad reception loses the first try (2026-10-03, Pia): the score is still queued, or /groups or
+// /board timed out, and the chip used to stay away until the puzzle was opened again. While the
+// place is missing, every sign that it may work now asks again: a score the server just answered,
+// the network or the app coming back, and a few timed tries for a request that only stalled.
+const PLACEMENT_RETRY_MS = [5_000, 15_000, 45_000];
+
+export function Placement({ puzzle }: { puzzle: string }) {
   const session = useSession();
-  const { groups } = useGroups();
+  const { groups, failed, reload: reloadGroups } = useGroups();
   const group = groups[0] ?? null;
-  const { board } = useBoard(group?.id ?? null, puzzle);
+  const { board, reload: reloadBoard } = useBoard(group?.id ?? null, puzzle);
+  const waiting = Boolean(session) && (failed || (group !== null && !board?.me));
+  const again = useRef(() => {});
+  useEffect(() => {
+    again.current = failed ? reloadGroups : reloadBoard;
+  });
+  useEffect(() => {
+    if (!waiting) return;
+    const retry = () => again.current();
+    const onVisible = () => {
+      if (!document.hidden) retry();
+    };
+    const timers = PLACEMENT_RETRY_MS.map((ms) => setTimeout(retry, ms));
+    const stop = onScoresAnswered(retry);
+    window.addEventListener('online', retry);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      timers.forEach(clearTimeout);
+      stop();
+      window.removeEventListener('online', retry);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [waiting]);
   if (!session || !group || !board?.me) return null;
   const to = `/social?${new URLSearchParams({ g: group.id, p: puzzle })}`;
   return <PlacementChip rank={board.me} of={board.entries.length} group={group.name} to={to} />;

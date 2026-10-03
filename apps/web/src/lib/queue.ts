@@ -99,6 +99,15 @@ const FINAL = new Set(['stored', 'duplicate', 'rejected', 'expired']);
 
 let running: Promise<void> | null = null;
 
+// Whatever waits on a score reaching the server (the placement chip) hears it here, whenever
+// that happens: right after the solve, or minutes later once the network is back.
+const answeredListeners = new Set<() => void>();
+
+export function onScoresAnswered(listener: () => void): () => void {
+  answeredListeners.add(listener);
+  return () => answeredListeners.delete(listener);
+}
+
 // Backoff lives in memory only. A fresh start is always allowed one attempt, which is what
 // somebody who just turned the plane mode off expects.
 const MIN_BACKOFF = 5_000;
@@ -168,6 +177,7 @@ async function run(): Promise<void> {
     const after = before.filter((entry) => !(isMine(entry) && answered.has(entry.puzzle)));
     writeQueue(after);
     mine = after.filter(isMine);
+    if (answered.size > 0) for (const listener of answeredListeners) listener();
     // The daily limit is spent. Trying again in this session would only burn requests.
     if (results.some((r) => r.status === 'throttled')) {
       failed();
