@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { expect, it } from 'vitest';
-import { percentileText, readHidden, NameCell, rowCosmetics, splitHidden, StandingsRow, writeHidden } from '../src/components/Board.tsx';
+import { percentileText, readHidden, NameCell, OpenRow, rowCosmetics, splitHidden, StandingsRow, writeHidden } from '../src/components/Board.tsx';
 
 it('hides the line when there is no percentile at all', () => {
   expect(percentileText(null, 'daily')).toBeNull();
@@ -100,4 +100,13 @@ it('keeps the name line to the name and level, the showcase and flair go below, 
   expect(sub.indexOf('row-badges')).toBeLessThan(sub.indexOf('leaderboard-flair'));
   expect(row).toContain('aria-label="2 hints"');
   expect(row).not.toContain('hints</span>');
+});
+
+it('shows a member without a time by name and level, no plate, no showcase', () => {
+  const row = renderToStaticMarkup(createElement(OpenRow, { name: 'Pia', hustle: 120, me: true }));
+  expect(row).toContain('<li class="leaderboard-row open me">');
+  expect(row).toContain('Pia');
+  expect(row).toContain('Lv 120');
+  expect(row).not.toMatch(/np-|row-badge/);
+  expect(renderToStaticMarkup(createElement(OpenRow, { name: 'Ben', me: false }))).not.toContain('hustle-chip');
 });

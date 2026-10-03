@@ -10,6 +10,8 @@ import { ToolGlyph } from './ToolButton.tsx';
 
 export interface BoardData {
   entries: Array<{ playerId: string; name: string; seconds: number; hints: number; badge?: string | null; badges?: string[] | null; flair?: string | null; nameplate?: string | null; hustle?: number }>;
+  // Members without a time, by name; missing from a server before 2026-10-03.
+  open?: Array<{ playerId: string; name: string; hustle?: number }>;
   me: number | null;
   percentile: { total: number; faster: number } | null;
 }
@@ -175,6 +177,24 @@ export function StandingsRow({ entry, rank, me, wave = 0, children }: { entry: R
   );
 }
 
+// A member who has not solved this puzzle yet: name and level, no plate, no showcase, so the
+// standings above stay the thing to look at (2026-10-03).
+export function OpenRow({ name, hustle, me, children }: { name: string; hustle?: number | undefined; me: boolean; children?: ReactNode }) {
+  return (
+    <li className={`leaderboard-row open${me ? ' me' : ''}`}>
+      <span className="leaderboard-rank" />
+      <span className="leaderboard-who">
+        <span className="leaderboard-name">
+          <span className="leaderboard-name-text">{name}</span>
+          {hustle ? <span className="hustle-chip">Lv {hustle}</span> : null}
+        </span>
+      </span>
+      <span className="leaderboard-time">–</span>
+      {children}
+    </li>
+  );
+}
+
 export function Board({
   groupId,
   puzzle,
@@ -210,9 +230,12 @@ export function Board({
   );
   if (loading && !board) return <>{head}<p className="muted small">Loading…</p></>;
   if (!board) return <>{head}<p className="muted small">Standings are unavailable right now.</p></>;
-  if (board.entries.length === 0) return <>{head}<p className="muted small">Nobody in this group has solved it yet.</p></>;
-
   const { shown, hidden } = splitHidden(board.entries, hiddenIds, meId);
+  const unsolved = splitHidden(board.open ?? [], hiddenIds, meId);
+  const hiddenAll = [...hidden, ...unsolved.hidden];
+  if (shown.length === 0 && unsolved.shown.length === 0 && hiddenAll.length === 0) {
+    return <>{head}<p className="muted small">Nobody in this group has solved it yet.</p></>;
+  }
   const percentile = percentileText(board.percentile, parsePuzzleId(puzzle)?.period ?? 'daily');
 
   const updateHidden = (ids: string[]) => {
@@ -220,7 +243,9 @@ export function Board({
     setHiddenIds(readHidden());
   };
 
-  const report = (entry: BoardData['entries'][number]) =>
+  type Member = { playerId: string; name: string };
+
+  const report = (entry: Member) =>
     void apiFetch('/report', {
       method: 'POST',
       body: JSON.stringify({ playerId: entry.playerId, reason: 'name' }),
@@ -229,7 +254,7 @@ export function Board({
       .then(() => toast('Reported'))
       .catch(() => toast('Could not report'));
 
-  const remove = (entry: BoardData['entries'][number]) =>
+  const remove = (entry: Member) =>
     void apiFetch('/groups/remove', {
       method: 'POST',
       body: JSON.stringify({ id: groupId, playerId: entry.playerId }),
@@ -243,6 +268,49 @@ export function Board({
       })
       .catch(() => toast('Could not remove'));
 
+  const hitButton = (entry: Member) =>
+    entry.playerId !== meId && (
+      <button
+        type="button"
+        className="leaderboard-hit"
+        aria-label={`Report or hide ${entry.name}`}
+        aria-expanded={open === entry.playerId}
+        onClick={() => {
+          setOpen(open === entry.playerId ? null : entry.playerId);
+          setArmed(null);
+        }}
+      />
+    );
+
+  const actionRow = (entry: Member) =>
+    open === entry.playerId && (
+      <li className="pill-row">
+        <button type="button" className="pill outline" onClick={() => report(entry)}>
+          Report name
+        </button>
+        <button
+          type="button"
+          className="pill outline"
+          onClick={() => {
+            updateHidden([...hiddenIds, entry.playerId]);
+            setOpen(null);
+          }}
+        >
+          Hide
+        </button>
+        {owner &&
+          (armed === entry.playerId ? (
+            <button type="button" className="pill danger" onClick={() => remove(entry)}>
+              Remove
+            </button>
+          ) : (
+            <button type="button" className="pill outline" onClick={() => setArmed(entry.playerId)}>
+              Remove from group
+            </button>
+          ))}
+      </li>
+    );
+
   return (
     <>
       {head}
@@ -250,57 +318,33 @@ export function Board({
         {shown.map((entry, i) => (
           <Fragment key={entry.playerId}>
             <StandingsRow entry={entry} rank={entry.rank} me={entry.playerId === meId} wave={i * 0.1}>
-              {entry.playerId !== meId && (
-                <button
-                  type="button"
-                  className="leaderboard-hit"
-                  aria-label={`Report or hide ${entry.name}`}
-                  aria-expanded={open === entry.playerId}
-                  onClick={() => {
-                    setOpen(open === entry.playerId ? null : entry.playerId);
-                    setArmed(null);
-                  }}
-                />
-              )}
+              {hitButton(entry)}
             </StandingsRow>
-            {open === entry.playerId && (
-              <li className="pill-row">
-                <button type="button" className="pill outline" onClick={() => report(entry)}>
-                  Report name
-                </button>
-                <button
-                  type="button"
-                  className="pill outline"
-                  onClick={() => {
-                    updateHidden([...hiddenIds, entry.playerId]);
-                    setOpen(null);
-                  }}
-                >
-                  Hide
-                </button>
-                {owner &&
-                  (armed === entry.playerId ? (
-                    <button type="button" className="pill danger" onClick={() => remove(entry)}>
-                      Remove
-                    </button>
-                  ) : (
-                    <button type="button" className="pill outline" onClick={() => setArmed(entry.playerId)}>
-                      Remove from group
-                    </button>
-                  ))}
-              </li>
-            )}
+            {actionRow(entry)}
+          </Fragment>
+        ))}
+        {unsolved.shown.length > 0 && (
+          <li className="leaderboard-divider">
+            Not solved yet · {unsolved.shown.length}
+          </li>
+        )}
+        {unsolved.shown.map((entry) => (
+          <Fragment key={entry.playerId}>
+            <OpenRow name={entry.name} hustle={entry.hustle} me={entry.playerId === meId}>
+              {hitButton(entry)}
+            </OpenRow>
+            {actionRow(entry)}
           </Fragment>
         ))}
       </ol>
-      {hidden.length > 0 && (
+      {hiddenAll.length > 0 && (
         <div className="pill-row">
           <button
             type="button"
             className="pill outline"
-            onClick={() => updateHidden(hiddenIds.filter((id) => !hidden.some((e) => e.playerId === id)))}
+            onClick={() => updateHidden(hiddenIds.filter((id) => !hiddenAll.some((e) => e.playerId === id)))}
           >
-            {hidden.length} hidden · Show
+            {hiddenAll.length} hidden · Show
           </button>
         </div>
       )}

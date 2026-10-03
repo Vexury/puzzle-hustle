@@ -59,6 +59,25 @@ it('leaves out members who have not solved it and players outside the group', as
 
   const board = (await readBoard(env.DB, 'a', 'g1', PUZZLE))!;
   expect(board.entries.map((e) => e.name)).toEqual(['Anna']);
+  expect(board.open).toEqual([{ playerId: 'b', name: 'Ben', hustle: 0 }]);
+});
+
+it('lists every member without a time by name, the caller included, never an outsider', async () => {
+  await player('a', 'anna');
+  await player('b', 'Ben');
+  await player('c', 'Cem');
+  await player('x', 'Outsider');
+  await env.DB.prepare(`UPDATE players SET hustle = 57 WHERE id = 'c'`).run();
+  await group('g1', ['c', 'a', 'b']);
+  await score('b', 200);
+  await env.DB.prepare(
+    "INSERT INTO scores (player_id, puzzle, seconds, hints, moves, solved_at, created_at) VALUES ('c', 'other:daily:2026-09-21', 50, 0, 30, 0, 0)",
+  ).run();
+
+  const board = (await readBoard(env.DB, 'a', 'g1', PUZZLE))!;
+  expect(board.entries.map((e) => e.name)).toEqual(['Ben']);
+  expect(board.open.map((e) => [e.name, e.hustle])).toEqual([['anna', 0], ['Cem', 57]]);
+  expect(board.me).toBeNull();
 });
 
 it('returns null for a group the caller is not in', async () => {

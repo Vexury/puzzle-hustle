@@ -10,8 +10,16 @@ export interface BoardEntry {
   hints: number;
 }
 
+// A member without a time for this puzzle, listed by name below the standings (2026-10-03).
+export interface OpenEntry {
+  playerId: string;
+  name: string;
+  hustle: number;
+}
+
 export interface Board {
   entries: BoardEntry[];
+  open: OpenEntry[];
   me: number | null;
   percentile: { total: number; faster: number } | null;
 }
@@ -41,6 +49,18 @@ export async function readBoard(
     .all<Omit<BoardEntry, 'badges'> & { badges: string | null }>();
   const results: BoardEntry[] = rows.map((row) => ({ ...row, badges: parseBadges(row.badges) }));
 
+  const { results: open } = await db
+    .prepare(
+      `SELECT p.id AS playerId, p.name, p.hustle
+         FROM members m
+         JOIN players p ON p.id = m.player_id
+        WHERE m.group_id = ?1
+          AND NOT EXISTS (SELECT 1 FROM scores s WHERE s.player_id = m.player_id AND s.puzzle = ?2)
+        ORDER BY p.name COLLATE NOCASE, p.id`,
+    )
+    .bind(groupId, puzzle)
+    .all<OpenEntry>();
+
   const index = results.findIndex((row) => row.playerId === playerId);
   const mine = results[index];
   let percentile: Board['percentile'] = null;
@@ -56,7 +76,7 @@ export async function readBoard(
     if (counts) percentile = { total: counts.total, faster: counts.faster ?? 0 };
   }
 
-  return { entries: results, me: index >= 0 ? index + 1 : null, percentile };
+  return { entries: results, open, me: index >= 0 ? index + 1 : null, percentile };
 }
 
 // Stored as a JSON list by POST /cosmetics; anything else reads as no showcase.
