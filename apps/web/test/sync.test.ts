@@ -3,7 +3,7 @@ vi.mock('../src/components/UnlockModal.tsx', () => ({ announceUnlock: vi.fn() })
 import { ACHIEVEMENTS_EPOCH, emptySave, mergeSave, parseSaveData, periodKey, type SaveData } from '@puzzle-hustle/core';
 import { announceUnlock } from '../src/components/UnlockModal.tsx';
 import { allSolves, readProgress, recordSolve, rehydrate, writeProgress } from '../src/lib/storage.ts';
-import { readLocalSave, resetAccount, syncAfterSignIn, syncNow } from '../src/lib/sync.ts';
+import { readLocalSave, resetAccount, syncNow } from '../src/lib/sync.ts';
 
 const when = (minutes: number) => new Date(Math.max(Date.now(), ACHIEVEMENTS_EPOCH) + minutes * 60_000).toISOString();
 const rec = (solvedAt: string) => ({ solvedAt, seconds: 60, hints: 0, moves: 20 });
@@ -51,11 +51,15 @@ it('takes the account over the device when another player synced here before', a
   expect(Object.keys(server.solves)).toEqual(['hustle:1']);
 });
 
-it('treats the player signed out last as the owner of a never-synced device', async () => {
+it('merges a never-synced device even when another player signed out last', async () => {
   signIn('p2');
+  localStorage.setItem('ph:previousPlayer', 'p1');
   recordSolve('zip:level:easy:1', rec(when(1)));
-  await syncAfterSignIn('p1');
-  expect(Object.keys(allSolves())).toEqual([]);
+  server = { ...emptySave(), solves: { 'hustle:1': rec(when(1)) } };
+  await syncNow();
+  expect(Object.keys(allSolves()).sort()).toEqual(['hustle:1', 'zip:level:easy:1']);
+  expect(Object.keys(server.solves).sort()).toEqual(['hustle:1', 'zip:level:easy:1']);
+  expect(localStorage.getItem('ph:sync:player')).toBe('p2');
 });
 
 it('keeps a solve made while the request was out', async () => {

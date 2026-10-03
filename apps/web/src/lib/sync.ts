@@ -97,12 +97,6 @@ export function syncNow(options: { keepalive?: boolean } = {}): Promise<void> {
   return running;
 }
 
-// The player signed out last on this device owns its progress, also from before sync existed.
-export function syncAfterSignIn(previous: string | null): Promise<void> {
-  if (previous !== null && readSetting(PLAYER_KEY) === null) writeSetting(PLAYER_KEY, previous);
-  return syncNow();
-}
-
 // Signed in, the reset reaches every device of the account; signed out it stays on this one.
 export function resetAccount(): void {
   resetProgressAndAppearance();
